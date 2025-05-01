@@ -96,10 +96,20 @@ private fun BarChartContent(
 ) {
     val barData = data()
     val allValuesAreZero = remember(barData) { barData.all { it.yValue == 0f } }
-    val maxValue = remember(barData) {
-        if (allValuesAreZero) 100f else barData.fastMaxOfOrNull { it.yValue.absoluteValue } ?: 0f
+    val minValue = remember(barData) {
+        when {
+            barData.all { it.yValue >= 0 } -> 0f
+            else -> barData.minOfOrNull { it.yValue } ?: 0f
+        }
     }
-    val minValue = remember(barData) { barData.minOfOrNull { it.yValue.absoluteValue } ?: 0f }
+
+    val maxValue = remember(barData) {
+        when {
+            allValuesAreZero -> -1F
+            barData.all { it.yValue <= 0 } -> 0f
+            else -> barData.maxOfOrNull { it.yValue } ?: 0f
+        }
+    }
     val hasNegativeValues = remember(barData) { barData.fastAny { it.yValue < 0 } }
     val displayData = remember(barData) { getDisplayData(barData, barChartConfig.minimumBarCount) }
     val canDrawNegativeChart = hasNegativeValues && barChartConfig.drawNegativeValueChart
@@ -496,19 +506,12 @@ internal fun BarChartCanvasScaffold(
             } else {
                 Modifier
             },
-        )
-            .fillMaxSize()
-            .pointerInput(Unit) { detectTapGestures { onClick(it) } },
+        ).fillMaxSize().pointerInput(Unit) { detectTapGestures { onClick(it) } },
     ) {
         val (canvasWidth, canvasHeight) = size
         val gap = canvasWidth / (barData.count() * 10)
         val barWidth = (canvasWidth - gap * (barData.count() - 1)) / barData.count()
-
-        content(
-            canvasHeight,
-            gap,
-            barWidth
-        )
+        content(canvasHeight, gap, barWidth)
     }
 }
 

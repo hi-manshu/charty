@@ -18,3 +18,6 @@ charty/build/*
 /.kotlin/*
 .kotlin/*
 /sample/build/*
+
+charty/src/androidMain/resources/*
+charty/src/androidMain/resources

@@ -68,7 +68,9 @@ import kotlin.random.Random
 @Preview
 fun App() {
     LazyColumn {
-        addBarChart(null, generateZeroBarData(7, true))
+        addBarChart(50F, generateSingleBarData())
+        addBarChart(null, generateZeroBarData(4))
+        addBarChart(2F, generateMockBarData(11))
         addMultiLineChart()
         addLineChart()
 
@@ -560,6 +562,17 @@ private fun generateZeroBarData(size: Int, useColor: Boolean = false): List<BarD
         )
     }
 }
+private fun generateSingleBarData(): List<BarData> {
+    return listOf(
+        BarData(
+            yValue = 700F, // Single bar value
+            xValue = "2023", // X-axis label
+            barColor = Color.Blue.asSolidChartColor() // Bar color
+        )
+    )
+}
+
+// Usage
 private fun generateMockBarData(
     size: Int, useColor: Boolean = false, hasNegative: Boolean = true
 ): List<BarData> {
