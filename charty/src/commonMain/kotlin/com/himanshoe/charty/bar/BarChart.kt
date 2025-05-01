@@ -95,14 +95,17 @@ private fun BarChartContent(
     onBarClick: (Int, BarData) -> Unit = { _, _ -> },
 ) {
     val barData = data()
-    val maxValue = remember(barData) { barData.fastMaxOfOrNull { it.yValue.absoluteValue } ?: 0f }
+    val allValuesAreZero = remember(barData) { barData.all { it.yValue == 0f } }
+    val maxValue = remember(barData) {
+        if (allValuesAreZero) 100f else barData.fastMaxOfOrNull { it.yValue.absoluteValue } ?: 0f
+    }
     val minValue = remember(barData) { barData.minOfOrNull { it.yValue.absoluteValue } ?: 0f }
     val hasNegativeValues = remember(barData) { barData.fastAny { it.yValue < 0 } }
     val displayData = remember(barData) { getDisplayData(barData, barChartConfig.minimumBarCount) }
     val canDrawNegativeChart = hasNegativeValues && barChartConfig.drawNegativeValueChart
     val textMeasurer = rememberTextMeasurer()
     val bottomLabelPadding = if (labelConfig.showXLabel && !hasNegativeValues) 8.dp else 0.dp
-    val leftPadding = if (labelConfig.showYLabel) 24.dp else 0.dp
+    val leftPadding = if (labelConfig.showYLabel && !allValuesAreZero) 24.dp else 0.dp
     val topPadding = if (barTooltip != null) 24.dp else 0.dp
     val bottomPadding = if (canDrawNegativeChart) 24.dp else bottomLabelPadding
     var clickedOffset by mutableStateOf<Offset?>(null)
@@ -193,7 +196,7 @@ private fun BarChartContent(
             )
             val cornerRadius = getCornerRadius(barChartConfig, calculatedCornerRadius)
 
-            if (barData.yValue != 0F) {
+            if (!allValuesAreZero && barData.yValue != 0F) {
                 backgroundColorBar(
                     barData = barData,
                     index = index,
@@ -235,7 +238,7 @@ private fun BarChartContent(
                         ),
                     )
                 }
-                if (barTooltip != null) {
+                if (!allValuesAreZero && barTooltip != null) {
                     drawTooltip(
                         textMeasurer = textMeasurer,
                         barData = barData,
