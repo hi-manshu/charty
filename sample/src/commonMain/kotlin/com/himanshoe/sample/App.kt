@@ -68,11 +68,13 @@ import kotlin.random.Random
 @Preview
 fun App() {
     LazyColumn {
+        addBarChart(50F, generateSingleBarData())
+        addBarChart(null, generateZeroBarData(4))
+        addBarChart(2F, generateMockBarData(11))
         addMultiLineChart()
         addLineChart()
 
         addSignalBarChart()
-        addBarChart(null, generateMockBarData(7, false, false))
         addComparisonChart()
         addStackBarChart()
         addSpeedometerProgressBar()
@@ -470,7 +472,7 @@ private fun LazyListScope.addBarChart(target: Float?, data: List<BarData>) {
                 showXLabel = true,
                 xAxisCharCount = 4,
                 showYLabel = true,
-                textColor = Color(0xFFFF92C1).asSolidChartColor()
+                textColor = Color.Black.asSolidChartColor()
             ),
             barChartColorConfig = BarChartColorConfig.default().copy(
                 fillBarColor = Color(0xFFFF92C1).asSolidChartColor(),
@@ -540,7 +542,37 @@ private fun generateSampleData(): List<BarData> {
         BarData(3F, "Wed")
     )
 }
+private fun generateZeroBarData(size: Int, useColor: Boolean = false): List<BarData> {
+    val years = listOf("2021", "2022", "2023", "2024", "2025", "2026", "2027")
+    val colors = listOf(
+        Color.Red,
+        Color.Green,
+        Color.Blue,
+        Color.Yellow,
+        Color.DarkGray,
+        Color.Magenta,
+        Color.Cyan
+    )
 
+    return List(size) {
+        BarData(
+            yValue = 0f, // All yValues set to 0
+            xValue = years[it % years.size],
+            barColor = if (useColor) colors[it % colors.size].asSolidChartColor() else Color.Unspecified.asSolidChartColor()
+        )
+    }
+}
+private fun generateSingleBarData(): List<BarData> {
+    return listOf(
+        BarData(
+            yValue = 700F, // Single bar value
+            xValue = "2023", // X-axis label
+            barColor = Color.Blue.asSolidChartColor() // Bar color
+        )
+    )
+}
+
+// Usage
 private fun generateMockBarData(
     size: Int, useColor: Boolean = false, hasNegative: Boolean = true
 ): List<BarData> {
