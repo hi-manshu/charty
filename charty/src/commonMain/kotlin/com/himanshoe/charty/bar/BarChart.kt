@@ -171,6 +171,8 @@ private fun BarChartContent(
                 if (isClickInsideBar(offset, individualBarTopLeft, individualBarRectSize)) {
                     clickedBarIndex = index
                     onBarClick(index, barData)
+                    clickedOffset = null
+                    clickedBarIndex = -1
                 }
             }
             val textCharCount = labelConfig.getXLabelTextCharCount(
