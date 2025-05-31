@@ -7,6 +7,8 @@ jetbrain-compose = "1.7.3"
 androidx-activityCompose = "1.10.1"
 publish = "0.31.0"
 dokka = "2.0.0"
+mkdocs = "1.5.0"
+mkdocs-material = "9.0.0"
 
 [libraries]
 detekt-cli = { module = "io.gitlab.arturbosch.detekt:detekt-cli", version.ref = "detektCli" }
@@ -14,6 +16,8 @@ dokka = { module = "org.jetbrains.dokka:android-documentation-plugin", version.r
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detektFormatting" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+mkdocs = { module = "mkdocs:mkdocs", version.ref = "mkdocs" }
+mkdocs-material = { module = "mkdocs-material:mkdocs-material", version.ref = "mkdocs-material" }
 
 [plugins]
 publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }

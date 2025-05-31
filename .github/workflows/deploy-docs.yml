@@ -1,0 +1,34 @@
+name: Deploy Documentation
+
+on:
+  push:
+    tags:
+      - '*' # Trigger on any tag
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to deploy to gh-pages
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install mkdocs mkdocs-material
+
+      - name: Build documentation
+        run: mkdocs build
+
+      - name: Deploy to GitHub Pages
+        run: mkdocs gh-deploy --force --clean
+        # The GITHUB_TOKEN is automatically provided by GitHub Actions
+        # and has the necessary permissions if `permissions: contents: write` is set for the job.
