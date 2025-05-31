@@ -10,23 +10,25 @@
         <meta name="author" content="Charty Contributors">
       
       
-        <link rel="canonical" href="https://himanshoe.github.io/charty/">
+        <link rel="canonical" href="https://himanshoe.github.io/charty/charts/line_bar_chart/">
       
       
+        <link rel="prev" href="../horizontal_bar_chart/">
       
-        <link rel="next" href="charts/bar_chart/">
+      
+        <link rel="next" href="../line_stack_bar_chart/">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
-        <title>Charty</title>
+        <title>Line Bar Chart - Charty</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
       
       
 
@@ -45,7 +47,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -64,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-charty" class="md-skip">
+        <a href="#line-bar-chart" class="md-skip">
           Skip to content
         </a>
       
@@ -80,7 +82,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="Charty" class="md-header__button md-logo" aria-label="Charty" data-md-component="logo">
+    <a href="../.." title="Charty" class="md-header__button md-logo" aria-label="Charty" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -100,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Line Bar Chart
             
           </span>
         </div>
@@ -190,7 +192,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="Charty" class="md-nav__button md-logo" aria-label="Charty" data-md-component="logo">
+    <a href="../.." title="Charty" class="md-nav__button md-logo" aria-label="Charty" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -217,32 +219,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Home
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -253,68 +233,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting Started
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Getting Started">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#basic-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Basic Usage
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#library-purpose" class="md-nav__link">
-    <span class="md-ellipsis">
-      Library Purpose
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -323,18 +241,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -350,7 +270,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Charts
@@ -364,7 +284,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/bar_chart/" class="md-nav__link">
+      <a href="../bar_chart/" class="md-nav__link">
         
   
   
@@ -387,7 +307,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/comparison_bar_chart/" class="md-nav__link">
+      <a href="../comparison_bar_chart/" class="md-nav__link">
         
   
   
@@ -410,7 +330,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/horizontal_bar_chart/" class="md-nav__link">
+      <a href="../horizontal_bar_chart/" class="md-nav__link">
         
   
   
@@ -430,10 +350,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="charts/line_bar_chart/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -444,6 +373,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -456,7 +386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/line_stack_bar_chart/" class="md-nav__link">
+      <a href="../line_stack_bar_chart/" class="md-nav__link">
         
   
   
@@ -479,7 +409,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/signal_bar_chart/" class="md-nav__link">
+      <a href="../signal_bar_chart/" class="md-nav__link">
         
   
   
@@ -502,7 +432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/stack_bar_chart/" class="md-nav__link">
+      <a href="../stack_bar_chart/" class="md-nav__link">
         
   
   
@@ -525,7 +455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/storage_bar/" class="md-nav__link">
+      <a href="../storage_bar/" class="md-nav__link">
         
   
   
@@ -548,7 +478,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/circle_chart/" class="md-nav__link">
+      <a href="../circle_chart/" class="md-nav__link">
         
   
   
@@ -571,7 +501,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/speedometer_progress_bar/" class="md-nav__link">
+      <a href="../speedometer_progress_bar/" class="md-nav__link">
         
   
   
@@ -594,7 +524,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/line_chart/" class="md-nav__link">
+      <a href="../line_chart/" class="md-nav__link">
         
   
   
@@ -617,7 +547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/multi_line_chart/" class="md-nav__link">
+      <a href="../multi_line_chart/" class="md-nav__link">
         
   
   
@@ -640,7 +570,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/pie_chart/" class="md-nav__link">
+      <a href="../pie_chart/" class="md-nav__link">
         
   
   
@@ -663,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="charts/point_chart/" class="md-nav__link">
+      <a href="../point_chart/" class="md-nav__link">
         
   
   
@@ -706,56 +636,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#getting-started" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting Started
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Getting Started">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#basic-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Basic Usage
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#library-purpose" class="md-nav__link">
-    <span class="md-ellipsis">
-      Library Purpose
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -773,24 +653,21 @@
   
 
 
-<h1 id="welcome-to-charty">Welcome to Charty</h1>
-<p>Charty is a modern charting library for Kotlin Multiplatform, designed to help you easily create beautiful and interactive charts for your applications.</p>
-<h2 id="getting-started">Getting Started</h2>
-<h3 id="installation">Installation</h3>
-<p>To get started with Charty, you need to add it as a dependency to your project.</p>
-<p><em>(Detailed installation instructions will be added here based on the project's build system, e.g., Gradle.)</em></p>
-<h3 id="basic-usage">Basic Usage</h3>
-<p>Once Charty is installed, you can start creating charts with just a few lines of code.</p>
-<pre><code class="language-kotlin">// Example of creating a simple bar chart (illustrative)
-val data = listOf( /* your data here */ )
-val barChart = Charty.BarChart(data)
-
-// Display the chart in your UI (platform-specific)
-</code></pre>
-<p><em>(More detailed usage examples will be provided in the specific chart documentation.)</em></p>
-<h2 id="library-purpose">Library Purpose</h2>
-<p>The main goal of Charty is to provide a flexible and easy-to-use API for developers to integrate various types of charts into their Kotlin Multiplatform projects, covering Android, iOS, Desktop, and Web applications. We aim for high performance, extensive customization options, and a consistent look and feel across platforms.</p>
-<p>Explore the documentation to learn more about the different chart types and how to use them effectively.</p>
+<h1 id="line-bar-chart">Line Bar Chart</h1>
+<h1 id="overview">Overview</h1>
+<p>A composable function that displays a line bar chart. This chart type typically represents data points as thin vertical lines or "sticks". It can be useful for visualizing discrete data points over a continuous range or time.</p>
+<h1 id="usage">Usage</h1>
+<p>Key parameters for using this chart:</p>
+<ul>
+<li><strong><code>data</code></strong>: A lambda function that returns a list of <code>BarData</code>. Each <code>BarData</code> object represents a line/bar and includes its X-value (label) and Y-value (height).</li>
+<li><strong><code>modifier</code></strong>: A <code>Modifier</code> for customizing the layout or drawing behavior of the chart. (Optional)</li>
+<li><strong><code>target</code></strong>: An optional target value to be displayed on the chart, usually as a horizontal line. (Optional)</li>
+<li><strong><code>targetConfig</code></strong>: A <code>TargetConfig</code> object for configuring the appearance of the target line (e.g., color, stroke width). (Optional, defaults to <code>TargetConfig.default()</code>)</li>
+<li><strong><code>barChartConfig</code></strong>: A <code>BarChartConfig</code> object for configuring aspects like showing axis lines, grid lines, curved tops for the lines (though less common for line bar charts), and minimum bar count. (Optional, defaults to <code>BarChartConfig.default()</code>)</li>
+<li><strong><code>labelConfig</code></strong>: A <code>LabelConfig</code> object for configuring the appearance of labels on the chart (e.g., X-axis labels, Y-axis labels). (Optional, defaults to <code>LabelConfig.default()</code>)</li>
+<li><strong><code>barChartColorConfig</code></strong>: A <code>BarChartColorConfig</code> object for configuring the colors of the lines/bars, axis lines, and grid lines. (Optional, defaults to <code>BarChartColorConfig.default()</code>)</li>
+<li><strong><code>onBarClick</code></strong>: A lambda function that is invoked when a line/bar is clicked. It receives the index of the clicked item and the corresponding <code>BarData</code> as parameters. (Optional)</li>
+</ul>
 
 
 
@@ -839,10 +716,10 @@ val barChart = Charty.BarChart(data)
     
     
       
-      <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
       
     
   </body>
