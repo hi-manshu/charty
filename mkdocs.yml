@@ -4,7 +4,18 @@ site_url: https://himanshoe.github.io/charty/
 repo_url: https://github.com/himanshoe/charty/
 repo_name: charty
 theme:
-  name: material
+  name: null
+  custom_dir: 'cinder'
+  # Optional: Add a default colorscheme, e.g., github
+  colorscheme: github
+  highlightjs: true # Cinder uses highlight.js
+  # Optional: add common languages for highlighting
+  hljs_languages:
+    - yaml
+    - kotlin
+    - markdown
+markdown_extensions:
+  - admonition
 nav:
   - Home: index.md
   - Charts:
