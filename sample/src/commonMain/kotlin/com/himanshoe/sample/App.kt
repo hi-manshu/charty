@@ -33,6 +33,7 @@ import com.himanshoe.charty.bar.StorageBar
 import com.himanshoe.charty.bar.config.BarChartColorConfig
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.BarTooltip
+import com.himanshoe.charty.bar.config.HorizontalBarLabelConfig
 import com.himanshoe.charty.bar.model.BarData
 import com.himanshoe.charty.bar.model.ComparisonBarData
 import com.himanshoe.charty.bar.model.StackBarData
@@ -68,25 +69,25 @@ import kotlin.random.Random
 @Preview
 fun App() {
     LazyColumn {
-        addBarChart(50F, generateSingleBarData())
-        addBarChart(null, generateZeroBarData(4))
-        addBarChart(2F, generateMockBarData(11))
-        addMultiLineChart()
-        addLineChart()
-
-        addSignalBarChart()
-        addComparisonChart()
-        addStackBarChart()
-        addSpeedometerProgressBar()
-        addCircleChart()
-        addPieChart()
-        addPointChart()
+//        addBarChart(50F, generateSingleBarData())
+//        addBarChart(null, generateZeroBarData(4))
+//        addBarChart(2F, generateMockBarData(11))
+//        addMultiLineChart()
+//        addLineChart()
+//
+//        addSignalBarChart()
+//        addComparisonChart()
+//        addStackBarChart()
+//        addSpeedometerProgressBar()
+//        addCircleChart()
+//        addPieChart()
+//        addPointChart()
         addHorizontalBarChart()
-        addStorageBarChart()
-        addLineBarChart(3F, { generateMockBarData(7) })
-        addLineBarChart(null, { generateMockBarData(7) })
-        addBarChart(2F, generateMockBarData(11))
-        addBarChart(null, generateMockBarData(7, false))
+//        addStorageBarChart()
+//        addLineBarChart(3F, { generateMockBarData(7) })
+//        addLineBarChart(null, { generateMockBarData(7) })
+//        addBarChart(2F, generateMockBarData(11))
+//        addBarChart(null, generateMockBarData(7, false))
     }
 }
 
@@ -232,7 +233,8 @@ private fun LazyListScope.addComparisonChart() {
             modifier = Modifier.padding(10.dp).fillMaxWidth().height(300.dp),
             onGroupClicked = { index ->
                 println("Category $index clicked")
-            })
+            }
+        )
     }
 
 }
@@ -354,6 +356,7 @@ private fun LazyListScope.addHorizontalBarChart() {
                 fillBarColor = Color(0xFFFF92C1).asSolidChartColor(),
                 negativeBarColors = Color(0xFF4D4D4D).asSolidChartColor()
             ),
+            horizontalBarLabelConfig = HorizontalBarLabelConfig.default().copy(showLabel = false),
             data = { generateMockBarData(7, useColor = false) },
             modifier = Modifier.fillParentMaxWidth().height(300.dp).padding(all = 20.dp)
 
@@ -361,6 +364,7 @@ private fun LazyListScope.addHorizontalBarChart() {
     }
     item {
         HorizontalBarChart(
+            horizontalBarLabelConfig = HorizontalBarLabelConfig.default().copy(showLabel = true,hasOverlappingLabel = false),
             barChartColorConfig = BarChartColorConfig.default().copy(
                 fillBarColor = Color(0xFFFF92C1).asSolidChartColor(),
                 negativeBarColors = Color(0xFF4D4D4D).asSolidChartColor()

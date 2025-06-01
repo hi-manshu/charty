@@ -1,102 +1,76 @@
-# Comparison Bar Chart
+# `ComparisonBarChart`
 
-## Overview
-The `ComparisonBarChart` composable function is designed to display grouped bar charts. It excels at comparing multiple series of data side-by-side across different categories (groups). For example, you could use it to compare the sales figures of different products (multiple bars within a group) across several quarters (each quarter being a group).
+![comparisonchart_01.png](../site/img/bar/comparisonchart_01.png)
 
-Key features include:
-- **Grouped Data Representation**: Each primary category (group) on the X-axis can contain multiple bars, each representing a sub-category or series.
-- **Variable Bar Count per Group**: Different groups can have a varying number of bars, allowing for flexible data representation.
-- **Individual Bar Styling**: Each bar within a group can have its own distinct color, defined in the `ComparisonBarData`.
-- **Customizable Appearance**: Chart aesthetics like axis lines, grid lines, and bar curvature can be configured using `ComparisonBarChartConfig`.
-- **Labeling**: X and Y axis labels can be configured for clarity using `LabelConfig`.
-- **Click Interactions**: Supports click events on entire groups of bars via the `onGroupClicked` callback.
+A chart that displays a **grouped bar chart** for comparing multiple values across common categories (e.g., monthly comparisons for different products, users, or metrics). Each group represents a category and contains multiple bars to compare distinct values within that group.
 
-This chart is particularly useful when you need to highlight both individual values and their collective performance within and across groups.
-
-## Sample Invocation
+## 🧱 Declaration
 
 ```kotlin
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.himanshoe.charty.bar.ComparisonBarChart
-import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
-import com.himanshoe.charty.bar.model.ComparisonBarData
-import com.himanshoe.charty.common.ChartColor // Assuming ChartColor is directly usable or this is a typealias
-import com.himanshoe.charty.common.ChartColorExtensions.asSolidChartColor // Ensure this import path is correct
-
 @Composable
-fun SampleComparisonBarChart() {
-    val comparisonData = listOf(
-        ComparisonBarData(
-            label = "Product A", // Category group
-            bars = listOf(100f, 150f, 120f), // Values for Series 1, Series 2, Series 3
-            colors = listOf(
-                Color.Red.asSolidChartColor(),
-                Color.Green.asSolidChartColor(),
-                Color.Blue.asSolidChartColor()
-            )
-        ),
-        ComparisonBarData(
-            label = "Product B",
-            bars = listOf(130f, 110f), // Only two series for this product
-            colors = listOf(
-                Color.Red.asSolidChartColor(),
-                Color.Green.asSolidChartColor()
-            )
-        ),
-        ComparisonBarData(
-            label = "Product C",
-            bars = listOf(80f, 160f, 90f, 140f), // Four series
-            colors = listOf(
-                Color.Red.asSolidChartColor(),
-                Color.Green.asSolidChartColor(),
-                Color.Blue.asSolidChartColor(),
-                Color.Magenta.asSolidChartColor()
-            )
-        )
-    )
-
-    ComparisonBarChart(
-        data = { comparisonData },
-        modifier = Modifier
-            .height(350.dp)
-            .padding(16.dp)
-            .fillMaxWidth(),
-        comparisonBarChartConfig = ComparisonBarChartConfig.default().copy(
-            showCurvedBar = true,
-            showGridLines = true
-        )
-        // onGroupClicked = { index -> println("Group $index clicked") }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SampleComparisonBarChartPreview() {
-    SampleComparisonBarChart()
-}
+fun ComparisonBarChart(
+    data: () -> List<ComparisonBarData>,
+    modifier: Modifier = Modifier,
+    labelConfig: LabelConfig = LabelConfig.default(),
+    comparisonBarChartConfig: ComparisonBarChartConfig = ComparisonBarChartConfig.default(),
+    onGroupClicked: (Int) -> Unit = {}
+)
 ```
 
-## Screenshots
-![Comparison Bar Chart Screenshot](comparison_bar_chart_screenshot.png) <!-- TODO: Add actual screenshot -->
+## 🔧 Parameters
 
-## Usage
-Key parameters for using this chart:
+| Parameter                  | Type                            | Description                                                                                                                                  |
+|----------------------------|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `data`                     | `() -> List<ComparisonBarData>` | A lambda that returns a list of `ComparisonBarData` items. Each item defines a group with one or more bars for comparison.                   |
+| `modifier`                 | `Modifier`                      | Compose `Modifier` to control layout, padding, size, or drawing behavior.                                                                    |
+| `labelConfig`              | `LabelConfig`                   | Configuration for the X-axis and Y-axis labels, including font size, color, alignment, etc.                                                  |
+| `comparisonBarChartConfig` | `ComparisonBarChartConfig`      | Defines visual properties and behavior of the grouped bar chart like bar spacing, animation, alignment, max value, etc.                      |
+| `onGroupClicked`           | `(Int) -> Unit`                 | Callback triggered when a group (set of bars) is clicked. Receives the index of the clicked group. Useful for interactivity or detail views. |
 
-- **`data`**: A lambda function that returns a list of `ComparisonBarData`. Each `ComparisonBarData` object represents a group of bars on the X-axis and contains:
-    - `label: String`: The label for this group, displayed on the X-axis.
-    - `bars: List<Float>`: A list of float values, where each value corresponds to the height of a bar within this group.
-    - `colors: List<ChartColor>`: A list of `ChartColor` objects, where each color corresponds to a bar in the `bars` list. The size of `colors` should match the size of `bars`.
-- **`modifier`**: A `Modifier` for customizing the layout (e.g., size, padding) or drawing behavior of the chart. (Optional)
-- **`labelConfig`**: A `LabelConfig` object for configuring the appearance of labels on the chart, such as X-axis group labels and Y-axis value labels. (Optional, defaults to `LabelConfig.default()`)
-- **`comparisonBarChartConfig`**: A `ComparisonBarChartConfig` object for configuring the chart's specific appearance and behavior. (Optional, defaults to `ComparisonBarChartConfig.default()`) Key properties include:
-    - `showAxisLines: Boolean`: Toggles visibility of X and Y axis lines.
-    - `showGridLines: Boolean`: Toggles visibility of horizontal grid lines.
-    - `showCurvedBar: Boolean`: Whether to render bars with rounded tops.
-- **`onGroupClicked`**: A lambda function `(Int) -> Unit` that is invoked when a group of bars (representing one `ComparisonBarData` item) is clicked. It receives the index of the clicked group. (Optional)
+---
+
+## 📊 `ComparisonBarData` Model
+
+A data class representing a single group in a comparison bar chart. Each group corresponds to a label (e.g., a category or time period) and contains multiple bars with individual values and colors for comparison within that group.
+
+```kotlin
+data class ComparisonBarData(
+    val label: String,
+    val bars: List<Float>,
+    val colors: List<ChartColor>
+)
+```
+| Property | Type               | Description                                                                                                                                                       |
+|----------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `label`  | `String`           | The label representing the group on the X-axis. Common examples include month names, category names, or dates.                                                    |
+| `bars`   | `List<Float>`      | A list of `Float` values representing the height of each bar in the group. The number of values in this list determines how many bars are shown for the group.    |
+| `colors` | `List<ChartColor>` | A list of `ChartColor` values that define the fill color for each corresponding bar in the `bars` list. Should match the size of `bars` for consistent rendering. |
+
+## 💡 Example
+
+```kotlin
+val chartData = listOf(
+    ComparisonBarData(
+        label = "Jan",
+        bars = listOf(
+            BarData(yValue = 50f, xValue = "Product A", barColor = Color.Red.asSolidChartColor()),
+            BarData(yValue = 75f, xValue = "Product B", barColor = Color.Blue.asSolidChartColor())
+        )
+    ),
+    ComparisonBarData(
+        label = "Feb",
+        bars = listOf(
+            BarData(yValue = 60f, xValue = "Product A", barColor = Color.Red.asSolidChartColor()),
+            BarData(yValue = 85f, xValue = "Product B", barColor = Color.Blue.asSolidChartColor())
+        )
+    )
+)
+
+ComparisonBarChart(
+    data = { chartData },
+    modifier = Modifier.fillMaxWidth(),
+    onGroupClicked = { index ->
+        
+    }
+)
+```

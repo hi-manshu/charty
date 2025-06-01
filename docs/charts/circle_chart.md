@@ -1,19 +1,71 @@
 # Circle Chart
 
-# Overview
-A composable function that displays a circle chart. This chart type is often used to visualize progress for one or more data series as concentric rings. Each ring represents a data point, and its arc length corresponds to its value (typically a percentage).
+![circleChart_01.png](../site/img/circle/circleChart_01.png)
 
-# Usage
-Key parameters for using this chart:
+## Overview
+A customizable and interactive circle chart (like Apple tracking) used for visualizing proportions or segments of a dataset.
 
-- **`data`**: A lambda function that returns a list of `CircleData`. Each `CircleData` object represents a ring in the chart and should contain:
-    - `value`: A `Float` representing the percentage (0 to 100) to be filled for this ring.
-    - `color`: A `ChartColor` for the filled portion (arc) of the ring.
-    - `trackColor`: A `ChartColor` for the background track of the ring.
-- **`modifier`**: A `Modifier` for customizing the layout or drawing behavior of the chart, typically used to define its size. (Optional)
-- **`circleChartConfig`**: A `CircleChartConfig` object for configuring the chart's appearance. (Optional, defaults to `CircleChartConfig.default()`) This includes:
-    - **`showEndIndicator`**: A `Boolean` (default `true`) to display a small circular shadow at the end of the progress arc, giving it a visual endpoint.
-    - **`startingPosition`**: A `StartingPosition` enum (e.g., `Top`, `Bottom`, `Left`, `Right`, default `Top`) that determines where the arc for each ring begins.
-- **`onCircleClick`**: A lambda function that is invoked when a specific ring in the chart is clicked. It receives the `CircleData` of the clicked ring. (Optional)
+## 📦 Package
 
-When a ring is clicked, it might slightly scale up for visual feedback. The rings are drawn with rounded end caps for the progress arcs.
+```kotlin
+import com.himanshoe.charty.circle
+```
+
+## 🧱 Declaration
+```kotlin
+@Composable
+fun CircleChart(
+    data: () -> List<CircleData>,
+    modifier: Modifier = Modifier,
+    circleChartConfig: CircleChartConfig = CircleChartConfig.default(),
+    onCircleClick: (CircleData) -> Unit = {}
+)
+```
+
+## 🔧 Parameters
+| Parameter           | Type                     | Description                                                                                                                                 |
+|---------------------|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| `data`              | `() -> List<CircleData>` | A lambda returning the list of `CircleData` objects to be displayed in the chart. Each data entry defines a segment's value and appearance. |
+| `modifier`          | `Modifier`               | Optional Compose `Modifier` to customize layout, size, padding, alignment, etc.                                                             |
+| `circleChartConfig` | `CircleChartConfig`      | Chart appearance and layout configuration (e.g. stroke width, spacing, animation, inner radius). Defaults to `CircleChartConfig.default()`. |
+| `onCircleClick`     | `(CircleData) -> Unit`   | Lambda that is invoked when a segment of the chart is clicked. Provides the corresponding `CircleData` item. Default is a no-op.            |
+
+
+## 🧮 CircleData Model
+
+```kotlin
+data class CircleData(
+    val value: Float,
+    val color: ChartColor,
+    val trackColor: ChartColor = color.value.fastMap { it.copy(alpha = 0.5F) }.asGradientChartColor(),
+    val label: String,
+)
+```
+| Property     | Type         | Description                                                                                                                                                                                                                     |
+|--------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `value`      | `Float`      | The numeric value representing the size of the slice. This value is used to calculate the angle of the slice relative to the sum of all values.                                                                                 |
+| `color`      | `ChartColor` | The main color used to fill the slice. Should be visually distinct for each segment.                                                                                                                                            |
+| `trackColor` | `ChartColor` | A secondary, typically lighter or semi-transparent version of the main color. It can be used for rendering background rings, shadows, or hover states. Defaults to a gradient based on the main color with reduced alpha (50%). |
+| `label`      | `String`     | The label or description of the slice. Useful for legends or tooltips.                                                                                                                                                          |
+
+
+> You can find a mock implementation in sample module's App file
+
+## Example Usage
+
+```kotlin
+val chartItems = listOf(
+    CircleData(value = 40f, label = "Food", color = Color.Red.asSolidChartColor()),
+    CircleData(value = 30f, label = "Transport", color = Color.Blue.asSolidChartColor()),
+    CircleData(value = 30f, label = "Others", color = Color.Green.asSolidChartColor())
+)
+
+CircleChart(
+    data = { chartItems },
+    modifier = Modifier.size(200.dp),
+    onCircleClick = { segment ->
+        println("Clicked on: ${segment.label} (${segment.value})")
+    }
+)
+
+```

@@ -1,102 +1,93 @@
-# Horizontal Bar Chart
+# `HorizontalBarChart`
 
-## Overview
-The `HorizontalBarChart` composable function displays data as horizontal bars. This orientation is particularly effective for comparing quantities across different categories, especially when the category labels (defined by `xValue` in `BarData`) are long, as they can be displayed clearly along the vertical axis without truncation or rotation.
+| ![horizontalChart_01.png](../site/img/bar/horizontalChart_01.png) | ![horizontalChart_02.png](../site/img/bar/horizontalChart_02.png)a | 
+|-------------------------------------------------------------------|--------------------------------------------------------------------|
 
-Key features include:
-- **Ideal for Long Labels**: Provides ample space for category labels.
-- **Positive and Negative Values**: Capable of rendering both positive and negative values. Positive bars extend from the Y-axis to the right, and negative bars extend to the left. If both positive and negative values are present, they typically originate from a central vertical axis.
-- **Customizable Bar Appearance**: Bar colors, curvature (`showCurvedBar` in `barChartConfig`), and background colors can be configured.
-- **Labeling on Bars**: Labels for each bar (derived from `xValue`) can be drawn directly on or next to the bars, with customizable text color, background, and rotation, configured via `horizontalBarLabelConfig`.
-- **Axis and Grid Lines**: Supports display of axis lines and vertical grid lines for better value interpretation, configurable through `barChartConfig` and `barChartColorConfig`.
-- **Click Interactions**: Allows handling of click events on individual bars through the `onBarClick` callback.
+A chart that displays a **horizontal bar chart**, where each bar extends horizontally based on its
+data value. This layout is ideal when category labels are long or when you want to emphasize value
+comparisons along a vertical list.
 
-## Sample Invocation
+## 🧱 Declaration
 
 ```kotlin
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.himanshoe.charty.bar.HorizontalBarChart
-import com.himanshoe.charty.bar.config.BarChartConfig
-import com.himanshoe.charty.bar.config.BarChartColorConfig
-import com.himanshoe.charty.bar.config.HorizontalBarLabelConfig
-import com.himanshoe.charty.bar.model.BarData
-import com.himanshoe.charty.common.ChartColorExtensions.asSolidChartColor // Ensure this import path is correct
-
 @Composable
-fun SampleHorizontalBarChart() {
-    val dataPoints = listOf(
-        BarData(xValue = "Electronics & Gadgets", yValue = 280f, color = Color(0xFFFFA726).asSolidChartColor()),
-        BarData(xValue = "Books and Stationery", yValue = 320f, color = Color(0xFF66BB6A).asSolidChartColor()),
-        BarData(xValue = "Home Appliances (Returned)", yValue = -150f, color = Color(0xFFEF5350).asSolidChartColor()),
-        BarData(xValue = "Fashion & Apparel", yValue = 200f, color = Color(0xFF29B6F6).asSolidChartColor()),
-        BarData(xValue = "Groceries", yValue = 180f, color = Color(0xFFAB47BC).asSolidChartColor())
-    )
-
-    HorizontalBarChart(
-        data = { dataPoints },
-        modifier = Modifier
-            .height(450.dp) // Height accommodates more bars and longer labels
-            .fillMaxWidth()
-            .padding(16.dp),
-        barChartConfig = BarChartConfig.default().copy(
-            showCurvedBar = true,
-            showGridLines = true, // Vertical grid lines
-            showAxisLines = true  // Y-axis line (vertical)
-        ),
-        barChartColorConfig = BarChartColorConfig.default().copy(
-            gridLineColor = Color.LightGray.copy(alpha = 0.5f).asSolidChartColor()
-        ),
-        horizontalBarLabelConfig = HorizontalBarLabelConfig.default().copy(
-            showLabel = true, // Show labels on bars
-            textColor = Color.Black.asSolidChartColor(),
-            textBackgroundColors = Color.White.copy(alpha = 0.6f).asSolidChartColor()
-        ),
-        onBarClick = { barData ->
-            println("Clicked: ${barData.xValue} - ${barData.yValue}")
-        }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SampleHorizontalBarChartPreview() {
-    SampleHorizontalBarChart()
-}
+fun HorizontalBarChart(
+    data: () -> List<BarData>,
+    modifier: Modifier = Modifier,
+    barChartConfig: BarChartConfig = BarChartConfig.default(),
+    barChartColorConfig: BarChartColorConfig = BarChartColorConfig.default(),
+    horizontalBarLabelConfig: HorizontalBarLabelConfig = HorizontalBarLabelConfig.default(),
+    onBarClick: (BarData) -> Unit = {}
+)
 ```
 
-## Screenshots
-![Horizontal Bar Chart Screenshot](horizontal_bar_chart_screenshot.png) <!-- TODO: Add actual screenshot -->
+## 🔧 Parameters
 
-## Usage
-Key parameters for using this chart:
+| Parameter                  | Type                       | Description                                                                                                                                                       |
+|----------------------------|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `data`                     | `() -> List<BarData>`      | A lambda that returns the list of `BarData` entries to be displayed as horizontal bars. Each `BarData` contains the Y-value (bar length) and X-value (label/key). |
+| `modifier`                 | `Modifier`                 | Compose `Modifier` for layout control, sizing, padding, or other UI decorations.                                                                                  |
+| `barChartConfig`           | `BarChartConfig`           | Configuration object for chart behavior and layout — such as minimum number of bars, axis and grid visibility, animation, and spacing.                            |
+| `barChartColorConfig`      | `BarChartColorConfig`      | Defines color-related customization for bars, axis lines, grid lines, and background.                                                                             |
+| `horizontalBarLabelConfig` | `HorizontalBarLabelConfig` | Styling and layout configuration for the labels displayed alongside the horizontal bars, such as text color, size, alignment, and optional background.            |
+| `onBarClick`               | `(BarData) -> Unit`        | Callback function invoked when a bar is clicked. Receives the corresponding `BarData` item for further action (e.g., navigation, tooltip, etc.).                  |
 
-- **`data`**: A lambda function that returns a list of `BarData` objects. Each `BarData` represents a single horizontal bar and contains:
-    - `xValue: Any`: The value for the Y-axis label (the category name).
-    - `yValue: Float`: The numerical value determining the bar's length. Can be positive (extends right) or negative (extends left).
-    - `color: ChartColor`: The primary color of the bar.
-    - `barBackgroundColor: ChartColor`: (Optional) Background color for the bar's track.
-    - `data: Any?`: (Optional) Additional data associated with the bar.
-- **`modifier`**: A `Modifier` for customizing the layout (e.g., size, padding). (Optional)
-- **`barChartConfig`**: A `BarChartConfig` object for general chart appearance. (Optional, defaults to `BarChartConfig.default()`)
-    - `showCurvedBar: Boolean`: If true, bar ends are rounded.
-    - `showAxisLines: Boolean`: Toggles visibility of the main Y-axis line (vertical line from which bars originate).
-    - `showGridLines: Boolean`: Toggles visibility of vertical grid lines corresponding to Y-axis values.
-    - `minimumBarCount: Int`: Ensures a minimum number of bar slots.
-- **`barChartColorConfig`**: A `BarChartColorConfig` object for colors of bars, axis lines, and grid lines. (Optional, defaults to `BarChartColorConfig.default()`)
-    - `fillBarColor`: Default color for positive bars if not specified in `BarData`.
-    - `negativeBarColors`: Default color for negative bars if not specified in `BarData`.
-    - `axisLineColor`: Color for the Y-axis line.
-    - `gridLineColor`: Color for the vertical grid lines.
-- **`horizontalBarLabelConfig`**: A `HorizontalBarLabelConfig` object for configuring labels displayed on or near the bars. (Optional, defaults to `HorizontalBarLabelConfig.default()`)
-    - `showLabel: Boolean`: If `true`, displays the `xValue` as a label on or near its bar.
-    - `textColor: ChartColor`: Color of the label text.
-    - `textBackgroundColors: ChartColor`: Background color for the label text (can be semi-transparent).
-    - `hasOverlappingLabel: Boolean`: Influences label rotation logic. If true, labels are drawn horizontally; otherwise, they might be rotated (e.g., 90 degrees) based on bar orientation and value sign.
-- **`onBarClick`**: A lambda function `(BarData) -> Unit` that is invoked when a bar is clicked. It receives the `BarData` of the clicked bar. (Optional)
+## 📊 Data Model
+
+Each bar is represented using the `BarData` class:
+
+```kotlin
+data class BarData(
+    val yValue: Float,
+    val xValue: Any,
+    val barColor: ChartColor = Color.Unspecified.asSolidChartColor(),
+    val barBackgroundColor: ChartColor = Color(0x40D3D3D3).asSolidChartColor(),
+)
+```
+
+## 🔠 HorizontalBarLabelConfig
+
+The horizontalBarLabelConfig parameter lets you customize how the labels for each horizontal bar are
+rendered.
+
+```kotlin
+data class HorizontalBarLabelConfig(
+    val showLabel: Boolean,
+    val hasOverlappingLabel: Boolean,
+    val textColor: ChartColor,
+    val textBackgroundColors: ChartColor,
+    val xAxisCharCount: Int?,
+    val labelTextStyle: TextStyle?,
+)
+```
+
+> If labels are not shown, users can drag their finger or scroll across the chart to reveal labels
+> dynamically via gesture detection. This allows clean visualizations by default, but still gives
+> access to detailed information on demand.
+
+| Property               | Type         | Description                                                                                                                                                      |
+|------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `showLabel`            | `Boolean`    | Determines whether the label for each horizontal bar should be shown by default. If `false`, labels are hidden unless revealed through gestures (e.g. dragging). |
+| `hasOverlappingLabel`  | `Boolean`    | Indicates whether labels are allowed to overlap with each other. If `true`, labels may render over each other in dense datasets.                                 |
+| `textColor`            | `ChartColor` | The color of the label text. You can use solid or gradient chart colors.                                                                                         |
+| `textBackgroundColors` | `ChartColor` | Background color behind the label text. Useful for adding contrast or highlighting the label.                                                                    |
+| `xAxisCharCount`       | `Int?`       | Optionally limits the number of characters shown from the X-axis label. Useful for truncation in narrow layouts. If `null`, no truncation is applied.            |
+| `labelTextStyle`       | `TextStyle?` | Custom styling for label text (e.g., font size, weight, family, line height). If `null`, defaults are used.                                                      |
+
+## 💡 Example Usage
+
+```kotlin
+val performanceData = listOf(
+    BarData(yValue = 80f, xValue = "Alice"),
+    BarData(yValue = 65f, xValue = "Bob"),
+    BarData(yValue = 90f, xValue = "Charlie")
+)
+
+HorizontalBarChart(
+    data = { performanceData },
+    modifier = Modifier.fillMaxWidth(),
+    onBarClick = { bar ->
+        println("Clicked on ${bar.xValue} with value ${bar.yValue}")
+    }
+)
+```
