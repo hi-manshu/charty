@@ -1,6 +1,6 @@
 # Welcome to Charty
 
-![Charty Banner](../img/banner.png)
+![Charty Banner](site/img/banner.png)
 
 Charty is a modern charting library for Kotlin Multiplatform, designed to help you easily conjure beautiful and interactive charts for your applications, much like a wizard casting spells in the world of Harry Potter.
 
