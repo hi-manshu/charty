@@ -1,9 +1,9 @@
-# Charty : Elementary Chart library for Compose with KMP support!
+# 🎯Charty : Elementary Chart library for Compose with KMP support!
 
 ![Banner](img/banner.png)
 
-Chart Library built using Jetpack Compose and is highly customizable. Now with Kotlin
-Multiplatform (KMP) support!
+> A sleek & lightweight charting library for Jetpack Compose, now with **Kotlin Multiplatform (KMP)** support!  
+> *Built with ❤️ by [@hi-manshu](https://github.com/hi-manshu) for developers who love charts.*
 
 _Made with ❤️ for Android Developers by Himanshu_
 
@@ -17,73 +17,32 @@ _Made with ❤️ for Android Developers by Himanshu_
 ![Charty](https://img.shields.io/maven-central/v/com.himanshoe/charty?color=f4c430&label=Maven%20Central%20%3A%20Charty)
 ![Charty Static Check](https://github.com/hi-manshu/charty/actions/workflows/static-check.yml/badge.svg)
 
-````### Version Catalog
+## 📚 Documentation
 
-If you're using Version Catalog, you can configure the dependency by adding it to your
-`libs.versions.toml` file as follows:
+Find the full API reference and usage guide here:  
+👉 **[hi-manshu.github.io/charty](https://hi-manshu.github.io/charty/)**
 
-```toml
-[versions]
-#...
-charty = "<version>"
+---
 
-[libraries]
-#...
-charty = { module = "com.himanshoe:charty", version.ref = "charty" }
-```
+## 🚀 Apps using Charty
 
-### Gradle
+| App | Link |
+| --- | --- |
+| 🐱 **NEKO** | [github.com/nekomangaorg/Neko](https://github.com/nekomangaorg/Neko) |
+| ⏱️ **TimePlanner** | [github.com/v1tzor/TimePlanner](https://github.com/v1tzor/TimePlanner) |
 
-Add the dependency below to your **module**'s `build.gradle.kts` file:
+---
 
-```gradle
-dependencies {
-    implementation("com.himanshoe:charty:$version")
-    
-    // if you're using Version Catalog
-    implementation(libs.charty)
-}
-```
+## ⚖️ License
 
-For Kotlin Multiplatform, add the dependency below to your commonMain source set's
-`build.gradle.kts` file:
-
-```gradle
-sourceSets {
-    commonMain.dependencies {
-            implementation(libs.charty)
-     }
-}
-```
-
-Find the latest release version [here](https://github.com/hi-manshu/Charty/releases)
-````
-### You can find videos  iOS and Android [here](img/video)
-
-### Photos / Screenshots
-
-| 1                          | 2                          | 3                          | 4                          | 5                          | 6                          |
-|----------------------------|----------------------------|----------------------------|----------------------------|----------------------------|----------------------------|
-| ![1.png](img/photos/1.png) | ![2.png](img/photos/2.png) | ![3.png](img/photos/3.png) | ![4.png](img/photos/4.png) | ![5.png](img/photos/5.png) | ![6.png](img/photos/6.png) |
-
-## Few apps using it:
-
-1. [NEKO](https://github.com/nekomangaorg/Neko)
-2. [TimePlanner](https://github.com/v1tzor/TimePlanner)
-
-## Find this repository useful? :heart:
-Support it by joining __[stargazers](https://github.com/hi-manshu/charty/stargazers)__ for this repository. :star: <br>
-
-### License
-
-```
+```text
 Copyright 2025 The Charty Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -91,3 +50,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
+
+---
+
+## 🌟 Support
+
+If you like this library, consider giving it a ⭐ on [GitHub](https://github.com/hi-manshu/charty) — it helps a lot!
