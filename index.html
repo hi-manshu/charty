@@ -201,32 +201,45 @@
         <li class="first-level active"><a href="#welcome-to-charty">Welcome to Charty</a></li>
             <li class="second-level"><a href="#getting-started">Getting Started</a></li>
                 
-                <li class="third-level"><a href="#installation">Installation</a></li>
-                <li class="third-level"><a href="#basic-usage">Basic Usage</a></li>
-            <li class="second-level"><a href="#library-purpose">Library Purpose</a></li>
-                
+                <li class="third-level"><a href="#version-catalog">Version Catalog</a></li>
+                <li class="third-level"><a href="#gradle">Gradle</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
 <h1 id="welcome-to-charty">Welcome to Charty</h1>
-<p>Charty is a modern charting library for Kotlin Multiplatform, designed to help you easily create beautiful and interactive charts for your applications.</p>
+<p><img alt="Charty Banner" src="../img/banner.png" /></p>
+<p>Charty is a modern charting library for Kotlin Multiplatform, designed to help you easily conjure beautiful and interactive charts for your applications, much like a wizard casting spells in the world of Harry Potter.</p>
 <h2 id="getting-started">Getting Started</h2>
-<h3 id="installation">Installation</h3>
-<p>To get started with Charty, you need to add it as a dependency to your project.</p>
-<p><em>(Detailed installation instructions will be added here based on the project's build system, e.g., Gradle.)</em></p>
-<h3 id="basic-usage">Basic Usage</h3>
-<p>Once Charty is installed, you can start creating charts with just a few lines of code.</p>
-<pre><code class="language-kotlin">// Example of creating a simple bar chart (illustrative)
-val data = listOf( /* your data here */ )
-val barChart = Charty.BarChart(data)
+<h3 id="version-catalog">Version Catalog</h3>
+<p>If you're using Version Catalog, you can configure the dependency by adding it to your
+<code>libs.versions.toml</code> file as follows:</p>
+<pre><code class="language-toml">[versions]
+#...
+charty = &quot;&lt;version&gt;&quot;
 
-// Display the chart in your UI (platform-specific)
+[libraries]
+#...
+charty = { module = &quot;com.himanshoe:charty&quot;, version.ref = &quot;charty&quot; }
 </code></pre>
-<p><em>(More detailed usage examples will be provided in the specific chart documentation.)</em></p>
-<h2 id="library-purpose">Library Purpose</h2>
-<p>The main goal of Charty is to provide a flexible and easy-to-use API for developers to integrate various types of charts into their Kotlin Multiplatform projects, covering Android, iOS, Desktop, and Web applications. We aim for high performance, extensive customization options, and a consistent look and feel across platforms.</p>
-<p>Explore the documentation to learn more about the different chart types and how to use them effectively.</p></div>
+<h3 id="gradle">Gradle</h3>
+<p>Add the dependency below to your <strong>module</strong>'s <code>build.gradle.kts</code> file:</p>
+<pre><code class="language-gradle">dependencies {
+    implementation(&quot;com.himanshoe:charty:$version&quot;)
+
+    // if you're using Version Catalog
+    implementation(libs.charty)
+}
+</code></pre>
+<p>For Kotlin Multiplatform, add the dependency below to your commonMain source set's
+<code>build.gradle.kts</code> file:</p>
+<pre><code class="language-gradle">sourceSets {
+    commonMain.dependencies {
+            implementation(libs.charty)
+     }
+}
+</code></pre>
+<p>Find the latest release version <a href="https://github.com/hi-manshu/Charty/releases">here</a></p></div>
         
         
     </div>
@@ -335,5 +348,5 @@ val barChart = Charty.BarChart(data)
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-06-01 12:16:53.511667+00:00
+Build Date UTC : 2025-06-01 12:24:24.825092+00:00
 -->
