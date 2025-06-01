@@ -6,6 +6,7 @@
 A simple **signal-style bar chart** that displays progress using vertically stacked blocks. Visually resembles mobile network signal indicators.
 
 ## 🧱 Declaration
+
 ```kotlin
 @Composable
 fun SignalProgressBarChart(

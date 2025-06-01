@@ -6,6 +6,7 @@
 The `LineStackedBarChart` offers a unique way to visualize stacked data. It's a variation of a standard stacked bar chart, but instead of wider bars, each stack is rendered as a thin vertical line composed of multiple segments. This chart is suitable for showing part-to-whole relationships across multiple categories, with a visually lighter footprint than a standard `StackedBarChart`.
 
 ## 🧱 Declaration
+
 ```kotlin
 @Composable
 fun LineStackedBarChart(
@@ -50,6 +51,7 @@ data class StackBarData(
 > You can find a mock implementation in sample module's App file
 
 ## Example Usage
+
 ```kotlin
 @Composable
 fun SampleLineStackedBarChart() {

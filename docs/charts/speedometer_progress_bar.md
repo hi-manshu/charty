@@ -6,6 +6,7 @@
 A circular **speedometer-style progress bar** with animated progress, customizable colors, arc dots, and center text. Ideal for dashboards, gauges, or motivational UI components.
 
 ## 🧱 Declaration
+
 ```kotlin
 @Composable
 fun SpeedometerProgressBar(

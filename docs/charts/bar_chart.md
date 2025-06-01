@@ -12,6 +12,7 @@ import com.himanshoe.charty.bar
 ```
 
 ## 🧱 Declaration
+
 ```kotlin
 @Composable
 fun BarChart(
