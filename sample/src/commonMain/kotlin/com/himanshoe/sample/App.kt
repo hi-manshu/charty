@@ -73,7 +73,7 @@ fun App() {
 //        addBarChart(null, generateZeroBarData(4))
 //        addBarChart(2F, generateMockBarData(11))
 //        addMultiLineChart()
-//        addLineChart()
+        addLineChart()
 //
 //        addSignalBarChart()
 //        addComparisonChart()
@@ -82,7 +82,7 @@ fun App() {
 //        addCircleChart()
 //        addPieChart()
 //        addPointChart()
-        addHorizontalBarChart()
+//        addHorizontalBarChart()
 //        addStorageBarChart()
 //        addLineBarChart(3F, { generateMockBarData(7) })
 //        addLineBarChart(null, { generateMockBarData(7) })
@@ -313,11 +313,12 @@ private fun LazyListScope.addMultiLineChart() {
 private fun LazyListScope.addLineChart() {
     item {
         LineChart(
+            smoothLineCurve =true,
             colorConfig = LineChartColorConfig.default().copy(
                 lineColor = ChartColor.Solid(Color(0xFF8D79F6)),
                 lineFillColor = ChartColor.Gradient(
                     listOf(
-                        Color(0x4DB09FFF), Color(0xFFFFFFFF)
+                        Color.Red, Color.LightGray
                     )
                 )
             ),

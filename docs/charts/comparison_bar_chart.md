@@ -2,6 +2,7 @@
 
 ![comparisonchart_01.png](../site/img/bar/comparisonchart_01.png)
 
+## 🍸Overview
 A chart that displays a **grouped bar chart** for comparing multiple values across common categories (e.g., monthly comparisons for different products, users, or metrics). Each group represents a category and contains multiple bars to compare distinct values within that group.
 
 ## 🧱 Declaration

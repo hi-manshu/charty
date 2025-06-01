@@ -2,7 +2,7 @@
 
 ![circleChart_01.png](../site/img/circle/circleChart_01.png)
 
-## Overview
+## 🍸Overview
 A customizable and interactive circle chart (like Apple tracking) used for visualizing proportions or segments of a dataset.
 
 ## 📦 Package

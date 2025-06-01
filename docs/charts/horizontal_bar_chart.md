@@ -1,8 +1,9 @@
 # `HorizontalBarChart`
 
-| ![horizontalChart_01.png](../site/img/bar/horizontalChart_01.png) | ![horizontalChart_02.png](../site/img/bar/horizontalChart_02.png)a | 
-|-------------------------------------------------------------------|--------------------------------------------------------------------|
+| ![horizontalChart_01.png](../site/img/bar/horizontalChart_01.png) | ![horizontalChart_02.png](../site/img/bar/horizontalChart_02.png) | 
+|-------------------------------------------------------------------|-------------------------------------------------------------------|
 
+## 🍸Overview
 A chart that displays a **horizontal bar chart**, where each bar extends horizontally based on its
 data value. This layout is ideal when category labels are long or when you want to emphasize value
 comparisons along a vertical list.

@@ -34,12 +34,14 @@ internal fun DrawScope.drawLineCurve(
     smoothLineCurve: Boolean = true,
 ) {
     val lineConfig = chartConfig.lineConfig
-    val path = Path()
+    val linePath = Path()
+    val fillPath = Path()
     val lineData = data()
     if (lineData.isNotEmpty()) {
         val yScale = canvasHeight / (maxValue - minValue)
         val firstPointY = canvasHeight - (lineData[0].yValue - minValue) * yScale
-        path.moveTo(0f, firstPointY)
+        linePath.moveTo(0f, firstPointY)
+        fillPath.moveTo(0f, firstPointY)
 
         val drawPathSegment: (Int) -> Unit = { i ->
             val currentX = i * xStep
@@ -48,18 +50,24 @@ internal fun DrawScope.drawLineCurve(
                 val previousX = (i - 1) * xStep
                 val previousY = canvasHeight - (lineData[i - 1].yValue - minValue) * yScale
                 val controlPointX = (previousX + currentX) / 2
-                path.cubicTo(controlPointX, previousY, controlPointX, currentY, currentX, currentY)
+                linePath.cubicTo(controlPointX, previousY, controlPointX, currentY, currentX, currentY)
+                fillPath.cubicTo(controlPointX, previousY, controlPointX, currentY, currentX, currentY)
             } else {
-                path.lineTo(currentX, currentY)
+                linePath.lineTo(currentX, currentY)
+                fillPath.lineTo(currentX, currentY)
             }
         }
 
+        for (i in 1 until lineData.size) {
+            drawPathSegment(i)
+        }
+
         if (showFilledArea) {
-            path.lineTo(size.width, size.height)
-            path.lineTo(0f, size.height)
-            path.close()
+            fillPath.lineTo(size.width, size.height)
+            fillPath.lineTo(0f, size.height)
+            fillPath.close()
             drawPath(
-                path = path,
+                path = fillPath,
                 brush = Brush.linearGradient(
                     fillColor.value.fastMap {
                         it.copy(alpha = 0.2f)
@@ -69,36 +77,14 @@ internal fun DrawScope.drawLineCurve(
         }
 
         if (showLineStroke) {
-            path.reset()
-            path.moveTo(0f, firstPointY)
-            for (i in 1 until lineData.size) {
-                drawPathSegment(i)
-            }
             drawPath(
-                path = path,
+                path = linePath,
                 brush = Brush.linearGradient(lineColor.value),
                 style = Stroke(
                     cap = lineConfig.lineCap,
                     width = lineConfig.lineChartStrokeWidth
                 )
             )
-        }
-
-        if (lineConfig.drawPointerCircle) {
-            lineData.forEachIndexed { index, lineDataPoint ->
-                val x = index * xStep
-                val y = canvasHeight - (lineDataPoint.yValue - minValue) * yScale
-                drawCircle(
-                    color = lineColor.value.first(),
-                    radius = 10f,
-                    center = Offset(x, y)
-                )
-                drawCircle(
-                    color = fillColor.value.first(),
-                    radius = 5f,
-                    center = Offset(x, y)
-                )
-            }
         }
     }
 }

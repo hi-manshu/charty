@@ -2,7 +2,7 @@
 
 ![barchart_01.png](../site/img/bar/barchart_01.png)
 
-## Overview
+## 🍸Overview
 A highly customizable and interactive bar chart Composable designed for displaying a list of bars with optional target indicators, tooltips, and click interactions. This component is flexible enough to be used in dashboards, analytical tools, or any visual data representation context in a Jetpack Compose application.
 
 ## 📦 Package
