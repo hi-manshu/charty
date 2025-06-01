@@ -5,7 +5,7 @@ repo_url: https://github.com/himanshoe/charty/
 repo_name: charty
 theme:
   name: null
-  custom_dir: 'cinder'
+  custom_dir: 'docs/site'
   # Optional: Add a default colorscheme, e.g., github
   colorscheme: github
   highlightjs: true # Cinder uses highlight.js
