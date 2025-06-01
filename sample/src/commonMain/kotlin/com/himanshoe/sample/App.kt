@@ -69,25 +69,24 @@ import kotlin.random.Random
 @Preview
 fun App() {
     LazyColumn {
-//        addBarChart(50F, generateSingleBarData())
-//        addBarChart(null, generateZeroBarData(4))
-//        addBarChart(2F, generateMockBarData(11))
-//        addMultiLineChart()
-//        addLineChart()
-//
-//        addSignalBarChart()
-//        addComparisonChart()
-//        addStackBarChart()
-//        addSpeedometerProgressBar()
-//        addCircleChart()
-//        addPieChart()
-//        addPointChart()
-//        addHorizontalBarChart()
+        addBarChart(50F, generateSingleBarData())
+        addBarChart(null, generateZeroBarData(4))
+        addBarChart(2F, generateMockBarData(11))
+        addMultiLineChart()
+        addLineChart()
+        addSignalBarChart()
+        addComparisonChart()
+        addStackBarChart()
+        addSpeedometerProgressBar()
+        addCircleChart()
+        addPieChart()
+        addPointChart()
+        addHorizontalBarChart()
         addStorageBarChart()
-//        addLineBarChart(3F, { generateMockBarData(7) })
-//        addLineBarChart(null, { generateMockBarData(7) })
-//        addBarChart(2F, generateMockBarData(11))
-//        addBarChart(null, generateMockBarData(7, false))
+        addLineBarChart(3F, { generateMockBarData(7) })
+        addLineBarChart(null, { generateMockBarData(7) })
+        addBarChart(2F, generateMockBarData(11))
+        addBarChart(null, generateMockBarData(7, false))
     }
 }
 
