@@ -185,9 +185,6 @@
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
-                    <li>
-                        <a href="https://github.com/himanshoe/charty/edit/master/docs/charts/point_chart.md">Edit on charty</a>
-                    </li>
             </ul>
         </div>
     </div>
@@ -198,47 +195,189 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#point-chart-scatter-plot">Point Chart (Scatter Plot)</a></li>
-        <li class="first-level "><a href="#overview">Overview</a></li>
-        <li class="first-level "><a href="#usage">Usage</a></li>
+        <li class="first-level active"><a href="#pointchart">PointChart</a></li>
+            <li class="second-level"><a href="#overview">🍸Overview</a></li>
+                
+            <li class="second-level"><a href="#declaration">🧱 Declaration</a></li>
+                
+            <li class="second-level"><a href="#parameters">🔧 Parameters</a></li>
+                
+            <li class="second-level"><a href="#data-model">📊 Data Model</a></li>
+                
+                <li class="third-level"><a href="#pointdata">PointData</a></li>
+                <li class="third-level"><a href="#pointchartconfig">⚙️ PointChartConfig</a></li>
+            <li class="second-level"><a href="#example-usage">💡 Example Usage</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="point-chart-scatter-plot">Point Chart (Scatter Plot)</h1>
-<h1 id="overview">Overview</h1>
-<p>A composable function to display a point chart, also commonly known as a scatter plot. Scatter plots are used to display values for typically two variables for a set of data. Each data entry is represented as a point whose position is determined by its X and Y values.</p>
-<h1 id="usage">Usage</h1>
-<p>Key parameters for using this chart:</p>
-<ul>
-<li><strong><code>data</code></strong>: A lambda function that returns a list of <code>PointData</code>. Each <code>PointData</code> object represents a single point on the chart and should contain:<ul>
-<li><code>xValue</code>: The value for the X-axis (can be categorical, though typically points are distributed along this axis based on their index if not otherwise specified by drawing logic).</li>
-<li><code>yValue</code>: The value for the Y-axis, which determines the point's vertical position.</li>
-</ul>
-</li>
-<li><strong><code>modifier</code></strong>: An optional <code>Modifier</code> for customizing the layout or drawing behavior of the chart. (Optional)</li>
-<li><strong><code>labelConfig</code></strong>: A <code>LabelConfig</code> object for configuring the X and Y axis labels (visibility, color, text style). (Optional, defaults to <code>LabelConfig.default()</code>)</li>
-<li><strong><code>colorConfig</code></strong>: A <code>PointChartColorConfig</code> object for configuring the colors of various chart elements. (Optional, defaults to <code>PointChartColorConfig.default()</code>) This includes:<ul>
-<li><code>circleColor</code>: <code>ChartColor</code> for the fill of the data points.</li>
-<li><code>strokeColor</code>: <code>ChartColor</code> for the outline (stroke) of the data points.</li>
-<li><code>selectionBarColor</code>: <code>ChartColor</code> for the vertical bar that can be shown when a point is clicked (if <code>chartConfig.showClickedBar</code> is true).</li>
-<li><code>axisColor</code>: <code>ChartColor</code> for the X and Y axis lines.</li>
-<li><code>gridColor</code>: <code>ChartColor</code> for the grid lines.</li>
-</ul>
-</li>
-<li><strong><code>chartConfig</code></strong>: A <code>PointChartConfig</code> object for configuring the appearance and behavior of the points and chart interactions. (Optional, defaults to <code>PointChartConfig()</code>) This includes:<ul>
-<li><code>circleRadius</code>: The radius of each data point.</li>
-<li><code>showClickedBar</code>: A <code>Boolean</code> to enable/disable the display of a vertical bar highlighting the column of a clicked point.</li>
-<li><code>animatePoints</code>: A <code>Boolean</code> to enable an animation for the points when the chart is first displayed.</li>
-<li><code>animationDurationMillis</code>: Duration of the point animation in milliseconds.</li>
-<li><code>animationEasing</code>: The easing function for the point animation.</li>
-</ul>
-</li>
-<li><strong><code>target</code></strong>: An optional <code>Float</code> value. If provided, a horizontal line will be drawn at this Y-value on the chart. (Optional)</li>
-<li><strong><code>targetConfig</code></strong>: A <code>TargetConfig</code> object for configuring the appearance of the <code>target</code> line (e.g., color, stroke width, path effect). (Optional, defaults to <code>TargetConfig.default()</code>)</li>
-<li><strong><code>onPointClick</code></strong>: A lambda function that is invoked when the region corresponding to a data point is clicked. It receives the index of the clicked point and its <code>PointData</code>. (Optional)</li>
-</ul>
-<p>Points can be animated on initial display. Clicking a point can also highlight it by increasing its radius and showing a vertical selection bar.</p></div>
+<h1 id="pointchart"><code>PointChart</code></h1>
+<table>
+<thead>
+<tr>
+<th>Point Chart Preview</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="pointChart_01.png" src="../../site/img/point/pointChart_01.png" /></td>
+</tr>
+</tbody>
+</table>
+<h2 id="overview">🍸Overview</h2>
+<p>Renders a point chart where each data point is plotted on a 2D axis, useful for visualizing discrete
+data points without connecting lines.</p>
+<hr />
+<h2 id="declaration">🧱 Declaration</h2>
+<pre><code class="language-kotlin">@Composable
+fun PointChart(
+    data: () -&gt; List&lt;PointData&gt;,
+    modifier: Modifier = Modifier,
+    labelConfig: LabelConfig = LabelConfig.default(),
+    colorConfig: PointChartColorConfig = PointChartColorConfig.default(),
+    chartConfig: PointChartConfig = PointChartConfig(),
+    target: Float? = null,
+    targetConfig: TargetConfig = TargetConfig.default(),
+    onPointClick: (Int, PointData) -&gt; Unit = { _, _ -&gt; }
+)
+</code></pre>
+<h2 id="parameters">🔧 Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td><code>() -&gt; List&lt;PointData&gt;</code></td>
+<td>Lambda returning the list of data points to plot. Each <code>PointData</code> contains the position and optional visual settings.</td>
+</tr>
+<tr>
+<td><code>modifier</code></td>
+<td><code>Modifier</code></td>
+<td>Modifier to control layout, size, and gestures.</td>
+</tr>
+<tr>
+<td><code>labelConfig</code></td>
+<td><code>LabelConfig</code></td>
+<td>Configuration for axis labels and styling.</td>
+</tr>
+<tr>
+<td><code>colorConfig</code></td>
+<td><code>PointChartColorConfig</code></td>
+<td>Defines color configuration for points, axes, and grid.</td>
+</tr>
+<tr>
+<td><code>chartConfig</code></td>
+<td><code>PointChartConfig</code></td>
+<td>Visual and animation configuration for the chart (see below).</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code>Float?</code></td>
+<td>Optional target line (e.g. goal threshold) shown on the chart.</td>
+</tr>
+<tr>
+<td><code>targetConfig</code></td>
+<td><code>TargetConfig</code></td>
+<td>Styling for the optional target line.</td>
+</tr>
+<tr>
+<td><code>onPointClick</code></td>
+<td><code>(Int, PointData) -&gt; Unit</code></td>
+<td>Callback when a point is tapped. Provides index and data point.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="data-model">📊 Data Model</h2>
+<h3 id="pointdata">PointData</h3>
+<p>Each data point in the chart is represented by the <code>PointData</code> class:</p>
+<pre><code class="language-kotlin">data class PointData(
+    val yValue: Float,
+    val xValue: Any,
+)
+</code></pre>
+<h3 id="pointchartconfig">⚙️ PointChartConfig</h3>
+<p>Configuration options for customizing the appearance and animation of a PointChart.</p>
+<pre><code class="language-kotlin">data class PointChartConfig(
+    val axisLineWidth: Float = 2f,
+    val gridLineWidth: Float = 1f,
+    val circleRadius: Float = 10f,
+    val showClickedBar: Boolean = true,
+    val animationDurationMillis: Int = 500,
+    val animationEasing: Easing = LinearEasing,
+    val animatePoints: Boolean = true,
+    val gridLinePathEffect: PathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f),
+)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>axisLineWidth</code></td>
+<td><code>Float</code></td>
+<td>Width of the X and Y axis lines.</td>
+</tr>
+<tr>
+<td><code>gridLineWidth</code></td>
+<td><code>Float</code></td>
+<td>Width of the horizontal/vertical grid lines.</td>
+</tr>
+<tr>
+<td><code>circleRadius</code></td>
+<td><code>Float</code></td>
+<td>Radius of each plotted point on the chart.</td>
+</tr>
+<tr>
+<td><code>showClickedBar</code></td>
+<td><code>Boolean</code></td>
+<td>Whether to visually highlight the selected/clicked point.</td>
+</tr>
+<tr>
+<td><code>animationDurationMillis</code></td>
+<td><code>Int</code></td>
+<td>Duration of the entry animation for points.</td>
+</tr>
+<tr>
+<td><code>animationEasing</code></td>
+<td><code>Easing</code></td>
+<td>The easing function used during animation.</td>
+</tr>
+<tr>
+<td><code>animatePoints</code></td>
+<td><code>Boolean</code></td>
+<td>If true, points animate when the chart is first drawn.</td>
+</tr>
+<tr>
+<td><code>gridLinePathEffect</code></td>
+<td><code>PathEffect</code></td>
+<td>The pattern used for drawing grid lines, default is dashed lines.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="example-usage">💡 Example Usage</h2>
+<pre><code class="language-kotlin">PointChart(
+    data = { data },
+    target = 18f,
+    colorConfig = PointChartColorConfig.default(),
+    chartConfig = PointChartConfig(circleRadius = 20F),
+    modifier = Modifier.padding(10.dp).fillMaxWidth().height(300.dp),
+    onPointClick = { index, circleData -&gt; }
+)
+</code></pre></div>
         
         
     </div>

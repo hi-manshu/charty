@@ -185,9 +185,6 @@
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
-                    <li>
-                        <a href="https://github.com/himanshoe/charty/edit/master/docs/charts/pie_chart.md">Edit on charty</a>
-                    </li>
             </ul>
         </div>
     </div>
@@ -198,31 +195,109 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#pie-chart">Pie Chart</a></li>
-        <li class="first-level "><a href="#overview">Overview</a></li>
-        <li class="first-level "><a href="#usage">Usage</a></li>
+        <li class="first-level active"><a href="#piechart">PieChart</a></li>
+            <li class="second-level"><a href="#overview">🍸Overview</a></li>
+                
+            <li class="second-level"><a href="#declaration">🧱 Declaration</a></li>
+                
+            <li class="second-level"><a href="#parameters">🔧 Parameters</a></li>
+                
+            <li class="second-level"><a href="#piechartdata-model">🧮 PieChartData Model</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="pie-chart">Pie Chart</h1>
-<h1 id="overview">Overview</h1>
-<p>A composable function to draw a Pie Chart or a Donut Chart. Pie charts are circular statistical graphics, divided into slices to illustrate numerical proportion. In a pie chart, the arc length of each slice (and consequently its central angle and area) is proportional to the quantity it represents.</p>
-<h1 id="usage">Usage</h1>
-<p>Key parameters for using this chart:</p>
-<ul>
-<li><strong><code>data</code></strong>: A lambda function that returns a list of <code>PieChartData</code>. Each <code>PieChartData</code> object represents a slice of the pie and should contain:<ul>
-<li><code>value</code>: A <code>Float</code> representing the value of this slice. The chart will calculate the proportion of this value to the total sum of all slice values to determine the slice's angle.</li>
-<li><code>label</code>: A <code>String</code> label for this slice. If <code>isDonutChart</code> is <code>false</code>, this label is drawn on the slice.</li>
-<li><code>color</code>: A <code>ChartColor</code> for the fill of this slice.</li>
-<li><code>labelColor</code>: A <code>ChartColor</code> for the text of the <code>label</code>.</li>
-</ul>
-</li>
-<li><strong><code>modifier</code></strong>: An optional <code>Modifier</code> for customizing the layout or drawing behavior of the chart, typically used to define its size. (Optional)</li>
-<li><strong><code>isDonutChart</code></strong>: A <code>Boolean</code> that, if <code>true</code>, renders the chart as a donut chart (a pie chart with a hole in the center). If <code>false</code> (the default), it renders as a standard, filled pie chart. (Optional, defaults to <code>false</code>)</li>
-<li><strong><code>onPieChartSliceClick</code></strong>: A lambda function that is invoked when a slice of the pie chart is clicked. It receives the <code>PieChartData</code> of the clicked slice. (Optional)</li>
-</ul>
-<p>When a slice is clicked, it may slightly scale up for visual feedback. Labels are displayed directly on the slices for standard pie charts but are typically omitted for donut charts in this implementation.</p></div>
+<h1 id="piechart">PieChart</h1>
+<table>
+<thead>
+<tr>
+<th>Pointed Line Curve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="piechart_01.png" src="../../site/img/pie/piechart_01.png" /></td>
+</tr>
+</tbody>
+</table>
+<h2 id="overview">🍸Overview</h2>
+<p>This function displays a Pie Chart using a list of PieChartData slices. It supports rendering either a standard pie chart or a donut-style chart (with a hole in the center). Each slice is interactive and can trigger a click callback.</p>
+<h2 id="declaration">🧱 Declaration</h2>
+<pre><code class="language-kotlin">@Composable
+fun PieChart(
+    data: () -&gt; List&lt;PieChartData&gt;,
+    modifier: Modifier = Modifier,
+    isDonutChart: Boolean = false,
+    onPieChartSliceClick: (PieChartData) -&gt; Unit = {}
+)
+</code></pre>
+<blockquote>
+<p>isDonutChart is used to make donut of PieChart</p>
+</blockquote>
+<h2 id="parameters">🔧 Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td><code>() -&gt; List&lt;PieChartData&gt;</code></td>
+<td>A lambda that returns the list of pie slices to display. Each slice is represented by a <code>PieChartData</code> object.</td>
+</tr>
+<tr>
+<td><code>modifier</code></td>
+<td><code>Modifier</code></td>
+<td>A <code>Modifier</code> for customizing the layout and appearance of the chart (e.g., size, padding, etc.).</td>
+</tr>
+<tr>
+<td><code>isDonutChart</code></td>
+<td><code>Boolean</code></td>
+<td>If <code>true</code>, the chart is displayed as a <strong>donut</strong> (with a circular center cut out). Default is <code>false</code> for a full pie.</td>
+</tr>
+<tr>
+<td><code>onPieChartSliceClick</code></td>
+<td><code>(PieChartData) -&gt; Unit</code></td>
+<td>Callback invoked when a slice is clicked, providing the clicked <code>PieChartData</code> as a parameter. Useful for interactivity like tooltips or data inspection.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="piechartdata-model">🧮 PieChartData Model</h2>
+<p>```kotlin
+data class PieChartData(
+    val value: Float,
+    val color: ChartColor,
+    val labelColor: ChartColor = Color.White.asSolidChartColor(),
+    val label: String,
+)</p>
+<pre><code>
+| Parameter    | Type         | Description                                                                                 |
+|--------------|--------------|---------------------------------------------------------------------------------------------|
+| `value`      | `Float`      | The numeric value of the slice. This determines the size (angle) of the slice in the chart. |
+| `color`      | `ChartColor` | The fill color of the slice. Can be solid or gradient depending on implementation.          |
+| `labelColor` | `ChartColor` | The color of the text label associated with the slice. Defaults to white (`Color.White`).   |
+| `label`      | `String`     | The textual label to display for the slice. Typically shown in or near the slice.           |
+
+&gt; You can find a mock implementation in sample module's App file
+
+## Example Usage
+
+```kotlin
+@Composable
+fun SamplePieChart() {
+    PieChart(
+        data = { samplePieData },
+        isDonutChart = true,
+        onPieChartSliceClick = { slice -&gt; println(&quot;Clicked: ${slice.label}&quot;) },
+        modifier = Modifier.size(200.dp)
+    )
+}
+</code></pre></div>
         
         
     </div>

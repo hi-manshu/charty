@@ -185,9 +185,6 @@
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
-                    <li>
-                        <a href="https://github.com/himanshoe/charty/edit/master/docs/charts/speedometer_progress_bar.md">Edit on charty</a>
-                    </li>
             </ul>
         </div>
     </div>
@@ -198,36 +195,117 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#speedometer-progressbar">Speedometer ProgressBar</a></li>
-        <li class="first-level "><a href="#overview">Overview</a></li>
-        <li class="first-level "><a href="#usage">Usage</a></li>
+        <li class="first-level active"><a href="#speedometerprogressbar">🧭 SpeedometerProgressBar</a></li>
+        <li class="first-level "><a href="#overview">🍸Overview</a></li>
+        <li class="first-level "><a href="#declaration">🧱 Declaration</a></li>
+            <li class="second-level"><a href="#parameters">🔧 Parameters</a></li>
+                
+            <li class="second-level"><a href="#features">✨ Features</a></li>
+                
+            <li class="second-level"><a href="#example">📌 Example</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="speedometer-progressbar">Speedometer ProgressBar</h1>
-<h1 id="overview">Overview</h1>
-<p>A composable function that displays a speedometer-style progress bar. It features an arc representing the progress, an optional title and subtitle (displaying the percentage) at its center, and an animated indicator that moves along the arc. This is useful for visualizing a single value within a defined range, like a gauge.</p>
-<h1 id="usage">Usage</h1>
-<p>Key parameters for using this chart:</p>
+<h2 id="speedometerprogressbar">🧭 <code>SpeedometerProgressBar</code></h2>
+<p><img alt="speedometer.png" src="../../site/img/speedometer.png" /></p>
+<h2 id="overview">🍸Overview</h2>
+<p>A circular <strong>speedometer-style progress bar</strong> with animated progress, customizable colors, arc dots, and center text. Ideal for dashboards, gauges, or motivational UI components.</p>
+<h2 id="declaration">🧱 Declaration</h2>
+<pre><code class="language-kotlin">@Composable
+fun SpeedometerProgressBar(
+    progress: () -&gt; Float,
+    title: String,
+    color: ChartColor,
+    progressIndicatorColor: ChartColor,
+    trackColor: ChartColor,
+    modifier: Modifier = Modifier,
+    dotConfig: DotConfig = DotConfig.default(),
+    titleTextConfig: TextConfig = TextConfig.default(),
+    subTitleTextConfig: TextConfig = TextConfig.default(fontSize = 20.sp),
+)
+</code></pre>
+<hr />
+<h3 id="parameters">🔧 Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>progress</code></td>
+<td><code>() -&gt; Float</code></td>
+<td>Lambda returning progress between <code>0f</code> and <code>1f</code>.</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td><code>String</code></td>
+<td>Text shown at the center of the speedometer.</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td><code>ChartColor</code></td>
+<td>Color of the progress arc.</td>
+</tr>
+<tr>
+<td><code>progressIndicatorColor</code></td>
+<td><code>ChartColor</code></td>
+<td>Color of the indicator circle on the arc.</td>
+</tr>
+<tr>
+<td><code>trackColor</code></td>
+<td><code>ChartColor</code></td>
+<td>Color of the background arc (track).</td>
+</tr>
+<tr>
+<td><code>modifier</code></td>
+<td><code>Modifier</code></td>
+<td>Modifier for size, padding, and gesture handling.</td>
+</tr>
+<tr>
+<td><code>dotConfig</code></td>
+<td><code>DotConfig</code></td>
+<td>Configuration for arc dots (size, count, spacing).</td>
+</tr>
+<tr>
+<td><code>titleTextConfig</code></td>
+<td><code>TextConfig</code></td>
+<td>Typography for the main title text.</td>
+</tr>
+<tr>
+<td><code>subTitleTextConfig</code></td>
+<td><code>TextConfig</code></td>
+<td>Typography for optional subtitle or progress info.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="features">✨ Features</h3>
 <ul>
-<li><strong><code>progress</code></strong>: A lambda function that returns the current progress as a <code>Float</code> value, normalized between <code>0.0</code> (0%) and <code>1.0</code> (100%).</li>
-<li><strong><code>title</code></strong>: A <code>String</code> for the text to be displayed in the center of the speedometer, above the progress percentage.</li>
-<li><strong><code>color</code></strong>: The <code>ChartColor</code> for the main progress arc that fills up.</li>
-<li><strong><code>progressIndicatorColor</code></strong>: The <code>ChartColor</code> for the small circular indicator at the tip of the progress arc.</li>
-<li><strong><code>trackColor</code></strong>: The <code>ChartColor</code> for the background track of the arc.</li>
-<li><strong><code>modifier</code></strong>: A <code>Modifier</code> for customizing the layout or drawing behavior of the chart. (Optional)</li>
-<li><strong><code>dotConfig</code></strong>: A <code>DotConfig</code> object to configure decorative dots along the arc. (Optional, defaults to <code>DotConfig.default()</code>)<ul>
-<li><strong><code>showDots</code></strong>: <code>Boolean</code> to control the visibility of these dots.</li>
-<li><strong><code>count</code></strong>: <code>Int</code> specifying the number of dots.</li>
-<li><strong><code>fillDotColor</code></strong>: <code>ChartColor</code> for dots that are within the current progress range.</li>
-<li><strong><code>trackDotColor</code></strong>: <code>ChartColor</code> for dots that are beyond the current progress range.</li>
+<li>🌀 Smooth animated arc indicating progress.</li>
+<li>🟢 Optional indicator dot moves with progress.</li>
+<li>🔘 Decorative dots along the arc using <code>DotConfig</code>.</li>
+<li>🔤 Centered title + subtitle text using <code>TextConfig</code>.</li>
+<li>🔄 Fully customizable using modifiers and color configs.</li>
 </ul>
-</li>
-<li><strong><code>titleTextConfig</code></strong>: A <code>TextConfig</code> object for customizing the appearance of the central <code>title</code> text (e.g., font size, color, style, visibility). (Optional, defaults to <code>TextConfig.default()</code>)</li>
-<li><strong><code>subTitleTextConfig</code></strong>: A <code>TextConfig</code> object for customizing the appearance of the subtitle text, which displays the numerical progress percentage (e.g., "75%"). (Optional, defaults to <code>TextConfig.default(fontSize = 20.sp)</code>)</li>
-</ul>
-<p>The progress animation is handled internally when the <code>progress</code> value changes. The arc sweep is typically 270 degrees, starting from the bottom-left and moving clockwise.</p></div>
+<hr />
+<h3 id="example">📌 Example</h3>
+<pre><code class="language-kotlin">SpeedometerProgressBar(
+    progress = { 0.65f },
+    title = &quot;65%&quot;,
+    color = Color.Green.asSolidChartColor(),
+    progressIndicatorColor = Color.Black.asSolidChartColor(),
+    trackColor = Color.LightGray.asSolidChartColor(),
+    dotConfig = DotConfig(count = 30),
+    titleTextConfig = TextConfig(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+    subTitleTextConfig = TextConfig(fontSize = 14.sp, color = Color.Gray)
+)
+</code></pre></div>
         
         
     </div>

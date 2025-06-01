@@ -185,9 +185,6 @@
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
-                    <li>
-                        <a href="https://github.com/himanshoe/charty/edit/master/docs/charts/signal_bar_chart.md">Edit on charty</a>
-                    </li>
             </ul>
         </div>
     </div>
@@ -198,124 +195,102 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#signal-progressbar-chart">Signal ProgressBar Chart</a></li>
-            <li class="second-level"><a href="#overview">Overview</a></li>
+        <li class="first-level active"><a href="#signalprogressbarchart">📶 SignalProgressBarChart</a></li>
+        <li class="first-level "><a href="#overview">🍸Overview</a></li>
+        <li class="first-level "><a href="#declaration">🧱 Declaration</a></li>
+            <li class="second-level"><a href="#parameters">🔧 Parameters</a></li>
                 
-            <li class="second-level"><a href="#sample-invocation">Sample Invocation</a></li>
+            <li class="second-level"><a href="#notes">💡 Notes</a></li>
                 
-            <li class="second-level"><a href="#screenshots">Screenshots</a></li>
-                
-            <li class="second-level"><a href="#usage">Usage</a></li>
+            <li class="second-level"><a href="#example">📌 Example</a></li>
                 
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="signal-progressbar-chart">Signal ProgressBar Chart</h1>
-<h2 id="overview">Overview</h2>
-<p>The <code>SignalProgressBarChart</code> composable is designed to visually represent progress levels, akin to a signal strength indicator on a phone, a steps counter reaching a daily goal, or a battery level display. It's not a traditional bar chart for comparing distinct categories but rather a specialized progress indicator.</p>
-<p>Key features:
-- <strong>Discrete Blocks</strong>: The chart is composed of a series of stacked rectangular blocks.
-- <strong>Progressive Fill</strong>: As the <code>progress</code> value increases, these blocks fill up from bottom to top.
-- <strong>Granular Partial Fill</strong>: The topmost active block (the one currently being filled) can show a partial fill, providing a more fine-grained visual representation of the progress between discrete block levels.
-- <strong>Animation</strong>: The chart includes a built-in animation effect when the <code>progress</code> value changes, smoothly transitioning the fill level.
-- <strong>Customizable</strong>: The number of blocks, colors for the filled and unfilled track portions, and the gap between blocks are all configurable.</p>
-<p>This chart is ideal for at-a-glance status updates where a simple, clear visual of completion or level is needed.</p>
-<h2 id="sample-invocation">Sample Invocation</h2>
-<pre><code class="language-kotlin">import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.himanshoe.charty.bar.SignalProgressBarChart // Correct import path
-import com.himanshoe.charty.common.ChartColorExtensions.asSolidChartColor // Ensure this import path is correct
-import kotlinx.coroutines.delay
-
-@Composable
-fun SampleSignalProgressBarChart() {
-    var currentProgress by remember { mutableStateOf(0f) }
-
-    // Example of how you might update progress
-    LaunchedEffect(Unit) {
-        // Simulate progress change from 0% to 75%
-        for (i in 0..75 step 5) {
-            currentProgress = i.toFloat()
-            delay(300)
-        }
-    }
-
-    SignalProgressBarChart(
-        progress = { currentProgress }, // Lambda returning current progress (0f to maxProgress)
-        maxProgress = 100f,             // The value 'progress' maps to 100% fill
-        modifier = Modifier
-            .width(80.dp)   // Adjust width as needed
-            .height(180.dp) // Adjust height as needed
-            .padding(8.dp),
-        totalBlocks = 10,               // Number of segments in the bar
-        trackColor = Color.LightGray.asSolidChartColor(), // Color of the unfilled part of blocks
-        progressColor = Color(0xFF4CAF50).asSolidChartColor(), // Color of the filled part
-        gapRatio = 0.15f                // Gap between blocks, relative to block height
-    )
-}
-
-// Optional: Preview with controls to test
-@Preview(showBackground = true)
-@Composable
-fun InteractiveSampleSignalProgressBarChartPreview() {
-    var progress by remember { mutableStateOf(25f) }
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(16.dp)
-    ) {
-        Text(&quot;Progress: ${progress.toInt()}%&quot;)
-        SampleSignalProgressBarChart() // You'd pass 'progress' to this if it took it as a direct param
-                                     // For this sample, the internal LaunchedEffect drives its own progress.
-                                     // To make this preview interactive with external control,
-                                     // the SampleSignalProgressBarChart would need to accept progress as a parameter.
-        Button(onClick = { progress = (progress + 10f).coerceAtMost(100f) }, modifier = Modifier.padding(top = 8.dp)) {
-            Text(&quot;Increase Progress&quot;)
-        }
-        Button(onClick = { progress = (progress - 10f).coerceAtLeast(0f) }) {
-            Text(&quot;Decrease Progress&quot;)
-        }
-    }
-}
+<h2 id="signalprogressbarchart">📶 <code>SignalProgressBarChart</code></h2>
+<p><img alt="signalbar.png" src="../../site/img/signalbar.png" /></p>
+<h2 id="overview">🍸Overview</h2>
+<p>A simple <strong>signal-style bar chart</strong> that displays progress using vertically stacked blocks. Visually resembles mobile network signal indicators.</p>
+<h2 id="declaration">🧱 Declaration</h2>
+<pre><code class="language-kotlin">@Composable
+fun SignalProgressBarChart(
+    progress: () -&gt; Float,
+    maxProgress: Float = 100F,
+    modifier: Modifier = Modifier,
+    totalBlocks: Int = 10,
+    trackColor: ChartColor = Color.Gray.asSolidChartColor(),
+    progressColor: ChartColor = Color.Green.asSolidChartColor(),
+    gapRatio: Float = 0.1F
+)
 </code></pre>
-<h2 id="screenshots">Screenshots</h2>
-<p><img alt="Signal Bar Chart Screenshot" src="signal_bar_chart_screenshot.png" /> <!-- TODO: Add actual screenshot --></p>
-<h2 id="usage">Usage</h2>
-<p>The <code>SignalProgressBarChart</code> is available in two overloads, one accepting a <code>Float</code> progress and another an <code>Int</code> progress.</p>
-<p>Key parameters for using this chart:</p>
+<hr />
+<h3 id="parameters">🔧 Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>progress</code></td>
+<td><code>() -&gt; Float</code></td>
+<td>Lambda returning the current progress value.</td>
+</tr>
+<tr>
+<td><code>maxProgress</code></td>
+<td><code>Float</code></td>
+<td>Maximum possible progress. Default is <code>100f</code>.</td>
+</tr>
+<tr>
+<td><code>modifier</code></td>
+<td><code>Modifier</code></td>
+<td>Modifier to customize layout, size, gesture, etc.</td>
+</tr>
+<tr>
+<td><code>totalBlocks</code></td>
+<td><code>Int</code></td>
+<td>Total number of vertical blocks in the chart.</td>
+</tr>
+<tr>
+<td><code>trackColor</code></td>
+<td><code>ChartColor</code></td>
+<td>Color of the unfilled (track) blocks.</td>
+</tr>
+<tr>
+<td><code>progressColor</code></td>
+<td><code>ChartColor</code></td>
+<td>Color of the filled (progress) blocks.</td>
+</tr>
+<tr>
+<td><code>gapRatio</code></td>
+<td><code>Float</code></td>
+<td>Fraction of space between each block relative to its height (0.1 = 10% gap).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="notes">💡 Notes</h3>
 <ul>
-<li><strong><code>progress</code></strong>: A lambda function that returns the current progress value.<ul>
-<li>For the <code>Float</code> version: <code>() -&gt; Float</code>. The value typically ranges from <code>0.0f</code> to <code>maxProgress</code>.</li>
-<li>For the <code>Int</code> version: <code>() -&gt; Int</code>. The value typically ranges from <code>0</code> to <code>maxProgress</code>.</li>
+<li>The blocks fill vertically from bottom to top based on <code>progress / maxProgress</code>.</li>
+<li>Useful for visual indicators such as <strong>signal strength</strong>, <strong>step completion</strong>, or <strong>tiered progress</strong>.</li>
+<li>The <code>gapRatio</code> allows customization of spacing between blocks for a tighter or more spaced-out look.</li>
+<li>You can pass a dynamic <code>progress</code> lambda to animate or update progress in real time.</li>
 </ul>
-</li>
-<li><strong><code>maxProgress</code></strong>: The maximum value that <code>progress</code> can reach, representing a full bar.<ul>
-<li>For the <code>Float</code> version: <code>Float</code>, defaults to <code>100F</code>.</li>
-<li>For the <code>Int</code> version: <code>Int</code>, this parameter is required.</li>
-</ul>
-</li>
-<li><strong><code>modifier</code></strong>: A <code>Modifier</code> for customizing the layout (e.g., size, padding) of the chart. (Optional)</li>
-<li><strong><code>totalBlocks</code></strong>: An <code>Int</code> representing the total number of discrete blocks the signal bar is divided into. For example, a phone signal might have 4-5 blocks. (Optional, defaults to <code>10</code>)</li>
-<li><strong><code>trackColor</code></strong>: The <code>ChartColor</code> for the unfilled portion (the "track") of each block. This color is visible for blocks not yet filled or for the unfilled part of a partially filled block. (Optional, defaults to <code>Color.Gray</code>)</li>
-<li><strong><code>progressColor</code></strong>: The <code>ChartColor</code> for the filled portion (the "progress") of each block. (Optional, defaults to <code>Color.Green</code>)</li>
-<li><strong><code>gapRatio</code></strong>: A <code>Float</code> value that defines the size of the gap between blocks. This ratio is relative to the height of a single block. For example, a <code>gapRatio</code> of <code>0.1F</code> means the gap will be 10% of a block's height. (Optional, defaults to <code>0.1F</code>)</li>
-</ul></div>
+<hr />
+<h3 id="example">📌 Example</h3>
+<pre><code class="language-kotlin">SignalProgressBarChart(
+    progress = { 40f },
+    maxProgress = 100f,
+    totalBlocks = 5,
+    progressColor = Color.Blue.asSolidChartColor(),
+    trackColor = Color.LightGray.asSolidChartColor(),
+    gapRatio = 0.15f
+)
+</code></pre></div>
         
         
     </div>
