@@ -1,31 +1,48 @@
 # Welcome to Charty
 
-Charty is a modern charting library for Kotlin Multiplatform, designed to help you easily create beautiful and interactive charts for your applications.
+![Charty Banner](../img/banner.png)
+
+Charty is a modern charting library for Kotlin Multiplatform, designed to help you easily conjure beautiful and interactive charts for your applications, much like a wizard casting spells in the world of Harry Potter.
 
 ## Getting Started
 
-### Installation
+### Version Catalog
 
-To get started with Charty, you need to add it as a dependency to your project.
+If you're using Version Catalog, you can configure the dependency by adding it to your
+`libs.versions.toml` file as follows:
 
-_(Detailed installation instructions will be added here based on the project's build system, e.g., Gradle.)_
+```toml
+[versions]
+#...
+charty = "<version>"
 
-### Basic Usage
-
-Once Charty is installed, you can start creating charts with just a few lines of code.
-
-```kotlin
-// Example of creating a simple bar chart (illustrative)
-val data = listOf( /* your data here */ )
-val barChart = Charty.BarChart(data)
-
-// Display the chart in your UI (platform-specific)
+[libraries]
+#...
+charty = { module = "com.himanshoe:charty", version.ref = "charty" }
 ```
 
-_(More detailed usage examples will be provided in the specific chart documentation.)_
+### Gradle
 
-## Library Purpose
+Add the dependency below to your **module**'s `build.gradle.kts` file:
 
-The main goal of Charty is to provide a flexible and easy-to-use API for developers to integrate various types of charts into their Kotlin Multiplatform projects, covering Android, iOS, Desktop, and Web applications. We aim for high performance, extensive customization options, and a consistent look and feel across platforms.
+```gradle
+dependencies {
+    implementation("com.himanshoe:charty:$version")
+    
+    // if you're using Version Catalog
+    implementation(libs.charty)
+}
+```
 
-Explore the documentation to learn more about the different chart types and how to use them effectively.
+For Kotlin Multiplatform, add the dependency below to your commonMain source set's
+`build.gradle.kts` file:
+
+```gradle
+sourceSets {
+    commonMain.dependencies {
+            implementation(libs.charty)
+     }
+}
+```
+
+Find the latest release version [here](https://github.com/hi-manshu/Charty/releases)

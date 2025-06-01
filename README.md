@@ -17,7 +17,7 @@ _Made with ❤️ for Android Developers by Himanshu_
 ![Charty](https://img.shields.io/maven-central/v/com.himanshoe/charty?color=f4c430&label=Maven%20Central%20%3A%20Charty)
 ![Charty Static Check](https://github.com/hi-manshu/charty/actions/workflows/static-check.yml/badge.svg)
 
-### Version Catalog
+````### Version Catalog
 
 If you're using Version Catalog, you can configure the dependency by adding it to your
 `libs.versions.toml` file as follows:
@@ -57,7 +57,7 @@ sourceSets {
 ```
 
 Find the latest release version [here](https://github.com/hi-manshu/Charty/releases)
-
+````
 ### You can find videos  iOS and Android [here](img/video)
 
 ### Photos / Screenshots
