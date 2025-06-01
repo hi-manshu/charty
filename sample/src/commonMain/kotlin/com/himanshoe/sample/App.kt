@@ -33,6 +33,7 @@ import com.himanshoe.charty.bar.StorageBar
 import com.himanshoe.charty.bar.config.BarChartColorConfig
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.BarTooltip
+import com.himanshoe.charty.bar.config.HorizontalBarLabelConfig
 import com.himanshoe.charty.bar.model.BarData
 import com.himanshoe.charty.bar.model.ComparisonBarData
 import com.himanshoe.charty.bar.model.StackBarData
@@ -73,7 +74,6 @@ fun App() {
         addBarChart(2F, generateMockBarData(11))
         addMultiLineChart()
         addLineChart()
-
         addSignalBarChart()
         addComparisonChart()
         addStackBarChart()
@@ -232,7 +232,8 @@ private fun LazyListScope.addComparisonChart() {
             modifier = Modifier.padding(10.dp).fillMaxWidth().height(300.dp),
             onGroupClicked = { index ->
                 println("Category $index clicked")
-            })
+            }
+        )
     }
 
 }
@@ -294,8 +295,8 @@ private fun LazyListScope.addMultiLineChart() {
         MultiLineChart(
             data = { mockData },
             modifier = Modifier.padding(10.dp).fillMaxWidth().height(300.dp),
-            smoothLineCurve = false,
-            showFilledArea = false,
+            smoothLineCurve = true,
+            showFilledArea = true,
             showLineStroke = true,
             target = 6F,
             chartConfig = LineChartConfig(
@@ -311,11 +312,12 @@ private fun LazyListScope.addMultiLineChart() {
 private fun LazyListScope.addLineChart() {
     item {
         LineChart(
+            smoothLineCurve =true,
             colorConfig = LineChartColorConfig.default().copy(
                 lineColor = ChartColor.Solid(Color(0xFF8D79F6)),
                 lineFillColor = ChartColor.Gradient(
                     listOf(
-                        Color(0x4DB09FFF), Color(0xFFFFFFFF)
+                        Color.Red, Color.LightGray
                     )
                 )
             ),
@@ -354,6 +356,7 @@ private fun LazyListScope.addHorizontalBarChart() {
                 fillBarColor = Color(0xFFFF92C1).asSolidChartColor(),
                 negativeBarColors = Color(0xFF4D4D4D).asSolidChartColor()
             ),
+            horizontalBarLabelConfig = HorizontalBarLabelConfig.default().copy(showLabel = false),
             data = { generateMockBarData(7, useColor = false) },
             modifier = Modifier.fillParentMaxWidth().height(300.dp).padding(all = 20.dp)
 
@@ -361,6 +364,7 @@ private fun LazyListScope.addHorizontalBarChart() {
     }
     item {
         HorizontalBarChart(
+            horizontalBarLabelConfig = HorizontalBarLabelConfig.default().copy(showLabel = true,hasOverlappingLabel = false),
             barChartColorConfig = BarChartColorConfig.default().copy(
                 fillBarColor = Color(0xFFFF92C1).asSolidChartColor(),
                 negativeBarColors = Color(0xFF4D4D4D).asSolidChartColor()
@@ -482,7 +486,8 @@ private fun LazyListScope.addBarChart(target: Float?, data: List<BarData>) {
             barChartConfig = BarChartConfig.default().copy(
                 cornerRadius = CornerRadius(40F, 40F),
             ),
-            onBarClick = { index, barData -> println("click in bar with $index index and data $barData") })
+            onBarClick = { index, barData -> println("click in bar with $index index and data $barData") }
+        )
     }
 }
 

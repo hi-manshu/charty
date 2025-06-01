@@ -1,0 +1,35 @@
+site_name: Charty
+site_author: Charty Contributors
+site_url: https://himanshoe.github.io/charty/
+repo_url: https://github.com/himanshoe/charty/
+repo_name: charty
+theme:
+  name: null
+  custom_dir: 'docs/site'
+  # Optional: Add a default colorscheme, e.g., github
+  colorscheme: github
+  highlightjs: true # Cinder uses highlight.js
+  # Optional: add common languages for highlighting
+  hljs_languages:
+    - yaml
+    - kotlin
+    - markdown
+markdown_extensions:
+  - admonition
+nav:
+  - Home: index.md
+  - Charts:
+    - Bar Chart: charts/bar_chart.md
+    - Comparison Bar Chart: charts/comparison_bar_chart.md
+    - Horizontal Bar Chart: charts/horizontal_bar_chart.md
+    - Line Bar Chart: charts/line_bar_chart.md
+    - Line Stack Bar Chart: charts/line_stack_bar_chart.md
+    - Signal Bar Chart: charts/signal_bar_chart.md
+    - Stack Bar Chart: charts/stack_bar_chart.md
+    - Storage Bar: charts/storage_bar.md
+    - Circle Chart: charts/circle_chart.md
+    - Speedometer ProgressBar: charts/speedometer_progress_bar.md
+    - Line Chart: charts/line_chart.md
+    - Multi-Line Chart: charts/multi_line_chart.md
+    - Pie Chart: charts/pie_chart.md
+    - Point Chart: charts/point_chart.md
