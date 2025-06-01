@@ -42,7 +42,7 @@ fun MultiLineChart(
 
 ### MultiLineData Model
 
- ```kotlin
+```kotlin
 data class MultiLineData(
     val data: List<LineData>,
     val colorConfig: LineChartColorConfig

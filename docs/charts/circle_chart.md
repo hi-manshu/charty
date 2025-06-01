@@ -12,6 +12,7 @@ import com.himanshoe.charty.circle
 ```
 
 ## 🧱 Declaration
+
 ```kotlin
 @Composable
 fun CircleChart(

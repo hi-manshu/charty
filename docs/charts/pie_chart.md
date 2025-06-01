@@ -32,14 +32,13 @@ fun PieChart(
 
 ## 🧮 PieChartData Model
 
- ```kotlin
+```kotlin
 data class PieChartData(
     val value: Float,
     val color: ChartColor,
     val labelColor: ChartColor = Color.White.asSolidChartColor(),
     val label: String,
 )
-
 ```
 
 | Parameter    | Type         | Description                                                                                 |
