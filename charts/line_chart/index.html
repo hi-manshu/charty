@@ -198,49 +198,193 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#line-chart">Line Chart</a></li>
-        <li class="first-level "><a href="#overview">Overview</a></li>
-        <li class="first-level "><a href="#usage">Usage</a></li>
+        <li class="first-level active"><a href="#linechart">LineChart</a></li>
+            <li class="second-level"><a href="#overview">🍸Overview</a></li>
+                
+            <li class="second-level"><a href="#declaration">🧱 Declaration</a></li>
+                
+                <li class="third-level"><a href="#version-1-with-onclick-support">Version 1: With onClick support</a></li>
+                <li class="third-level"><a href="#version-2-with-onvaluechange-support">Version 2: With onValueChange support</a></li>
+            <li class="second-level"><a href="#parameters">🔧 Parameters</a></li>
+                
+            <li class="second-level"><a href="#constraints">⚠️ Constraints</a></li>
+                
+            <li class="second-level"><a href="#data-model">📊 Data Model</a></li>
+                
+            <li class="second-level"><a href="#example-usage">💡 Example Usage</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="line-chart">Line Chart</h1>
-<h1 id="overview">Overview</h1>
-<p>A composable function that renders a line chart. Line charts are used to display quantitative values over a continuous interval or time period. They are ideal for showing trends in data at equal intervals.</p>
-<h1 id="usage">Usage</h1>
-<p>Key parameters for using this chart:</p>
-<ul>
-<li><strong><code>data</code></strong>: A lambda function that returns a list of <code>LineData</code>. Each <code>LineData</code> object represents a point on the line and should contain:<ul>
-<li><code>xValue</code>: The value for the X-axis (e.g., a timestamp, category index).</li>
-<li><code>yValue</code>: The value for the Y-axis, which determines the point's vertical position.</li>
-</ul>
-</li>
-<li><strong><code>modifier</code></strong>: An optional <code>Modifier</code> for customizing the layout or drawing behavior of the LineChart. (Optional)</li>
-<li><strong><code>smoothLineCurve</code></strong>: A <code>Boolean</code> indicating whether the line connecting data points should be drawn with smooth curves (cubic Bezier) or as straight segments. (Optional, defaults to <code>true</code>)</li>
-<li><strong><code>showFilledArea</code></strong>: A <code>Boolean</code> indicating whether the area beneath the line should be filled with a color. (Optional, defaults to <code>false</code>)</li>
-<li><strong><code>showLineStroke</code></strong>: A <code>Boolean</code> indicating whether the line itself should be drawn (stroked). (Optional, defaults to <code>true</code>)
-    <em>Note: At least one of <code>showFilledArea</code> or <code>showLineStroke</code> must be true.</em></li>
-<li><strong><code>showOnClickBar</code></strong>: A <code>Boolean</code> that, if true, displays a vertical bar highlighting the selected data point when the chart is clicked. (Optional, defaults to <code>true</code>)</li>
-<li><strong><code>colorConfig</code></strong>: A <code>LineChartColorConfig</code> object for configuring the colors of:<ul>
-<li><code>lineColor</code>: The color of the line stroke.</li>
-<li><code>lineFillColor</code>: The color of the filled area beneath the line (if <code>showFilledArea</code> is true).</li>
-<li><code>selectionBarColor</code>: The color of the vertical bar shown on click (if <code>showOnClickBar</code> is true).
-(Optional, defaults to <code>LineChartColorConfig.default()</code>)</li>
-</ul>
-</li>
-<li><strong><code>labelConfig</code></strong>: A <code>LabelConfig</code> object for configuring the X and Y axis labels (visibility, color, text style). (Optional, defaults to <code>LabelConfig.default()</code>)</li>
-<li><strong><code>target</code></strong>: An optional <code>Float</code> value. If provided, a horizontal line will be drawn at this Y-value on the chart. (Optional)</li>
-<li><strong><code>targetConfig</code></strong>: A <code>TargetConfig</code> object for configuring the appearance of the <code>target</code> line (e.g., color, stroke width, path effect). (Optional, defaults to <code>TargetConfig.default()</code>)</li>
-<li><strong><code>chartConfig</code></strong>: A <code>LineChartConfig</code> object for more advanced configurations, such as:<ul>
-<li><code>lineConfig</code>: Settings for showing values directly on the line.</li>
-<li><code>interactionTooltipConfig</code>: Configuration for tooltips that can appear on user interaction (e.g., long-press and drag).
-(Optional, defaults to <code>LineChartConfig()</code>)</li>
-</ul>
-</li>
-<li><strong><code>onClick</code></strong>: A lambda function that is invoked when a data point area on the line chart is clicked. It receives the <code>LineData</code> corresponding to the clicked point. (Optional)</li>
-</ul>
-<p>The chart also supports an alternative interaction mode via a different overload, where a tooltip can be shown by long-pressing and dragging on the chart, configured through <code>chartConfig.interactionTooltipConfig</code>.</p></div>
+<h1 id="linechart"><code>LineChart</code></h1>
+<table>
+<thead>
+<tr>
+<th>Smooth Line Curve</th>
+<th>Pointed Line Curve</th>
+<th>Line Filled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="linechart_02.png" src="../../site/img/line/linechart_02.png" /></td>
+<td><img alt="linechart_03.png" src="../../site/img/line/linechart_03.png" /></td>
+<td><img alt="linechart_04.png" src="../../site/img/line/linechart_04.png" /></td>
+</tr>
+</tbody>
+</table>
+<h2 id="overview">🍸Overview</h2>
+<p>A chart that renders a <strong>line chart</strong> to visualize continuous or time-series data. Supports various
+configurations including smooth curves, area fill, stroke lines, interactivity, and targets.</p>
+<hr />
+<h2 id="declaration">🧱 Declaration</h2>
+<p>There are <strong>two overloaded versions</strong> of <code>LineChart</code>, each offering different forms of interaction:</p>
+<h3 id="version-1-with-onclick-support">Version 1: With <code>onClick</code> support</h3>
+<pre><code class="language-kotlin">@Composable
+fun LineChart(
+    data: () -&gt; List&lt;LineData&gt;,
+    modifier: Modifier = Modifier,
+    smoothLineCurve: Boolean = true,
+    showFilledArea: Boolean = false,
+    showLineStroke: Boolean = true,
+    showOnClickBar: Boolean = true,
+    colorConfig: LineChartColorConfig = LineChartColorConfig.default(),
+    labelConfig: LabelConfig = LabelConfig.default(),
+    target: Float? = null,
+    targetConfig: TargetConfig = TargetConfig.default(),
+    chartConfig: LineChartConfig = LineChartConfig(),
+    onClick: (LineData) -&gt; Unit = {}
+)
+</code></pre>
+<h3 id="version-2-with-onvaluechange-support">Version 2: With <code>onValueChange</code> support</h3>
+<pre><code class="language-kotlin">@Composable
+fun LineChart(
+    data: () -&gt; List&lt;LineData&gt;,
+    modifier: Modifier = Modifier,
+    smoothLineCurve: Boolean = true,
+    showFilledArea: Boolean = false,
+    showLineStroke: Boolean = true,
+    colorConfig: LineChartColorConfig = LineChartColorConfig.default(),
+    labelConfig: LabelConfig = LabelConfig.default(),
+    target: Float? = null,
+    targetConfig: TargetConfig = TargetConfig.default(),
+    chartConfig: LineChartConfig = LineChartConfig(),
+    onValueChange: (LineData) -&gt; Unit = {},
+)
+</code></pre>
+<hr />
+<h2 id="parameters">🔧 Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td><code>() -&gt; List&lt;LineData&gt;</code></td>
+<td>Lambda returning a list of <code>LineData</code> points representing x/y values to be plotted.</td>
+</tr>
+<tr>
+<td><code>modifier</code></td>
+<td><code>Modifier</code></td>
+<td>Optional Jetpack Compose modifier for layout styling.</td>
+</tr>
+<tr>
+<td><code>smoothLineCurve</code></td>
+<td><code>Boolean</code></td>
+<td>If true, curves between data points will be smoothly interpolated using Bézier or spline curves. If false, straight lines are drawn.</td>
+</tr>
+<tr>
+<td><code>showFilledArea</code></td>
+<td><code>Boolean</code></td>
+<td>If true, the area under the line is filled with gradient or solid color.</td>
+</tr>
+<tr>
+<td><code>showLineStroke</code></td>
+<td><code>Boolean</code></td>
+<td>If true, a visible line is drawn over the chart representing the data.</td>
+</tr>
+<tr>
+<td><code>showOnClickBar</code></td>
+<td><code>Boolean</code></td>
+<td>(Only in version 1) If true, shows a vertical indicator when a value is clicked.</td>
+</tr>
+<tr>
+<td><code>colorConfig</code></td>
+<td><code>LineChartColorConfig</code></td>
+<td>Defines line stroke color, fill color, gradients, and background.</td>
+</tr>
+<tr>
+<td><code>labelConfig</code></td>
+<td><code>LabelConfig</code></td>
+<td>Manages display and styling of axis or data labels.</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code>Float?</code></td>
+<td>Optional horizontal line to show a benchmark or target.</td>
+</tr>
+<tr>
+<td><code>targetConfig</code></td>
+<td><code>TargetConfig</code></td>
+<td>Configuration of the target line (color, thickness, label, etc).</td>
+</tr>
+<tr>
+<td><code>chartConfig</code></td>
+<td><code>LineChartConfig</code></td>
+<td>Controls axis visibility, padding, animation, min/max values, etc.</td>
+</tr>
+<tr>
+<td><code>onClick</code></td>
+<td><code>(LineData) -&gt; Unit</code></td>
+<td>(Only in version 1) Triggered when a data point is clicked.</td>
+</tr>
+<tr>
+<td><code>onValueChange</code></td>
+<td><code>(LineData) -&gt; Unit</code></td>
+<td>(Only in version 2) Triggered on drag interactions over the line chart.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="constraints">⚠️ Constraints</h2>
+<pre><code class="language-kotlin">require(showFilledArea || showLineStroke) {
+    &quot;Both showFilledArea and showLineStroke cannot be false at the same time&quot;
+}
+</code></pre>
+<p>At least one of <code>showFilledArea</code> or <code>showLineStroke</code> <strong>must</strong> be true, otherwise an
+<code>IllegalArgumentException</code> is thrown. This ensures the chart is visible.</p>
+<hr />
+<h2 id="data-model">📊 Data Model</h2>
+<p>Each data point in the chart is represented by the <code>LineData</code> class:</p>
+<pre><code class="language-kotlin">data class LineData(
+    val xValue: Any,
+    val yValue: Float
+)
+</code></pre>
+<hr />
+<h2 id="example-usage">💡 Example Usage</h2>
+<pre><code class="language-kotlin">LineChart(
+    data = {
+        listOf(
+            LineData(&quot;Jan&quot;, 10f),
+            LineData(&quot;Feb&quot;, 40f),
+            LineData(&quot;Mar&quot;, 25f)
+        )
+    },
+    smoothLineCurve = true,
+    showFilledArea = true,
+    showLineStroke = true,
+    target = 30f,
+    targetConfig = TargetConfig(label = &quot;Average&quot;),
+    onClick = { lineData -&gt; println(&quot;Clicked: ${lineData.xValue} -&gt; ${lineData.yValue}&quot;) }
+)
+</code></pre></div>
         
         
     </div>

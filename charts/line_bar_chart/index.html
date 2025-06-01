@@ -198,113 +198,133 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#line-bar-chart">Line Bar Chart</a></li>
-            <li class="second-level"><a href="#overview">Overview</a></li>
+        <li class="first-level active"><a href="#linebarchart">LineBarChart</a></li>
+            <li class="second-level"><a href="#overview">🍸Overview</a></li>
                 
-            <li class="second-level"><a href="#sample-invocation">Sample Invocation</a></li>
+            <li class="second-level"><a href="#declaration">🧱 Declaration</a></li>
                 
-            <li class="second-level"><a href="#screenshots">Screenshots</a></li>
+            <li class="second-level"><a href="#parameters">🔧 Parameters</a></li>
                 
-            <li class="second-level"><a href="#usage">Usage</a></li>
+            <li class="second-level"><a href="#data-model">📊 Data Model</a></li>
+                
+            <li class="second-level"><a href="#target">🔠 Target</a></li>
+                
+            <li class="second-level"><a href="#example-usage">💡 Example Usage</a></li>
                 
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="line-bar-chart">Line Bar Chart</h1>
-<h2 id="overview">Overview</h2>
-<p>The <code>LineBarChart</code> composable offers a distinct visual style for representing categorical data, rendering data points as thin vertical lines or "sticks" rather than traditional wider bars. This presentation is achieved by internally adjusting the bar width (typically dividing the available space by 3).</p>
-<p>Key characteristics and use cases:
-- <strong>Stylistic Variation</strong>: While it uses the same <code>BarData</code> structure and shares many configuration options (<code>BarChartConfig</code>, <code>BarChartColorConfig</code>, <code>LabelConfig</code>) with the standard <code>BarChart</code>, its visual output is slender lines.
-- <strong>Discrete Data Points</strong>: Ideal for visualizing discrete data points where the emphasis is on the magnitude at each specific point along the X-axis.
-- <strong>High-Density Data</strong>: Useful when dealing with a large number of data points where traditional bars might appear cluttered. The thinner lines allow for a cleaner representation.
-- <strong>Features</strong>: Supports features like positive/negative values (drawn from a central axis if mixed), target lines, axis/grid customization, and click interactions (<code>onBarClick</code>).</p>
-<p>Think of it as a bar chart that has been stylistically modified to appear as lines, making it suitable for scenarios where a less "heavy" visual representation is preferred.</p>
-<h2 id="sample-invocation">Sample Invocation</h2>
-<pre><code class="language-kotlin">import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.himanshoe.charty.bar.LineBarChart
-import com.himanshoe.charty.bar.config.BarChartConfig
-import com.himanshoe.charty.bar.config.BarChartColorConfig
-import com.himanshoe.charty.bar.model.BarData
-import com.himanshoe.charty.common.ChartColorExtensions.asSolidChartColor // Ensure this import path is correct
-import com.himanshoe.charty.common.LabelConfig
-
-@Composable
-fun SampleLineBarChart() {
-    val lineBarDataPoints = listOf(
-        BarData(xValue = &quot;Jan&quot;, yValue = 180f, color = Color.Red.asSolidChartColor()),
-        BarData(xValue = &quot;Feb&quot;, yValue = -120f, color = Color.Blue.asSolidChartColor()), // Negative value example
-        BarData(xValue = &quot;Mar&quot;, yValue = 220f, color = Color.Green.asSolidChartColor()),
-        BarData(xValue = &quot;Apr&quot;, yValue = 150f, color = Color.Magenta.asSolidChartColor()),
-        BarData(xValue = &quot;May&quot;, yValue = 250f, color = Color.Yellow.asSolidChartColor()),
-        BarData(xValue = &quot;Jun&quot;, yValue = -90f, color = Color.Cyan.asSolidChartColor())
-    )
-
-    LineBarChart(
-        data = { lineBarDataPoints },
-        modifier = Modifier
-            .height(300.dp)
-            .fillMaxWidth()
-            .padding(16.dp),
-        barChartConfig = BarChartConfig.default().copy(
-            showCurvedBar = false, // Curves might not be prominent on thin lines but can be enabled
-            drawNegativeValueChart = true, // Important for handling negative values correctly
-            showGridLines = true
-        ),
-        labelConfig = LabelConfig.default().copy(
-            showXLabel = true,
-            showYLabel = true
-        ),
-        barChartColorConfig = BarChartColorConfig.default().copy(
-            // You can set a default fill color here, or rely on colors in BarData
-            // fillBarColor = Color.DarkGray.asSolidChartColor(),
-            axisLineColor = Color.Gray.asSolidChartColor()
-        ),
-        onBarClick = { index, barData -&gt;
-            println(&quot;Clicked LineBar: ${barData.xValue} (${barData.yValue}), Index: $index&quot;)
-        }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SampleLineBarChartPreview() {
-    SampleLineBarChart()
-}
+<h1 id="linebarchart">LineBarChart</h1>
+<p><img alt="lineChart_01.png" src="../../site/img/bar/lineChart_01.png" /></p>
+<h2 id="overview">🍸Overview</h2>
+<p>A chart that displays a bar chart with an optional target line overlaid. This chart is useful for showing individual bar values while highlighting a specific target or benchmark using a line (e.g., sales goal, average, or threshold).</p>
+<h2 id="declaration">🧱 Declaration</h2>
+<pre><code class="language-kotlin">@Composable
+fun LineBarChart(
+    data: () -&gt; List&lt;BarData&gt;,
+    modifier: Modifier = Modifier,
+    target: Float? = null,
+    targetConfig: TargetConfig = TargetConfig.default(),
+    barChartConfig: BarChartConfig = BarChartConfig.default(),
+    labelConfig: LabelConfig = LabelConfig.default(),
+    barChartColorConfig: BarChartColorConfig = BarChartColorConfig.default(),
+    onBarClick: (Int, BarData) -&gt; Unit = { _, _ -&gt; },
+)
 </code></pre>
-<h2 id="screenshots">Screenshots</h2>
-<p><img alt="Line Bar Chart Screenshot" src="line_bar_chart_screenshot.png" /> <!-- TODO: Add actual screenshot --></p>
-<h2 id="usage">Usage</h2>
-<p>The <code>LineBarChart</code> utilizes the same data structures and configuration objects as the standard <code>BarChart</code>. Refer to the <code>BarChart</code> documentation for detailed explanations of these parameters. Below is a summary:</p>
+<h2 id="parameters">🔧 Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td><code>() -&gt; List&lt;BarData&gt;</code></td>
+<td>A lambda function returning the list of bar values to render. Each <code>BarData</code> contains the value, label, and color of a bar.</td>
+</tr>
+<tr>
+<td><code>modifier</code></td>
+<td><code>Modifier</code></td>
+<td>A Jetpack Compose <code>Modifier</code> to customize layout, size, padding, etc.</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code>Float?</code></td>
+<td>A numerical value representing a target line to be drawn across the chart. If <code>null</code>, no target line is shown.</td>
+</tr>
+<tr>
+<td><code>targetConfig</code></td>
+<td><code>TargetConfig</code></td>
+<td>Configuration object to style and position the target line (e.g., stroke color, width, label).</td>
+</tr>
+<tr>
+<td><code>barChartConfig</code></td>
+<td><code>BarChartConfig</code></td>
+<td>Controls the layout behavior of the chart including min bar count, animation, axis visibility, and spacing.</td>
+</tr>
+<tr>
+<td><code>labelConfig</code></td>
+<td><code>LabelConfig</code></td>
+<td>Configuration for customizing the bar labels (position, visibility, text style).</td>
+</tr>
+<tr>
+<td><code>barChartColorConfig</code></td>
+<td><code>BarChartColorConfig</code></td>
+<td>Defines the colors for bars, axis lines, grid lines, and backgrounds.</td>
+</tr>
+<tr>
+<td><code>onBarClick</code></td>
+<td><code>(Int, BarData) -&gt; Unit</code></td>
+<td>Lambda called when a user taps on a bar. Provides the index and associated <code>BarData</code>. Useful for interactivity and tooltips.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="data-model">📊 Data Model</h2>
+<pre><code class="language-kotlin">data class BarData(
+    val yValue: Float,
+    val xValue: Any,
+    val barColor: ChartColor = Color.Unspecified.asSolidChartColor(),
+    val barBackgroundColor: ChartColor = Color(0x40D3D3D3).asSolidChartColor(),
+)
+</code></pre>
+<h2 id="target">🔠 Target</h2>
 <ul>
-<li><strong><code>data</code></strong>: A lambda function returning a list of <code>BarData</code>. Each <code>BarData</code> defines a line's X-position, Y-height, and color.<ul>
-<li><code>xValue: Any</code>: Category label for the X-axis.</li>
-<li><code>yValue: Float</code>: Numerical value for the Y-axis (height of the line).</li>
-<li><code>color: ChartColor</code>: Color of the individual line.</li>
-<li><code>barBackgroundColor: ChartColor</code>: (Optional) Background color for the line's track.</li>
+<li>Use the target parameter to draw a horizontal reference line across the chart.</li>
+<li>Ideal for benchmarks, goals, or thresholds (e.g., expected sales, performance targets).</li>
+<li>Styled using TargetConfig, which allows customizing:<ul>
+<li>Color and stroke width</li>
+<li>Dashed/solid appearance</li>
+<li>Label and label positioning</li>
 </ul>
 </li>
-<li><strong><code>modifier</code></strong>: <code>Modifier</code> for layout customization. (Optional)</li>
-<li><strong><code>target</code></strong>: Optional <code>Float</code> for displaying a horizontal target line. (Optional)</li>
-<li><strong><code>targetConfig</code></strong>: <code>TargetConfig</code> for the target line's appearance. (Optional, defaults to <code>TargetConfig.default()</code>)</li>
-<li><strong><code>barChartConfig</code></strong>: <code>BarChartConfig</code> for general chart settings. (Optional, defaults to <code>BarChartConfig.default()</code>)<ul>
-<li><code>showCurvedBar: Boolean</code>: Applies rounding to the top of the thin lines.</li>
-<li><code>drawNegativeValueChart: Boolean</code>: Enables rendering of negative values from a central axis.</li>
-<li><code>showAxisLines: Boolean</code>, <code>showGridLines: Boolean</code>: Control visibility of axis and grid lines.</li>
 </ul>
-</li>
-<li><strong><code>labelConfig</code></strong>: <code>LabelConfig</code> for X and Y axis labels. (Optional, defaults to <code>LabelConfig.default()</code>)</li>
-<li><strong><code>barChartColorConfig</code></strong>: <code>BarChartColorConfig</code> for default colors of lines, axis, and grid. Individual line colors in <code>BarData</code> take precedence. (Optional, defaults to <code>BarChartColorConfig.default()</code>)</li>
-<li><strong><code>onBarClick</code></strong>: Lambda <code>(Int, BarData) -&gt; Unit</code> invoked when a line is clicked. (Optional)</li>
-</ul>
-<p>The primary distinction from <code>BarChart</code> is the visual rendering of data points as thin lines due to an internal adjustment of bar width.</p></div>
+<h2 id="example-usage">💡 Example Usage</h2>
+<pre><code class="language-kotlin">LineBarChart(
+    data = {
+        listOf(
+            BarData(80f, &quot;Jan&quot;),
+            BarData(120f, &quot;Feb&quot;),
+            BarData(60f, &quot;Mar&quot;)
+        )
+    },
+    target = 100f,
+    targetConfig = TargetConfig(
+        color = Color.Red,
+        strokeWidth = 2.dp,
+        showLabel = true,
+        label = &quot;Target: 100&quot;
+    ),
+    onBarClick = { index, bar -&gt;
+        println(&quot;Bar ${index + 1}: ${bar.yValue}&quot;)
+    }
+)
+
+</code></pre></div>
         
         
     </div>
