@@ -482,7 +482,8 @@ private fun LazyListScope.addBarChart(target: Float?, data: List<BarData>) {
             barChartConfig = BarChartConfig.default().copy(
                 cornerRadius = CornerRadius(40F, 40F),
             ),
-            onBarClick = { index, barData -> println("click in bar with $index index and data $barData") })
+            onBarClick = { index, barData -> println("click in bar with $index index and data $barData") }
+        )
     }
 }
 
