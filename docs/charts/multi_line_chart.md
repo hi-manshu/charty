@@ -1,26 +1,77 @@
-# Multi-Line Chart
+# Multi Line Chart
 
-# Overview
-A composable function that renders a chart with multiple lines. This is useful for comparing trends of several datasets over the same continuous interval or time period. Each line has its own color configuration and data points.
+| Pointed Line Curve                                             | Smooth Line Curve                                              | 
+|----------------------------------------------------------------|----------------------------------------------------------------|
+| ![multiple_line_01.png](../site/img/line/multiple_line_01.png) | ![multiple_line_02.png](../site/img/line/multiple_line_02.png) |
 
-# Usage
-Key parameters for using this chart:
+## 🍸Overview
 
-- **`data`**: A lambda function that returns a list of `MultiLineData`. Each `MultiLineData` object defines a single line on the chart and contains:
-    - `data`: A list of `LineData` objects, where each `LineData` has an `xValue` and `yValue` for that point on this specific line.
-    - `colorConfig`: A `LineChartColorConfig` for this particular line, specifying its stroke color (`lineColor`) and fill color (`lineFillColor` if `showFilledArea` is true).
-- **`modifier`**: An optional `Modifier` for customizing the layout or drawing behavior of the chart. (Optional)
-- **`smoothLineCurve`**: A `Boolean` indicating whether the lines should be drawn with smooth curves (cubic Bezier) or as straight segments. (Optional, defaults to `true`)
-- **`showFilledArea`**: A `Boolean` indicating whether the area beneath each line should be filled. (Optional, defaults to `false`)
-- **`showLineStroke`**: A `Boolean` indicating whether the lines themselves should be drawn (stroked). (Optional, defaults to `true`)
-    *Note: At least one of `showFilledArea` or `showLineStroke` must be true.*
-- **`target`**: An optional `Float` value. If provided, a single horizontal target line will be drawn across the chart at this Y-value, applicable to all lines. (Optional)
-- **`targetConfig`**: A `TargetConfig` object for configuring the appearance of the `target` line. (Optional, defaults to `TargetConfig.default()`)
-- **`labelConfig`**: A `LabelConfig` object for configuring the X and Y axis labels (visibility, color, text style). These labels are common for all lines. (Optional, defaults to `LabelConfig.default()`)
-- **`chartConfig`**: A `LineChartConfig` object for more advanced configurations common to all lines, such as:
-    - `lineConfig`: Settings for showing values directly on the lines.
-    - `interactionTooltipConfig`: Configuration for tooltips that can appear on user interaction (e.g., long-press and drag). The tooltip can display values from all lines at the selected X-coordinate.
-    (Optional, defaults to `LineChartConfig()`)
-- **`onValueChange`**: A lambda function invoked when a tooltip is active (e.g., via long-press and drag). It receives a list of `LineData` objects, one for each line, corresponding to the data points at the current X-axis position of the tooltip. (Optional)
+A multi-line chart displays multiple series of data points connected by lines. It is particularly
+useful for comparing trends over time or across different categories for several groups
+simultaneously. This chart allows for easy visualization of relationships, crossovers, and
+divergences between different datasets.
 
-The X-axis values are assumed to be consistent across all lines in the `MultiLineData` list for proper alignment and tooltip functionality.
+## 🧱 Declaration
+
+```kotlin
+@Composable
+fun MultiLineChart(
+    lines: () -> List<LineData>,
+    modifier: Modifier = Modifier,
+    lineConfig: LineConfig = LineConfig.default(),
+    xAxisConfig: XAxisConfig = XAxisConfig.default(),
+    yAxisConfig: YAxisConfig = YAxisConfig.default(),
+    labelConfig: LabelConfig = LabelConfig.default(),
+    onPointClick: (lineIndex: Int, pointIndex: Int, point: PointData) -> Unit = { _, _, _ -> }
+)
+```
+
+## 🔧 Parameters
+
+| Parameter      | Type                                                          | Description                                                                                                                                                                                                          |
+|----------------|---------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `lines`        | `() -> List<LineData>`                                        | A lambda returning the list of `LineData` entries. Each `LineData` defines a separate line with its data points, color, and other properties.                                                                        |
+| `modifier`     | `Modifier`                                                    | Optional Compose `Modifier` for layout behavior, styling, padding, etc.                                                                                                                                              |
+| `lineConfig`   | `LineConfig`                                                  | Configuration for the appearance of all lines, such as default point visibility, point style, line thickness, and curve rendering (e.g., cubic bezier). Individual `LineData` properties can override some of these. |
+| `xAxisConfig`  | `XAxisConfig`                                                 | Configuration specific to the X-axis, like label formatting, grid lines, and axis line visibility.                                                                                                                   |
+| `yAxisConfig`  | `YAxisConfig`                                                 | Configuration specific to the Y-axis, including label formatting, value range, grid lines, and axis line visibility.                                                                                                 |
+| `labelConfig`  | `LabelConfig`                                                 | Controls how labels for X and Y axes are rendered (font size, visibility, position, color etc.).                                                                                                                     |
+| `onPointClick` | `(lineIndex: Int, pointIndex: Int, point: PointData) -> Unit` | Lambda called when a data point on a line is clicked. Provides indices for the line and point, and the `PointData` itself. Default is no-op.                                                                         |
+
+## 🧮 Data Models
+
+### MultiLineData Model
+
+ ```kotlin
+data class MultiLineData(
+    val data: List<LineData>,
+    val colorConfig: LineChartColorConfig
+)
+```
+
+| Parameter     | Type                   | Description                                                                                        |
+|---------------|------------------------|----------------------------------------------------------------------------------------------------|
+| `data`        | `List<LineData>`       | A list of `LineData` points representing the values to be plotted for this line.                   |
+| `colorConfig` | `LineChartColorConfig` | The color and styling configuration specific to this line, including stroke, fill, gradients, etc. |
+
+> You can find a mock implementation in sample module's App file
+
+## Example Usage
+
+```kotlin
+@Composable
+fun SampleMultiLineChart() {
+    MultiLineChart(
+        modifier = Modifier.fillMaxWidth().height(300.dp).padding(16.dp),
+        lines = { chartLinesData },
+        labelConfig = LabelConfig.default().copy(
+            showXLabel = true,
+            showYLabel = true
+        ),
+        lineConfig = LineConfig.default().copy(
+            showPoints = true
+        ),
+        onPointClick = { lineIndex, pointIndex, point ->   }
+    )
+}
+```

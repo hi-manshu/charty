@@ -1,18 +1,66 @@
-# Pie Chart
+# PieChart
 
-# Overview
-A composable function to draw a Pie Chart or a Donut Chart. Pie charts are circular statistical graphics, divided into slices to illustrate numerical proportion. In a pie chart, the arc length of each slice (and consequently its central angle and area) is proportional to the quantity it represents.
+| Pointed Line Curve                                  |  
+|-----------------------------------------------------|
+| ![piechart_01.png](../site/img/pie/piechart_01.png) |
 
-# Usage
-Key parameters for using this chart:
+## 🍸Overview
 
-- **`data`**: A lambda function that returns a list of `PieChartData`. Each `PieChartData` object represents a slice of the pie and should contain:
-    - `value`: A `Float` representing the value of this slice. The chart will calculate the proportion of this value to the total sum of all slice values to determine the slice's angle.
-    - `label`: A `String` label for this slice. If `isDonutChart` is `false`, this label is drawn on the slice.
-    - `color`: A `ChartColor` for the fill of this slice.
-    - `labelColor`: A `ChartColor` for the text of the `label`.
-- **`modifier`**: An optional `Modifier` for customizing the layout or drawing behavior of the chart, typically used to define its size. (Optional)
-- **`isDonutChart`**: A `Boolean` that, if `true`, renders the chart as a donut chart (a pie chart with a hole in the center). If `false` (the default), it renders as a standard, filled pie chart. (Optional, defaults to `false`)
-- **`onPieChartSliceClick`**: A lambda function that is invoked when a slice of the pie chart is clicked. It receives the `PieChartData` of the clicked slice. (Optional)
+This function displays a Pie Chart using a list of PieChartData slices. It supports rendering either a standard pie chart or a donut-style chart (with a hole in the center). Each slice is interactive and can trigger a click callback.
 
-When a slice is clicked, it may slightly scale up for visual feedback. Labels are displayed directly on the slices for standard pie charts but are typically omitted for donut charts in this implementation.
+## 🧱 Declaration
+
+```kotlin
+@Composable
+fun PieChart(
+    data: () -> List<PieChartData>,
+    modifier: Modifier = Modifier,
+    isDonutChart: Boolean = false,
+    onPieChartSliceClick: (PieChartData) -> Unit = {}
+)
+```
+> isDonutChart is used to make donut of PieChart
+
+## 🔧 Parameters
+
+| Parameter              | Type                       | Description                                                                                                                                               |
+|------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `data`                 | `() -> List<PieChartData>` | A lambda that returns the list of pie slices to display. Each slice is represented by a `PieChartData` object.                                            |
+| `modifier`             | `Modifier`                 | A `Modifier` for customizing the layout and appearance of the chart (e.g., size, padding, etc.).                                                          |
+| `isDonutChart`         | `Boolean`                  | If `true`, the chart is displayed as a **donut** (with a circular center cut out). Default is `false` for a full pie.                                     |
+| `onPieChartSliceClick` | `(PieChartData) -> Unit`   | Callback invoked when a slice is clicked, providing the clicked `PieChartData` as a parameter. Useful for interactivity like tooltips or data inspection. |
+
+## 🧮 PieChartData Model
+
+ ```kotlin
+data class PieChartData(
+    val value: Float,
+    val color: ChartColor,
+    val labelColor: ChartColor = Color.White.asSolidChartColor(),
+    val label: String,
+)
+
+```
+
+| Parameter    | Type         | Description                                                                                 |
+|--------------|--------------|---------------------------------------------------------------------------------------------|
+| `value`      | `Float`      | The numeric value of the slice. This determines the size (angle) of the slice in the chart. |
+| `color`      | `ChartColor` | The fill color of the slice. Can be solid or gradient depending on implementation.          |
+| `labelColor` | `ChartColor` | The color of the text label associated with the slice. Defaults to white (`Color.White`).   |
+| `label`      | `String`     | The textual label to display for the slice. Typically shown in or near the slice.           |
+
+> You can find a mock implementation in sample module's App file
+
+## Example Usage
+
+```kotlin
+@Composable
+fun SamplePieChart() {
+    PieChart(
+        data = { samplePieData },
+        isDonutChart = true,
+        onPieChartSliceClick = { slice -> println("Clicked: ${slice.label}") },
+        modifier = Modifier.size(200.dp)
+    )
+}
+```

@@ -1,19 +1,66 @@
-# Stack Bar Chart
+📊 StackedBarChart
 
-# Overview
-A composable function that displays a stacked bar chart. This type of chart is used to show how a larger category is divided into smaller sub-categories and what the proportion of each sub-category is to the total. Each bar represents a total, and segments within the bar represent different parts of that total.
+![storagebar.png](../site/img/bar/storagebar.png)
 
-# Usage
-Key parameters for using this chart:
+## 🍸Overview
+A bar that renders a horizontal storage bar, where each segment represents a portion of total usage (like memory, disk, or category breakdowns). The segments are color-coded and interactive.
 
-- **`data`**: A lambda function that returns a list of `StackBarData`. Each `StackBarData` object represents a single bar and contains:
-    - `label`: A `String` for the X-axis label of the bar.
-    - `values`: A list of `Float` values, where each value is a segment in the stack.
-    - `colors`: A list of `ChartColor` for each corresponding segment in `values`.
-- **`modifier`**: A `Modifier` for customizing the layout or drawing behavior of the chart. (Optional)
-- **`target`**: An optional `Float` value to be displayed as a horizontal target line on the chart. (Optional)
-- **`targetConfig`**: A `TargetConfig` object for configuring the appearance of the target line (e.g., color, stroke width, path effect). (Optional, defaults to `TargetConfig.default()`)
-- **`stackBarConfig`**: A `StackBarConfig` object for configuring chart-specific aspects like showing axis lines, grid lines, whether to curve the top of the bars, and a minimum bar count. (Optional, defaults to `StackBarConfig.default()`)
-- **`barChartColorConfig`**: A `BarChartColorConfig` object primarily used here for configuring the background color of the bars, axis line colors, and grid line colors. The actual segment colors are defined within each `StackBarData` item. (Optional, defaults to `BarChartColorConfig.default()`)
-- **`labelConfig`**: A `LabelConfig` object for configuring the appearance of X-axis and Y-axis labels. (Optional, defaults to `LabelConfig.default()`)
-- **`onBarClick`**: A lambda function that is invoked when a bar (a full stack) is clicked. It receives the index of the clicked bar and the corresponding `StackBarData`. (Optional)
+## 🧱 Declaration
+
+```kotlin
+@Composable
+fun StorageBar(
+    data: () -> List<StorageData>,
+    trackColor: ChartColor = Color(0xD3D3D3DE).asSolidChartColor(),
+    modifier: Modifier = Modifier,
+    onClick: (StorageData) -> Unit = {}
+)
+```
+
+## 🔧 Parameters
+
+| Parameter    | Type                      | Description                                                                            |
+|--------------|---------------------------|----------------------------------------------------------------------------------------|
+| `data`       | `() -> List<StorageData>` | Lambda returning a list of segments. Each segment contains a value and category info.  |
+| `trackColor` | `ChartColor`              | The background track color behind all segments. Defaults to light gray.                |
+| `modifier`   | `Modifier`                | Modifier for layout and styling customization.                                         |
+| `onClick`    | `(StorageData) -> Unit`   | Callback triggered when a segment is tapped. Provides the corresponding `StorageData`. |
+
+## 📊 Data Model
+StorageData consists of multiple segments:
+
+```kotlin
+data class StorageData(
+    val label: String,
+    val value: Float,
+    val color: ChartColor
+)
+```
+- label: The category name (e.g., "Photos", "Apps").
+- value: Proportional value for this segment.
+- color: The color representing this category in the bar.
+
+### ✨ Features
+-   📊 Proportional segments based on total value.
+-   🎨 Custom color for each segment.
+-   🖱️ Interactive — tap on a segment to receive the related `StorageData`.
+-   🎚️ Full-width visual indicator bar with background track color.
+
+
+---
+
+### 📌 Example
+
+```kotlin
+StorageBar(
+    data = {
+        listOf(
+            StorageData("Photos", 40f, Color.Blue.asSolidChartColor()),
+            StorageData("Apps", 30f, Color.Red.asSolidChartColor()),
+            StorageData("Other", 30f, Color.Gray.asSolidChartColor())
+        )
+    },
+    trackColor = Color.LightGray.asSolidChartColor(),
+    onClick = { segment -> println("Clicked: ${segment.label}") }
+)
+```

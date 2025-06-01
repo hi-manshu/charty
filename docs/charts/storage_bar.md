@@ -1,4 +1,4 @@
-# Storage Bar
+🧮 StorageBar
 
 # Overview
 A composable function that displays a storage bar. This type of chart is typically used to visualize proportions of a whole, such as disk space usage where different categories (e.g., photos, apps, documents) consume parts of the total storage. The segments are laid out horizontally, and their widths are proportional to their values.

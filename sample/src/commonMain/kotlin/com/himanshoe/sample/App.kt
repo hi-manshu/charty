@@ -73,7 +73,7 @@ fun App() {
 //        addBarChart(null, generateZeroBarData(4))
 //        addBarChart(2F, generateMockBarData(11))
 //        addMultiLineChart()
-        addLineChart()
+//        addLineChart()
 //
 //        addSignalBarChart()
 //        addComparisonChart()
@@ -83,7 +83,7 @@ fun App() {
 //        addPieChart()
 //        addPointChart()
 //        addHorizontalBarChart()
-//        addStorageBarChart()
+        addStorageBarChart()
 //        addLineBarChart(3F, { generateMockBarData(7) })
 //        addLineBarChart(null, { generateMockBarData(7) })
 //        addBarChart(2F, generateMockBarData(11))
@@ -296,8 +296,8 @@ private fun LazyListScope.addMultiLineChart() {
         MultiLineChart(
             data = { mockData },
             modifier = Modifier.padding(10.dp).fillMaxWidth().height(300.dp),
-            smoothLineCurve = false,
-            showFilledArea = false,
+            smoothLineCurve = true,
+            showFilledArea = true,
             showLineStroke = true,
             target = 6F,
             chartConfig = LineChartConfig(
