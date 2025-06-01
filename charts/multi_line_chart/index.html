@@ -205,6 +205,8 @@
             <li class="second-level"><a href="#data-models">🧮 Data Models</a></li>
                 
                 <li class="third-level"><a href="#multilinedata-model">MultiLineData Model</a></li>
+            <li class="second-level"><a href="#example-usage">Example Usage</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -290,23 +292,37 @@ fun MultiLineChart(
 </table>
 <h2 id="data-models">🧮 Data Models</h2>
 <h3 id="multilinedata-model">MultiLineData Model</h3>
-<p>```kotlin
-data class MultiLineData(
-    val data: List<LineData>,
+<pre><code class="language-kotlin">data class MultiLineData(
+    val data: List&lt;LineData&gt;,
     val colorConfig: LineChartColorConfig
-)</p>
-<pre><code>
-| Parameter     | Type                   | Description                                                                                        |
-|---------------|------------------------|----------------------------------------------------------------------------------------------------|
-| `data`        | `List&lt;LineData&gt;`       | A list of `LineData` points representing the values to be plotted for this line.                   |
-| `colorConfig` | `LineChartColorConfig` | The color and styling configuration specific to this line, including stroke, fill, gradients, etc. |
-
-&gt; You can find a mock implementation in sample module's App file
-
-## Example Usage
-
-```kotlin
-@Composable
+)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td><code>List&lt;LineData&gt;</code></td>
+<td>A list of <code>LineData</code> points representing the values to be plotted for this line.</td>
+</tr>
+<tr>
+<td><code>colorConfig</code></td>
+<td><code>LineChartColorConfig</code></td>
+<td>The color and styling configuration specific to this line, including stroke, fill, gradients, etc.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>You can find a mock implementation in sample module's App file</p>
+</blockquote>
+<h2 id="example-usage">Example Usage</h2>
+<pre><code class="language-kotlin">@Composable
 fun SampleMultiLineChart() {
     MultiLineChart(
         modifier = Modifier.fillMaxWidth().height(300.dp).padding(16.dp),

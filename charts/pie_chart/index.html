@@ -204,6 +204,8 @@
                 
             <li class="second-level"><a href="#piechartdata-model">🧮 PieChartData Model</a></li>
                 
+            <li class="second-level"><a href="#example-usage">Example Usage</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -268,27 +270,49 @@ fun PieChart(
 </tbody>
 </table>
 <h2 id="piechartdata-model">🧮 PieChartData Model</h2>
-<p>```kotlin
-data class PieChartData(
+<pre><code class="language-kotlin">data class PieChartData(
     val value: Float,
     val color: ChartColor,
     val labelColor: ChartColor = Color.White.asSolidChartColor(),
     val label: String,
-)</p>
-<pre><code>
-| Parameter    | Type         | Description                                                                                 |
-|--------------|--------------|---------------------------------------------------------------------------------------------|
-| `value`      | `Float`      | The numeric value of the slice. This determines the size (angle) of the slice in the chart. |
-| `color`      | `ChartColor` | The fill color of the slice. Can be solid or gradient depending on implementation.          |
-| `labelColor` | `ChartColor` | The color of the text label associated with the slice. Defaults to white (`Color.White`).   |
-| `label`      | `String`     | The textual label to display for the slice. Typically shown in or near the slice.           |
-
-&gt; You can find a mock implementation in sample module's App file
-
-## Example Usage
-
-```kotlin
-@Composable
+)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>value</code></td>
+<td><code>Float</code></td>
+<td>The numeric value of the slice. This determines the size (angle) of the slice in the chart.</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td><code>ChartColor</code></td>
+<td>The fill color of the slice. Can be solid or gradient depending on implementation.</td>
+</tr>
+<tr>
+<td><code>labelColor</code></td>
+<td><code>ChartColor</code></td>
+<td>The color of the text label associated with the slice. Defaults to white (<code>Color.White</code>).</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td><code>String</code></td>
+<td>The textual label to display for the slice. Typically shown in or near the slice.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>You can find a mock implementation in sample module's App file</p>
+</blockquote>
+<h2 id="example-usage">Example Usage</h2>
+<pre><code class="language-kotlin">@Composable
 fun SamplePieChart() {
     PieChart(
         data = { samplePieData },
