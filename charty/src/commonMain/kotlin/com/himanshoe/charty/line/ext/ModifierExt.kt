@@ -5,14 +5,14 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.common.LabelConfig
-import com.himanshoe.charty.common.getTetStyle
 import com.himanshoe.charty.common.getXLabelTextCharCount
+import com.himanshoe.charty.common.modifiers.CommonDrawAxisLines
+import com.himanshoe.charty.common.modifiers.CommonDrawHorizontalGridLines
+import com.himanshoe.charty.common.modifiers.CommonDrawXAxisLabels
+import com.himanshoe.charty.common.modifiers.CommonDrawYAxisLabels
 import com.himanshoe.charty.line.config.LineChartColorConfig
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.model.LineData
@@ -38,77 +38,67 @@ internal fun Modifier.drawAxesAndGridLines(
     labelConfig: LabelConfig,
     minValue: Float,
     yRange: Float,
-) = this.drawBehind {
-    val canvasWidth = size.width
-    val canvasHeight = size.height
-    val xStep = canvasWidth / (data.size - 1)
-    val yStep = canvasHeight / 4
+): Modifier {
+    val xPositions = mutableListOf<Float>()
+    val labelTexts = mutableListOf<String>()
+    var localCanvasWidth = 0f
+    var localCanvasHeight = 0f
 
-    // Draw X and Y axis
-    drawLine(
-        brush = Brush.linearGradient(colorConfig.axisColor.value),
-        start = Offset(0f, canvasHeight),
-        end = Offset(canvasWidth, canvasHeight),
-        strokeWidth = chartConfig.axisConfig.axisLineWidth
-    )
-    drawLine(
-        brush = Brush.linearGradient(colorConfig.axisColor.value),
-        start = Offset(0f, 0f),
-        end = Offset(0f, canvasHeight),
-        strokeWidth = chartConfig.axisConfig.axisLineWidth
-    )
+    // Modifier to capture canvas size and calculate xPositions
+    val layoutHelperModifier = Modifier.drawWithCache {
+        localCanvasWidth = size.width
+        localCanvasHeight = size.height
+        val xStep = if (data.size > 1) localCanvasWidth / (data.size - 1) else 0f
+        if (labelConfig.showXLabel) {
+            data.forEachIndexed { index, _ ->
+                xPositions.add(index * xStep)
+                // xValue is expected to be a String or convertible to String for labels
+                labelTexts.add(data[index].xValue.toString())
+            }
+        }
+        onDrawBehind {} // No drawing here, just capturing size and calculating positions
+    }
 
-    // Draw parallel lines to X axis
-    for (i in 1..4) {
-        val yOffset = canvasHeight - i * yStep
-        drawLine(
-            brush = Brush.linearGradient(colorConfig.gridLineColor.value),
-            start = Offset(0f, yOffset),
-            pathEffect = chartConfig.gridConfig.gridLinePathEffect,
-            end = Offset(canvasWidth, yOffset),
-            strokeWidth = chartConfig.gridConfig.gridLineWidth
+    return this
+        .then(layoutHelperModifier) // Apply helper first to get canvas dimensions
+        .CommonDrawAxisLines(
+            axisColor = colorConfig.axisColor,
+            strokeWidth = chartConfig.axisConfig.axisLineWidth,
+            centerHorizontallyIfNegative = false
         )
-    }
-    // Draw labels
-    if (labelConfig.showXLabel) {
-        data.fastForEachIndexed { index, lineData ->
-            val textCharCount = labelConfig.getXLabelTextCharCount(
-                xValue = lineData.xValue,
-                displayDataCount = data.count()
-            )
-            val textSizeFactor = if (data.count() <= 13) 70 else 90
-
-            val textLayoutResult = textMeasurer.measure(
-                text = lineData.xValue.toString().take(textCharCount),
-                style = TextStyle(fontSize = (canvasWidth / textSizeFactor).sp),
-            )
-
-            drawText(
-                textLayoutResult = textLayoutResult,
-                topLeft = Offset(
-                    x = index * xStep - textLayoutResult.size.width / 2,
-                    y = canvasHeight + 4.dp.toPx() // Position below the X-axis
-                ),
-                brush = Brush.linearGradient(labelConfig.textColor.value)
-            )
-        }
-    }
-
-    if (labelConfig.showYLabel) {
-        for (i in 0..4) {
-            val value = minValue + i * yRange / 4
-            val textLayoutResult = textMeasurer.measure(
-                text = value.toString(),
-                style = labelConfig.getTetStyle(fontSize = (canvasWidth / 70).sp),
-            )
-            drawText(
-                textLayoutResult = textLayoutResult,
-                topLeft = Offset(
-                    x = -textLayoutResult.size.width - 8f,
-                    y = canvasHeight - i * yStep - textLayoutResult.size.height / 2
-                ),
-                brush = Brush.linearGradient(labelConfig.textColor.value)
-            )
-        }
-    }
+        .CommonDrawHorizontalGridLines(
+            gridLineColor = colorConfig.gridLineColor,
+            strokeWidth = chartConfig.gridConfig.gridLineWidth,
+            pathEffect = chartConfig.gridConfig.gridLinePathEffect,
+            steps = 4, // Line chart has 4 divisions for Y axis grid
+            centerHorizontallyIfNegative = false
+        )
+        .CommonDrawXAxisLabels(
+            labelConfig = labelConfig,
+            textMeasurer = textMeasurer,
+            xPositions = xPositions,
+            labelTexts = labelTexts,
+            xAxisYPosition = localCanvasHeight, // Pass captured canvasHeight
+            dataCount = data.size,
+            fontSizeSelector = { canvasWidth, _, dataCount ->
+                val factor = if (dataCount <= 13) 70 else 90
+                (canvasWidth / factor).sp
+            },
+            labelFormatter = { text, _ -> text }, // No specific formatting, original text
+            textCharCountProvider = { text, count ->
+                // Here, 'text' is xValue.toString()
+                labelConfig.getXLabelTextCharCount(xValue = text, displayDataCount = count)
+            }
+        )
+        .CommonDrawYAxisLabels(
+            labelConfig = labelConfig,
+            textMeasurer = textMeasurer,
+            minValue = minValue,
+            maxValue = minValue + yRange,
+            axisColor = labelConfig.textColor,
+            steps = 4,
+            dataCount = data.size,
+            fontSizeSelector = { canvasWidth, _, _ -> (canvasWidth / 70).sp },
+            labelFormatter = { value -> value.toString() }
+        )
 }

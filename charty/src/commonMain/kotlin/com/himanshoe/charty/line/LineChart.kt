@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.common.LabelConfig
 import com.himanshoe.charty.common.TargetConfig
 import com.himanshoe.charty.common.drawTargetLineIfNeeded
+import com.himanshoe.charty.common.utils.calculateChartPaddings
+import com.himanshoe.charty.common.utils.calculateValueRange
 import com.himanshoe.charty.line.config.LineChartColorConfig
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.ext.drawAxesAndGridLines
@@ -131,14 +133,34 @@ private fun LineChartContent(
 ) {
     val lineData = data()
     val textMeasurer = rememberTextMeasurer()
+
     val (minValue, maxValue) = remember(lineData) {
-        val min = lineData.minOfOrNull { it.yValue } ?: 0f
-        val max = lineData.maxOfOrNull { it.yValue } ?: 0f
-        min to max
+        calculateValueRange(
+            data = lineData,
+            yValueSelector = { it.yValue },
+            // Line chart uses actual min/max, no special handling for all zero / all positive/negative
+            handleAllZeroAsSpecialMax = false,
+            defaultMinIfAllPositive = null,
+            defaultMaxIfAllNegative = null
+        )
     }
     val yRange = maxValue - minValue
-    val bottomPadding = if (labelConfig.showXLabel) 24.dp else 0.dp
-    val leftPadding = if (labelConfig.showYLabel) 24.dp else 0.dp
+
+    // val bottomPadding = if (labelConfig.showXLabel) 24.dp else 0.dp // Removed
+    // val leftPadding = if (labelConfig.showYLabel) 24.dp else 0.dp // Removed
+
+    val chartPaddings = calculateChartPaddings(
+        labelConfig = labelConfig,
+        yAxisLabelWidth = 24.dp,
+        xAxisLabelHeight = 24.dp, // Line chart uses a consistent 24.dp for X labels when shown
+        xAxisLabelHeightWhenNegative = 24.dp, // Not applicable to LineChart's current design
+        hasNegativeValuesForXAxis = false, // LineChart X-axis is not centered
+        canDrawNegativeChart = false, // LineChart does not have a centered X-axis mode like BarChart
+        allYValuesAreZero = lineData.all { it.yValue == 0f }, // To allow Y label hiding if all zero
+        hasTopFixedPadding = false, // LineChart does not have fixed top padding like BarChart tooltip
+        topFixedPaddingValue = 0.dp
+    )
+
     var clickedIndex by remember { mutableStateOf(-1) }
     var clickedOffset by remember { mutableStateOf(Offset.Zero) }
     val dragPosition = remember { mutableStateOf<Offset?>(null) }
@@ -146,7 +168,12 @@ private fun LineChartContent(
     Canvas(
         modifier = modifier
             .fillMaxSize()
-            .padding(bottom = bottomPadding, start = leftPadding)
+            .padding(
+                start = chartPaddings.start,
+                top = chartPaddings.top,
+                bottom = chartPaddings.bottom,
+                end = chartPaddings.end
+            )
             .pointerInput(Unit) {
                 if (showOnClickBar) {
                     detectTapGestures { offset ->
