@@ -26,11 +26,18 @@ import androidx.compose.ui.util.fastFlatMap
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.model.ComparisonBarData
-import com.himanshoe.charty.bar.modifier.drawAxesAndGridLines
+// import com.himanshoe.charty.bar.modifier.drawAxesAndGridLines // To be removed
 import com.himanshoe.charty.common.LabelConfig
+import com.himanshoe.charty.common.asSolidChartColor
 import com.himanshoe.charty.common.getDrawingPath
 import com.himanshoe.charty.common.getTetStyle
 import com.himanshoe.charty.common.getXLabelTextCharCount
+import com.himanshoe.charty.common.modifiers.CommonDrawAxisLines
+import com.himanshoe.charty.common.modifiers.CommonDrawHorizontalGridLines
+import com.himanshoe.charty.common.modifiers.CommonDrawXAxisLabels
+import com.himanshoe.charty.common.modifiers.CommonDrawYAxisLabels
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.draw.drawWithCache
 
 /**
  * A composable function that displays a comparison bar chart.
@@ -72,24 +79,93 @@ private fun ComparisonBarContent(
     val leftPadding = if (labelConfig.showYLabel) 24.dp else 0.dp
 
     val dataList = data()
-    val maxValue = remember(dataList) { dataList.fastFlatMap { it.bars }.maxOf { it } }
+    val maxValue = remember(dataList) { dataList.fastFlatMap { it.bars }.maxOfOrNull { it } ?: 0f }
     val groupCount = dataList.size
-    val maxBarsCount = remember(dataList) { dataList.maxOf { it.bars.size } }
+    val maxBarsCount = remember(dataList) { dataList.maxOfOrNull { it.bars.size } ?: 0 }
+
+    val xPositions = remember { mutableStateListOf<Float>() }
+    val labelTexts = remember { mutableStateListOf<String>() }
+    var localCanvasWidth by remember { mutableStateOf(0f) }
+    var localCanvasHeight by remember { mutableStateOf(0f) }
+    var xAxisYPositionState by remember { mutableStateOf(0f) }
+
+    val helperModifier = Modifier.drawWithCache {
+        localCanvasWidth = size.width
+        localCanvasHeight = size.height
+        xAxisYPositionState = localCanvasHeight // X-axis at the bottom for ComparisonBarChart
+
+        if (groupCount > 0) {
+            val groupWidth = localCanvasWidth / groupCount
+            xPositions.clear()
+            labelTexts.clear()
+            dataList.forEachIndexed { index, group ->
+                xPositions.add(index * groupWidth + groupWidth / 2)
+                labelTexts.add(group.label)
+            }
+        }
+        onDrawBehind {}
+    }
+
     Canvas(
         modifier = modifier
             .padding(bottom = bottomPadding, start = leftPadding)
             .fillMaxSize()
-            .drawAxesAndGridLines(
-                maxValue = maxValue,
-                step = maxValue / 4,
-                textMeasurer = textMeasurer,
-                labelConfig = labelConfig,
-                showAxisLines = comparisonBarChartConfig.showAxisLines,
-                showGridLines = comparisonBarChartConfig.showGridLines
+            .then(helperModifier)
+            .then(
+                if (comparisonBarChartConfig.showAxisLines) {
+                    Modifier.CommonDrawAxisLines(
+                        axisColor = comparisonBarChartConfig.axisLineColor ?: Color.Black.asSolidChartColor(),
+                        strokeWidth = 1.dp.toPx(), // Old: 2f, but 1.dp.toPx() is more common
+                        centerHorizontallyIfNegative = false
+                    )
+                } else Modifier
+            )
+            .then(
+                if (comparisonBarChartConfig.showGridLines) {
+                    Modifier.CommonDrawHorizontalGridLines(
+                        gridLineColor = comparisonBarChartConfig.gridLineColor ?: Color.LightGray.asSolidChartColor(),
+                        strokeWidth = 1.dp.toPx(), // Old: 1f
+                        pathEffect = null, // Old had no pathEffect for grid lines
+                        steps = 4, // Old had 4 steps
+                        centerHorizontallyIfNegative = false
+                    )
+                } else Modifier
+            )
+            .then(
+                Modifier.CommonDrawYAxisLabels(
+                    labelConfig = labelConfig,
+                    textMeasurer = textMeasurer,
+                    minValue = 0f, // Comparison chart likely starts Y at 0
+                    maxValue = maxValue,
+                    axisColor = labelConfig.textColor, // Standard practice
+                    steps = 4, // Matches old grid
+                    dataCount = groupCount, // dataCount for Y-axis labels might not be directly relevant here as in bar/line
+                    fontSizeSelector = { _, _, _ -> 12.sp }, // Matches old Y-label font size
+                    labelFormatter = { value -> value.toInt().toString() } // Format to Int as it's usually counts/values
+                )
+            )
+            .then(
+                if (labelConfig.showXLabel && groupCount > 0) {
+                    Modifier.CommonDrawXAxisLabels(
+                        labelConfig = labelConfig,
+                        textMeasurer = textMeasurer,
+                        xPositions = xPositions,
+                        labelTexts = labelTexts,
+                        xAxisYPosition = xAxisYPositionState,
+                        dataCount = groupCount,
+                        fontSizeSelector = { cw, _, gc ->
+                            if (gc > 0) (cw / (gc * (if (gc <= 5) 20 else 40))).sp else 12.sp
+                        },
+                        labelFormatter = { text, _ -> text },
+                        textCharCountProvider = { text, count ->
+                            labelConfig.getXLabelTextCharCount(xValue = text, displayDataCount = count)
+                        }
+                    )
+                } else Modifier
             )
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
-                    val groupWidth = size.width / groupCount
+                    val groupWidth = localCanvasWidth / groupCount
                     val clickedGroupIndex = (offset.x / groupWidth).toInt()
                     if (clickedGroupIndex in dataList.indices) {
                         selectedCategory = clickedGroupIndex
@@ -98,10 +174,12 @@ private fun ComparisonBarContent(
                 }
             }
     ) {
-        val canvasWidth = size.width
-        val canvasHeight = size.height
-        val groupWidth = canvasWidth / groupCount
-        val barWidth = groupWidth / (maxBarsCount * 2)
+        // Bars are drawn in the main Canvas DrawScope
+        val currentCanvasWidth = size.width // Use size.width from this scope
+        val currentCanvasHeight = size.height // Use size.height from this scope
+        val groupWidth = if (groupCount > 0) currentCanvasWidth / groupCount else 0f
+        val barWidth = if (maxBarsCount > 0) groupWidth / (maxBarsCount * 2) else 0f
+
         val cornerRadius = if (comparisonBarChartConfig.showCurvedBar) {
             CornerRadius(
                 x = barWidth / 2,
@@ -160,25 +238,7 @@ private fun ComparisonBarContent(
                 )
             }
 
-            if (labelConfig.showXLabel) {
-                val textCharCount = labelConfig.getXLabelTextCharCount(
-                    xValue = group.label,
-                    displayDataCount = groupCount
-                )
-                val textSizeFactor = groupCount * if (groupCount <= 5) 20 else 40
-                val textLayoutResult = textMeasurer.measure(
-                    text = group.label.take(textCharCount),
-                    style = labelConfig.getTetStyle(fontSize = (canvasWidth / textSizeFactor).sp)
-                )
-                drawText(
-                    textLayoutResult = textLayoutResult,
-                    topLeft = Offset(
-                        x = groupStartX + groupWidth / 2 - textLayoutResult.size.width / 2,
-                        y = canvasHeight + (canvasHeight * 0.01f)
-                    ),
-                    brush = SolidColor(Color.Black)
-                )
-            }
+            // X-Label drawing logic is now handled by CommonDrawXAxisLabels modifier
         }
     }
 }

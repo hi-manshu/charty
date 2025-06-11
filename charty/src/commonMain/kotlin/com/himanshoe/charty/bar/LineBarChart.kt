@@ -25,11 +25,15 @@ import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.model.BarData
 import com.himanshoe.charty.common.LabelConfig
 import com.himanshoe.charty.common.TargetConfig
+import com.himanshoe.charty.common.asSolidChartColor
 import com.himanshoe.charty.common.drawTargetLineIfNeeded
 import com.himanshoe.charty.common.getDrawingPath
 import com.himanshoe.charty.common.getTetStyle
 import com.himanshoe.charty.common.getXLabelTextCharCount
+import com.himanshoe.charty.common.utils.isClickInsideRect
+import com.himanshoe.charty.common.utils.padListToMinimumCount
 import kotlin.math.absoluteValue
+import androidx.compose.ui.graphics.Color // Needed for defaultItemFactory in padListToMinimumCount
 
 /**
  * A composable function that displays a line bar chart.
@@ -81,8 +85,13 @@ private fun LineBarChartContent(
     val minValue = remember(listData) { listData.minOfOrNull { it.yValue.absoluteValue } ?: 0f }
     val maxValue = remember(listData) { listData.fastMaxOfOrNull { it.yValue.absoluteValue } ?: 0f }
     val hasNegativeValues = remember(listData) { listData.fastAny { it.yValue < 0 } }
-    val displayData =
-        remember(listData) { getDisplayData(listData, barChartConfig.minimumBarCount) }
+    val displayData = remember(listData, barChartConfig.minimumBarCount) {
+        padListToMinimumCount(
+            originalList = listData,
+            minimumCount = barChartConfig.minimumBarCount,
+            defaultItemFactory = { BarData(0F, " ", Color.Unspecified.asSolidChartColor()) }
+        )
+    }
     val canDrawNegativeChart = hasNegativeValues && barChartConfig.drawNegativeValueChart
     val textMeasurer = rememberTextMeasurer()
     val bottomPadding = if (labelConfig.showXLabel && !hasNegativeValues) 8.dp else 0.dp
@@ -160,7 +169,7 @@ private fun LineBarChartContent(
             )
             val cornerRadius = getCornerRadius(barChartConfig, calculatedCornerRadius)
 
-            if (isClickInsideBar(clickedOffset, singleBarTopLeft, singleBarRectSize)) {
+            if (isClickInsideRect(clickedOffset, singleBarTopLeft, singleBarRectSize)) {
                 clickedBarIndex = index
                 onBarClick(index, barData)
             }

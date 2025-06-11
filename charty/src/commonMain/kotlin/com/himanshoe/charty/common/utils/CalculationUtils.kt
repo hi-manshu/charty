@@ -2,7 +2,7 @@ package com.himanshoe.charty.common.utils
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.himanshoe.charty.common.config.LabelConfig
+import com.himanshoe.charty.common.LabelConfig
 
 internal data class ChartPaddings(
     val top: Dp,

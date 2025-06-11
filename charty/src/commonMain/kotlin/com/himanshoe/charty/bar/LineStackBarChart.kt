@@ -34,10 +34,19 @@ import com.himanshoe.charty.bar.model.StackBarData
 import com.himanshoe.charty.bar.modifier.drawAxisLineForVerticalChart
 import com.himanshoe.charty.common.LabelConfig
 import com.himanshoe.charty.common.TargetConfig
+import com.himanshoe.charty.common.asSolidChartColor
 import com.himanshoe.charty.common.drawTargetLineIfNeeded
 import com.himanshoe.charty.common.getDrawingPath
 import com.himanshoe.charty.common.getTetStyle
+import com.himanshoe.charty.common.modifiers.CommonDrawAxisLines
+import com.himanshoe.charty.common.modifiers.CommonDrawHorizontalGridLines
+import com.himanshoe.charty.common.modifiers.CommonDrawXAxisLabels
+import com.himanshoe.charty.common.modifiers.CommonDrawYAxisLabels
+import com.himanshoe.charty.common.utils.isClickInsideRect
+import com.himanshoe.charty.common.utils.padListToMinimumCount
 import kotlin.math.absoluteValue
+import androidx.compose.runtime.mutableStateListOf
+// import com.himanshoe.charty.bar.modifier.drawAxisLineForVerticalChart // Will be removed by replacing its usage
 
 /**
  * A composable function that displays a line stacked bar chart.
@@ -86,13 +95,21 @@ private fun LineStackBarChartContent(
     onBarClick: (Int, StackBarData) -> Unit
 ) {
     val lineData = data()
-    val displayData = remember(lineData) { getDisplayData(lineData, stackBarConfig.minimumBarCount) }
+    val displayData = remember(lineData, stackBarConfig.minimumBarCount) {
+        padListToMinimumCount(
+            originalList = lineData,
+            minimumCount = stackBarConfig.minimumBarCount,
+            defaultItemFactory = { StackBarData("", emptyList(), emptyList()) }
+        )
+    }
     val maxValue =
         remember(displayData) { displayData.maxOfOrNull { it.values.sum().absoluteValue } ?: 0f }
-    val hasNegativeValues = remember(lineData) { displayData.fastFlatMap { it.values }.fastAny { it < 0 } }
+    val hasNegativeValues = remember(displayData) { // Changed key from lineData to displayData for consistency
+        displayData.fastFlatMap { it.values }.fastAny { it < 0 }
+    }
     val textMeasurer = rememberTextMeasurer()
-    val bottomPadding = if (labelConfig.showXLabel && !hasNegativeValues) 8.dp else 0.dp
-    val leftPadding = if (labelConfig.showYLabel) 24.dp else 0.dp
+    val bottomPadding = if (labelConfig.showXLabel && !hasNegativeValues) 8.dp else 0.dp // This logic might be superseded by calculateChartPaddings if we use it here too
+    val leftPadding = if (labelConfig.showYLabel) 24.dp else 0.dp // This logic might be superseded
 
     var clickedOffset by mutableStateOf(Offset.Zero)
     var clickedBarIndex by mutableIntStateOf(-1)
@@ -141,7 +158,7 @@ private fun LineStackBarChartContent(
                     stackBarData = stackBarData
                 )
 
-                if (isClickInsideBar(clickedOffset, individualBarTopLeft, individualBarRectSize)) {
+                if (isClickInsideRect(clickedOffset, individualBarTopLeft, individualBarRectSize)) {
                     clickedBarIndex = index
                     onBarClick(index, stackBarData)
                 }
@@ -212,78 +229,97 @@ internal fun StackBarChartScaffold(
     content: DrawScope.(Float, Float) -> Unit,
 ) {
     val dataCount = displayData.count()
-    val step = maxValue / 4
+
+    val xPositions = remember { mutableStateListOf<Float>() }
+    val labelTexts = remember { mutableStateListOf<String>() }
+    var localCanvasWidth by remember { mutableStateOf(0f) }
+    var localCanvasHeight by remember { mutableStateOf(0f) }
+    var calculatedXAxisYPosition by remember { mutableStateOf(0f) }
+
+    val helperModifier = Modifier.drawWithCache {
+        localCanvasWidth = size.width
+        localCanvasHeight = size.height
+        calculatedXAxisYPosition = if (hasNegativeValues) localCanvasHeight / 2 else localCanvasHeight
+
+        if (displayData.isNotEmpty()) {
+            val count = displayData.count()
+            val barWidthForXLabels = localCanvasWidth * 9 / (count * 10) // Approximation from old scaffold
+            val gapForXLabels = localCanvasWidth / (count * 10) // Approximation from old scaffold
+
+            xPositions.clear()
+            labelTexts.clear()
+            displayData.forEachIndexed { index, data ->
+                val itemCenterOffset = (index * (barWidthForXLabels + gapForXLabels)) + (barWidthForXLabels / 2)
+                xPositions.add(itemCenterOffset)
+                labelTexts.add(data.label)
+            }
+        }
+        onDrawBehind {}
+    }
+
     Canvas(
         modifier = modifier
-            .padding(bottom = bottomPadding, start = leftPadding)
+            .padding(bottom = bottomPadding, start = leftPadding) // Existing padding
             .fillMaxSize()
-            .drawWithCache {
-                val barWidth = size.width * 9 / (dataCount * 10)
-                onDrawBehind {
-                    for (i in 0..4) {
-                        val yValue = i * step
-                        val displayValue = yValue.toString().take(4)
-                        val yOffset = size.height - (yValue / maxValue) * size.height
-                        if (showGridLines) {
-                            // Draw horizontal grid line
-                            drawLine(
-                                brush = Brush.linearGradient(barChartColorConfig.gridLineColor.value),
-                                start = Offset(0f, yOffset),
-                                end = Offset(size.width, yOffset),
-                                strokeWidth = 1.dp.toPx()
-                            )
-                        }
-                        if (labelConfig.showYLabel && !hasNegativeValues) {
-                            val textLayoutResult = textMeasurer.measure(
-                                text = displayValue,
-                                style = labelConfig.getTetStyle(fontSize = (size.width / displayData.count() / 10).sp),
-                                overflow = TextOverflow.Clip,
-                                maxLines = 1,
-                            )
-                            drawText(
-                                textLayoutResult = textLayoutResult,
-                                brush = Brush.linearGradient(labelConfig.textColor.value),
-                                topLeft = Offset(
-                                    -textLayoutResult.size.width - 8f,
-                                    y = yOffset - textLayoutResult.size.height / 2,
-                                ),
-                            )
-                        }
-                    }
-
-                    if (labelConfig.showXLabel) {
-                        displayData.fastForEachIndexed { index, stackBarData ->
-                            val gap = size.width / (displayData.size * 10)
-                            val textLayoutResult = textMeasurer.measure(
-                                text = stackBarData.label,
-                                style = labelConfig.getTetStyle(fontSize = (barWidth / 4).toSp()),
-                                overflow = TextOverflow.Clip,
-                                maxLines = 1,
-                            )
-                            drawText(
-                                textLayoutResult = textLayoutResult,
-                                brush = Brush.linearGradient(labelConfig.textColor.value),
-                                topLeft = Offset(
-                                    x = (index + 1) * (barWidth + gap) - barWidth / 2 - textLayoutResult.size.width / 2,
-                                    y = size.height + 5,
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
+            .then(helperModifier)
             .then(
                 if (showAxisLines) {
-                    Modifier.drawAxisLineForVerticalChart(
-                        hasNegativeValues = false,
-                        axisLineColor = barChartColorConfig.axisLineColor
+                    Modifier.CommonDrawAxisLines(
+                        axisColor = barChartColorConfig.axisLineColor,
+                        strokeWidth = 1.dp.toPx(), // Consistent with other charts
+                        centerHorizontallyIfNegative = hasNegativeValues
                     )
-                } else {
-                    Modifier
-                }
+                } else Modifier
+            )
+            .then(
+                if (showGridLines) {
+                    Modifier.CommonDrawHorizontalGridLines(
+                        gridLineColor = barChartColorConfig.gridLineColor,
+                        strokeWidth = 1.dp.toPx(),
+                        pathEffect = null,
+                        steps = 4,
+                        centerHorizontallyIfNegative = hasNegativeValues
+                    )
+                } else Modifier
+            )
+            .then(
+                if (labelConfig.showYLabel) { // only add modifier if labels are to be shown
+                    Modifier.CommonDrawYAxisLabels(
+                        labelConfig = labelConfig,
+                        textMeasurer = textMeasurer,
+                        minValue = if (hasNegativeValues) -maxValue else 0f,
+                        maxValue = maxValue,
+                        axisColor = labelConfig.textColor,
+                        steps = 4,
+                        dataCount = dataCount,
+                        fontSizeSelector = { cw, _, dc -> if (dc > 0) (cw / dc / 10).sp else 12.sp },
+                        labelFormatter = { value -> value.toInt().toString().take(4) } // To Int then take 4
+                    )
+                } else Modifier
+            )
+            .then(
+                if (labelConfig.showXLabel && dataCount > 0) { // only add modifier if labels are to be shown
+                    Modifier.CommonDrawXAxisLabels(
+                        labelConfig = labelConfig,
+                        textMeasurer = textMeasurer,
+                        xPositions = xPositions,
+                        labelTexts = labelTexts,
+                        xAxisYPosition = calculatedXAxisYPosition,
+                        dataCount = dataCount,
+                        fontSizeSelector = { cw, _, dc ->
+                            if (dc > 0) {
+                                val barWidthApprox = cw * 9 / (dc * 10)
+                                (barWidthApprox / 4).sp
+                            } else 12.sp
+                        },
+                        labelFormatter = { text, _ -> text },
+                        textCharCountProvider = null // Original did not truncate based on getXLabelTextCharCount
+                    )
+                } else Modifier
             )
             .pointerInput(Unit) { detectTapGestures { onBarClick(it) } }
     ) {
         content(size.width, size.height)
     }
 }
+// Removed internal fun getDisplayData as it's replaced by padListToMinimumCount

@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.ChartColor
-import com.himanshoe.charty.common.config.LabelConfig
+import com.himanshoe.charty.common.LabelConfig
 import com.himanshoe.charty.common.getTetStyle
 
 internal fun Modifier.CommonDrawYAxisLabels(

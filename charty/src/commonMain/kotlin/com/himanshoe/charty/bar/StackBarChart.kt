@@ -23,6 +23,8 @@ import com.himanshoe.charty.bar.model.StackBarData
 import com.himanshoe.charty.common.LabelConfig
 import com.himanshoe.charty.common.TargetConfig
 import com.himanshoe.charty.common.getDrawingPath
+import com.himanshoe.charty.common.utils.isClickInsideRect
+import com.himanshoe.charty.common.utils.padListToMinimumCount
 import kotlin.math.absoluteValue
 
 /**
@@ -72,7 +74,13 @@ private fun StackBarChartContent(
     onBarClick: (Int, StackBarData) -> Unit = { _, _ -> },
 ) {
     val stackBarData = data()
-    val displayData = remember(stackBarData) { getDisplayData(stackBarData, stackBarConfig.minimumBarCount) }
+    val displayData = remember(stackBarData, stackBarConfig.minimumBarCount) {
+        padListToMinimumCount(
+            originalList = stackBarData,
+            minimumCount = stackBarConfig.minimumBarCount,
+            defaultItemFactory = { StackBarData("", emptyList(), emptyList()) }
+        )
+    }
     val maxValue =
         remember(displayData) { displayData.fastMaxOfOrNull { it.values.sum().absoluteValue } ?: 0f }
     val hasNegativeValues = remember(stackBarData) { displayData.fastFlatMap { it.values }.fastAny { it < 0 } }
@@ -139,7 +147,7 @@ private fun StackBarChartContent(
                     stackBarData = stackBarData
                 )
 
-                if (isClickInsideBar(clickedOffset, individualBarTopLeft, individualBarRectSize)) {
+                if (isClickInsideRect(clickedOffset, individualBarTopLeft, individualBarRectSize)) {
                     clickedBarIndex = index
                     onBarClick(index, stackBarData)
                 }
@@ -189,13 +197,4 @@ private fun getBarTopLeftSizeAndRadius(
     return Triple(individualBarTopLeft, individualBarRectSize, cornerRadius)
 }
 
-internal fun getDisplayData(
-    data: List<StackBarData>,
-    minimumBarCount: Int,
-): List<StackBarData> = if (data.size < minimumBarCount) {
-    List(minimumBarCount - data.size) {
-        StackBarData("", emptyList(), emptyList())
-    } + data
-} else {
-    data
-}
+// internal fun getDisplayData has been removed and replaced by common.utils.padListToMinimumCount
