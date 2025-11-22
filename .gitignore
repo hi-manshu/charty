@@ -1,0 +1,49 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+.kotlin/
+/.kotlin
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Local configuration
+local.properties
+
+# Kotlin
+.kotlin/
+kotlin-js-store/
+node_modules/
+*.kotlin_module
+
+# Android
+*.apk
+*.ap_
+*.aab
+*.dex
+captures/
+
+# iOS
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Logs
+*.log
+
