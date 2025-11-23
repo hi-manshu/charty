@@ -15,6 +15,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 
 /**
  * Point Chart (Scatter Chart) - Display data as individual points
@@ -59,7 +60,12 @@ fun PointChart(
     val dataList = data()
     require(dataList.isNotEmpty()) { "Point chart data cannot be empty" }
 
-    val maxValue = calculateMaxValue(dataList.getValues())
+    val values = dataList.getValues()
+    val minValue = calculateMinValue(values)
+    val maxValue = calculateMaxValue(values)
+
+    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
+    val isBelowAxisMode = (pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS)
 
     // Animation
     val animationProgress = remember {
@@ -79,9 +85,11 @@ fun PointChart(
         modifier = modifier,
         xLabels = dataList.getLabels(),
         yAxisConfig = AxisConfig(
-            minValue = 0f,
+            minValue = minValue,
             maxValue = maxValue,
-            steps = 6
+            steps = 6,
+            // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
+            drawAxisAtZero = isBelowAxisMode
         ),
         config = scaffoldConfig
     ) { chartContext ->

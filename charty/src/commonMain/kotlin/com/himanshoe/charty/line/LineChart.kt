@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
@@ -62,7 +64,12 @@ fun LineChart(
     val dataList = data()
     require(dataList.isNotEmpty()) { "Line chart data cannot be empty" }
 
-    val maxValue = calculateMaxValue(dataList.getValues())
+    val values = dataList.getValues()
+    val minValue = calculateMinValue(values)
+    val maxValue = calculateMaxValue(values)
+
+    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
+    val isBelowAxisMode = (lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS)
 
     // Animation
     val animationProgress = remember {
@@ -82,9 +89,11 @@ fun LineChart(
         modifier = modifier,
         xLabels = dataList.getLabels(),
         yAxisConfig = AxisConfig(
-            minValue = 0f,
+            minValue = minValue,
             maxValue = maxValue,
-            steps = 6
+            steps = 6,
+            // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
+            drawAxisAtZero = isBelowAxisMode
         ),
         config = scaffoldConfig
     ) { chartContext ->
@@ -96,36 +105,75 @@ fun LineChart(
             )
         }
 
-        // Calculate how many segments to draw based on animation progress
-        val segmentsToDraw = ((pointPositions.size - 1) * animationProgress.value).toInt()
-        val segmentProgress = ((pointPositions.size - 1) * animationProgress.value) - segmentsToDraw
+        if (lineConfig.smoothCurve) {
+            // Draw smooth curve using cubic Bezier curves
+            val path = Path()
 
-        // Draw lines connecting consecutive points with animation
-        for (i in 0 until segmentsToDraw) {
-            drawLine(
-                brush = Brush.linearGradient(color.value),
-                start = pointPositions[i],
-                end = pointPositions[i + 1],
-                strokeWidth = lineConfig.lineWidth,
-                cap = lineConfig.strokeCap
-            )
-        }
+            if (pointPositions.isNotEmpty()) {
+                path.moveTo(pointPositions[0].x, pointPositions[0].y)
 
-        // Draw partial segment for smooth animation
-        if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
-            val start = pointPositions[segmentsToDraw]
-            val end = pointPositions[segmentsToDraw + 1]
-            val partialEnd = Offset(
-                x = start.x + (end.x - start.x) * segmentProgress,
-                y = start.y + (end.y - start.y) * segmentProgress
-            )
-            drawLine(
-                brush = Brush.linearGradient(color.value),
-                start = start,
-                end = partialEnd,
-                strokeWidth = lineConfig.lineWidth,
-                cap = lineConfig.strokeCap
-            )
+                // Calculate control points for smooth curves
+                for (i in 0 until pointPositions.size - 1) {
+                    val current = pointPositions[i]
+                    val next = pointPositions[i + 1]
+
+                    // Calculate control points for cubic Bezier curve
+                    val controlPoint1X = current.x + (next.x - current.x) / 3f
+                    val controlPoint1Y = current.y
+                    val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
+                    val controlPoint2Y = next.y
+
+                    path.cubicTo(
+                        controlPoint1X, controlPoint1Y,
+                        controlPoint2X, controlPoint2Y,
+                        next.x, next.y
+                    )
+                }
+
+                // Draw the smooth path with animation
+                // For smooth curves, we draw the entire path and rely on alpha for animation
+                // This is simpler than trying to partially draw Bezier curves
+                drawPath(
+                    path = path,
+                    brush = Brush.linearGradient(color.value),
+                    style = Stroke(
+                        width = lineConfig.lineWidth,
+                        cap = lineConfig.strokeCap
+                    ),
+                    alpha = animationProgress.value
+                )
+            }
+        } else {
+            // Draw straight lines connecting consecutive points with animation
+            val segmentsToDraw = ((pointPositions.size - 1) * animationProgress.value).toInt()
+            val segmentProgress = ((pointPositions.size - 1) * animationProgress.value) - segmentsToDraw
+
+            for (i in 0 until segmentsToDraw) {
+                drawLine(
+                    brush = Brush.linearGradient(color.value),
+                    start = pointPositions[i],
+                    end = pointPositions[i + 1],
+                    strokeWidth = lineConfig.lineWidth,
+                    cap = lineConfig.strokeCap
+                )
+            }
+
+            // Draw partial segment for smooth animation
+            if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
+                val start = pointPositions[segmentsToDraw]
+                val end = pointPositions[segmentsToDraw + 1]
+                val partialEnd = Offset(
+                    x = start.x + (end.x - start.x) * segmentProgress,
+                    y = start.y + (end.y - start.y) * segmentProgress
+                )
+                drawLine(
+                    brush = Brush.linearGradient(color.value),
+                    start = start,
+                    end = partialEnd,
+                    strokeWidth = lineConfig.lineWidth,
+                    cap = lineConfig.strokeCap
+                )
+            }
         }
 
         // Optionally draw circular markers at data points with fastForEach

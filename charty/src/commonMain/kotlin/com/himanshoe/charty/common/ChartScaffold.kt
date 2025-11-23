@@ -10,6 +10,30 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.*
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.color.ChartyColor
+import kotlin.math.round
+
+/**
+ * Formats a float value for display on axis labels.
+ * - Shows integers without decimal point
+ * - Shows floats with max 2 decimal places, trimming trailing zeros
+ */
+internal fun formatAxisLabel(value: Float): String {
+    return if (value % 1 == 0f) {
+        value.toInt().toString()
+    } else {
+        // Round to 2 decimal places
+        val rounded = round(value * 100) / 100
+        val str = rounded.toString()
+
+        // Ensure max 2 decimal places
+        val dotIndex = str.indexOf('.')
+        if (dotIndex >= 0 && str.length > dotIndex + 3) {
+            str.take(dotIndex + 3).trimEnd('0').trimEnd('.')
+        } else {
+            str.trimEnd('0').trimEnd('.')
+        }
+    }
+}
 
 /**
  * Context object passed to chart drawing lambdas.
@@ -217,7 +241,7 @@ private fun DrawAxisAndLabels(
 
             // Y-axis label
             if (config.showLabels) {
-                val labelText = if (value % 1 == 0f) value.toInt().toString() else value.toString()
+                val labelText = formatAxisLabel(value)
                 val textLayout = textMeasurer.measure(AnnotatedString(labelText), labelStyle)
 
                 drawText(

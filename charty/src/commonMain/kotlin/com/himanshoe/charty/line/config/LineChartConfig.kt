@@ -2,6 +2,7 @@ package com.himanshoe.charty.line.config
 
 import androidx.compose.ui.graphics.StrokeCap
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 
 /**
  * Configuration for Line Chart appearance and behavior
@@ -12,6 +13,7 @@ import com.himanshoe.charty.common.config.Animation
  * @param pointAlpha Alpha (transparency) value for points (0.0f - 1.0f)
  * @param strokeCap The style of line endings (Butt, Round, or Square)
  * @param smoothCurve Whether to draw smooth curves instead of straight lines (future enhancement)
+ * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param animation Animation configuration (Disabled or Enabled with duration)
  */
 data class LineChartConfig(
@@ -21,6 +23,7 @@ data class LineChartConfig(
     val pointAlpha: Float = 1f,
     val strokeCap: StrokeCap = StrokeCap.Round,
     val smoothCurve: Boolean = false,
+    val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default
 ) {
     init {

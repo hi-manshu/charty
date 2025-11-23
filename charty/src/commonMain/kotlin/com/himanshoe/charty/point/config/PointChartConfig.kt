@@ -1,6 +1,7 @@
 package com.himanshoe.charty.point.config
 
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 
 /**
  * Configuration for Point Chart appearance and behavior
@@ -8,12 +9,14 @@ import com.himanshoe.charty.common.config.Animation
  * @param pointRadius Radius of each point in pixels
  * @param pointAlpha Alpha (transparency) value for points (0.0f - 1.0f)
  * @param showLabels Whether to show data labels on points
+ * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param animation Animation configuration (Disabled or Enabled with duration)
  */
 data class PointChartConfig(
     val pointRadius: Float = 8f,
     val pointAlpha: Float = 1f,
     val showLabels: Boolean = false,
+    val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default
 ) {
     init {

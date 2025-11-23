@@ -20,7 +20,6 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.BarData
 import com.himanshoe.charty.bar.ComparisonBarChart
-import com.himanshoe.charty.bar.GroupedBarChart
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -293,6 +292,124 @@ fun App() {
                     }
                 }
 
+                // Point Chart with Negative Values - Below Axis
+                item {
+                    ChartCard(
+                        title = "Point Chart with Negative Values - Below Axis",
+                        description = "Points showing both positive and negative values - axis centered at zero"
+                    ) {
+                        PointChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    PointData("Mon", -23f),
+                                    PointData("Tue", 45f),
+                                    PointData("Wed", -31f),
+                                    PointData("Thu", 67f),
+                                    PointData("Fri", -52f),
+                                    PointData("Sat", 39f),
+                                    PointData("Sun", -28f)
+                                )
+                            },
+                            color = ChartyColor.Solid(Color(0xFF4CAF50)),
+                            pointConfig = PointChartConfig(
+                                pointRadius = 8f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS
+                            )
+                        )
+                    }
+                }
+
+                // Point Chart with Negative Values - From Min Value
+                item {
+                    ChartCard(
+                        title = "Point Chart with Negative Values - From Min Value",
+                        description = "All points drawn relative to minimum value - axis at bottom"
+                    ) {
+                        PointChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    PointData("Mon", -23f),
+                                    PointData("Tue", 45f),
+                                    PointData("Wed", -31f),
+                                    PointData("Thu", 67f),
+                                    PointData("Fri", -52f),
+                                    PointData("Sat", 39f),
+                                    PointData("Sun", -28f)
+                                )
+                            },
+                            color = ChartyColor.Solid(Color(0xFFE91E63)),
+                            pointConfig = PointChartConfig(
+                                pointRadius = 8f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE
+                            )
+                        )
+                    }
+                }
+
+                // Line Chart with Negative Values - Below Axis
+                item {
+                    ChartCard(
+                        title = "Line Chart with Negative Values - Below Axis",
+                        description = "Line chart showing trends with positive and negative values - axis centered"
+                    ) {
+                        LineChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    LineData("Mon", -20f),
+                                    LineData("Tue", 45f),
+                                    LineData("Wed", -30f),
+                                    LineData("Thu", 70f),
+                                    LineData("Fri", -55f),
+                                    LineData("Sat", 40f),
+                                    LineData("Sun", 65f)
+                                )
+                            },
+                            color = ChartyColor.Solid(Color(0xFFFF9800)),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                strokeCap = StrokeCap.Round,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS
+                            )
+                        )
+                    }
+                }
+
+                // Line Chart with Negative Values - From Min Value
+                item {
+                    ChartCard(
+                        title = "Line Chart with Negative Values - From Min Value",
+                        description = "Line chart with all values drawn from minimum - axis at bottom"
+                    ) {
+                        LineChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    LineData("Mon", -20f),
+                                    LineData("Tue", 45f),
+                                    LineData("Wed", -30f),
+                                    LineData("Thu", 70f),
+                                    LineData("Fri", -55f),
+                                    LineData("Sat", 40f),
+                                    LineData("Sun", 65f)
+                                )
+                            },
+                            color = ChartyColor.Solid(Color(0xFF00BCD4)),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                strokeCap = StrokeCap.Round,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE
+                            )
+                        )
+                    }
+                }
+
                 // Bar Chart with Gradient
                 item {
                     ChartCard(
@@ -371,6 +488,7 @@ fun App() {
                             color = ChartyColor.Solid(Color(0xFF00BCD4)),
                             lineConfig = LineChartConfig(
                                 lineWidth = 4f,
+                                smoothCurve = true,
                                 showPoints = false
                             )
                         )
