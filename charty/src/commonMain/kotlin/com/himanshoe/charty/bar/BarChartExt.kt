@@ -18,6 +18,19 @@ internal fun calculateMaxValue(values: List<Float>, stepSize: Int = 10): Float {
 }
 
 /**
+ * Calculate appropriate min value with nice rounding
+ * Rounds down to the nearest multiple of stepSize
+ *
+ * @param values List of values to find min from
+ * @param stepSize Step size for rounding (default 10)
+ * @return Rounded min value
+ */
+internal fun calculateMinValue(values: List<Float>, stepSize: Int = 10): Float {
+    val minData = values.minOrNull() ?: 0f
+    return kotlin.math.floor(minData / stepSize).toInt() * stepSize.toFloat()
+}
+
+/**
  * Extension function to get all values from BarData list
  */
 @JvmName("getBarDataValues")

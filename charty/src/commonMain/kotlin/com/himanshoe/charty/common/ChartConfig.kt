@@ -1,5 +1,7 @@
 package com.himanshoe.charty.common
 
+import androidx.compose.ui.graphics.Color
+
 /**
  * Configuration for chart axis.
  *
@@ -7,12 +9,14 @@ package com.himanshoe.charty.common
  * @param maxValue Maximum value on the axis
  * @param steps Number of steps/divisions on the axis
  * @param label Label for the axis (e.g., "Sales", "Revenue")
+ * @param drawAxisAtZero When true and data spans zero, the X axis is drawn at zero (centered). When false, the X axis is always drawn at the bottom.
  */
 data class AxisConfig(
     val minValue: Float = 0f,
     val maxValue: Float = 100f,
     val steps: Int = 5,
-    val label: String = ""
+    val label: String = "",
+    val drawAxisAtZero: Boolean = true
 )
 
 /**
@@ -31,10 +35,9 @@ data class ChartScaffoldConfig(
     val showAxis: Boolean = true,
     val showGrid: Boolean = true,
     val showLabels: Boolean = true,
-    val axisColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Black,
-    val gridColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.LightGray,
-    val labelColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Black,
+    val axisColor: Color = Color.Black,
+    val gridColor: Color = Color.LightGray,
+    val labelColor: Color = Color.Black,
     val axisThickness: Float = 2f,
     val gridThickness: Float = 1f
 )
-

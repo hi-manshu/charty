@@ -19,8 +19,11 @@ import com.himanshoe.charty.getPlatformName
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.BarData
+import com.himanshoe.charty.bar.ComparisonBarChart
 import com.himanshoe.charty.bar.GroupedBarChart
 import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.point.PointChart
 import com.himanshoe.charty.point.PointData
@@ -75,7 +78,7 @@ fun App() {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    BarData("Jan", -45f),
+                                    BarData("Jan", 45f),
                                     BarData("Feb", 78f),
                                     BarData("Mar", 62f),
                                     BarData("Apr", 89f),
@@ -84,8 +87,7 @@ fun App() {
                             },
                             barConfig = BarChartConfig(
                                 barWidthFraction = 0.7f,
-                                roundedTopCorners = true,
-                                topCornerRadius = CornerRadius.Large,
+                                cornerRadius = CornerRadius.Large,
                                 animation = Animation.Enabled(duration = 1000)
                             ),
                             color = ChartyColor.Solid(Color(0xFF2196F3))
@@ -93,13 +95,71 @@ fun App() {
                     }
                 }
 
-                // Grouped Bar Chart
+                // Bar Chart with Negative Values - Below Axis Mode
                 item {
                     ChartCard(
-                        title = "Grouped Bar Chart",
+                        title = "Bar Chart with Negative Values - Below Axis",
+                        description = "Chart showing both profit and loss - axis centered at zero"
+                    ) {
+                        BarChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    BarData("Jan", -45f),
+                                    BarData("Feb", 78f),
+                                    BarData("Mar", -62f),
+                                    BarData("Apr", 89f),
+                                    BarData("May", -55f),
+                                    BarData("Jun", 35f)
+                                )
+                            },
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Large,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+                                animation = Animation.Enabled(duration = 1000)
+                            ),
+                            color = ChartyColor.Solid(Color(0xFF2196F3))
+                        )
+                    }
+                }
+
+                // Bar Chart with Negative Values - From Min Value Mode
+                item {
+                    ChartCard(
+                        title = "Bar Chart with Negative Values - From Min Value",
+                        description = "All bars drawn from minimum value upward for relative comparison"
+                    ) {
+                        BarChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    BarData("Jan", -45f),
+                                    BarData("Feb", 78f),
+                                    BarData("Mar", -62f),
+                                    BarData("Apr", 89f),
+                                    BarData("May", -55f),
+                                    BarData("Jun", 35f)
+                                )
+                            },
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Large,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+                                animation = Animation.Enabled(duration = 1000)
+                            ),
+                            color = ChartyColor.Solid(Color(0xFF4CAF50))
+                        )
+                    }
+                }
+
+                // Comparison Bar Chart (formerly Grouped)
+                item {
+                    ChartCard(
+                        title = "Comparison Bar Chart",
                         description = "Multiple bars per category with gradient colors"
                     ) {
-                        GroupedBarChart(
+                        ComparisonBarChart(
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
@@ -111,6 +171,66 @@ fun App() {
                             },
                             colors = ChartyColor.Gradient(
                                 listOf(Color(0xFFE91E63), Color(0xFF2196F3))
+                            )
+                        )
+                    }
+                }
+
+                // Comparison Bar Chart with Negative Values - Below Axis
+                item {
+                    ChartCard(
+                        title = "Comparison Bar Chart - Below Axis Mode",
+                        description = "Multiple bars with profit/loss comparison - axis centered at zero"
+                    ) {
+                        ComparisonBarChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    BarGroup("Q1", listOf(45f, -30f, 20f)),
+                                    BarGroup("Q2", listOf(-25f, 40f, -15f)),
+                                    BarGroup("Q3", listOf(60f, -45f, 35f)),
+                                    BarGroup("Q4", listOf(-20f, 55f, -40f))
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3)
+                                )
+                            ),
+                            comparisonConfig = ComparisonBarChartConfig(
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS
+                            )
+                        )
+                    }
+                }
+
+                // Comparison Bar Chart with Negative Values - From Min Value
+                item {
+                    ChartCard(
+                        title = "Comparison Bar Chart - From Min Value Mode",
+                        description = "All bars drawn from minimum value for relative comparison"
+                    ) {
+                        ComparisonBarChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    BarGroup("Q1", listOf(45f, -30f, 20f)),
+                                    BarGroup("Q2", listOf(-25f, 40f, -15f)),
+                                    BarGroup("Q3", listOf(60f, -45f, 35f)),
+                                    BarGroup("Q4", listOf(-20f, 55f, -40f))
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3)
+                                )
+                            ),
+                            comparisonConfig = ComparisonBarChartConfig(
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE
                             )
                         )
                     }

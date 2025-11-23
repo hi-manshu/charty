@@ -177,12 +177,22 @@ private fun DrawAxisAndLabels(
             )
         }
 
-        // Draw X-axis line
+        // Draw X-axis line (at zero position if configured and there are negative values)
         if (config.showAxis) {
+            val xAxisPosition = if (yAxisConfig.minValue < 0f && yAxisConfig.maxValue > 0f && yAxisConfig.drawAxisAtZero) {
+                // Position at zero when we have both positive and negative values and drawAxisAtZero is true
+                val range = yAxisConfig.maxValue - yAxisConfig.minValue
+                val zeroNormalized = (0f - yAxisConfig.minValue) / range
+                chartBottom - (zeroNormalized * chartHeight)
+            } else {
+                // Otherwise place the X axis at the bottom (min value)
+                chartBottom
+            }
+
             drawLine(
                 color = config.axisColor,
-                start = Offset(chartLeft, chartBottom),
-                end = Offset(chartRight, chartBottom),
+                start = Offset(chartLeft, xAxisPosition),
+                end = Offset(chartRight, xAxisPosition),
                 strokeWidth = config.axisThickness
             )
         }
@@ -238,4 +248,3 @@ private fun DrawAxisAndLabels(
         }
     }
 }
-
