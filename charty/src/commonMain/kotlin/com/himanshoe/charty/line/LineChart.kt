@@ -19,6 +19,11 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.line.data.LineData
+import com.himanshoe.charty.line.ext.calculateMaxValue
+import com.himanshoe.charty.line.ext.calculateMinValue
+import com.himanshoe.charty.line.ext.getLabels
+import com.himanshoe.charty.line.ext.getValues
 
 /**
  * Line Chart - Connect data points with lines

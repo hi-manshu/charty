@@ -1,5 +1,7 @@
-package com.himanshoe.charty.line
+package com.himanshoe.charty.line.ext
 
+import com.himanshoe.charty.line.data.LineData
+import com.himanshoe.charty.line.data.LineGroup
 import kotlin.jvm.JvmName
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -31,4 +33,17 @@ fun List<LineData>.getValues(): List<Float> = map { it.value }
  */
 @JvmName("getLineDataLabels")
 fun List<LineData>.getLabels(): List<String> = map { it.label }
+
+/**
+ * Extension function to get all values from all groups in LineGroup list
+ */
+@JvmName("getLineGroupAllValues")
+fun List<LineGroup>.getAllValues(): List<Float> = flatMap { it.values }
+
+/**
+ * Extension function to get all labels from LineGroup list
+ */
+@JvmName("getLineGroupLabels")
+fun List<LineGroup>.getLabels(): List<String> = map { it.label }
+
 

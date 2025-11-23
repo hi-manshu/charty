@@ -33,8 +33,11 @@ import com.himanshoe.charty.point.BubbleChart
 import com.himanshoe.charty.point.BubbleData
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.line.LineChart
-import com.himanshoe.charty.line.LineData
+import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.AreaChart
+import com.himanshoe.charty.line.MultilineChart
+import com.himanshoe.charty.line.StackedAreaChart
+import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -630,6 +633,145 @@ fun App() {
                                 animation = Animation.Enabled(duration = 1200)
                             ),
                             fillAlpha = 0.5f
+                        )
+                    }
+                }
+
+                // Multiline Chart - Smooth Curves
+                item {
+                    ChartCard(
+                        title = "Multiline Chart (Smooth)",
+                        description = "Multiple series with smooth curves starting from axis (0,0)"
+                    ) {
+                        MultilineChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    LineGroup("Mon", listOf(20f, 35f, 15f)),
+                                    LineGroup("Tue", listOf(45f, 28f, 38f)),
+                                    LineGroup("Wed", listOf(30f, 52f, 25f)),
+                                    LineGroup("Thu", listOf(70f, 40f, 55f)),
+                                    LineGroup("Fri", listOf(55f, 65f, 45f)),
+                                    LineGroup("Sat", listOf(40f, 50f, 35f))
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50)
+                                )
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                smoothCurve = true,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                animation = Animation.Enabled(duration = 1200)
+                            )
+                        )
+                    }
+                }
+
+                // Multiline Chart - Straight Lines
+                item {
+                    ChartCard(
+                        title = "Multiline Chart (Straight)",
+                        description = "Multiple series with straight lines starting from axis (0,0)"
+                    ) {
+                        MultilineChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    LineGroup("Jan", listOf(25f, 40f)),
+                                    LineGroup("Feb", listOf(35f, 30f)),
+                                    LineGroup("Mar", listOf(50f, 45f)),
+                                    LineGroup("Apr", listOf(45f, 60f)),
+                                    LineGroup("May", listOf(60f, 50f)),
+                                    LineGroup("Jun", listOf(55f, 70f))
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFFF9800),
+                                    Color(0xFF9C27B0)
+                                )
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                smoothCurve = false,
+                                showPoints = true,
+                                pointRadius = 7f,
+                                animation = Animation.Enabled(duration = 1200)
+                            )
+                        )
+                    }
+                }
+
+                // Stacked Area Chart - Smooth
+                item {
+                    ChartCard(
+                        title = "Stacked Area Chart (Smooth)",
+                        description = "Cumulative stacked areas with smooth curves from axis (0,0)"
+                    ) {
+                        StackedAreaChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    LineGroup("Mon", listOf(20f, 15f, 10f)),
+                                    LineGroup("Tue", listOf(45f, 28f, 12f)),
+                                    LineGroup("Wed", listOf(30f, 22f, 18f)),
+                                    LineGroup("Thu", listOf(70f, 30f, 15f)),
+                                    LineGroup("Fri", listOf(55f, 35f, 20f)),
+                                    LineGroup("Sat", listOf(40f, 25f, 15f))
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800)
+                                )
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 2f,
+                                smoothCurve = true,
+                                animation = Animation.Enabled(duration = 1200)
+                            ),
+                            fillAlpha = 0.7f
+                        )
+                    }
+                }
+
+                // Stacked Area Chart - Straight
+                item {
+                    ChartCard(
+                        title = "Stacked Area Chart (Straight)",
+                        description = "Cumulative stacked areas with straight lines from axis (0,0)"
+                    ) {
+                        StackedAreaChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    LineGroup("Q1", listOf(30f, 25f, 20f)),
+                                    LineGroup("Q2", listOf(40f, 35f, 25f)),
+                                    LineGroup("Q3", listOf(50f, 30f, 30f)),
+                                    LineGroup("Q4", listOf(45f, 40f, 28f))
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF9C27B0),
+                                    Color(0xFF00BCD4)
+                                )
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 2f,
+                                smoothCurve = false,
+                                animation = Animation.Enabled(duration = 1200)
+                            ),
+                            fillAlpha = 0.8f
                         )
                     }
                 }

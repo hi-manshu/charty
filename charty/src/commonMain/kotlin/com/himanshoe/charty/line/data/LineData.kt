@@ -1,4 +1,4 @@
-package com.himanshoe.charty.line
+package com.himanshoe.charty.line.data
 
 /**
  * Data class representing a point in a line chart
@@ -10,4 +10,3 @@ data class LineData(
     val label: String,
     val value: Float
 )
-
