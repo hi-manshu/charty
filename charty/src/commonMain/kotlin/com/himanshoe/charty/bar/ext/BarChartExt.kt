@@ -1,8 +1,10 @@
-package com.himanshoe.charty.bar
+package com.himanshoe.charty.bar.ext
 
+import com.himanshoe.charty.bar.BarData
 import com.himanshoe.charty.bar.data.BarGroup
 import kotlin.jvm.JvmName
 import kotlin.math.ceil
+import kotlin.math.floor
 
 /**
  * Calculate appropriate max value with nice rounding
@@ -27,7 +29,7 @@ internal fun calculateMaxValue(values: List<Float>, stepSize: Int = 10): Float {
  */
 internal fun calculateMinValue(values: List<Float>, stepSize: Int = 10): Float {
     val minData = values.minOrNull() ?: 0f
-    return kotlin.math.floor(minData / stepSize).toInt() * stepSize.toFloat()
+    return floor(minData / stepSize).toInt() * stepSize.toFloat()
 }
 
 /**

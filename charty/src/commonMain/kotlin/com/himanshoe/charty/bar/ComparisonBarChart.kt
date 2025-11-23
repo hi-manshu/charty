@@ -11,6 +11,10 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.ext.calculateMaxValue
+import com.himanshoe.charty.bar.ext.calculateMinValue
+import com.himanshoe.charty.bar.ext.getAllValues
+import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold

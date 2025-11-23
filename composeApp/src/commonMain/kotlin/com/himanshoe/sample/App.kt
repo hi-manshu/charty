@@ -20,15 +20,21 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.BarData
 import com.himanshoe.charty.bar.ComparisonBarChart
+import com.himanshoe.charty.bar.HorizontalBarChart
+import com.himanshoe.charty.bar.StackedBarChart
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
+import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.point.PointChart
 import com.himanshoe.charty.point.PointData
+import com.himanshoe.charty.point.BubbleChart
+import com.himanshoe.charty.point.BubbleData
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.LineData
+import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -67,6 +73,33 @@ fun App() {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                // Horizontal Bar Chart
+                item {
+                    ChartCard(
+                        title = "Horizontal Bar Chart",
+                        description = "Bars extending horizontally - great for long category labels"
+                    ) {
+                        HorizontalBarChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    BarData("Marketing", 50f),
+                                    BarData("Development", 60f),
+                                    BarData("Sales", 60f),
+                                    BarData("Operations", 60f),
+                                    BarData("Support", 61f)
+                                )
+                            },
+                            color = ChartyColor.Solid(Color(0xFF9C27B0)),
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Large,
+                                animation = Animation.Enabled(duration = 1000)
+                            )
+                        )
+                    }
+                }
+
                 // Simple Bar Chart
                 item {
                     ChartCard(
@@ -491,6 +524,147 @@ fun App() {
                                 smoothCurve = true,
                                 showPoints = false
                             )
+                        )
+                    }
+                }
+
+
+                // Stacked Bar Chart
+                item {
+                    ChartCard(
+                        title = "Stacked Bar Chart",
+                        description = "Shows composition and total - segments stacked vertically"
+                    ) {
+                        StackedBarChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    BarGroup("Q1", listOf(20f, 30f, 15f)),
+                                    BarGroup("Q2", listOf(25f, 35f, 20f)),
+                                    BarGroup("Q3", listOf(30f, 25f, 25f)),
+                                    BarGroup("Q4", listOf(28f, 40f, 18f))
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800)
+                                )
+                            ),
+                            stackedConfig = StackedBarChartConfig(
+                                barWidthFraction = 0.7f,
+                                topCornerRadius = CornerRadius.Medium,
+                                animation = Animation.Enabled(duration = 1000)
+                            )
+                        )
+                    }
+                }
+
+                // Area Chart
+                item {
+                    ChartCard(
+                        title = "Area Chart",
+                        description = "Line chart with filled area - emphasizes magnitude of change"
+                    ) {
+                        AreaChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    LineData("Jan", 15f),
+                                    LineData("Feb", 28f),
+                                    LineData("Mar", 42f),
+                                    LineData("Apr", 35f),
+                                    LineData("May", 58f),
+                                    LineData("Jun", 48f),
+                                    LineData("Jul", 65f)
+                                )
+                            },
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF2196F3).copy(alpha = 0.2f)
+                                )
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                smoothCurve = true,
+                                animation = Animation.Enabled(duration = 1200)
+                            ),
+                            fillAlpha = 0.4f
+                        )
+                    }
+                }
+
+                // Area Chart with Smooth Curve
+                item {
+                    ChartCard(
+                        title = "Area Chart (Smooth)",
+                        description = "Smooth curved area chart for elegant data visualization"
+                    ) {
+                        AreaChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = {
+                                listOf(
+                                    LineData("Mon", 12f),
+                                    LineData("Tue", 25f),
+                                    LineData("Wed", 18f),
+                                    LineData("Thu", 38f),
+                                    LineData("Fri", 30f),
+                                    LineData("Sat", 45f),
+                                    LineData("Sun", 35f)
+                                )
+                            },
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF4CAF50),
+                                    Color(0xFF4CAF50).copy(alpha = 0.1f)
+                                )
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                showPoints = false,
+                                smoothCurve = true,
+                                animation = Animation.Enabled(duration = 1200)
+                            ),
+                            fillAlpha = 0.5f
+                        )
+                    }
+                }
+
+                // Bubble Chart
+                item {
+                    ChartCard(
+                        title = "Bubble Chart",
+                        description = "Visualizes 3 dimensions: position, value, and size"
+                    ) {
+                        BubbleChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    BubbleData("Product A", yValue = 45f, size = 150f),
+                                    BubbleData("Product B", yValue = 72f, size = 280f),
+                                    BubbleData("Product C", yValue = 38f, size = 100f),
+                                    BubbleData("Product D", yValue = 85f, size = 220f),
+                                    BubbleData("Product E", yValue = 55f, size = 180f)
+                                )
+                            },
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFF9C27B0)
+                                )
+                            ),
+                            pointConfig = PointChartConfig(
+                                pointRadius = 40f,
+                                animation = Animation.Enabled(duration = 1000)
+                            ),
+                            minBubbleRadius = 15f
                         )
                     }
                 }

@@ -18,6 +18,10 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.bar.ext.calculateMaxValue
+import com.himanshoe.charty.bar.ext.calculateMinValue
+import com.himanshoe.charty.bar.ext.getLabels
+import com.himanshoe.charty.bar.ext.getValues
 import com.himanshoe.charty.common.config.Animation
 
 /**
