@@ -77,27 +77,25 @@ fun StackedAreaChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     fillAlpha: Float = 0.7f
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Stacked area chart data cannot be empty" }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
-    // Calculate stacked cumulative values for proper scaling
-    val stackedData = dataList.map { group ->
-        val cumulativeValues = mutableListOf<Float>()
-        var sum = 0f
-        group.values.forEach { value ->
-            sum += value
-            cumulativeValues.add(sum)
+    val (maxValue, colorList) = remember(dataList, colors) {
+        val allStackedValues = dataList.flatMap { group ->
+            val cumulativeValues = mutableListOf<Float>()
+            var sum = 0f
+            group.values.forEach { value ->
+                sum += value
+                cumulativeValues.add(sum)
+            }
+            cumulativeValues
         }
-        cumulativeValues
+        calculateMaxValue(allStackedValues) to colors.value
     }
 
-    val allStackedValues = stackedData.flatten()
-    val minValue = 0f // Stacked charts always start from 0
-    val maxValue = calculateMaxValue(allStackedValues)
-    val colorList = colors.value
+    val minValue = 0f
 
-    // Animation
     val animationProgress = remember {
         Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -124,15 +122,11 @@ fun StackedAreaChart(
     ) { chartContext ->
         val baselineY = chartContext.bottom
         val startX = chartContext.left
-
-        // Get the number of series from the first group
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
 
-        // Draw each series from bottom to top (reverse order for proper stacking)
         for (seriesIndex in seriesCount - 1 downTo 0) {
             val seriesColor = colorList[seriesIndex % colorList.size]
 
-            // Calculate cumulative values up to and including this series
             val cumulativePositions = dataList.fastMapIndexed { index, group ->
                 var cumulativeValue = 0f
                 for (i in 0..seriesIndex) {
@@ -145,7 +139,6 @@ fun StackedAreaChart(
             }
 
             if (cumulativePositions.isNotEmpty()) {
-                // Create path for filled area - ALL series start from axis intersection
                 val areaPath = Path().apply {
                     val firstPoint = cumulativePositions[0]
 

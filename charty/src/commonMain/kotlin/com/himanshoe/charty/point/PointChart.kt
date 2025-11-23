@@ -57,17 +57,16 @@ fun PointChart(
     pointConfig: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Point chart data cannot be empty" }
 
-    val values = dataList.getValues()
-    val minValue = calculateMinValue(values)
-    val maxValue = calculateMaxValue(values)
+    val (minValue, maxValue) = remember(dataList, pointConfig.negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
 
-    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
-    val isBelowAxisMode = (pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS)
+    val isBelowAxisMode = pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    // Animation
     val animationProgress = remember {
         Animatable(if (pointConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -88,30 +87,22 @@ fun PointChart(
             minValue = minValue,
             maxValue = maxValue,
             steps = 6,
-            // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
             drawAxisAtZero = isBelowAxisMode
         ),
         config = scaffoldConfig
     ) { chartContext ->
-        // Use fastForEachIndexed for better performance
         dataList.fastForEachIndexed { index, point ->
-            // Calculate progress for this point (stagger animation)
             val pointProgress = index.toFloat() / dataList.size
             val pointAnimationProgress = ((animationProgress.value - pointProgress) * dataList.size).coerceIn(0f, 1f)
 
-            // Calculate center X position for this point
             val pointX = chartContext.calculateCenteredXPosition(index, dataList.size)
-
-            // Convert data value to Y coordinate
             val pointY = chartContext.convertValueToYPosition(point.value)
 
-            // Determine point color based on ChartyColor type
             val pointColor = when (color) {
                 is ChartyColor.Solid -> color.color
                 is ChartyColor.Gradient -> color.colors[index % color.colors.size]
             }
 
-            // Draw the point as a filled circle with animated radius and alpha
             if (pointAnimationProgress > 0f) {
                 drawCircle(
                     color = pointColor,

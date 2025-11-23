@@ -75,18 +75,17 @@ fun AreaChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     fillAlpha: Float = 0.3f
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Area chart data cannot be empty" }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
-    val values = dataList.getValues()
-    val minValue = calculateMinValue(values)
-    val maxValue = calculateMaxValue(values)
+    val (minValue, maxValue) = remember(dataList, lineConfig.negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
 
-    // Determine if we're in BELOW_AXIS mode
-    val isBelowAxisMode = (lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS)
+    val isBelowAxisMode = lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
 
-    // Animation
     val animationProgress = remember {
         Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -111,7 +110,6 @@ fun AreaChart(
         ),
         config = scaffoldConfig
     ) { chartContext ->
-        // Calculate all point positions
         val pointPositions = dataList.fastMapIndexed { index, point ->
             Offset(
                 x = chartContext.calculateCenteredXPosition(index, dataList.size),
@@ -119,7 +117,6 @@ fun AreaChart(
             )
         }
 
-        // Determine baseline Y position (where area meets bottom)
         val baselineY = if (minValue < 0f && isBelowAxisMode) {
             chartContext.convertValueToYPosition(0f)
         } else {
@@ -127,16 +124,11 @@ fun AreaChart(
         }
 
         if (pointPositions.isNotEmpty()) {
-            // Create path for filled area
             val areaPath = Path().apply {
-                // Start at baseline for first point
                 moveTo(pointPositions[0].x, baselineY)
-
-                // Draw to first point
                 lineTo(pointPositions[0].x, pointPositions[0].y)
 
                 if (lineConfig.smoothCurve) {
-                    // Smooth curve through points
                     for (i in 0 until pointPositions.size - 1) {
                         val current = pointPositions[i]
                         val next = pointPositions[i + 1]

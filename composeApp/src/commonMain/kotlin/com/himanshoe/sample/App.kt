@@ -22,11 +22,13 @@ import com.himanshoe.charty.bar.BarData
 import com.himanshoe.charty.bar.ComparisonBarChart
 import com.himanshoe.charty.bar.HorizontalBarChart
 import com.himanshoe.charty.bar.StackedBarChart
+import com.himanshoe.charty.bar.SpanChart
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.data.SpanData
 import com.himanshoe.charty.point.PointChart
 import com.himanshoe.charty.point.PointData
 import com.himanshoe.charty.point.BubbleChart
@@ -97,6 +99,41 @@ fun App() {
                             barConfig = BarChartConfig(
                                 barWidthFraction = 0.7f,
                                 cornerRadius = CornerRadius.Large,
+                                animation = Animation.Enabled(duration = 1000)
+                            )
+                        )
+                    }
+                }
+
+                // Span Chart
+                item {
+                    ChartCard(
+                        title = "Span Chart (Range Chart)",
+                        description = "Shows ranges or time spans horizontally - ideal for schedules and timelines"
+                    ) {
+                        SpanChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    SpanData("Category 1", startValue = 1f, endValue = 15f),
+                                    SpanData("Category 2", startValue = 12f, endValue = 28f),
+                                    SpanData("Category 3", startValue = 3f, endValue = 18f),
+                                    SpanData("Category 4", startValue = 18f, endValue = 32f),
+                                    SpanData("Category 5", startValue = 8f, endValue = 22f)
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFFE91E63),
+                                    Color(0xFF9C27B0)
+                                )
+                            ),
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Medium,
                                 animation = Animation.Enabled(duration = 1000)
                             )
                         )

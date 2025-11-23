@@ -169,7 +169,6 @@ fun ChartScaffold(
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            // Calculate padding based on label visibility
             val leftPadding = if (config.showLabels) 60f else 20f
             val rightPadding = 20f
             val topPadding = 20f

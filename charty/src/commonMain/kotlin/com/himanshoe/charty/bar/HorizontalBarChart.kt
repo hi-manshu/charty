@@ -63,18 +63,17 @@ fun HorizontalBarChart(
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
 
-    val values = dataList.getValues()
-    val minValue = calculateMinValue(values)
-    val maxValue = calculateMaxValue(values)
+    val (minValue, maxValue) = remember(dataList, barConfig.negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
 
-    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
-    val isBelowAxisMode = (barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS)
+    val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
 
-    // Animation
     val animationProgress = remember {
         Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -100,10 +99,8 @@ fun HorizontalBarChart(
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL
     ) { chartContext ->
-        // Add offset so bars don't overlap with Y-axis line
         val axisOffset = if (scaffoldConfig.showAxis) scaffoldConfig.axisThickness * 20f else 0f
 
-        // Calculate baseline position for horizontal bars (X position where bars start/end for zero)
         val baselineX = if (drawAxisAtZero) {
             val range = maxValue - minValue
             val zeroNormalized = (0f - minValue) / range
@@ -113,23 +110,16 @@ fun HorizontalBarChart(
         }
 
         dataList.fastForEachIndexed { index, bar ->
-            // Calculate bar Y position (vertical position for horizontal bar)
             val barHeight = chartContext.height / dataList.size
             val barY = chartContext.top + (barHeight * index)
             val barThickness = barHeight * barConfig.barWidthFraction
-
-            // Center the bar vertically within its section
             val centeredBarY = barY + (barHeight - barThickness) / 2
 
-            // Convert bar value to X coordinate
             val range = maxValue - minValue
             val valueNormalized = (bar.value - minValue) / range
             val barValueX = chartContext.left + axisOffset + (valueNormalized * (chartContext.width - axisOffset))
-
-            // Determine if bar is positive or negative
             val isNegative = bar.value < 0f
 
-            // Calculate bar position and width based on whether it's positive or negative
             val barLeft: Float
             val barWidth: Float
 
@@ -139,13 +129,11 @@ fun HorizontalBarChart(
                 barWidth = fullBarWidth * animationProgress.value
                 barLeft = barValueX
             } else {
-                // For positive values or FROM_MIN_VALUE mode: bar extends from baseline to value
                 val fullBarWidth = barValueX - baselineX
                 barWidth = fullBarWidth * animationProgress.value
                 barLeft = baselineX
             }
 
-            // Convert ChartyColor to Brush for gradient support (horizontal gradient for horizontal bars)
             val brush = when (color) {
                 is ChartyColor.Solid -> androidx.compose.ui.graphics.Brush.horizontalGradient(
                     colors = listOf(color.color, color.color),
@@ -159,7 +147,6 @@ fun HorizontalBarChart(
                 )
             }
 
-            // Draw bars with rounded corners (automatic)
             drawRoundedHorizontalBar(
                 brush = brush,
                 x = barLeft,
@@ -176,8 +163,6 @@ fun HorizontalBarChart(
 
 /**
  * Helper function to draw a horizontal bar with rounded corners
- * Bars extending right get right corners rounded
- * Bars extending left get left corners rounded
  */
 private fun DrawScope.drawRoundedHorizontalBar(
     brush: androidx.compose.ui.graphics.Brush,

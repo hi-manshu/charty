@@ -60,25 +60,40 @@ fun BubbleChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     minBubbleRadius: Float = 10f
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Bubble chart data cannot be empty" }
     require(minBubbleRadius > 0f) { "Minimum bubble radius must be positive" }
     require(pointConfig.pointRadius > minBubbleRadius) { "Max radius must be greater than min radius" }
 
-    val yValues = dataList.map { it.yValue }
-    val minValue = calculateMinValue(yValues)
-    val maxValue = calculateMaxValue(yValues)
+    data class BubbleSizeInfo(
+        val minValue: Float,
+        val maxValue: Float,
+        val minSize: Float,
+        val maxSize: Float,
+        val sizeRange: Float
+    )
 
-    // Calculate bubble size range
-    val sizes = dataList.map { it.size }
-    val minSize = sizes.minOrNull() ?: 0f
-    val maxSize = sizes.maxOrNull() ?: 1f
-    val sizeRange = maxSize - minSize
+    val sizeInfo = remember(dataList) {
+        val yValues = dataList.map { it.yValue }
+        val sizes = dataList.map { it.size }
+        val min = sizes.minOrNull() ?: 0f
+        val max = sizes.maxOrNull() ?: 1f
+        BubbleSizeInfo(
+            calculateMinValue(yValues),
+            calculateMaxValue(yValues),
+            min,
+            max,
+            max - min
+        )
+    }
 
-    // Determine if we're in BELOW_AXIS mode
-    val isBelowAxisMode = (pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS)
+    val minValue = sizeInfo.minValue
+    val maxValue = sizeInfo.maxValue
+    val minSize = sizeInfo.minSize
+    val sizeRange = sizeInfo.sizeRange
 
-    // Animation
+    val isBelowAxisMode = pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
+
     val animationProgress = remember {
         Animatable(if (pointConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -104,18 +119,12 @@ fun BubbleChart(
         config = scaffoldConfig
     ) { chartContext ->
         dataList.fastForEachIndexed { index, bubble ->
-            // Calculate progress for this bubble (stagger animation)
             val bubbleProgress = index.toFloat() / dataList.size
             val bubbleAnimationProgress = ((animationProgress.value - bubbleProgress) * dataList.size).coerceIn(0f, 1f)
 
-            // Calculate center X position
             val bubbleX = chartContext.calculateCenteredXPosition(index, dataList.size)
-
-            // Convert data value to Y coordinate
             val bubbleY = chartContext.convertValueToYPosition(bubble.yValue)
 
-            // Calculate bubble radius based on size (normalize to radius range)
-            // Using square root for area-proportional sizing (more intuitive)
             val normalizedSize = if (sizeRange > 0f) {
                 (bubble.size - minSize) / sizeRange
             } else {
@@ -124,15 +133,12 @@ fun BubbleChart(
             val radiusRange = pointConfig.pointRadius - minBubbleRadius
             val bubbleRadius = minBubbleRadius + (sqrt(normalizedSize) * radiusRange)
 
-            // Determine bubble color
             val bubbleColor = when (color) {
                 is ChartyColor.Solid -> color.color
                 is ChartyColor.Gradient -> color.colors[index % color.colors.size]
             }
 
-            // Draw the bubble with animated radius and alpha
             if (bubbleAnimationProgress > 0f) {
-                // Draw outer circle (border effect)
                 drawCircle(
                     color = bubbleColor.copy(alpha = 0.3f),
                     radius = bubbleRadius * bubbleAnimationProgress,

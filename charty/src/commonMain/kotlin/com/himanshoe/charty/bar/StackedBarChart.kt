@@ -67,15 +67,15 @@ fun StackedBarChart(
     stackedConfig: StackedBarChartConfig = StackedBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
     require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    // Calculate total sums for each group
-    val groupTotals = dataList.map { group -> group.values.sum() }
-    val maxTotal = groupTotals.maxOrNull() ?: 0f
+    val (groupTotals, maxTotal, colorList) = remember(dataList, colors) {
+        val totals = dataList.map { group -> group.values.sum() }
+        Triple(totals, totals.maxOrNull() ?: 0f, colors.value)
+    }
 
-    // Animation
     val animationProgress = remember {
         Animatable(if (stackedConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -100,11 +100,9 @@ fun StackedBarChart(
         config = scaffoldConfig
     ) { chartContext ->
         dataList.fastForEachIndexed { groupIndex, barGroup ->
-            // Calculate bar X position
             val barX = chartContext.calculateBarLeftPosition(groupIndex, dataList.size, stackedConfig.barWidthFraction)
             val barWidth = chartContext.calculateBarWidth(dataList.size, stackedConfig.barWidthFraction)
 
-            // Stack segments from bottom to top
             var cumulativeValue = 0f
 
             barGroup.values.fastForEachIndexed { segmentIndex, value ->
@@ -112,25 +110,16 @@ fun StackedBarChart(
                 val segmentTopValue = cumulativeValue + value
                 cumulativeValue = segmentTopValue
 
-                // Convert values to Y coordinates
                 val segmentBottomY = chartContext.convertValueToYPosition(segmentBottomValue)
                 val segmentTopY = chartContext.convertValueToYPosition(segmentTopValue)
 
-                // Calculate animated height
                 val fullSegmentHeight = segmentBottomY - segmentTopY
                 val animatedHeight = fullSegmentHeight * animationProgress.value
                 val animatedTopY = segmentBottomY - animatedHeight
 
-                // Determine segment color
-                val segmentColor = when (colors) {
-                    is ChartyColor.Solid -> colors.color
-                    is ChartyColor.Gradient -> colors.colors[segmentIndex % colors.colors.size]
-                }
-
-                // Determine if this is the top segment (for rounding)
+                val segmentColor = colorList[segmentIndex % colorList.size]
                 val isTopSegment = segmentIndex == barGroup.values.size - 1
 
-                // Draw the stacked segment
                 drawStackedSegment(
                     color = segmentColor,
                     x = barX,

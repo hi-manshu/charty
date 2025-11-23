@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
@@ -62,16 +63,19 @@ fun ComparisonBarChart(
     comparisonConfig: ComparisonBarChartConfig = ComparisonBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
 
-    val allValues = dataList.getAllValues()
-    val minValue = calculateMinValue(allValues)
-    val maxValue = calculateMaxValue(allValues)
-    val colorList = colors.value
+    val (minValue, maxValue, colorList) = remember(dataList, colors) {
+        val allValues = dataList.getAllValues()
+        Triple(
+            calculateMinValue(allValues),
+            calculateMaxValue(allValues),
+            colors.value
+        )
+    }
 
-    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
-    val isBelowAxisMode = (comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS)
+    val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
     ChartScaffold(
         modifier = modifier,
@@ -85,55 +89,38 @@ fun ComparisonBarChart(
         ),
         config = scaffoldConfig
     ) { chartContext ->
-        // Determine baseline position based on configuration:
-        // - BELOW_AXIS: baseline at zero line when there are negative values, otherwise at chart bottom
-        // - FROM_MIN_VALUE: baseline always at chart bottom (starts from minimum value)
         val baselineY = if (minValue < 0f && isBelowAxisMode) {
             chartContext.convertValueToYPosition(0f)
         } else {
             chartContext.bottom
         }
 
-        // Use fastForEachIndexed for better performance
         dataList.fastForEachIndexed { groupIndex, group ->
-            // Calculate width allocated for this group
             val groupWidth = chartContext.width / dataList.size
-
-            // Calculate individual bar width within the group
             val barWidth = groupWidth / group.values.size * 0.8f
 
-            // Use fastForEachIndexed for inner loop as well
             group.values.fastForEachIndexed { barIndex, value ->
-                // Calculate X position for this bar within its group
                 val barX = chartContext.left +
                         groupWidth * groupIndex +
                         barWidth * barIndex +
                         groupWidth * 0.1f
 
-                // Convert value to Y coordinate
                 val barValueY = chartContext.convertValueToYPosition(value)
-
-                // Determine if bar is positive or negative
                 val isNegative = value < 0f
 
-                // Calculate bar position and height based on whether it's positive or negative
                 val barTop: Float
                 val barHeight: Float
 
                 if (isNegative) {
-                    // For negative values: bar starts at baseline (zero line) and extends downward
                     barTop = baselineY
                     barHeight = barValueY - baselineY
                 } else {
-                    // For positive values: bar starts at value and extends down to baseline
                     barHeight = baselineY - barValueY
                     barTop = baselineY - barHeight
                 }
 
-                // Get color for this bar from the color list
                 val barColor = colorList[barIndex % colorList.size]
 
-                // Always draw bars with rounded corners (automatic)
                 drawRoundedBar(
                     color = barColor,
                     x = barX,
@@ -151,9 +138,6 @@ fun ComparisonBarChart(
 
 /**
  * Helper function to draw a comparison bar with rounded corners
- * Bars above the axis line get top corners rounded
- * Bars below the axis line get bottom corners rounded
- * Corner radius is configurable via ComparisonBarChartConfig
  */
 private fun DrawScope.drawRoundedBar(
     color: Color,
@@ -166,11 +150,7 @@ private fun DrawScope.drawRoundedBar(
     cornerRadius: Float
 ) {
     val path = Path().apply {
-        // Determine which corners to round based on bar position relative to axis
-        // If bar extends below axis (negative), round bottom corners
-        // If bar extends above axis (positive or when axis is at bottom), round top corners
         if (isNegative && isBelowAxisMode) {
-            // Negative bar extending below the axis line: round bottom corners
             addRoundRect(
                 RoundRect(
                     left = x,
@@ -184,7 +164,6 @@ private fun DrawScope.drawRoundedBar(
                 )
             )
         } else {
-            // Positive bar or bar extending above axis: round top corners
             addRoundRect(
                 RoundRect(
                     left = x,

@@ -66,17 +66,16 @@ fun LineChart(
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Line chart data cannot be empty" }
 
-    val values = dataList.getValues()
-    val minValue = calculateMinValue(values)
-    val maxValue = calculateMaxValue(values)
+    val (minValue, maxValue) = remember(dataList, lineConfig.negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
 
-    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
-    val isBelowAxisMode = (lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS)
+    val isBelowAxisMode = lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
 
-    // Animation
     val animationProgress = remember {
         Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -102,7 +101,6 @@ fun LineChart(
         ),
         config = scaffoldConfig
     ) { chartContext ->
-        // Calculate all point positions using ChartContext helpers with fastMapIndexed
         val pointPositions = dataList.fastMapIndexed { index, point ->
             Offset(
                 x = chartContext.calculateCenteredXPosition(index, dataList.size),
@@ -111,18 +109,15 @@ fun LineChart(
         }
 
         if (lineConfig.smoothCurve) {
-            // Draw smooth curve using cubic Bezier curves
             val path = Path()
 
             if (pointPositions.isNotEmpty()) {
                 path.moveTo(pointPositions[0].x, pointPositions[0].y)
 
-                // Calculate control points for smooth curves
                 for (i in 0 until pointPositions.size - 1) {
                     val current = pointPositions[i]
                     val next = pointPositions[i + 1]
 
-                    // Calculate control points for cubic Bezier curve
                     val controlPoint1X = current.x + (next.x - current.x) / 3f
                     val controlPoint1Y = current.y
                     val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
@@ -135,9 +130,6 @@ fun LineChart(
                     )
                 }
 
-                // Draw the smooth path with animation
-                // For smooth curves, we draw the entire path and rely on alpha for animation
-                // This is simpler than trying to partially draw Bezier curves
                 drawPath(
                     path = path,
                     brush = Brush.linearGradient(color.value),

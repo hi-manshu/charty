@@ -64,17 +64,16 @@ fun BarChart(
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Bar chart data cannot be empty" }
 
-    val values = dataList.getValues()
-    val minValue = calculateMinValue(values)
-    val maxValue = calculateMaxValue(values)
+    val (minValue, maxValue) = remember(dataList, barConfig.negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
 
-    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
-    val isBelowAxisMode = (barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS)
+    val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    // Animation
     val animationProgress = remember {
         Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
     }
@@ -100,50 +99,34 @@ fun BarChart(
         ),
         config = scaffoldConfig
     ) { chartContext ->
-        // Determine baseline position based on configuration:
-        // - BELOW_AXIS: baseline at zero line when there are negative values, otherwise at chart bottom
-        // - FROM_MIN_VALUE: baseline always at chart bottom (starts from minimum value)
         val baselineY = if (minValue < 0f && isBelowAxisMode) {
             chartContext.convertValueToYPosition(0f)
         } else {
             chartContext.bottom
         }
 
-        // Use fastForEachIndexed for better performance
         dataList.fastForEachIndexed { index, bar ->
-            // Calculate bar X position using ChartContext helper with custom width fraction
             val barX = chartContext.calculateBarLeftPosition(index, dataList.size, barConfig.barWidthFraction)
-
-            // Calculate bar width using ChartContext helper with custom width fraction
             val barWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
-
-            // Convert bar value to Y coordinate
             val barValueY = chartContext.convertValueToYPosition(bar.value)
-
-            // Determine if bar is positive or negative
             val isNegative = bar.value < 0f
 
-            // Calculate bar position and height based on whether it's positive or negative
             val barTop: Float
             val barHeight: Float
 
             if (isNegative) {
-                // For negative values: bar starts at baseline (zero line) and extends downward
                 barTop = baselineY
                 val fullBarHeight = barValueY - baselineY
                 barHeight = fullBarHeight * animationProgress.value
             } else {
-                // For positive values: bar starts at value and extends down to baseline
                 val fullBarHeight = baselineY - barValueY
                 val animatedBarHeight = fullBarHeight * animationProgress.value
                 barTop = baselineY - animatedBarHeight
                 barHeight = animatedBarHeight
             }
 
-            // Convert ChartyColor to Brush for gradient support
             val brush = with(chartContext) { color.toVerticalGradientBrush() }
 
-            // Always draw bars with rounded corners (automatic)
             drawRoundedBar(
                 brush = brush,
                 x = barX,
@@ -159,10 +142,7 @@ fun BarChart(
 }
 
 /**
- * Helper function to draw a bar with rounded corners
- * Bars above the axis line get top corners rounded
- * Bars below the axis line get bottom corners rounded
- * Corner radius is configurable via BarChartConfig
+ * Helper function to draw a bar with rounded corners based on bar position
  */
 private fun DrawScope.drawRoundedBar(
     brush: androidx.compose.ui.graphics.Brush,
@@ -175,11 +155,7 @@ private fun DrawScope.drawRoundedBar(
     cornerRadius: Float
 ) {
     val path = Path().apply {
-        // Determine which corners to round based on bar position relative to axis
-        // If bar extends below axis (negative), round bottom corners
-        // If bar extends above axis (positive or when axis is at bottom), round top corners
         if (isNegative && isBelowAxisMode) {
-            // Negative bar extending below the axis line: round bottom corners
             addRoundRect(
                 RoundRect(
                     left = x,
@@ -193,7 +169,6 @@ private fun DrawScope.drawRoundedBar(
                 )
             )
         } else {
-            // Positive bar or bar extending above axis: round top corners
             addRoundRect(
                 RoundRect(
                     left = x,

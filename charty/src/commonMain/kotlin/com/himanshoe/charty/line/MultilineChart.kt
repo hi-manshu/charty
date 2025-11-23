@@ -78,22 +78,22 @@ fun MultilineChart(
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
 ) {
-    val dataList = data()
+    val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Multiline chart data cannot be empty" }
 
-    val allValues = dataList.getAllValues()
-    val minValue = calculateMinValue(allValues)
-    val maxValue = calculateMaxValue(allValues)
-    val colorList = colors.value
+    val (minValue, maxValue, colorList) = remember(dataList, colors, lineConfig.negativeValuesDrawMode) {
+        val allValues = dataList.getAllValues()
+        Triple(
+            calculateMinValue(allValues),
+            calculateMaxValue(allValues),
+            colors.value
+        )
+    }
 
-    // Determine if we're in BELOW_AXIS mode (axis centered at zero when mixed values)
-    val isBelowAxisMode = (lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS)
-
-    // Animation
+    val isBelowAxisMode = lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = remember {
         Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
     }
-
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -114,14 +114,11 @@ fun MultilineChart(
         ),
         config = scaffoldConfig
     ) { chartContext ->
-        // Get the number of series from the first group
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
 
-        // Draw each line series
         for (seriesIndex in 0 until seriesCount) {
             val seriesColor = colorList[seriesIndex % colorList.size]
 
-            // Calculate all point positions for this series
             val pointPositions = dataList.fastMapIndexed { index, group ->
                 val value = group.values.getOrNull(seriesIndex) ?: 0f
                 Offset(
@@ -132,8 +129,6 @@ fun MultilineChart(
 
             if (pointPositions.isNotEmpty()) {
                 val path = Path()
-
-                // Start from axis intersection (0,0 point)
                 val startX = chartContext.left
                 val startY = chartContext.bottom
                 val firstPoint = pointPositions[0]
