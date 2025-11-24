@@ -1,4 +1,11 @@
-@file:Suppress("MagicNumber", "LongMethod", "FunctionNaming", "UndocumentedPublicFunction", "WildcardImport", "MaxLineLength")
+@file:Suppress(
+    "MagicNumber",
+    "LongMethod",
+    "FunctionNaming",
+    "UndocumentedPublicFunction",
+    "WildcardImport",
+    "MaxLineLength"
+)
 
 package com.himanshoe.sample
 
@@ -74,6 +81,12 @@ import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
 import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
+import com.himanshoe.charty.bar.LollipopBarChart
+import com.himanshoe.charty.bar.config.LollipopBarChartConfig
+import com.himanshoe.charty.bar.MosiacBarChart
+import com.himanshoe.charty.bar.WaterfallChart
+import com.himanshoe.charty.bar.config.WaterfallChartConfig
+import com.himanshoe.charty.bar.config.MosiacBarChartConfig
 
 @Composable
 @Preview
@@ -90,6 +103,118 @@ fun App() {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                item {
+                    ChartCard(
+                        title = "Waterfall Chart",
+                        description = "Cumulative gains and losses across categories"
+                    ) {
+                        WaterfallChart(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(280.dp),
+                            data = {
+                                listOf(
+                                    BarData("A", 10f, ChartyColor.Solid(Color(0xFFD64C66))),
+                                    BarData("B", 7f, ChartyColor.Solid(Color(0xFF6A1B9A))),
+                                    BarData("C", 15f, ChartyColor.Solid(Color(0xFF0B1D3B))),
+                                    BarData("D", 32f, ChartyColor.Solid(Color(0xFFD64C66)))
+                                )
+                            },
+                            config = WaterfallChartConfig(
+                                barWidthFraction = 0.6f,
+                                cornerRadius = CornerRadius.Medium
+                            )
+                        )
+                    }
+                }
+                item {
+                    ChartCard(
+                        title = "Mosiac Bar Chart",
+                        description = "100% stacked bar chart where each bar shows proportional composition"
+                    ) {
+                        MosiacBarChart(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(280.dp),
+                            data = {
+                                listOf(
+                                    BarGroup(
+                                        "A",
+                                        listOf(55f, 30f, 15f),
+                                        listOf(
+                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                            ChartyColor.Solid(Color(0xFFD64C66)),
+                                            ChartyColor.Solid(Color(0xFFFFA64D))
+                                        )
+                                    ),
+                                    BarGroup(
+                                        "B",
+                                        listOf(45f, 22f, 33f),
+                                        listOf(
+                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                            ChartyColor.Solid(Color(0xFFD64C66)),
+                                            ChartyColor.Solid(Color(0xFFFFA64D))
+                                        )
+                                    ),
+                                    BarGroup(
+                                        "C",
+                                        listOf(25f, 30f, 45f),
+                                        listOf(
+                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                            ChartyColor.Solid(Color(0xFFD64C66)),
+                                            ChartyColor.Solid(Color(0xFFFFA64D))
+                                        )
+                                    ),
+                                    BarGroup(
+                                        "D",
+                                        listOf(10f, 38f, 52f),
+                                        listOf(
+                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                            ChartyColor.Solid(Color(0xFFD64C66)),
+                                            ChartyColor.Solid(Color(0xFFFFA64D))
+                                        )
+                                    )
+                                )
+                            },
+                            config = MosiacBarChartConfig(
+                                barWidthFraction = 0.9f
+                            )
+                        )
+                    }
+                }
+                item {
+                    ChartCard(
+                        title = "Lollipop Bar Chart",
+                        description = "Vertical lollipop bars with configurable stem and circle colors"
+                    ) {
+                        LollipopBarChart(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(280.dp),
+                            data = {
+                                listOf(
+                                    BarData("A", 210f),
+                                    BarData("B", 380f),
+                                    BarData("C", 310f),
+                                    BarData("D", 170f),
+                                    BarData("D", 170f),
+                                    BarData("D", 170f),
+                                    BarData("D", 170f),
+                                    BarData("D", 170f),
+                                    BarData("D", 170f),
+                                    BarData("E", 450f)
+                                )
+                            },
+                            colors = ChartyColor.Solid(Color(0xFFE91E63)),
+                            config = LollipopBarChartConfig(
+                                barWidthFraction = 0.25f,
+                                stemThickness = 8f,
+                                circleRadius = 16f,
+                                circleColor = ChartyColor.Solid(Color.Yellow)
+                            )
+                        )
+                    }
+                }
                 // Candlestick Chart
                 item {
                     ChartCard(
@@ -923,36 +1048,96 @@ fun App() {
                                         "Q1",
                                         listOf(20f, 30f, 15f),
                                         listOf(
-                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
-                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
-                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65)
+                                                )
+                                            )
                                         )
                                     ),
                                     BarGroup(
                                         "Q2",
                                         listOf(25f, 35f, 20f),
                                         listOf(
-                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
-                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
-                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65)
+                                                )
+                                            )
                                         )
                                     ),
                                     BarGroup(
                                         "Q3",
                                         listOf(30f, 25f, 25f),
                                         listOf(
-                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
-                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
-                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65)
+                                                )
+                                            )
                                         )
                                     ),
                                     BarGroup(
                                         "Q4",
                                         listOf(28f, 40f, 18f),
                                         listOf(
-                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
-                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
-                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784)
+                                                )
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65)
+                                                )
+                                            )
                                         )
                                     )
                                 )
