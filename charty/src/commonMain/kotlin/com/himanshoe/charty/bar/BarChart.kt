@@ -14,15 +14,21 @@ package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -40,6 +46,8 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 
 /**
  * Bar Chart - Display data as vertical bars
@@ -81,6 +89,7 @@ fun BarChart(
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onBarClick: ((BarData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Bar chart data cannot be empty" }
@@ -98,6 +107,12 @@ fun BarChart(
             Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which bar is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store bar bounds for hit testing
+    val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
+
     LaunchedEffect(barConfig.animation) {
         if (barConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -110,18 +125,43 @@ fun BarChart(
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onBarClick != null) {
+                Modifier.pointerInput(dataList, barConfig, onBarClick) {
+                    detectTapGestures { offset ->
+                        val clickedBar = barBounds.find { (rect, _) ->
+                            rect.contains(offset)
+                        }
+
+                        clickedBar?.let { (rect, barData) ->
+                            onBarClick.invoke(barData)
+                            tooltipState = TooltipState(
+                                content = barConfig.tooltipFormatter(barData),
+                                x = rect.left,
+                                y = rect.top,
+                                barWidth = rect.width,
+                                position = barConfig.tooltipPosition,
+                            )
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.getLabels(),
         yAxisConfig =
             AxisConfig(
                 minValue = minValue,
                 maxValue = maxValue,
                 steps = 6,
-                // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
                 drawAxisAtZero = isBelowAxisMode,
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        barBounds.clear()
         val baselineY =
             if (minValue < 0f && isBelowAxisMode) {
                 chartContext.convertValueToYPosition(0f)
@@ -129,7 +169,6 @@ fun BarChart(
                 chartContext.bottom
             }
 
-        // Draw bars
         dataList.fastForEachIndexed { index, bar ->
             val barX = chartContext.calculateBarLeftPosition(index, dataList.size, barConfig.barWidthFraction)
             val barWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
@@ -149,8 +188,18 @@ fun BarChart(
                 barTop = baselineY - animatedBarHeight
                 barHeight = animatedBarHeight
             }
+            // Store bar bounds for hit testing
+            if (onBarClick != null) {
+                barBounds.add(
+                    Rect(
+                        left = barX,
+                        top = barTop,
+                        right = barX + barWidth,
+                        bottom = barTop + barHeight,
+                    ) to bar,
+                )
+            }
 
-            // Use per-bar color if available, otherwise fall back to chart color
             val barColor = bar.color ?: color
             val brush = with(chartContext) { barColor.toVerticalGradientBrush() }
 
@@ -166,13 +215,23 @@ fun BarChart(
             )
         }
 
-        // Draw reference / target line on top of bars if configured
         barConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
                 textMeasurer = textMeasurer,
+            )
+        }
+
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = barConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }

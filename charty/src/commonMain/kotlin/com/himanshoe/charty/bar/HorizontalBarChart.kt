@@ -246,3 +246,4 @@ private fun DrawScope.drawRoundedHorizontalBar(
 
     drawPath(path, brush)
 }
+

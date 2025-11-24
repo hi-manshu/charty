@@ -12,8 +12,6 @@ trim_trailing_whitespace = true
 
 [*.{kt,kts}]
 # Ktlint rules
-ktlint_standard_no-wildcard-imports = disabled
-ktlint_standard_filename = disabled
 ij_kotlin_imports_layout = *
 ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true

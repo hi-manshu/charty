@@ -24,8 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.ComparisonBarChart
 import com.himanshoe.charty.bar.HorizontalBarChart
@@ -59,6 +62,8 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
 import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.common.tooltip.TooltipPadding
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
@@ -104,6 +109,94 @@ fun App() {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
+                // Interactive Bar Chart with Tooltips - NEW EXAMPLE AT POSITION 0
+                item {
+                    var selectedBar by remember { mutableStateOf<BarData?>(null) }
+
+                    Column {
+                        // Show selected bar info in a card above the chart
+                        selectedBar?.let { bar ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${bar.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Sales: $${bar.value.toInt()}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Interactive Bar Chart with Tooltips",
+                            description = "Click on any bar to see tooltip with details. Tooltip auto-positions above/below based on available space.",
+                        ) {
+                            BarChart(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(320.dp),
+                                data = {
+                                    listOf(
+                                        BarData("Jan", 12500f),
+                                        BarData("Feb", 15800f),
+                                        BarData("Mar", 14200f),
+                                        BarData("Apr", 18900f),
+                                        BarData("May", 17500f),
+                                        BarData("Jun", 21300f),
+                                    )
+                                },
+                                color = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFF2196F3),
+                                        Color(0xFF1976D2)
+                                    )
+                                ),
+                                barConfig = BarChartConfig(
+                                    barWidthFraction = 0.7f,
+                                    cornerRadius = CornerRadius.Large,
+                                    animation = Animation.Enabled(duration = 800),
+                                    // Tooltip styling
+                                    tooltipConfig = TooltipConfig(
+                                        backgroundColor = Color.Black,
+                                        textStyle = TextStyle(
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        shape = RoundedCornerShape(8.dp),
+                                        padding = TooltipPadding(
+                                            horizontal = 16.dp,
+                                            vertical = 10.dp
+                                        ),
+                                        elevation = 8.dp,
+                                        showArrow = true,
+                                        arrowSize = 10.dp
+                                    ),
+                                    tooltipPosition = com.himanshoe.charty.common.tooltip.TooltipPosition.AUTO
+                                ),
+                                // Click listener - direct parameter
+                                onBarClick = { barData ->
+                                    selectedBar = barData
+                                    println("Bar clicked: ${barData.label} = ${barData.value}")
+                                },
+                            )
+                        }
+                    }
+                }
+
                 item {
                     ChartCard(
                         title = "Waterfall Chart",

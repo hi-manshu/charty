@@ -1,8 +1,11 @@
 package com.himanshoe.charty.bar.config
 
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.common.tooltip.TooltipPosition
 
 /**
  * Defines how negative values should be drawn in bar charts
@@ -32,6 +35,8 @@ enum class NegativeValuesDrawMode {
  * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param animation Animation configuration (Disabled or Enabled with duration)
  * @param referenceLine Optional reference line configuration (target/average line)
+ * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
 data class BarChartConfig(
     val barWidthFraction: Float = 0.6f,
@@ -40,6 +45,11 @@ data class BarChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
+    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
+    val tooltipFormatter: (BarData) -> String = { barData ->
+        "${barData.label}: ${barData.value}"
+    },
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }

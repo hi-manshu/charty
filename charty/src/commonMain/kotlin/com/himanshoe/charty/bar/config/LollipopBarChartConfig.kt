@@ -1,7 +1,10 @@
 package com.himanshoe.charty.bar.config
 
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.common.tooltip.TooltipPosition
 
 /**
  * Configuration for [com.himanshoe.charty.bar.LollipopBarChart]
@@ -12,6 +15,8 @@ import com.himanshoe.charty.common.config.Animation
  * @param circleStrokeWidth Optional stroke width for drawing the circle as a ring; 0f for filled
  * @param circleColor Optional override color for the circle head. If null, falls back to the bar color.
  * @param animation Animation configuration for growing stems from baseline
+ * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
 data class LollipopBarChartConfig(
     val barWidthFraction: Float = 0.2f,
@@ -20,6 +25,11 @@ data class LollipopBarChartConfig(
     val circleStrokeWidth: Float = 0f,
     val circleColor: ChartyColor? = null,
     val animation: Animation = Animation.Enabled(),
+    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
+    val tooltipFormatter: (BarData) -> String = { barData ->
+        "${barData.label}: ${barData.value}"
+    },
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
