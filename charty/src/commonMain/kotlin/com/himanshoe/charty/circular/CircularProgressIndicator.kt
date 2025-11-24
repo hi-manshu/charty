@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.circular.config.CircularProgressConfig
 import com.himanshoe.charty.circular.config.RingDirection
+import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.common.config.Animation
 import kotlin.math.*
 

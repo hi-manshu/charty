@@ -1,4 +1,4 @@
-package com.himanshoe.charty.scaffold
+package com.himanshoe.charty.common.scaffold
 
 import kotlin.math.ceil
 

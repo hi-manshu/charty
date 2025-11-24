@@ -1,4 +1,4 @@
-package com.himanshoe.charty.point
+package com.himanshoe.charty.point.data
 
 /**
  * Data class representing a single point in a point/scatter chart

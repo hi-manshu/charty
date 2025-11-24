@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import com.himanshoe.charty.getPlatformName
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.BarData
@@ -33,13 +32,13 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.data.SpanData
 import com.himanshoe.charty.circular.CircularProgressIndicator
-import com.himanshoe.charty.circular.CircularRingData
+import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.circular.config.CircularProgressConfig
 import com.himanshoe.charty.point.PointChart
-import com.himanshoe.charty.point.PointData
+import com.himanshoe.charty.point.data.PointData
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.pie.PieChart
-import com.himanshoe.charty.pie.PieData
+import com.himanshoe.charty.pie.data.PieData
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.config.InteractionConfig
@@ -54,10 +53,13 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.point.BubbleChart
-import com.himanshoe.charty.point.BubbleData
+import com.himanshoe.charty.point.data.BubbleData
 import com.himanshoe.charty.combo.ComboChart
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.config.ComboChartConfig
+import com.himanshoe.charty.candlestick.CandlestickChart
+import com.himanshoe.charty.candlestick.data.CandleData
+import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
 
 @Composable
 @Preview
@@ -68,31 +70,184 @@ fun App() {
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "🎨 Charty Library",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = "Platform: ${getPlatformName()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-
             // Scrollable content
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                // Candlestick Chart
+                item {
+                    ChartCard(
+                        title = "Candlestick Chart",
+                        description = "Financial OHLC chart - shows open, high, low, close prices (auto-filters to 5 labels when >10 data points)"
+                    ) {
+                        CandlestickChart(
+                            modifier = Modifier.fillMaxWidth().height(350.dp),
+                            data = {
+                                listOf(
+                                    CandleData(
+                                        "17:00",
+                                        open = 95f,
+                                        high = 96.5f,
+                                        low = 94.5f,
+                                        close = 96f
+                                    ),
+                                    CandleData(
+                                        "17:15",
+                                        open = 96f,
+                                        high = 96.3f,
+                                        low = 95.2f,
+                                        close = 95.5f
+                                    ),
+                                    CandleData(
+                                        "17:30",
+                                        open = 95.5f,
+                                        high = 96.8f,
+                                        low = 95.5f,
+                                        close = 96.4f
+                                    ),
+                                    CandleData(
+                                        "17:45",
+                                        open = 96.4f,
+                                        high = 96.7f,
+                                        low = 95.8f,
+                                        close = 96f
+                                    ),
+                                    CandleData(
+                                        "18:00",
+                                        open = 96f,
+                                        high = 96.2f,
+                                        low = 94.8f,
+                                        close = 95f
+                                    ),
+                                    CandleData(
+                                        "18:15",
+                                        open = 95f,
+                                        high = 95.6f,
+                                        low = 94.6f,
+                                        close = 95.3f
+                                    ),
+                                    CandleData(
+                                        "18:30",
+                                        open = 95.3f,
+                                        high = 95.5f,
+                                        low = 94.5f,
+                                        close = 94.8f
+                                    ),
+                                    CandleData(
+                                        "18:45",
+                                        open = 94.8f,
+                                        high = 95.2f,
+                                        low = 94.3f,
+                                        close = 94.6f
+                                    ),
+                                    CandleData(
+                                        "19:00",
+                                        open = 94.6f,
+                                        high = 95f,
+                                        low = 94.4f,
+                                        close = 94.5f
+                                    ),
+                                    CandleData(
+                                        "19:15",
+                                        open = 94.5f,
+                                        high = 94.9f,
+                                        low = 94.2f,
+                                        close = 94.4f
+                                    ),
+                                    CandleData(
+                                        "19:30",
+                                        open = 94.4f,
+                                        high = 94.8f,
+                                        low = 94f,
+                                        close = 94.3f
+                                    ),
+                                    CandleData(
+                                        "19:45",
+                                        open = 94.3f,
+                                        high = 94.7f,
+                                        low = 94.2f,
+                                        close = 94.5f
+                                    ),
+                                    CandleData(
+                                        "20:00",
+                                        open = 94.5f,
+                                        high = 95.5f,
+                                        low = 94.3f,
+                                        close = 95.2f
+                                    ),
+                                    CandleData(
+                                        "20:15",
+                                        open = 95.2f,
+                                        high = 95.7f,
+                                        low = 95f,
+                                        close = 95.5f
+                                    ),
+                                    CandleData(
+                                        "20:30",
+                                        open = 95.5f,
+                                        high = 96f,
+                                        low = 95.3f,
+                                        close = 95.8f
+                                    ),
+                                    CandleData(
+                                        "20:45",
+                                        open = 95.8f,
+                                        high = 96.2f,
+                                        low = 95.6f,
+                                        close = 96f
+                                    ),
+                                    CandleData(
+                                        "21:00",
+                                        open = 96f,
+                                        high = 96.5f,
+                                        low = 95.5f,
+                                        close = 96.2f
+                                    ),
+                                    CandleData(
+                                        "21:15",
+                                        open = 96.2f,
+                                        high = 97f,
+                                        low = 96f,
+                                        close = 96.8f
+                                    ),
+                                    CandleData(
+                                        "21:30",
+                                        open = 96.8f,
+                                        high = 97.8f,
+                                        low = 96.5f,
+                                        close = 97.4f
+                                    ),
+                                    CandleData(
+                                        "21:45",
+                                        open = 97.4f,
+                                        high = 97.9f,
+                                        low = 97.2f,
+                                        close = 97.6f
+                                    ),
+                                    CandleData(
+                                        "22:00",
+                                        open = 97.6f,
+                                        high = 97.8f,
+                                        low = 97f,
+                                        close = 97.2f
+                                    )
+                                )
+                            },
+                            bullishColor = ChartyColor.Solid(Color(0xFFFFC107)), // Yellow/Gold for bullish
+                            bearishColor = ChartyColor.Solid(Color(0xFFE91E63)), // Pink for bearish
+                            candlestickConfig = CandlestickChartConfig(
+                                candleWidthFraction = 0.7f,
+                                wickWidthFraction = 0.15f,
+                                showWicks = true,
+                                minCandleBodyHeight = 2f,
+                                cornerRadius = CornerRadius.ExtraLarge,
+                                animation = Animation.Enabled(duration = 1000)
+                            )
+                        )
+                    }
+                }
                 item {
                     ChartCard(
                         title = "Combo Chart (Bar + Line)",
@@ -123,7 +278,7 @@ fun App() {
                         )
                     }
                 }
-                
+
                 // Horizontal Bar Chart
                 item {
                     Box(
@@ -950,8 +1105,6 @@ fun App() {
                         )
                     }
                 }
-
-                // Combo Chart
 
                 // Pie Chart
                 item {

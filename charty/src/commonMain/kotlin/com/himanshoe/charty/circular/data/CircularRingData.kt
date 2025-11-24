@@ -1,4 +1,4 @@
-package com.himanshoe.charty.circular
+package com.himanshoe.charty.circular.data
 
 import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.color.ChartyColor
@@ -92,4 +92,3 @@ data class CircularRingData(
         return copy(progress = newProgress.coerceIn(0f, maxValue))
     }
 }
-

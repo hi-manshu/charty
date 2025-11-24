@@ -16,6 +16,7 @@ import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.point.data.PointData
 
 /**
  * Point Chart (Scatter Chart) - Display data as individual points

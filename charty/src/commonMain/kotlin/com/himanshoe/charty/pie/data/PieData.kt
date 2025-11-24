@@ -1,4 +1,4 @@
-package com.himanshoe.charty.pie
+package com.himanshoe.charty.pie.data
 
 import androidx.compose.ui.graphics.Color
 
@@ -46,4 +46,3 @@ data class PieData(
         return if (total > 0f) (value / total) * 360f else 0f
     }
 }
-

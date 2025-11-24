@@ -24,6 +24,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.pie.config.*
+import com.himanshoe.charty.pie.data.PieData
 import kotlin.math.*
 
 /**

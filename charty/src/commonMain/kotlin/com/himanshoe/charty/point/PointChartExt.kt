@@ -1,5 +1,6 @@
 package com.himanshoe.charty.point
 
+import com.himanshoe.charty.point.data.PointData
 import kotlin.jvm.JvmName
 import kotlin.math.ceil
 import kotlin.math.floor
