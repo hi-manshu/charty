@@ -18,7 +18,19 @@ subprojects {
         buildUponDefaultConfig = true
         allRules = false
         config.setFrom(files("${rootProject.projectDir}/config/detekt/detekt.yml"))
-        baseline = file("${rootProject.projectDir}/config/detekt/baseline.xml")
+
+        // Explicitly set source directories
+        source.setFrom(
+            "src/commonMain/kotlin",
+            "src/androidMain/kotlin",
+            "src/iosMain/kotlin",
+            "src/jsMain/kotlin",
+            "src/wasmJsMain/kotlin",
+            "src/jvmMain/kotlin"
+        )
+
+        // Make sure detekt fails on issues
+        ignoreFailures = false
     }
 
     dependencies {

@@ -8,8 +8,8 @@ build:
     comments: 1
 
 config:
-  validation: true
-  warningsAsErrors: false
+  validation: false
+  warningsAsErrors: true
   checkExhaustiveness: false
 
 processors:

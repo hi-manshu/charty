@@ -1,5 +1,6 @@
 package com.himanshoe.sample
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.himanshoe.charty.getPlatformName
@@ -29,12 +32,18 @@ import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.data.SpanData
+import com.himanshoe.charty.circular.CircularProgressIndicator
+import com.himanshoe.charty.circular.CircularRingData
+import com.himanshoe.charty.circular.config.CircularProgressConfig
 import com.himanshoe.charty.point.PointChart
 import com.himanshoe.charty.point.PointData
-import com.himanshoe.charty.point.BubbleChart
-import com.himanshoe.charty.point.BubbleData
 import com.himanshoe.charty.point.config.PointChartConfig
-import com.himanshoe.charty.line.LineChart
+import com.himanshoe.charty.pie.PieChart
+import com.himanshoe.charty.pie.PieData
+import com.himanshoe.charty.pie.config.PieChartConfig
+import com.himanshoe.charty.pie.config.PieChartStyle
+import com.himanshoe.charty.pie.config.InteractionConfig
+import com.himanshoe.charty.pie.config.LabelConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.MultilineChart
@@ -43,6 +52,9 @@ import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.line.LineChart
+import com.himanshoe.charty.point.BubbleChart
+import com.himanshoe.charty.point.BubbleData
 
 @Composable
 @Preview
@@ -79,6 +91,63 @@ fun App() {
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 // Horizontal Bar Chart
+                item {
+                    Box(
+                        modifier = Modifier
+                            .size(300.dp)
+                            .background(Color.Black),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            rings = {
+                                listOf(
+                                    CircularRingData(
+                                        label = "Move",
+                                        progress = 450f,
+                                        maxValue = 600f,
+                                        color = ChartyColor.Solid(Color(0xFFFF3B58)),
+                                        backgroundColor = ChartyColor.Solid(Color(0x33FF3B58))
+                                    ),
+                                    CircularRingData(
+                                        label = "Exercise",
+                                        progress = 25f,
+                                        maxValue = 30f,
+                                        color = ChartyColor.Solid(Color(0xFFACFF3D)),
+                                        backgroundColor = ChartyColor.Solid(Color(0x33ACFF3D))
+                                    ),
+                                    CircularRingData(
+                                        label = "Stand",
+                                        progress = 10f,
+                                        maxValue = 12f,
+                                        color = ChartyColor.Solid(Color(0xFF34D5FF)),
+                                        backgroundColor = ChartyColor.Solid(Color(0x3334D5FF))
+                                    )
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            config = CircularProgressConfig(
+                                centerHoleRatio = 0.4f,
+                                gapBetweenRings = 12f,
+                                startAngleDegrees = -90f,
+                                strokeCap = StrokeCap.Round,
+                                showCenterText = false,
+                                animation = Animation.Enabled(duration = 1500)
+                            ),
+                            centerContent = {
+                                Canvas(modifier = Modifier.fillMaxSize()) {
+                                    val holeRadius = (size.minDimension / 2f) * 0.34f
+                                    drawCircle(
+                                        color = Color.Black,
+                                        radius = holeRadius,
+                                        center = Offset(size.width / 2f, size.height / 2f)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
                 item {
                     ChartCard(
                         title = "Horizontal Bar Chart",
@@ -844,6 +913,181 @@ fun App() {
                                 animation = Animation.Enabled(duration = 1000)
                             ),
                             minBubbleRadius = 15f
+                        )
+                    }
+                }
+
+                // Pie Chart
+                item {
+                    ChartCard(
+                        title = "Interactive Pie Chart",
+                        description = "Classic pie chart with click interactions, animations, and legend"
+                    ) {
+                        var clickedSlice by remember { mutableStateOf<String?>(null) }
+
+                        Column {
+                            if (clickedSlice != null) {
+                                Text(
+                                    text = "Selected: $clickedSlice",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+
+                            PieChart(
+                                modifier = Modifier.fillMaxWidth().height(400.dp),
+                                data = {
+                                    listOf(
+                                        PieData("Product A", 45f),
+                                        PieData("Product B", 30f),
+                                        PieData("Product C", 15f),
+                                        PieData("Product D", 10f)
+                                    )
+                                },
+                                color = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFF2196F3),
+                                        Color(0xFF4CAF50),
+                                        Color(0xFFFF9800),
+                                        Color(0xFFE91E63)
+                                    )
+                                ),
+                                config = PieChartConfig(
+                                    style = PieChartStyle.PIE,
+                                    labelConfig = LabelConfig(
+                                        shouldShowLabels = true,
+                                        shouldShowPercentage = true,
+                                        minimumPercentageToShowLabel = 5f
+                                    ),
+                                    interactionConfig = InteractionConfig(
+                                        selectedScaleMultiplier = 1.15f,
+                                        selectedSlicePullOutDistance = 12f
+                                    ),
+                                    animation = Animation.Enabled(duration = 1000)
+                                ),
+                                onSliceClick = { slice, _ ->
+                                    clickedSlice = "${slice.label}: ${slice.value}"
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Donut Chart
+                item {
+                    ChartCard(
+                        title = "Donut Chart with Center Content",
+                        description = "Modern donut chart with center hole, custom colors, and right-side legend"
+                    ) {
+                        var selectedCategory by remember { mutableStateOf<String?>(null) }
+
+                        PieChart(
+                            modifier = Modifier.fillMaxWidth().height(400.dp),
+                            data = {
+                                listOf(
+                                    PieData("Sales", 120f),
+                                    PieData("Marketing", 85f),
+                                    PieData("Development", 95f),
+                                    PieData("Support", 60f),
+                                    PieData("Operations", 40f)
+                                )
+                            },
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF00BCD4),
+                                    Color(0xFF9C27B0),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFFE91E63)
+                                )
+                            ),
+                            config = PieChartConfig(
+                                style = PieChartStyle.DONUT,
+                                donutHoleRatio = 0.65f,
+                                startAngleDegrees = -90f,
+                                labelConfig = LabelConfig(
+                                    shouldShowLabels = false
+                                ),
+                                interactionConfig = InteractionConfig(
+                                    selectedScaleMultiplier = 1.1f,
+                                    selectedSlicePullOutDistance = 10f,
+                                    unselectedSliceOpacity = 0.5f
+                                ),
+                                animation = Animation.Enabled(duration = 1200),
+                                sliceSpacingDegrees = 2f
+                            ),
+                            onSliceClick = { slice, _ ->
+                                selectedCategory = slice.label
+                            },
+                            centerContent = {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = selectedCategory ?: "Total",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = if (selectedCategory != null) "Selected" else "400",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+
+                // Donut Chart with Top Legend
+                item {
+                    ChartCard(
+                        title = "Compact Donut Chart",
+                        description = "Donut chart with top legend and slice spacing"
+                    ) {
+                        PieChart(
+                            modifier = Modifier.fillMaxWidth().height(450.dp),
+                            data = {
+                                listOf(
+                                    PieData("Electronics", 180f),
+                                    PieData("Clothing", 150f),
+                                    PieData("Food", 120f),
+                                    PieData("Books", 80f),
+                                    PieData("Sports", 70f),
+                                    PieData("Others", 50f)
+                                )
+                            },
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF3F51B5),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF00BCD4),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFFEB3B),
+                                    Color(0xFFFF5722)
+                                )
+                            ),
+                            config = PieChartConfig(
+                                style = PieChartStyle.DONUT,
+                                donutHoleRatio = 0.5f,
+                                labelConfig = LabelConfig(
+                                    shouldShowLabels = true,
+                                    shouldShowPercentage = true,
+                                    minimumPercentageToShowLabel = 8f
+                                ),
+                                interactionConfig = InteractionConfig(
+                                    selectedScaleMultiplier = 1.08f,
+                                    selectedSlicePullOutDistance = 8f
+                                ),
+                                animation = Animation.Enabled(duration = 800),
+                                sliceSpacingDegrees = 3f,
+                                shouldShowCenterText = true,
+                                centerTextSizeSp = 20f
+                            ),
+                            onSliceClick = { slice, index ->
+                                println("Clicked ${slice.label} at index $index")
+                            }
                         )
                     }
                 }
