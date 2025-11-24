@@ -71,6 +71,9 @@ import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.config.RadarGridConfig
 import com.himanshoe.charty.radar.config.RadarGridStyle
 import com.himanshoe.charty.radar.config.RadarLabelConfig
+import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
+import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
 
 @Composable
 @Preview
@@ -284,7 +287,15 @@ fun App() {
                                 showPoints = true,
                                 pointRadius = 6f,
                                 smoothCurve = false,
-                                animation = Animation.Enabled(duration = 1200)
+                                animation = Animation.Enabled(duration = 1200),
+                                referenceLine = ReferenceLineConfig(
+                                    value = 150f,
+                                    color = Color(0xFF4CAF50),
+                                    strokeWidth = 2f,
+                                    strokeStyle = ReferenceLineStrokeStyle.DASHED,
+                                    label = "Target 150",
+                                    labelPosition = ReferenceLineLabelPosition.END
+                                )
                             )
                         )
                     }

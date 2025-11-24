@@ -3,6 +3,7 @@ package com.himanshoe.charty.line.config
 import androidx.compose.ui.graphics.StrokeCap
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.common.config.ReferenceLineConfig
 
 /**
  * Configuration for Line Chart appearance and behavior
@@ -15,6 +16,7 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
  * @param smoothCurve Whether to draw smooth curves instead of straight lines (future enhancement)
  * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param animation Animation configuration (Disabled or Enabled with duration)
+ * @param referenceLine Optional configuration for a reference line (e.g., target or average line)
  */
 data class LineChartConfig(
     val lineWidth: Float = 3f,
@@ -24,7 +26,8 @@ data class LineChartConfig(
     val strokeCap: StrokeCap = StrokeCap.Round,
     val smoothCurve: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
-    val animation: Animation = Animation.Default
+    val animation: Animation = Animation.Default,
+    val referenceLine: ReferenceLineConfig? = null
 ) {
     init {
         require(lineWidth > 0) { "Line width must be greater than 0" }
@@ -32,4 +35,3 @@ data class LineChartConfig(
         require(pointAlpha in 0f..1f) { "Point alpha must be between 0 and 1" }
     }
 }
-

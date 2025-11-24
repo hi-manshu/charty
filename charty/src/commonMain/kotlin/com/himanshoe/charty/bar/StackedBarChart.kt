@@ -14,13 +14,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
-import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.AxisConfig
-import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.config.Animation
 
 /**
@@ -56,6 +60,7 @@ import com.himanshoe.charty.common.config.Animation
  * @param stackedConfig Configuration for stacked bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun StackedBarChart(
     data: () -> List<BarGroup>,
@@ -74,9 +79,9 @@ fun StackedBarChart(
     require(dataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
     require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val (groupTotals, maxTotal, colorList) = remember(dataList, colors) {
+    val (maxTotal, colorList) = remember(dataList, colors) {
         val totals = dataList.map { group -> group.values.sum() }
-        Triple(totals, totals.maxOrNull() ?: 0f, colors.value)
+        (totals.maxOrNull() ?: 0f) to colors.value
     }
 
     val animationProgress = remember {
@@ -91,6 +96,8 @@ fun StackedBarChart(
             )
         }
     }
+
+    val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
         modifier = modifier,
@@ -154,6 +161,16 @@ fun StackedBarChart(
                 )
             }
         }
+
+        // Draw reference / target line if configured
+        stackedConfig.referenceLine?.let { referenceLineConfig ->
+            drawReferenceLine(
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                config = referenceLineConfig,
+                textMeasurer = textMeasurer
+            )
+        }
     }
 }
 
@@ -203,4 +220,3 @@ private fun DrawScope.drawStackedSegment(
     }
     drawPath(path, brush)
 }
-

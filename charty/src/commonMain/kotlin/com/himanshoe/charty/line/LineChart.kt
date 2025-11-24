@@ -13,14 +13,19 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.line.config.LineChartConfig
+import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
@@ -60,6 +65,7 @@ import com.himanshoe.charty.line.ext.getValues
  * @param lineConfig Configuration for line appearance and behavior
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun LineChart(
     data: () -> List<LineData>,
@@ -76,7 +82,7 @@ fun LineChart(
         calculateMinValue(values) to calculateMaxValue(values)
     }
 
-    val isBelowAxisMode = lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
+    val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
     val animationProgress = remember {
         Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
@@ -90,6 +96,8 @@ fun LineChart(
             )
         }
     }
+
+    val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
         modifier = modifier,
@@ -190,8 +198,15 @@ fun LineChart(
                 }
             }
         }
+
+        // Draw reference / target line if configured
+        lineConfig.referenceLine?.let { referenceLineConfig ->
+            drawReferenceLine(
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                config = referenceLineConfig,
+                textMeasurer = textMeasurer
+            )
+        }
     }
 }
-
-
-

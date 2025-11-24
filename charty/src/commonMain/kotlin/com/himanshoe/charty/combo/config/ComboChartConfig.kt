@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.ReferenceLineConfig
 
 /**
  * Configuration for Combo Chart appearance and behavior
@@ -18,6 +19,7 @@ import com.himanshoe.charty.common.config.CornerRadius
  * @param smoothCurve Whether to draw smooth curves instead of straight lines
  * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param animation Animation configuration (Disabled or Enabled with duration)
+ * @param referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
  */
 data class ComboChartConfig(
     val barWidthFraction: Float = 0.6f,
@@ -29,7 +31,8 @@ data class ComboChartConfig(
     val strokeCap: StrokeCap = StrokeCap.Round,
     val smoothCurve: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
-    val animation: Animation = Animation.Default
+    val animation: Animation = Animation.Default,
+    val referenceLine: ReferenceLineConfig? = null
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
@@ -38,4 +41,3 @@ data class ComboChartConfig(
         require(pointAlpha in 0f..1f) { "Point alpha must be between 0 and 1" }
     }
 }
-

@@ -16,12 +16,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.ext.getAllValues
@@ -66,6 +70,7 @@ import kotlin.math.min
  * @param comboConfig Configuration for both bar and line appearance and behavior
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun ComboChart(
     data: () -> List<ComboChartData>,
@@ -109,6 +114,8 @@ fun ComboChart(
             )
         }
     }
+
+    val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
         modifier = modifier,
@@ -257,6 +264,16 @@ fun ComboChart(
                 }
             }
         }
+
+        // Draw reference / target line if configured
+        comboConfig.referenceLine?.let { referenceLineConfig ->
+            drawReferenceLine(
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                config = referenceLineConfig,
+                textMeasurer = textMeasurer
+            )
+        }
     }
 }
 
@@ -304,4 +321,3 @@ private fun DrawScope.drawRoundedBar(
     }
     drawPath(path, brush)
 }
-

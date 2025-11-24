@@ -10,14 +10,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.point.config.PointChartConfig
+import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.config.Animation
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.PointData
 
 /**
@@ -52,6 +56,7 @@ import com.himanshoe.charty.point.data.PointData
  * @param pointConfig Configuration for point appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun PointChart(
     data: () -> List<PointData>,
@@ -82,6 +87,8 @@ fun PointChart(
             )
         }
     }
+
+    val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
         modifier = modifier,
@@ -114,6 +121,16 @@ fun PointChart(
                     alpha = pointConfig.pointAlpha * pointAnimationProgress
                 )
             }
+        }
+
+        // Draw reference / target line if configured
+        pointConfig.referenceLine?.let { referenceLineConfig ->
+            drawReferenceLine(
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                config = referenceLineConfig,
+                textMeasurer = textMeasurer
+            )
         }
     }
 }

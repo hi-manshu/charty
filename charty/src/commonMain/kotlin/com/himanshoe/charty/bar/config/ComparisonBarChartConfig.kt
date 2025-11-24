@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar.config
 
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.ReferenceLineConfig
 
 /**
  * Configuration for Comparison Bar Chart (formerly Grouped Bar Chart) appearance and behavior
@@ -10,6 +11,6 @@ import com.himanshoe.charty.common.config.CornerRadius
  */
 data class ComparisonBarChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
-    val cornerRadius: CornerRadius = CornerRadius.Medium
+    val cornerRadius: CornerRadius = CornerRadius.Medium,
+    val referenceLine: ReferenceLineConfig? = null
 )
-

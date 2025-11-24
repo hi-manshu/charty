@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ReferenceLineConfig
 
 private const val DEFAULT_CENTER_TEXT_SIZE_SP = 16f
 private const val MAX_DONUT_HOLE_RATIO = 0.9f
@@ -180,7 +181,8 @@ data class PieChartConfig(
         fontSize = DEFAULT_CENTER_TEXT_SIZE_SP.sp,
         fontWeight = FontWeight.Bold,
         color = Color.Black
-    )
+    ),
+    val referenceLine: ReferenceLineConfig? = null
 ) {
     init {
         require(donutHoleRatio in 0f..MAX_DONUT_HOLE_RATIO) {

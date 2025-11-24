@@ -13,11 +13,9 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
-import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.AxisConfig
-import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
@@ -25,6 +23,12 @@ import com.himanshoe.charty.bar.ext.calculateMaxValue
 import com.himanshoe.charty.bar.ext.calculateMinValue
 import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.bar.ext.getValues
+import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.config.Animation
 
 /**
@@ -59,6 +63,7 @@ import com.himanshoe.charty.common.config.Animation
  * @param barConfig Configuration for bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun BarChart(
     data: () -> List<BarData>,
@@ -90,6 +95,8 @@ fun BarChart(
         }
     }
 
+    val textMeasurer = rememberTextMeasurer()
+
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.getLabels(),
@@ -108,6 +115,7 @@ fun BarChart(
             chartContext.bottom
         }
 
+        // Draw bars
         dataList.fastForEachIndexed { index, bar ->
             val barX = chartContext.calculateBarLeftPosition(index, dataList.size, barConfig.barWidthFraction)
             val barWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
@@ -141,6 +149,16 @@ fun BarChart(
                 isNegative = isNegative,
                 isBelowAxisMode = isBelowAxisMode,
                 cornerRadius = barConfig.cornerRadius.value
+            )
+        }
+
+        // Draw reference / target line on top of bars if configured
+        barConfig.referenceLine?.let { referenceLineConfig ->
+            drawReferenceLine(
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                config = referenceLineConfig,
+                textMeasurer = textMeasurer
             )
         }
     }

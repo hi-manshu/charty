@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -21,8 +23,10 @@ import com.himanshoe.charty.bar.ext.getAllValues
 import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawReferenceLine
 
 /**
  * Comparison Bar Chart - Display multiple bars per category for comparison
@@ -53,6 +57,7 @@ import com.himanshoe.charty.common.ChartScaffoldConfig
  * @param comparisonConfig Configuration for comparison chart behavior (e.g., negative values draw mode)
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun ComparisonBarChart(
     data: () -> List<BarGroup>,
@@ -79,6 +84,8 @@ fun ComparisonBarChart(
     }
 
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
+
+    val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
         modifier = modifier,
@@ -152,6 +159,16 @@ fun ComparisonBarChart(
                     cornerRadius = comparisonConfig.cornerRadius.value
                 )
             }
+        }
+
+        // Draw reference / target line if configured
+        comparisonConfig.referenceLine?.let { referenceLineConfig ->
+            drawReferenceLine(
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                config = referenceLineConfig,
+                textMeasurer = textMeasurer
+            )
         }
     }
 }
