@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.combo
 
@@ -21,16 +31,16 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.AxisConfig
-import com.himanshoe.charty.common.ChartOrientation
-import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.ext.getAllValues
 import com.himanshoe.charty.combo.ext.getLabels
+import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.draw.drawReferenceLine
 import kotlin.math.max
 import kotlin.math.min
 
@@ -78,39 +88,44 @@ fun ComboChart(
     barColor: ChartyColor = ChartyColor.Solid(Color.Blue),
     lineColor: ChartyColor = ChartyColor.Solid(Color.Red),
     comboConfig: ComboChartConfig = ComboChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Combo chart data cannot be empty" }
 
-    val (minValue, maxValue) = remember(dataList, comboConfig.negativeValuesDrawMode) {
-        val allValues = dataList.getAllValues()
-        val calculatedMin = allValues.minOrNull() ?: 0f
-        val calculatedMax = allValues.maxOrNull() ?: 0f
+    val (minValue, maxValue) =
+        remember(dataList, comboConfig.negativeValuesDrawMode) {
+            val allValues = dataList.getAllValues()
+            val calculatedMin = allValues.minOrNull() ?: 0f
+            val calculatedMax = allValues.maxOrNull() ?: 0f
 
-        val minVal = if (comboConfig.negativeValuesDrawMode ==
-            com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS) {
-            min(calculatedMin, 0f)
-        } else {
-            calculatedMin
+            val minVal =
+                if (comboConfig.negativeValuesDrawMode ==
+                    com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
+                ) {
+                    min(calculatedMin, 0f)
+                } else {
+                    calculatedMin
+                }
+
+            val maxVal = max(calculatedMax, if (minVal < 0f) 0f else calculatedMin)
+            minVal to maxVal
         }
 
-        val maxVal = max(calculatedMax, if (minVal < 0f) 0f else calculatedMin)
-        minVal to maxVal
-    }
+    val isBelowAxisMode =
+        comboConfig.negativeValuesDrawMode ==
+            com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
 
-    val isBelowAxisMode = comboConfig.negativeValuesDrawMode ==
-        com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
-
-    val animationProgress = remember {
-        Animatable(if (comboConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (comboConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(comboConfig.animation) {
         if (comboConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = comboConfig.animation.duration)
+                animationSpec = tween(durationMillis = comboConfig.animation.duration),
             )
         }
     }
@@ -120,31 +135,35 @@ fun ComboChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = isBelowAxisMode
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                drawAxisAtZero = isBelowAxisMode,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
-        val baselineY = if (minValue < 0f && isBelowAxisMode) {
-            chartContext.convertValueToYPosition(0f)
-        } else {
-            chartContext.bottom
-        }
+        val baselineY =
+            if (minValue < 0f && isBelowAxisMode) {
+                chartContext.convertValueToYPosition(0f)
+            } else {
+                chartContext.bottom
+            }
 
         // Draw bars first (background layer)
         dataList.fastForEachIndexed { index, comboData ->
-            val barX = chartContext.calculateBarLeftPosition(
-                index,
-                dataList.size,
-                comboConfig.barWidthFraction
-            )
-            val barWidth = chartContext.calculateBarWidth(
-                dataList.size,
-                comboConfig.barWidthFraction
-            )
+            val barX =
+                chartContext.calculateBarLeftPosition(
+                    index,
+                    dataList.size,
+                    comboConfig.barWidthFraction,
+                )
+            val barWidth =
+                chartContext.calculateBarWidth(
+                    dataList.size,
+                    comboConfig.barWidthFraction,
+                )
             val barValueY = chartContext.convertValueToYPosition(comboData.barValue)
             val isNegative = comboData.barValue < 0f
 
@@ -172,17 +191,18 @@ fun ComboChart(
                 height = barHeight,
                 isNegative = isNegative,
                 isBelowAxisMode = isBelowAxisMode,
-                cornerRadius = comboConfig.barCornerRadius.value
+                cornerRadius = comboConfig.barCornerRadius.value,
             )
         }
 
         // Draw line on top (foreground layer)
-        val pointPositions = dataList.fastMapIndexed { index, comboData ->
-            Offset(
-                x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                y = chartContext.convertValueToYPosition(comboData.lineValue)
-            )
-        }
+        val pointPositions =
+            dataList.fastMapIndexed { index, comboData ->
+                Offset(
+                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                    y = chartContext.convertValueToYPosition(comboData.lineValue),
+                )
+            }
 
         if (comboConfig.smoothCurve) {
             val path = Path()
@@ -200,20 +220,24 @@ fun ComboChart(
                     val controlPoint2Y = next.y
 
                     path.cubicTo(
-                        controlPoint1X, controlPoint1Y,
-                        controlPoint2X, controlPoint2Y,
-                        next.x, next.y
+                        controlPoint1X,
+                        controlPoint1Y,
+                        controlPoint2X,
+                        controlPoint2Y,
+                        next.x,
+                        next.y,
                     )
                 }
 
                 drawPath(
                     path = path,
                     brush = Brush.linearGradient(lineColor.value),
-                    style = Stroke(
-                        width = comboConfig.lineWidth,
-                        cap = comboConfig.strokeCap
-                    ),
-                    alpha = animationProgress.value
+                    style =
+                        Stroke(
+                            width = comboConfig.lineWidth,
+                            cap = comboConfig.strokeCap,
+                        ),
+                    alpha = animationProgress.value,
                 )
             }
         } else {
@@ -227,7 +251,7 @@ fun ComboChart(
                     start = pointPositions[i],
                     end = pointPositions[i + 1],
                     strokeWidth = comboConfig.lineWidth,
-                    cap = comboConfig.strokeCap
+                    cap = comboConfig.strokeCap,
                 )
             }
 
@@ -235,16 +259,17 @@ fun ComboChart(
             if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
                 val start = pointPositions[segmentsToDraw]
                 val end = pointPositions[segmentsToDraw + 1]
-                val partialEnd = Offset(
-                    x = start.x + (end.x - start.x) * segmentProgress,
-                    y = start.y + (end.y - start.y) * segmentProgress
-                )
+                val partialEnd =
+                    Offset(
+                        x = start.x + (end.x - start.x) * segmentProgress,
+                        y = start.y + (end.y - start.y) * segmentProgress,
+                    )
                 drawLine(
                     brush = Brush.linearGradient(lineColor.value),
                     start = start,
                     end = partialEnd,
                     strokeWidth = comboConfig.lineWidth,
-                    cap = comboConfig.strokeCap
+                    cap = comboConfig.strokeCap,
                 )
             }
         }
@@ -259,7 +284,7 @@ fun ComboChart(
                         brush = Brush.linearGradient(lineColor.value),
                         radius = comboConfig.pointRadius,
                         center = position,
-                        alpha = comboConfig.pointAlpha
+                        alpha = comboConfig.pointAlpha,
                     )
                 }
             }
@@ -271,7 +296,7 @@ fun ComboChart(
                 chartContext = chartContext,
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
-                textMeasurer = textMeasurer
+                textMeasurer = textMeasurer,
             )
         }
     }
@@ -288,36 +313,37 @@ private fun DrawScope.drawRoundedBar(
     height: Float,
     isNegative: Boolean,
     isBelowAxisMode: Boolean,
-    cornerRadius: Float
+    cornerRadius: Float,
 ) {
-    val path = Path().apply {
-        if (isNegative && isBelowAxisMode) {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius)
+    val path =
+        Path().apply {
+            if (isNegative && isBelowAxisMode) {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
                 )
-            )
-        } else {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero
+            } else {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
                 )
-            )
+            }
         }
-    }
     drawPath(path, brush)
 }

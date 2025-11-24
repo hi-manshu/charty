@@ -1,6 +1,16 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
-    package com.himanshoe.charty.candlestick
+package com.himanshoe.charty.candlestick
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -80,39 +90,43 @@ fun CandlestickChart(
     bullishColor: ChartyColor = ChartyColor.Solid(Color(0xFF4CAF50)),
     bearishColor: ChartyColor = ChartyColor.Solid(Color(0xFFF44336)),
     candlestickConfig: CandlestickChartConfig = CandlestickChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Candlestick chart data cannot be empty" }
 
-    val (minValue, maxValue) = remember(dataList) {
-        calculateMinValue(dataList) to calculateMaxValue(dataList)
-    }
+    val (minValue, maxValue) =
+        remember(dataList) {
+            calculateMinValue(dataList) to calculateMaxValue(dataList)
+        }
 
     // Calculate which labels to show - if more than 10, show only 5 evenly spaced
-    val xLabels = remember(dataList) {
-        val allLabels = dataList.getLabels()
-        if (allLabels.size > 10) {
-            val indices = (0 until 5).map { i ->
-                (i * (allLabels.size - 1)) / 4
+    val xLabels =
+        remember(dataList) {
+            val allLabels = dataList.getLabels()
+            if (allLabels.size > 10) {
+                val indices =
+                    (0 until 5).map { i ->
+                        (i * (allLabels.size - 1)) / 4
+                    }
+                allLabels.mapIndexed { index, label ->
+                    if (index in indices) label else ""
+                }
+            } else {
+                allLabels
             }
-            allLabels.mapIndexed { index, label ->
-                if (index in indices) label else ""
-            }
-        } else {
-            allLabels
         }
-    }
 
-    val animationProgress = remember {
-        Animatable(if (candlestickConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (candlestickConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(candlestickConfig.animation) {
         if (candlestickConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = candlestickConfig.animation.duration)
+                animationSpec = tween(durationMillis = candlestickConfig.animation.duration),
             )
         }
     }
@@ -120,24 +134,27 @@ fun CandlestickChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = xLabels,
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = false
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                drawAxisAtZero = false,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
         dataList.fastForEachIndexed { index, candle ->
-            val candleX = chartContext.calculateBarLeftPosition(
-                index,
-                dataList.size,
-                candlestickConfig.candleWidthFraction
-            )
-            val candleWidth = chartContext.calculateBarWidth(
-                dataList.size,
-                candlestickConfig.candleWidthFraction
-            )
+            val candleX =
+                chartContext.calculateBarLeftPosition(
+                    index,
+                    dataList.size,
+                    candlestickConfig.candleWidthFraction,
+                )
+            val candleWidth =
+                chartContext.calculateBarWidth(
+                    dataList.size,
+                    candlestickConfig.candleWidthFraction,
+                )
 
             // Convert OHLC values to Y positions
             val openY = chartContext.convertValueToYPosition(candle.open)
@@ -147,11 +164,12 @@ fun CandlestickChart(
 
             // Determine if bullish or bearish
             val isBullish = candle.isBullish
-            val candleColor = if (isBullish) {
-                bullishColor.value.first()
-            } else {
-                bearishColor.value.first()
-            }
+            val candleColor =
+                if (isBullish) {
+                    bullishColor.value.first()
+                } else {
+                    bearishColor.value.first()
+                }
 
             // Calculate body top and bottom
             val bodyTop = minOf(openY, closeY)
@@ -160,21 +178,25 @@ fun CandlestickChart(
 
             // Use minimum body height for doji candles
             val actualBodyHeight = maxOf(bodyHeight, candlestickConfig.minCandleBodyHeight)
-            val actualBodyTop = if (bodyHeight < candlestickConfig.minCandleBodyHeight) {
-                // Center the minimum height body
-                (openY + closeY - candlestickConfig.minCandleBodyHeight) / 2
-            } else {
-                bodyTop
-            }
+            val actualBodyTop =
+                if (bodyHeight < candlestickConfig.minCandleBodyHeight) {
+                    // Center the minimum height body
+                    (openY + closeY - candlestickConfig.minCandleBodyHeight) / 2
+                } else {
+                    bodyTop
+                }
 
             // Apply animation
-            val animatedBodyTop = chartContext.bottom -
-                (chartContext.bottom - actualBodyTop) * animationProgress.value
+            val animatedBodyTop =
+                chartContext.bottom -
+                    (chartContext.bottom - actualBodyTop) * animationProgress.value
             val animatedBodyHeight = actualBodyHeight * animationProgress.value
-            val animatedHighY = chartContext.bottom -
-                (chartContext.bottom - highY) * animationProgress.value
-            val animatedLowY = chartContext.bottom -
-                (chartContext.bottom - lowY) * animationProgress.value
+            val animatedHighY =
+                chartContext.bottom -
+                    (chartContext.bottom - highY) * animationProgress.value
+            val animatedLowY =
+                chartContext.bottom -
+                    (chartContext.bottom - lowY) * animationProgress.value
 
             // Draw the candlestick
             drawCandlestick(
@@ -187,7 +209,7 @@ fun CandlestickChart(
                 lowY = animatedLowY,
                 wickWidth = candleWidth * candlestickConfig.wickWidthFraction,
                 showWicks = candlestickConfig.showWicks,
-                cornerRadius = candlestickConfig.cornerRadius.value
+                cornerRadius = candlestickConfig.cornerRadius.value,
             )
         }
     }
@@ -206,7 +228,7 @@ private fun DrawScope.drawCandlestick(
     lowY: Float,
     wickWidth: Float,
     showWicks: Boolean,
-    cornerRadius: Float
+    cornerRadius: Float,
 ) {
     val bodyLeft = centerX - bodyWidth / 2
     val bodyBottom = bodyTop + bodyHeight
@@ -219,7 +241,7 @@ private fun DrawScope.drawCandlestick(
                 color = color,
                 start = Offset(centerX, highY),
                 end = Offset(centerX, bodyTop),
-                strokeWidth = wickWidth
+                strokeWidth = wickWidth,
             )
         }
 
@@ -229,7 +251,7 @@ private fun DrawScope.drawCandlestick(
                 color = color,
                 start = Offset(centerX, bodyBottom),
                 end = Offset(centerX, lowY),
-                strokeWidth = wickWidth
+                strokeWidth = wickWidth,
             )
         }
     }
@@ -238,15 +260,20 @@ private fun DrawScope.drawCandlestick(
         drawRoundRect(
             color = color,
             topLeft = Offset(bodyLeft, bodyTop),
-            size = androidx.compose.ui.geometry.Size(bodyWidth, bodyHeight),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius)
+            size =
+                androidx.compose.ui.geometry
+                    .Size(bodyWidth, bodyHeight),
+            cornerRadius =
+                androidx.compose.ui.geometry
+                    .CornerRadius(cornerRadius, cornerRadius),
         )
     } else {
         drawRect(
             color = color,
             topLeft = Offset(bodyLeft, bodyTop),
-            size = androidx.compose.ui.geometry.Size(bodyWidth, bodyHeight)
+            size =
+                androidx.compose.ui.geometry
+                    .Size(bodyWidth, bodyHeight),
         )
     }
 }
-

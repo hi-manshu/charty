@@ -9,8 +9,9 @@ private const val CORNER_RADIUS_EXTRA_LARGE = 16f
 /**
  * Sealed class for corner radius sizes with value parameter
  */
-sealed class CornerRadius(val value: Float) {
-
+sealed class CornerRadius(
+    val value: Float,
+) {
     /** No corner rounding (0dp) */
     data object None : CornerRadius(CORNER_RADIUS_NONE)
 
@@ -30,10 +31,11 @@ sealed class CornerRadius(val value: Float) {
      * Custom corner radius with user-specified value
      * @param radius The corner radius value in dp
      */
-    data class Custom(private val radius: Float) : CornerRadius(radius) {
+    data class Custom(
+        private val radius: Float,
+    ) : CornerRadius(radius) {
         init {
             require(radius >= 0f) { "Corner radius must be non-negative" }
         }
     }
 }
-

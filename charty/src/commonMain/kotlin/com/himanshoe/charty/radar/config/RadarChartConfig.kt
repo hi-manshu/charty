@@ -1,11 +1,11 @@
 package com.himanshoe.charty.radar.config
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.Animation
-import androidx.compose.ui.graphics.Color
 
 private const val DEFAULT_GRID_LINE_WIDTH = 1f
 private const val DEFAULT_AXIS_LINE_WIDTH = 1f
@@ -26,7 +26,7 @@ enum class RadarGridStyle {
     CIRCULAR,
 
     /** Polygonal grid lines matching the number of axes */
-    POLYGON
+    POLYGON,
 }
 
 /**
@@ -43,7 +43,7 @@ data class RadarLabelConfig(
     val showValues: Boolean = false,
     val labelDistanceMultiplier: Float = DEFAULT_LABEL_DISTANCE_MULTIPLIER,
     val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = DEFAULT_LABEL_TEXT_SIZE_SP.sp),
-    val valueTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = DEFAULT_VALUE_TEXT_SIZE_SP.sp)
+    val valueTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = DEFAULT_VALUE_TEXT_SIZE_SP.sp),
 ) {
     init {
         require(labelDistanceMultiplier > 0f) { "Label distance multiplier must be positive" }
@@ -72,7 +72,7 @@ data class RadarGridConfig(
     val axisLineWidth: Float = DEFAULT_AXIS_LINE_WIDTH,
     val gridLineColor: Color = Color(0xFFBDBDBD).copy(alpha = GRID_LINE_ALPHA_DEFAULT),
     val axisLineColor: Color = Color(0xFF9E9E9E).copy(alpha = 0.6f),
-    val gridLineAlpha: Float = GRID_LINE_ALPHA_DEFAULT
+    val gridLineAlpha: Float = GRID_LINE_ALPHA_DEFAULT,
 ) {
     init {
         require(numberOfGridLevels > 0) { "Number of grid levels must be positive" }
@@ -94,7 +94,7 @@ data class RadarCenterConfig(
     val showCenterIcon: Boolean = false,
     val centerIconSize: Float = DEFAULT_CENTER_ICON_SIZE,
     val centerBackgroundColor: Color = Color.Transparent,
-    val centerBackgroundRadius: Float = 0f
+    val centerBackgroundRadius: Float = 0f,
 ) {
     init {
         require(centerIconSize > 0f) { "Center icon size must be positive" }
@@ -130,7 +130,7 @@ data class RadarChartConfig(
     val centerConfig: RadarCenterConfig = RadarCenterConfig(),
     val animation: Animation = Animation.Default,
     val scaleToFit: Boolean = true,
-    val paddingFraction: Float = DEFAULT_PADDING_FRACTION
+    val paddingFraction: Float = DEFAULT_PADDING_FRACTION,
 ) {
     init {
         require(dataLineWidth > 0f) { "Data line width must be positive" }

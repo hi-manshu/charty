@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.bar
 
@@ -24,8 +34,8 @@ import com.himanshoe.charty.common.AxisConfig
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.draw.drawReferenceLine
 
 /**
  * Stacked Bar Chart - Display data as stacked vertical bars showing composition
@@ -65,34 +75,37 @@ import com.himanshoe.charty.common.config.Animation
 fun StackedBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
-    colors: ChartyColor = ChartyColor.Gradient(
-        listOf(
-            Color(0xFF2196F3),
-            Color(0xFF4CAF50),
-            Color(0xFFFF9800)
-        )
-    ),
+    colors: ChartyColor =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFF2196F3),
+                Color(0xFF4CAF50),
+                Color(0xFFFF9800),
+            ),
+        ),
     stackedConfig: StackedBarChartConfig = StackedBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
     require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val (maxTotal, colorList) = remember(dataList, colors) {
-        val totals = dataList.map { group -> group.values.sum() }
-        (totals.maxOrNull() ?: 0f) to colors.value
-    }
+    val (maxTotal, colorList) =
+        remember(dataList, colors) {
+            val totals = dataList.map { group -> group.values.sum() }
+            (totals.maxOrNull() ?: 0f) to colors.value
+        }
 
-    val animationProgress = remember {
-        Animatable(if (stackedConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (stackedConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(stackedConfig.animation) {
         if (stackedConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = stackedConfig.animation.duration)
+                animationSpec = tween(durationMillis = stackedConfig.animation.duration),
             )
         }
     }
@@ -102,12 +115,13 @@ fun StackedBarChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.map { it.label },
-        yAxisConfig = AxisConfig(
-            minValue = 0f,
-            maxValue = maxTotal,
-            steps = 6
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = 0f,
+                maxValue = maxTotal,
+                steps = 6,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
         dataList.fastForEachIndexed { groupIndex, barGroup ->
             val barX = chartContext.calculateBarLeftPosition(groupIndex, dataList.size, stackedConfig.barWidthFraction)
@@ -128,27 +142,31 @@ fun StackedBarChart(
                 val animatedTopY = segmentBottomY - animatedHeight
 
                 // Use per-group color if available, otherwise fall back to chart colors
-                val segmentChartyColor = if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
-                    barGroup.colors[segmentIndex]
-                } else {
-                    // Create ChartyColor from the color at this index
-                    ChartyColor.Solid(colorList[segmentIndex % colorList.size])
-                }
+                val segmentChartyColor =
+                    if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
+                        barGroup.colors[segmentIndex]
+                    } else {
+                        // Create ChartyColor from the color at this index
+                        ChartyColor.Solid(colorList[segmentIndex % colorList.size])
+                    }
                 val isTopSegment = segmentIndex == barGroup.values.size - 1
 
                 // Create gradient brush for this segment
-                val segmentBrush = when (segmentChartyColor) {
-                    is ChartyColor.Solid -> androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = listOf(segmentChartyColor.color, segmentChartyColor.color),
-                        startY = animatedTopY,
-                        endY = animatedTopY + animatedHeight
-                    )
-                    is ChartyColor.Gradient -> androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = segmentChartyColor.colors,
-                        startY = animatedTopY,
-                        endY = animatedTopY + animatedHeight
-                    )
-                }
+                val segmentBrush =
+                    when (segmentChartyColor) {
+                        is ChartyColor.Solid ->
+                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = listOf(segmentChartyColor.color, segmentChartyColor.color),
+                                startY = animatedTopY,
+                                endY = animatedTopY + animatedHeight,
+                            )
+                        is ChartyColor.Gradient ->
+                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = segmentChartyColor.colors,
+                                startY = animatedTopY,
+                                endY = animatedTopY + animatedHeight,
+                            )
+                    }
 
                 drawStackedSegment(
                     brush = segmentBrush,
@@ -157,7 +175,7 @@ fun StackedBarChart(
                     width = barWidth,
                     height = animatedHeight,
                     cornerRadius = if (isTopSegment) stackedConfig.topCornerRadius.value else 0f,
-                    isTopSegment = isTopSegment
+                    isTopSegment = isTopSegment,
                 )
             }
         }
@@ -168,7 +186,7 @@ fun StackedBarChart(
                 chartContext = chartContext,
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
-                textMeasurer = textMeasurer
+                textMeasurer = textMeasurer,
             )
         }
     }
@@ -185,38 +203,39 @@ private fun DrawScope.drawStackedSegment(
     width: Float,
     height: Float,
     cornerRadius: Float,
-    isTopSegment: Boolean
+    isTopSegment: Boolean,
 ) {
-    val path = Path().apply {
-        if (isTopSegment && cornerRadius > 0f) {
-            // Top segment with rounded corners
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero
+    val path =
+        Path().apply {
+            if (isTopSegment && cornerRadius > 0f) {
+                // Top segment with rounded corners
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
                 )
-            )
-        } else {
-            // Regular rectangle for middle/bottom segments
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero
+            } else {
+                // Regular rectangle for middle/bottom segments
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
                 )
-            )
+            }
         }
-    }
     drawPath(path, brush)
 }

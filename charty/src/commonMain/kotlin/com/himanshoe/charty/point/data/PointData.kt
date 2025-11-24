@@ -8,6 +8,5 @@ package com.himanshoe.charty.point.data
  */
 data class PointData(
     val label: String,
-    val value: Float
+    val value: Float,
 )
-

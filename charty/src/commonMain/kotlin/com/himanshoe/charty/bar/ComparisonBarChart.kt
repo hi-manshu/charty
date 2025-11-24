@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.bar
 
@@ -62,26 +72,28 @@ import com.himanshoe.charty.common.draw.drawReferenceLine
 fun ComparisonBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
-    colors: ChartyColor = ChartyColor.Gradient(
-        listOf(
-            Color(0xFFE91E63),
-            Color(0xFF2196F3)
-        )
-    ),
+    colors: ChartyColor =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFFE91E63),
+                Color(0xFF2196F3),
+            ),
+        ),
     comparisonConfig: ComparisonBarChartConfig = ComparisonBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
 
-    val (minValue, maxValue, colorList) = remember(dataList, colors) {
-        val allValues = dataList.getAllValues()
-        Triple(
-            calculateMinValue(allValues),
-            calculateMaxValue(allValues),
-            colors.value
-        )
-    }
+    val (minValue, maxValue, colorList) =
+        remember(dataList, colors) {
+            val allValues = dataList.getAllValues()
+            Triple(
+                calculateMinValue(allValues),
+                calculateMaxValue(allValues),
+                colors.value,
+            )
+        }
 
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
@@ -90,27 +102,30 @@ fun ComparisonBarChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
-            drawAxisAtZero = isBelowAxisMode
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
+                drawAxisAtZero = isBelowAxisMode,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
-        val baselineY = if (minValue < 0f && isBelowAxisMode) {
-            chartContext.convertValueToYPosition(0f)
-        } else {
-            chartContext.bottom
-        }
+        val baselineY =
+            if (minValue < 0f && isBelowAxisMode) {
+                chartContext.convertValueToYPosition(0f)
+            } else {
+                chartContext.bottom
+            }
 
         dataList.fastForEachIndexed { groupIndex, group ->
             val groupWidth = chartContext.width / dataList.size
             val barWidth = groupWidth / group.values.size * 0.8f
 
             group.values.fastForEachIndexed { barIndex, value ->
-                val barX = chartContext.left +
+                val barX =
+                    chartContext.left +
                         groupWidth * groupIndex +
                         barWidth * barIndex +
                         groupWidth * 0.1f
@@ -129,24 +144,28 @@ fun ComparisonBarChart(
                     barTop = baselineY - barHeight
                 }
 
-                val barChartyColor = if (group.colors != null && barIndex < group.colors.size) {
-                    group.colors[barIndex]
-                } else {
-                    ChartyColor.Solid(colorList[barIndex % colorList.size])
-                }
+                val barChartyColor =
+                    if (group.colors != null && barIndex < group.colors.size) {
+                        group.colors[barIndex]
+                    } else {
+                        ChartyColor.Solid(colorList[barIndex % colorList.size])
+                    }
 
-                val barBrush = when (barChartyColor) {
-                    is ChartyColor.Solid -> androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = listOf(barChartyColor.color, barChartyColor.color),
-                        startY = barTop,
-                        endY = barTop + barHeight
-                    )
-                    is ChartyColor.Gradient -> androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = barChartyColor.colors,
-                        startY = barTop,
-                        endY = barTop + barHeight
-                    )
-                }
+                val barBrush =
+                    when (barChartyColor) {
+                        is ChartyColor.Solid ->
+                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = listOf(barChartyColor.color, barChartyColor.color),
+                                startY = barTop,
+                                endY = barTop + barHeight,
+                            )
+                        is ChartyColor.Gradient ->
+                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = barChartyColor.colors,
+                                startY = barTop,
+                                endY = barTop + barHeight,
+                            )
+                    }
 
                 drawRoundedBar(
                     brush = barBrush,
@@ -156,7 +175,7 @@ fun ComparisonBarChart(
                     height = barHeight,
                     isNegative = isNegative,
                     isBelowAxisMode = isBelowAxisMode,
-                    cornerRadius = comparisonConfig.cornerRadius.value
+                    cornerRadius = comparisonConfig.cornerRadius.value,
                 )
             }
         }
@@ -167,7 +186,7 @@ fun ComparisonBarChart(
                 chartContext = chartContext,
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
-                textMeasurer = textMeasurer
+                textMeasurer = textMeasurer,
             )
         }
     }
@@ -184,37 +203,38 @@ private fun DrawScope.drawRoundedBar(
     height: Float,
     isNegative: Boolean,
     isBelowAxisMode: Boolean,
-    cornerRadius: Float
+    cornerRadius: Float,
 ) {
-    val path = Path().apply {
-        if (isNegative && isBelowAxisMode) {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius)
+    val path =
+        Path().apply {
+            if (isNegative && isBelowAxisMode) {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
                 )
-            )
-        } else {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero
+            } else {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
                 )
-            )
+            }
         }
-    }
     drawPath(path, brush)
 }
 
@@ -224,25 +244,26 @@ private fun DrawScope.drawRoundedBar(
 @Deprecated(
     message = "GroupedBarChart has been renamed to ComparisonBarChart",
     replaceWith = ReplaceWith("ComparisonBarChart(data, modifier, colors, ComparisonBarChartConfig(), scaffoldConfig)"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.WARNING,
 )
 @Composable
 fun GroupedBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
-    colors: ChartyColor = ChartyColor.Gradient(
-        listOf(
-            Color(0xFFE91E63),
-            Color(0xFF2196F3)
-        )
-    ),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    colors: ChartyColor =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFFE91E63),
+                Color(0xFF2196F3),
+            ),
+        ),
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     ComparisonBarChart(
         data = data,
         modifier = modifier,
         colors = colors,
         comparisonConfig = ComparisonBarChartConfig(),
-        scaffoldConfig = scaffoldConfig
+        scaffoldConfig = scaffoldConfig,
     )
 }

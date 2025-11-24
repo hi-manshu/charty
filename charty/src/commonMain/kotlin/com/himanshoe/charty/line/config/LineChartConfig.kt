@@ -1,8 +1,8 @@
 package com.himanshoe.charty.line.config
 
 import androidx.compose.ui.graphics.StrokeCap
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 
 /**
@@ -27,7 +27,7 @@ data class LineChartConfig(
     val smoothCurve: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
-    val referenceLine: ReferenceLineConfig? = null
+    val referenceLine: ReferenceLineConfig? = null,
 ) {
     init {
         require(lineWidth > 0) { "Line width must be greater than 0" }

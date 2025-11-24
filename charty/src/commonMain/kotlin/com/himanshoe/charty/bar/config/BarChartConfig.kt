@@ -20,7 +20,7 @@ enum class NegativeValuesDrawMode {
      * The axis starts at the lowest value instead of zero
      * Best for showing relative differences when all values should appear above baseline
      */
-    FROM_MIN_VALUE
+    FROM_MIN_VALUE,
 }
 
 /**
@@ -39,7 +39,7 @@ data class BarChartConfig(
     val cornerRadius: CornerRadius = CornerRadius.Medium,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
-    val referenceLine: ReferenceLineConfig? = null
+    val referenceLine: ReferenceLineConfig? = null,
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }

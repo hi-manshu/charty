@@ -5,7 +5,7 @@
     "LongParameterList",
     "UnusedParameter",
     "NestedBlockDepth",
-    "FunctionNaming"
+    "FunctionNaming",
 )
 
 package com.himanshoe.charty.radar
@@ -48,10 +48,10 @@ import com.himanshoe.charty.radar.config.LegendPosition
 import com.himanshoe.charty.radar.config.MultipleRadarChartConfig
 import com.himanshoe.charty.radar.config.RadarGridStyle
 import com.himanshoe.charty.radar.data.RadarDataSet
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import kotlin.math.PI
 
 private const val FULL_CIRCLE_DEGREES = 360f
 private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
@@ -69,7 +69,7 @@ fun MultipleRadarChart(
     dataSets: () -> List<RadarDataSet>,
     modifier: Modifier = Modifier,
     config: MultipleRadarChartConfig = MultipleRadarChartConfig(),
-    onDataSetClick: ((label: String, index: Int) -> Unit)? = null
+    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
 ) {
     val dataSetsList = remember(dataSets) { dataSets() }
     require(dataSetsList.isNotEmpty()) { "Multiple radar chart data cannot be empty" }
@@ -88,7 +88,7 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }
@@ -98,7 +98,7 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                     Legend(dataSetsList, Modifier.padding(top = 8.dp), config.legendTextStyle)
                 }
@@ -110,7 +110,7 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }
@@ -120,7 +120,7 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                     Legend(dataSetsList, Modifier.padding(start = 8.dp), config.legendTextStyle)
                 }
@@ -131,14 +131,14 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                     Legend(
                         dataSetsList,
                         Modifier
                             .align(Alignment.TopStart)
                             .padding(8.dp),
-                        config.legendTextStyle
+                        config.legendTextStyle,
                     )
                 }
             }
@@ -148,14 +148,14 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                     Legend(
                         dataSetsList,
                         Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp),
-                        config.legendTextStyle
+                        config.legendTextStyle,
                     )
                 }
             }
@@ -165,14 +165,14 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                     Legend(
                         dataSetsList,
                         Modifier
                             .align(Alignment.BottomStart)
                             .padding(8.dp),
-                        config.legendTextStyle
+                        config.legendTextStyle,
                     )
                 }
             }
@@ -182,14 +182,14 @@ fun MultipleRadarChart(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
                         config = config,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                     Legend(
                         dataSetsList,
                         Modifier
                             .align(Alignment.BottomEnd)
                             .padding(8.dp),
-                        config.legendTextStyle
+                        config.legendTextStyle,
                     )
                 }
             }
@@ -199,7 +199,7 @@ fun MultipleRadarChart(
             dataSetsList = dataSetsList,
             numberOfAxes = numberOfAxes,
             config = config,
-            modifier = modifier
+            modifier = modifier,
         )
     }
 }
@@ -212,41 +212,45 @@ private fun Legend(
     dataSets: List<RadarDataSet>,
     modifier: Modifier = Modifier,
     legendTextStyle: TextStyle = TextStyle(fontSize = 12.sp),
-    onDataSetClick: ((label: String, index: Int) -> Unit)? = null
+    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         dataSets.forEachIndexed { index, dataSet ->
-            val dataColor = when (dataSet.color) {
-                is ChartyColor.Solid -> dataSet.color.color
-                is ChartyColor.Gradient -> dataSet.color.colors.first()
-            }
+            val dataColor =
+                when (dataSet.color) {
+                    is ChartyColor.Solid -> dataSet.color.color
+                    is ChartyColor.Gradient -> dataSet.color.colors.first()
+                }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = if (onDataSetClick != null) {
-                    Modifier.clickable { onDataSetClick(dataSet.label, index) }
-                } else {
-                    Modifier
-                }
+                modifier =
+                    if (onDataSetClick != null) {
+                        Modifier.clickable { onDataSetClick(dataSet.label, index) }
+                    } else {
+                        Modifier
+                    },
             ) {
                 Surface(
                     modifier = Modifier.size(12.dp),
                     shape = CircleShape,
-                    color = dataColor
+                    color = dataColor,
                 ) {}
                 Text(
                     text = dataSet.label,
-                    style = legendTextStyle.copy(
-                        color = if (legendTextStyle.color == Color.Unspecified) {
-                            dataColor
-                        } else {
-                            legendTextStyle.color
-                        }
-                    )
+                    style =
+                        legendTextStyle.copy(
+                            color =
+                                if (legendTextStyle.color == Color.Unspecified) {
+                                    dataColor
+                                } else {
+                                    legendTextStyle.color
+                                },
+                        ),
                 )
             }
         }
@@ -261,18 +265,18 @@ private fun RadarChartContent(
     dataSetsList: List<RadarDataSet>,
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-
-    val animationProgress = remember {
-        Animatable(if (config.radarConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (config.radarConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(config.radarConfig.animation) {
         if (config.radarConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = config.radarConfig.animation.duration)
+                animationSpec = tween(durationMillis = config.radarConfig.animation.duration),
             )
         }
     }
@@ -296,7 +300,7 @@ private fun RadarChartContent(
                     gridStyle = config.radarConfig.gridConfig.gridStyle,
                     gridLineWidth = config.radarConfig.gridConfig.gridLineWidth,
                     gridLineColor = config.radarConfig.gridConfig.gridLineColor,
-                    startAngle = config.radarConfig.startAngleDegrees
+                    startAngle = config.radarConfig.startAngleDegrees,
                 )
             }
 
@@ -308,26 +312,27 @@ private fun RadarChartContent(
                     numberOfAxes = numberOfAxes,
                     axisLineWidth = config.radarConfig.gridConfig.axisLineWidth,
                     axisLineColor = config.radarConfig.gridConfig.axisLineColor,
-                    startAngle = config.radarConfig.startAngleDegrees
+                    startAngle = config.radarConfig.startAngleDegrees,
                 )
             }
 
             // Draw all data sets with staggered animation if enabled
             dataSetsList.fastForEachIndexed { index, dataSet ->
-                val datasetAnimationProgress = if (config.staggerAnimation) {
-                    val delay = index * config.staggerDelay
-                    val adjustedProgress = (animationProgress.value - delay).coerceIn(0f, 1f)
-                    adjustedProgress / (1f - delay).coerceAtLeast(0.01f)
-                } else {
-                    animationProgress.value
-                }
+                val datasetAnimationProgress =
+                    if (config.staggerAnimation) {
+                        val delay = index * config.staggerDelay
+                        val adjustedProgress = (animationProgress.value - delay).coerceIn(0f, 1f)
+                        adjustedProgress / (1f - delay).coerceAtLeast(0.01f)
+                    } else {
+                        animationProgress.value
+                    }
 
                 drawRadarDataSet(
                     center = Offset(centerX, centerY),
                     maxRadius = maxRadius,
                     dataSet = dataSet,
                     config = config,
-                    animationProgress = datasetAnimationProgress.coerceIn(0f, 1f)
+                    animationProgress = datasetAnimationProgress.coerceIn(0f, 1f),
                 )
             }
 
@@ -340,7 +345,7 @@ private fun RadarChartContent(
                     numberOfAxes = numberOfAxes,
                     config = config,
                     textMeasurer = textMeasurer,
-                    startAngle = config.radarConfig.startAngleDegrees
+                    startAngle = config.radarConfig.startAngleDegrees,
                 )
             }
 
@@ -349,7 +354,7 @@ private fun RadarChartContent(
                 drawCircle(
                     color = config.radarConfig.centerConfig.centerBackgroundColor,
                     radius = config.radarConfig.centerConfig.centerBackgroundRadius,
-                    center = Offset(centerX, centerY)
+                    center = Offset(centerX, centerY),
                 )
             }
         }
@@ -367,7 +372,7 @@ private fun DrawScope.drawRadarGrid(
     gridStyle: RadarGridStyle,
     gridLineWidth: Float,
     gridLineColor: Color,
-    startAngle: Float
+    startAngle: Float,
 ) {
     for (level in 1..numberOfLevels) {
         val radius = (maxRadius * level) / numberOfLevels
@@ -378,7 +383,7 @@ private fun DrawScope.drawRadarGrid(
                     color = gridLineColor,
                     radius = radius,
                     center = center,
-                    style = Stroke(width = gridLineWidth)
+                    style = Stroke(width = gridLineWidth),
                 )
             }
             RadarGridStyle.POLYGON -> {
@@ -399,7 +404,7 @@ private fun DrawScope.drawRadarGrid(
                 drawPath(
                     path = path,
                     color = gridLineColor,
-                    style = Stroke(width = gridLineWidth)
+                    style = Stroke(width = gridLineWidth),
                 )
             }
         }
@@ -415,7 +420,7 @@ private fun DrawScope.drawAxisLines(
     numberOfAxes: Int,
     axisLineWidth: Float,
     axisLineColor: Color,
-    startAngle: Float
+    startAngle: Float,
 ) {
     for (i in 0 until numberOfAxes) {
         val angle = (startAngle + (FULL_CIRCLE_DEGREES * i / numberOfAxes)) * DEGREES_TO_RADIANS
@@ -426,7 +431,7 @@ private fun DrawScope.drawAxisLines(
             color = axisLineColor,
             start = center,
             end = Offset(endX, endY),
-            strokeWidth = axisLineWidth
+            strokeWidth = axisLineWidth,
         )
     }
 }
@@ -439,7 +444,7 @@ private fun DrawScope.drawRadarDataSet(
     maxRadius: Float,
     dataSet: RadarDataSet,
     config: MultipleRadarChartConfig,
-    animationProgress: Float
+    animationProgress: Float,
 ) {
     val numberOfAxes = dataSet.axes.size
     val path = Path()
@@ -467,15 +472,16 @@ private fun DrawScope.drawRadarDataSet(
     path.close()
 
     // Get color from ChartyColor
-    val dataColor = when (dataSet.color) {
-        is ChartyColor.Solid -> dataSet.color.color
-        is ChartyColor.Gradient -> dataSet.color.colors.first()
-    }
+    val dataColor =
+        when (dataSet.color) {
+            is ChartyColor.Solid -> dataSet.color.color
+            is ChartyColor.Gradient -> dataSet.color.colors.first()
+        }
 
     // Draw filled polygon
     drawPath(
         path = path,
-        color = dataColor.copy(alpha = dataSet.fillAlpha * animationProgress)
+        color = dataColor.copy(alpha = dataSet.fillAlpha * animationProgress),
     )
 
     // Draw outline with customizable line width per dataset
@@ -483,11 +489,12 @@ private fun DrawScope.drawRadarDataSet(
     drawPath(
         path = path,
         color = dataColor,
-        style = Stroke(
-            width = lineWidth,
-            cap = config.radarConfig.strokeCap,
-            join = config.radarConfig.strokeJoin
-        )
+        style =
+            Stroke(
+                width = lineWidth,
+                cap = config.radarConfig.strokeCap,
+                join = config.radarConfig.strokeJoin,
+            ),
     )
 
     // Draw data points
@@ -498,7 +505,7 @@ private fun DrawScope.drawRadarDataSet(
             drawCircle(
                 color = dataColor,
                 radius = pointRadius * animationProgress,
-                center = point
+                center = point,
             )
 
             // Optional inner circle for better visibility
@@ -506,7 +513,7 @@ private fun DrawScope.drawRadarDataSet(
                 drawCircle(
                     color = Color.White,
                     radius = (pointRadius * 0.5f) * animationProgress,
-                    center = point
+                    center = point,
                 )
             }
         }
@@ -523,7 +530,7 @@ private fun DrawScope.drawAxisLabels(
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
     textMeasurer: TextMeasurer,
-    startAngle: Float
+    startAngle: Float,
 ) {
     val labelDistance = maxRadius * config.radarConfig.labelConfig.labelDistanceMultiplier
     val textStyle = config.radarConfig.labelConfig.labelTextStyle
@@ -533,10 +540,11 @@ private fun DrawScope.drawAxisLabels(
         val x = center.x + labelDistance * cos(angle)
         val y = center.y + labelDistance * sin(angle)
 
-        val textLayoutResult = textMeasurer.measure(
-            text = label,
-            style = textStyle
-        )
+        val textLayoutResult =
+            textMeasurer.measure(
+                text = label,
+                style = textStyle,
+            )
 
         val textWidth = textLayoutResult.size.width
         val textHeight = textLayoutResult.size.height
@@ -545,21 +553,23 @@ private fun DrawScope.drawAxisLabels(
         val isTop = angle > -3 * PI / 4 && angle < -PI / 4
         val isRight = angle >= -PI / 4 && angle <= PI / 4
 
-        val offsetX = when {
-            isBottom || isTop -> -textWidth / 2f
-            isRight -> 0f
-            else -> -textWidth.toFloat()
-        }
+        val offsetX =
+            when {
+                isBottom || isTop -> -textWidth / 2f
+                isRight -> 0f
+                else -> -textWidth.toFloat()
+            }
 
-        val offsetY = when {
-            isBottom -> 0f
-            isTop -> -textHeight.toFloat()
-            else -> -textHeight / 2f
-        }
+        val offsetY =
+            when {
+                isBottom -> 0f
+                isTop -> -textHeight.toFloat()
+                else -> -textHeight / 2f
+            }
 
         drawText(
             textLayoutResult = textLayoutResult,
-            topLeft = Offset(x + offsetX, y + offsetY)
+            topLeft = Offset(x + offsetX, y + offsetY),
         )
     }
 }

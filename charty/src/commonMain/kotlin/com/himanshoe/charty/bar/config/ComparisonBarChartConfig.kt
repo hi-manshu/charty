@@ -12,5 +12,5 @@ import com.himanshoe.charty.common.config.ReferenceLineConfig
 data class ComparisonBarChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val cornerRadius: CornerRadius = CornerRadius.Medium,
-    val referenceLine: ReferenceLineConfig? = null
+    val referenceLine: ReferenceLineConfig? = null,
 )

@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.bar
 
@@ -27,8 +37,8 @@ import com.himanshoe.charty.common.AxisConfig
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.draw.drawReferenceLine
 
 /**
  * Horizontal Bar Chart - Display data as horizontal bars
@@ -68,28 +78,30 @@ fun HorizontalBarChart(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
     barConfig: BarChartConfig = BarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
 
-    val (minValue, maxValue) = remember(dataList, barConfig.negativeValuesDrawMode) {
-        val values = dataList.getValues()
-        calculateMinValue(values) to calculateMaxValue(values)
-    }
+    val (minValue, maxValue) =
+        remember(dataList, barConfig.negativeValuesDrawMode) {
+            val values = dataList.getValues()
+            calculateMinValue(values) to calculateMaxValue(values)
+        }
 
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
 
-    val animationProgress = remember {
-        Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(barConfig.animation) {
         if (barConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = barConfig.animation.duration)
+                animationSpec = tween(durationMillis = barConfig.animation.duration),
             )
         }
     }
@@ -99,24 +111,26 @@ fun HorizontalBarChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.map { it.label },
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = drawAxisAtZero
-        ),
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                drawAxisAtZero = drawAxisAtZero,
+            ),
         config = scaffoldConfig,
-        orientation = ChartOrientation.HORIZONTAL
+        orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         val axisOffset = if (scaffoldConfig.showAxis) scaffoldConfig.axisThickness * 20f else 0f
 
-        val baselineX = if (drawAxisAtZero) {
-            val range = maxValue - minValue
-            val zeroNormalized = (0f - minValue) / range
-            chartContext.left + (zeroNormalized * chartContext.width)
-        } else {
-            chartContext.left + axisOffset
-        }
+        val baselineX =
+            if (drawAxisAtZero) {
+                val range = maxValue - minValue
+                val zeroNormalized = (0f - minValue) / range
+                chartContext.left + (zeroNormalized * chartContext.width)
+            } else {
+                chartContext.left + axisOffset
+            }
 
         dataList.fastForEachIndexed { index, bar ->
             val barHeight = chartContext.height / dataList.size
@@ -144,18 +158,21 @@ fun HorizontalBarChart(
             }
 
             val barColor = bar.color ?: color
-            val brush = when (barColor) {
-                is ChartyColor.Solid -> androidx.compose.ui.graphics.Brush.horizontalGradient(
-                    colors = listOf(barColor.color, barColor.color),
-                    startX = chartContext.left,
-                    endX = chartContext.right
-                )
-                is ChartyColor.Gradient -> androidx.compose.ui.graphics.Brush.horizontalGradient(
-                    colors = barColor.colors,
-                    startX = chartContext.left,
-                    endX = chartContext.right
-                )
-            }
+            val brush =
+                when (barColor) {
+                    is ChartyColor.Solid ->
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            colors = listOf(barColor.color, barColor.color),
+                            startX = chartContext.left,
+                            endX = chartContext.right,
+                        )
+                    is ChartyColor.Gradient ->
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            colors = barColor.colors,
+                            startX = chartContext.left,
+                            endX = chartContext.right,
+                        )
+                }
 
             drawRoundedHorizontalBar(
                 brush = brush,
@@ -165,7 +182,7 @@ fun HorizontalBarChart(
                 height = barThickness,
                 isNegative = isNegative,
                 isBelowAxisMode = isBelowAxisMode,
-                cornerRadius = barConfig.cornerRadius.value
+                cornerRadius = barConfig.cornerRadius.value,
             )
         }
 
@@ -175,7 +192,7 @@ fun HorizontalBarChart(
                 chartContext = chartContext,
                 orientation = ChartOrientation.HORIZONTAL,
                 config = referenceLineConfig,
-                textMeasurer = textMeasurer
+                textMeasurer = textMeasurer,
             )
         }
     }
@@ -192,39 +209,40 @@ private fun DrawScope.drawRoundedHorizontalBar(
     height: Float,
     isNegative: Boolean,
     isBelowAxisMode: Boolean,
-    cornerRadius: Float
+    cornerRadius: Float,
 ) {
-    val path = Path().apply {
-        if (isNegative && isBelowAxisMode) {
-            // Negative bar extending left: round left corners
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomRightCornerRadius = CornerRadius.Zero
+    val path =
+        Path().apply {
+            if (isNegative && isBelowAxisMode) {
+                // Negative bar extending left: round left corners
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
                 )
-            )
-        } else {
-            // Positive bar extending right: round right corners
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius)
+            } else {
+                // Positive bar extending right: round right corners
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
                 )
-            )
+            }
         }
-    }
 
     drawPath(path, brush)
 }

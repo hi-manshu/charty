@@ -32,7 +32,7 @@ data class ComboChartConfig(
     val smoothCurve: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
-    val referenceLine: ReferenceLineConfig? = null
+    val referenceLine: ReferenceLineConfig? = null,
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }

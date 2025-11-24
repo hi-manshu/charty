@@ -15,14 +15,16 @@ import org.jetbrains.kotlin.psi.KtValueArgument
  * Custom rule that treats ARGB-style color literals (e.g. 0xFF2196F3) used in Color(...) calls
  * as non-magic numbers. This is intended to complement the standard MagicNumber rule.
  */
-class ColorMagicNumberRule(config: Config = Config.empty) : Rule(config) {
-
-    override val issue: Issue = Issue(
-        id = "ColorMagicNumber",
-        severity = Severity.Style,
-        description = "Allows ARGB color hex literals in Color(...) calls to be treated as non-magic numbers.",
-        debt = Debt.FIVE_MINS
-    )
+class ColorMagicNumberRule(
+    config: Config = Config.empty,
+) : Rule(config) {
+    override val issue: Issue =
+        Issue(
+            id = "ColorMagicNumber",
+            severity = Severity.Style,
+            description = "Allows ARGB color hex literals in Color(...) calls to be treated as non-magic numbers.",
+            debt = Debt.FIVE_MINS,
+        )
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
@@ -47,9 +49,9 @@ class ColorMagicNumberRule(config: Config = Config.empty) : Rule(config) {
 class CustomRuleSetProvider : RuleSetProvider {
     override val ruleSetId: String = "custom-rules"
 
-    override fun instance(config: Config): RuleSet = RuleSet(
-        ruleSetId,
-        listOf(ColorMagicNumberRule(config))
-    )
+    override fun instance(config: Config): RuleSet =
+        RuleSet(
+            ruleSetId,
+            listOf(ColorMagicNumberRule(config)),
+        )
 }
-

@@ -12,11 +12,10 @@ data class BubbleData(
     val label: String,
     val xValue: Float? = null,
     val yValue: Float,
-    val size: Float
+    val size: Float,
 ) {
     init {
         require(yValue.isFinite()) { "yValue must be a finite number" }
         require(size > 0f) { "Bubble size must be positive" }
     }
 }
-

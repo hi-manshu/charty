@@ -1,4 +1,11 @@
-@file:Suppress("UndocumentedPublicClass", "UndocumentedPublicFunction", "FunctionNaming", "MatchingDeclarationName", "PreviewPublic", "ModifierMissing")
+@file:Suppress(
+    "UndocumentedPublicClass",
+    "UndocumentedPublicFunction",
+    "FunctionNaming",
+    "MatchingDeclarationName",
+    "PreviewPublic",
+    "ModifierMissing",
+)
 
 package com.himanshoe.sample
 

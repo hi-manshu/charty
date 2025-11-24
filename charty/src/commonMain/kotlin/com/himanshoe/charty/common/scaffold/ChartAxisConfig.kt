@@ -8,7 +8,7 @@ import kotlin.math.ceil
  */
 data class ChartAxisConfig(
     val xAxisLabels: List<String>,
-    val yAxisLabels: List<String>
+    val yAxisLabels: List<String>,
 ) {
     init {
         require(yAxisLabels.size >= 2) { "yAxisLabels must contain at least two entries" }
@@ -26,7 +26,7 @@ data class ChartAxisConfig(
         fun fromNumericRange(
             xAxisLabels: List<String>,
             maxValue: Float,
-            stepSize: Int = 10
+            stepSize: Int = 10,
         ): ChartAxisConfig {
             val safeStep = stepSize.coerceAtLeast(1)
             val top = ceil(maxValue / safeStep).toInt() * safeStep

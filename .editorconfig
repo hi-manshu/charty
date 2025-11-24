@@ -1,0 +1,36 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+max_line_length = 120
+tab_width = 4
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+# Ktlint rules
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_filename = disabled
+ij_kotlin_imports_layout = *
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+# Indentation
+ij_kotlin_continuation_indent_size = 4
+
+# Spacing
+ij_kotlin_spaces_around_when_parentheses = false
+
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.{json}]
+indent_size = 2
+

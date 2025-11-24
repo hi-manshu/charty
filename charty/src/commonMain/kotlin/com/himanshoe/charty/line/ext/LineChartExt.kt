@@ -9,7 +9,10 @@ import kotlin.math.floor
 /**
  * Calculate appropriate max value with nice rounding
  */
-internal fun calculateMaxValue(values: List<Float>, stepSize: Int = 10): Float {
+internal fun calculateMaxValue(
+    values: List<Float>,
+    stepSize: Int = 10,
+): Float {
     val maxData = values.maxOrNull() ?: 0f
     return ceil(maxData / stepSize).toInt() * stepSize.toFloat()
 }
@@ -17,7 +20,10 @@ internal fun calculateMaxValue(values: List<Float>, stepSize: Int = 10): Float {
 /**
  * Calculate appropriate min value with nice rounding
  */
-internal fun calculateMinValue(values: List<Float>, stepSize: Int = 10): Float {
+internal fun calculateMinValue(
+    values: List<Float>,
+    stepSize: Int = 10,
+): Float {
     val minData = values.minOrNull() ?: 0f
     return floor(minData / stepSize).toInt() * stepSize.toFloat()
 }
@@ -45,5 +51,3 @@ fun List<LineGroup>.getAllValues(): List<Float> = flatMap { it.values }
  */
 @JvmName("getLineGroupLabels")
 fun List<LineGroup>.getLabels(): List<String> = map { it.label }
-
-

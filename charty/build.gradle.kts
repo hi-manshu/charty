@@ -17,7 +17,7 @@ kotlin {
 
     listOf(
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "charty"
@@ -56,10 +56,16 @@ kotlin {
 
 android {
     namespace = "com.himanshoe.charty"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
 
     compileOptions {
@@ -67,4 +73,3 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
-

@@ -1,7 +1,7 @@
 package com.himanshoe.charty.point.config
 
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 
 /**
@@ -20,7 +20,7 @@ data class PointChartConfig(
     val showLabels: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
-    val referenceLine: ReferenceLineConfig? = null
+    val referenceLine: ReferenceLineConfig? = null,
 ) {
     init {
         require(pointRadius > 0) { "Point radius must be greater than 0" }

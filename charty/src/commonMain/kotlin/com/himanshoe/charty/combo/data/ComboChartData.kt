@@ -10,6 +10,5 @@ package com.himanshoe.charty.combo.data
 data class ComboChartData(
     val label: String,
     val barValue: Float,
-    val lineValue: Float
+    val lineValue: Float,
 )
-

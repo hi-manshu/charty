@@ -38,7 +38,7 @@ data class MultipleRadarChartConfig(
     val datasetPointRadius: Float? = null,
     val showPointInnerCircle: Boolean = true,
     val blendMode: BlendMode = BlendMode.NORMAL,
-    val maxDataSets: Int = 0
+    val maxDataSets: Int = 0,
 ) {
     init {
         require(staggerDelay in 0f..0.5f) { "Stagger delay must be between 0 and 0.5" }
@@ -59,7 +59,7 @@ enum class LegendPosition {
     TOP_LEFT,
     TOP_RIGHT,
     BOTTOM_LEFT,
-    BOTTOM_RIGHT
+    BOTTOM_RIGHT,
 }
 
 /**
@@ -73,6 +73,5 @@ enum class BlendMode {
     ADDITIVE,
 
     /** Multiply blending - colors multiply (darker overlaps) */
-    MULTIPLY
+    MULTIPLY,
 }
-

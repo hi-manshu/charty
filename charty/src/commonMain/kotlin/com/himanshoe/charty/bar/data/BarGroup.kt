@@ -13,7 +13,7 @@ import com.himanshoe.charty.color.ChartyColor
 data class BarGroup(
     val label: String,
     val values: List<Float>,
-    val colors: List<ChartyColor>? = null
+    val colors: List<ChartyColor>? = null,
 ) {
     init {
         if (colors != null) {

@@ -8,18 +8,17 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.ktlint) apply false
 }
 
-// Configure Detekt for all subprojects
 subprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
         buildUponDefaultConfig = true
         allRules = false
         config.setFrom(files("${rootProject.projectDir}/config/detekt/detekt.yml"))
-
-        // Explicitly set source directories
         source.setFrom(
             "src/commonMain/kotlin",
             "src/androidMain/kotlin",
@@ -28,14 +27,25 @@ subprojects {
             "src/wasmJsMain/kotlin",
             "src/jvmMain/kotlin"
         )
-
-        // Make sure detekt fails on issues
         ignoreFailures = false
     }
 
     plugins.withId("io.gitlab.arturbosch.detekt") {
         dependencies {
             add("detektPlugins", project(":detekt-rules"))
+        }
+    }
+
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        version.set("1.5.0")
+        android.set(true)
+        verbose.set(true)
+        outputToConsole.set(true)
+        ignoreFailures.set(false)
+
+        filter {
+            exclude("**/generated/**")
+            exclude("**/build/**")
         }
     }
 }

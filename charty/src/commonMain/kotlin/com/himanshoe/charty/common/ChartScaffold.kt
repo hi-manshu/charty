@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.common
 
@@ -8,10 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.*
-import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.color.ChartyColor
 import kotlin.math.round
 
@@ -29,7 +37,7 @@ enum class ChartOrientation {
      * Horizontal orientation - X-axis vertical on left, Y-axis horizontal at bottom
      * Bars grow rightward, values on X-axis, labels on Y-axis
      */
-    HORIZONTAL
+    HORIZONTAL,
 }
 
 /**
@@ -37,8 +45,8 @@ enum class ChartOrientation {
  * - Shows integers without decimal point
  * - Shows floats with max 2 decimal places, trimming trailing zeros
  */
-internal fun formatAxisLabel(value: Float): String {
-    return if (value % 1 == 0f) {
+internal fun formatAxisLabel(value: Float): String =
+    if (value % 1 == 0f) {
         value.toInt().toString()
     } else {
         // Round to 2 decimal places
@@ -53,7 +61,6 @@ internal fun formatAxisLabel(value: Float): String {
             str.trimEnd('0').trimEnd('.')
         }
     }
-}
 
 /**
  * Context object passed to chart drawing lambdas.
@@ -67,7 +74,7 @@ data class ChartContext(
     val width: Float,
     val height: Float,
     val minValue: Float,
-    val maxValue: Float
+    val maxValue: Float,
 ) {
     /**
      * Converts a data value to its corresponding Y-axis pixel coordinate
@@ -91,7 +98,11 @@ data class ChartContext(
      * @param barWidthFraction Fraction of available space the bar should occupy (0.0 to 1.0)
      * @return The X coordinate for the bar's left edge
      */
-    fun calculateBarLeftPosition(index: Int, totalBars: Int, barWidthFraction: Float = 0.6f): Float {
+    fun calculateBarLeftPosition(
+        index: Int,
+        totalBars: Int,
+        barWidthFraction: Float = 0.6f,
+    ): Float {
         val sectionWidth = width / totalBars
         val barWidth = sectionWidth * barWidthFraction
         return left + (sectionWidth * index) + (sectionWidth - barWidth) / 2
@@ -104,9 +115,10 @@ data class ChartContext(
      * @param widthFraction Fraction of available space each bar should occupy (0.0 to 1.0)
      * @return The width in pixels
      */
-    fun calculateBarWidth(totalBars: Int, widthFraction: Float = 0.6f): Float {
-        return (width / totalBars) * widthFraction
-    }
+    fun calculateBarWidth(
+        totalBars: Int,
+        widthFraction: Float = 0.6f,
+    ): Float = (width / totalBars) * widthFraction
 
     /**
      * Calculates the centered X position for an item at the given index
@@ -116,29 +128,31 @@ data class ChartContext(
      * @param totalItems Total number of items
      * @return The centered X coordinate
      */
-    fun calculateCenteredXPosition(index: Int, totalItems: Int): Float {
-        return left + (width * (index + 0.5f) / totalItems)
-    }
+    fun calculateCenteredXPosition(
+        index: Int,
+        totalItems: Int,
+    ): Float = left + (width * (index + 0.5f) / totalItems)
 
     /**
      * Converts ChartyColor to a vertical gradient Brush
      *
      * @return Brush for drawing with gradient support
      */
-    fun ChartyColor.toVerticalGradientBrush(): Brush {
-        return when (this) {
-            is ChartyColor.Solid -> Brush.verticalGradient(
-                colors = listOf(color, color),
-                startY = top,
-                endY = bottom
-            )
-            is ChartyColor.Gradient -> Brush.verticalGradient(
-                colors = colors,
-                startY = top,
-                endY = bottom
-            )
+    fun ChartyColor.toVerticalGradientBrush(): Brush =
+        when (this) {
+            is ChartyColor.Solid ->
+                Brush.verticalGradient(
+                    colors = listOf(color, color),
+                    startY = top,
+                    endY = bottom,
+                )
+            is ChartyColor.Gradient ->
+                Brush.verticalGradient(
+                    colors = colors,
+                    startY = top,
+                    endY = bottom,
+                )
         }
-    }
 }
 
 /**
@@ -161,14 +175,14 @@ fun ChartScaffold(
     yAxisConfig: AxisConfig = AxisConfig(),
     config: ChartScaffoldConfig = ChartScaffoldConfig(),
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
-    content: DrawScope.(ChartContext) -> Unit
+    content: DrawScope.(ChartContext) -> Unit,
 ) {
     Box(modifier = modifier) {
         DrawAxisAndLabels(
             xLabels = xLabels,
             yAxisConfig = yAxisConfig,
             config = config,
-            orientation = orientation
+            orientation = orientation,
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -177,16 +191,17 @@ fun ChartScaffold(
             val topPadding = 20f
             val bottomPadding = if (config.showLabels && xLabels.isNotEmpty()) 50f else 20f
 
-            val chartContext = ChartContext(
-                left = leftPadding,
-                top = topPadding,
-                right = size.width - rightPadding,
-                bottom = size.height - bottomPadding,
-                width = size.width - leftPadding - rightPadding,
-                height = size.height - topPadding - bottomPadding,
-                minValue = yAxisConfig.minValue,
-                maxValue = yAxisConfig.maxValue
-            )
+            val chartContext =
+                ChartContext(
+                    left = leftPadding,
+                    top = topPadding,
+                    right = size.width - rightPadding,
+                    bottom = size.height - bottomPadding,
+                    width = size.width - leftPadding - rightPadding,
+                    height = size.height - topPadding - bottomPadding,
+                    minValue = yAxisConfig.minValue,
+                    maxValue = yAxisConfig.maxValue,
+                )
 
             content(chartContext)
         }
@@ -203,27 +218,29 @@ private fun DrawAxisAndLabels(
     xLabels: List<String>,
     yAxisConfig: AxisConfig,
     config: ChartScaffoldConfig,
-    orientation: ChartOrientation
+    orientation: ChartOrientation,
 ) {
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = config.labelTextStyle
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         when (orientation) {
-            ChartOrientation.VERTICAL -> drawVerticalChartAxes(
-                xLabels = xLabels,
-                yAxisConfig = yAxisConfig,
-                config = config,
-                textMeasurer = textMeasurer,
-                labelStyle = labelStyle
-            )
-            ChartOrientation.HORIZONTAL -> drawHorizontalChartAxes(
-                xLabels = xLabels,
-                yAxisConfig = yAxisConfig,
-                config = config,
-                textMeasurer = textMeasurer,
-                labelStyle = labelStyle
-            )
+            ChartOrientation.VERTICAL ->
+                drawVerticalChartAxes(
+                    xLabels = xLabels,
+                    yAxisConfig = yAxisConfig,
+                    config = config,
+                    textMeasurer = textMeasurer,
+                    labelStyle = labelStyle,
+                )
+            ChartOrientation.HORIZONTAL ->
+                drawHorizontalChartAxes(
+                    xLabels = xLabels,
+                    yAxisConfig = yAxisConfig,
+                    config = config,
+                    textMeasurer = textMeasurer,
+                    labelStyle = labelStyle,
+                )
         }
     }
 }
@@ -236,7 +253,7 @@ private fun DrawScope.drawVerticalChartAxes(
     yAxisConfig: AxisConfig,
     config: ChartScaffoldConfig,
     textMeasurer: TextMeasurer,
-    labelStyle: TextStyle
+    labelStyle: TextStyle,
 ) {
     // Calculate chart area
     val leftPadding = if (config.showLabels) 60f else 20f
@@ -257,35 +274,37 @@ private fun DrawScope.drawVerticalChartAxes(
             color = config.axisColor,
             start = Offset(chartLeft, chartTop),
             end = Offset(chartLeft, chartBottom),
-            strokeWidth = config.axisThickness
+            strokeWidth = config.axisThickness,
         )
     }
 
     // Draw X-axis line (horizontal line at bottom or zero)
     if (config.showAxis) {
-        val xAxisPosition = if (yAxisConfig.minValue < 0f && yAxisConfig.maxValue > 0f && yAxisConfig.drawAxisAtZero) {
-            // Position at zero when we have both positive and negative values and drawAxisAtZero is true
-            val range = yAxisConfig.maxValue - yAxisConfig.minValue
-            val zeroNormalized = (0f - yAxisConfig.minValue) / range
-            chartBottom - (zeroNormalized * chartHeight)
-        } else {
-            // Otherwise place the X axis at the bottom (min value)
-            chartBottom
-        }
+        val xAxisPosition =
+            if (yAxisConfig.minValue < 0f && yAxisConfig.maxValue > 0f && yAxisConfig.drawAxisAtZero) {
+                // Position at zero when we have both positive and negative values and drawAxisAtZero is true
+                val range = yAxisConfig.maxValue - yAxisConfig.minValue
+                val zeroNormalized = (0f - yAxisConfig.minValue) / range
+                chartBottom - (zeroNormalized * chartHeight)
+            } else {
+                // Otherwise place the X axis at the bottom (min value)
+                chartBottom
+            }
 
         drawLine(
             color = config.axisColor,
             start = Offset(chartLeft, xAxisPosition),
             end = Offset(chartRight, xAxisPosition),
-            strokeWidth = config.axisThickness
+            strokeWidth = config.axisThickness,
         )
     }
 
     // Draw Y-axis grid and labels
     val steps = yAxisConfig.steps.coerceAtLeast(2)
     for (i in 0..steps) {
-        val value = yAxisConfig.minValue +
-            (yAxisConfig.maxValue - yAxisConfig.minValue) * (i.toFloat() / steps)
+        val value =
+            yAxisConfig.minValue +
+                (yAxisConfig.maxValue - yAxisConfig.minValue) * (i.toFloat() / steps)
         val normalized = (value - yAxisConfig.minValue) / (yAxisConfig.maxValue - yAxisConfig.minValue)
         val y = chartBottom - (normalized * chartHeight)
 
@@ -295,7 +314,7 @@ private fun DrawScope.drawVerticalChartAxes(
                 color = config.gridColor,
                 start = Offset(chartLeft, y),
                 end = Offset(chartRight, y),
-                strokeWidth = config.gridThickness
+                strokeWidth = config.gridThickness,
             )
         }
 
@@ -306,10 +325,11 @@ private fun DrawScope.drawVerticalChartAxes(
 
             drawText(
                 textLayoutResult = textLayout,
-                topLeft = Offset(
-                    chartLeft - textLayout.size.width - 10f,
-                    y - textLayout.size.height / 2
-                )
+                topLeft =
+                    Offset(
+                        chartLeft - textLayout.size.width - 10f,
+                        y - textLayout.size.height / 2,
+                    ),
             )
         }
     }
@@ -322,10 +342,11 @@ private fun DrawScope.drawVerticalChartAxes(
 
             drawText(
                 textLayoutResult = textLayout,
-                topLeft = Offset(
-                    centerX - textLayout.size.width / 2,
-                    chartBottom + 10f
-                )
+                topLeft =
+                    Offset(
+                        centerX - textLayout.size.width / 2,
+                        chartBottom + 10f,
+                    ),
             )
         }
     }
@@ -341,7 +362,7 @@ private fun DrawScope.drawHorizontalChartAxes(
     yAxisConfig: AxisConfig,
     config: ChartScaffoldConfig,
     textMeasurer: TextMeasurer,
-    labelStyle: TextStyle
+    labelStyle: TextStyle,
 ) {
     // Calculate chart area - more space for category labels on left
     val leftPadding = if (config.showLabels) 100f else 20f
@@ -357,13 +378,14 @@ private fun DrawScope.drawHorizontalChartAxes(
     val chartHeight = chartBottom - chartTop
 
     // Calculate baseline position (X position where bars start/end for zero)
-    val baselineX = if (yAxisConfig.minValue < 0f && yAxisConfig.drawAxisAtZero) {
-        val range = yAxisConfig.maxValue - yAxisConfig.minValue
-        val zeroNormalized = (0f - yAxisConfig.minValue) / range
-        chartLeft + (zeroNormalized * chartWidth)
-    } else {
-        chartLeft
-    }
+    val baselineX =
+        if (yAxisConfig.minValue < 0f && yAxisConfig.drawAxisAtZero) {
+            val range = yAxisConfig.maxValue - yAxisConfig.minValue
+            val zeroNormalized = (0f - yAxisConfig.minValue) / range
+            chartLeft + (zeroNormalized * chartWidth)
+        } else {
+            chartLeft
+        }
 
     // Draw category axis (vertical line on left)
     if (config.showAxis) {
@@ -371,7 +393,7 @@ private fun DrawScope.drawHorizontalChartAxes(
             color = config.axisColor,
             start = Offset(chartLeft, chartTop),
             end = Offset(chartLeft, chartBottom),
-            strokeWidth = config.axisThickness
+            strokeWidth = config.axisThickness,
         )
     }
 
@@ -381,15 +403,16 @@ private fun DrawScope.drawHorizontalChartAxes(
             color = config.axisColor,
             start = Offset(baselineX, chartTop),
             end = Offset(baselineX, chartBottom),
-            strokeWidth = config.axisThickness
+            strokeWidth = config.axisThickness,
         )
     }
 
     // Draw value grid and labels (vertical lines for horizontal chart)
     val steps = yAxisConfig.steps.coerceAtLeast(2)
     for (i in 0..steps) {
-        val value = yAxisConfig.minValue +
-            (yAxisConfig.maxValue - yAxisConfig.minValue) * (i.toFloat() / steps)
+        val value =
+            yAxisConfig.minValue +
+                (yAxisConfig.maxValue - yAxisConfig.minValue) * (i.toFloat() / steps)
         val normalized = (value - yAxisConfig.minValue) / (yAxisConfig.maxValue - yAxisConfig.minValue)
         val x = chartLeft + (normalized * chartWidth)
 
@@ -399,7 +422,7 @@ private fun DrawScope.drawHorizontalChartAxes(
                 color = config.gridColor,
                 start = Offset(x, chartTop),
                 end = Offset(x, chartBottom),
-                strokeWidth = config.gridThickness
+                strokeWidth = config.gridThickness,
             )
         }
 
@@ -410,10 +433,11 @@ private fun DrawScope.drawHorizontalChartAxes(
 
             drawText(
                 textLayoutResult = textLayout,
-                topLeft = Offset(
-                    x - textLayout.size.width / 2,
-                    chartBottom + 10f
-                )
+                topLeft =
+                    Offset(
+                        x - textLayout.size.width / 2,
+                        chartBottom + 10f,
+                    ),
             )
         }
     }
@@ -427,10 +451,11 @@ private fun DrawScope.drawHorizontalChartAxes(
 
             drawText(
                 textLayoutResult = textLayout,
-                topLeft = Offset(
-                    chartLeft - textLayout.size.width - 10f,
-                    centerY - textLayout.size.height / 2
-                )
+                topLeft =
+                    Offset(
+                        chartLeft - textLayout.size.width - 10f,
+                        centerY - textLayout.size.height / 2,
+                    ),
             )
         }
     }

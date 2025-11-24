@@ -56,18 +56,21 @@ sealed class ChartyColor {
      * Solid color configuration.
      * @param color The solid color to use
      */
-    data class Solid(val color: Color) : ChartyColor() {
+    data class Solid(
+        val color: Color,
+    ) : ChartyColor() {
         override val value: List<Color>
-            get() = listOf(color,color)
+            get() = listOf(color, color)
     }
 
     /**
      * Gradient color configuration.
      * @param colors The list of colors for the gradient
      */
-    data class Gradient(val colors: List<Color>) : ChartyColor() {
+    data class Gradient(
+        val colors: List<Color>,
+    ) : ChartyColor() {
         override val value: List<Color>
             get() = colors
     }
 }
-

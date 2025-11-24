@@ -21,7 +21,7 @@ enum class RingDirection {
     /**
      * Counter-clockwise direction
      */
-    COUNTER_CLOCKWISE
+    COUNTER_CLOCKWISE,
 }
 
 /**
@@ -64,7 +64,6 @@ data class CircularProgressConfig(
      * Gap between concentric rings in pixels (default: 8f)
      */
     val gapBetweenRings: Float = 8f,
-
     /**
      * Starting angle in degrees (default: -90f for top position)
      * - -90° = top (12 o'clock position)
@@ -73,28 +72,23 @@ data class CircularProgressConfig(
      * - 180° = left (9 o'clock position)
      */
     val startAngleDegrees: Float = DEFAULT_START_ANGLE_DEGREES,
-
     /**
      * Direction to draw the rings (default: CLOCKWISE)
      */
     val ringDirection: RingDirection = RingDirection.CLOCKWISE,
-
     /**
      * Style of the stroke cap (default: Round for smooth appearance)
      */
     val strokeCap: StrokeCap = StrokeCap.Round,
-
     /**
      * Animation configuration (default: enabled with 800ms duration)
      */
     val animation: Animation = Animation.Default,
-
     /**
      * Whether to enable shadows globally (default: false for better performance)
      * Individual rings can still specify their own shadow properties
      */
     val enableShadows: Boolean = false,
-
     /**
      * Ratio of the center hole size to the overall size (0.0 to 0.5)
      * 0.0 = no center hole (rings fill inward completely)
@@ -102,40 +96,35 @@ data class CircularProgressConfig(
      * Higher values leave more space in the center
      */
     val centerHoleRatio: Float = 0.0f,
-
     /**
      * Whether the entire ring system should rotate continuously
      */
     val rotationEnabled: Boolean = false,
-
     /**
      * Duration of one full rotation in milliseconds (only used if rotationEnabled = true)
      */
     val rotationDurationMs: Int = 3000,
-
     /**
      * Whether rings respond to click/tap interactions
      */
     val interactionEnabled: Boolean = true,
-
     /**
      * Whether to show progress text in the center
      */
     val showCenterText: Boolean = false,
-
     /**
      * Padding around the entire circular progress indicator (to accommodate shadows)
      */
     val paddingDp: Float = 16f,
-
     /**
      * TextStyle for center text - allows full customization of text appearance
      */
-    val centerTextStyle: TextStyle = TextStyle(
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.Black
-    )
+    val centerTextStyle: TextStyle =
+        TextStyle(
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+        ),
 ) {
     init {
         require(gapBetweenRings >= 0f) {

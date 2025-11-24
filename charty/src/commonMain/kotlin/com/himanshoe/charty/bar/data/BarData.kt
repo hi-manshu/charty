@@ -12,6 +12,5 @@ import com.himanshoe.charty.color.ChartyColor
 data class BarData(
     val label: String,
     val value: Float,
-    val color: ChartyColor? = null
+    val color: ChartyColor? = null,
 )
-

@@ -13,4 +13,3 @@ internal fun List<ComboChartData>.getBarValues(): List<Float> = map { it.barValu
 internal fun List<ComboChartData>.getLineValues(): List<Float> = map { it.lineValue }
 
 internal fun List<ComboChartData>.getAllValues(): List<Float> = flatMap { listOf(it.barValue, it.lineValue) }
-

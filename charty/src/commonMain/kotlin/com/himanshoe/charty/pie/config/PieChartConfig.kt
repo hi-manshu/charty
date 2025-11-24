@@ -23,7 +23,7 @@ enum class PieChartStyle {
     /**
      * Donut chart - circular chart with a center hole
      */
-    DONUT
+    DONUT,
 }
 
 /**
@@ -34,42 +34,37 @@ data class LabelConfig(
      * Whether to display labels on slices
      */
     val shouldShowLabels: Boolean = true,
-
     /**
      * Whether to display percentage values on labels
      */
     val shouldShowPercentage: Boolean = true,
-
     /**
      * Whether to display actual numeric values on labels
      */
     val shouldShowValue: Boolean = false,
-
     /**
      * Minimum percentage threshold to display a label (avoids clutter on tiny slices)
      * For example, 3f means only show labels for slices >= 3% of total
      */
     val minimumPercentageToShowLabel: Float = 3f,
-
     /**
      * Text size for labels in SP (Scalable Pixels) - deprecated, use labelTextStyle instead
      */
     @Deprecated("Use labelTextStyle instead for more control")
     val labelTextSize: Float = 12f,
-
     /**
      * Whether to show labels outside the chart with connecting lines (future feature)
      */
     val shouldShowLabelsOutside: Boolean = false,
-
     /**
      * TextStyle for labels on slices - allows full customization of text appearance
      */
-    val labelTextStyle: TextStyle = TextStyle(
-        fontSize = 12.sp,
-        color = Color.White,
-        fontWeight = FontWeight.Bold
-    )
+    val labelTextStyle: TextStyle =
+        TextStyle(
+            fontSize = 12.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+        ),
 ) {
     init {
         require(minimumPercentageToShowLabel in 0f..100f) {
@@ -90,31 +85,26 @@ data class InteractionConfig(
      * Whether slices are clickable
      */
     val isEnabled: Boolean = true,
-
     /**
      * Scale multiplier when a slice is selected (1.0 = no scaling, 1.1 = 10% larger)
      */
     val selectedScaleMultiplier: Float = 1.1f,
-
     /**
      * Distance in pixels to pull out a selected slice from center
      */
     val selectedSlicePullOutDistance: Float = 8f,
-
     /**
      * Duration of selection animation in milliseconds
      */
     val selectionAnimationDurationMs: Int = 200,
-
     /**
      * Whether to enable hover effects (useful for desktop/web platforms)
      */
     val enableHoverEffect: Boolean = true,
-
     /**
      * Opacity for non-selected slices when one is selected (0.0 = transparent, 1.0 = opaque)
      */
-    val unselectedSliceOpacity: Float = 0.6f
+    val unselectedSliceOpacity: Float = 0.6f,
 ) {
     init {
         require(selectedScaleMultiplier >= 1f) {
@@ -177,12 +167,13 @@ data class PieChartConfig(
     val animation: Animation = Animation.Default,
     val sliceSpacingDegrees: Float = 0f,
     val shouldShowCenterText: Boolean = false,
-    val centerTextStyle: TextStyle = TextStyle(
-        fontSize = DEFAULT_CENTER_TEXT_SIZE_SP.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.Black
-    ),
-    val referenceLine: ReferenceLineConfig? = null
+    val centerTextStyle: TextStyle =
+        TextStyle(
+            fontSize = DEFAULT_CENTER_TEXT_SIZE_SP.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+        ),
+    val referenceLine: ReferenceLineConfig? = null,
 ) {
     init {
         require(donutHoleRatio in 0f..MAX_DONUT_HOLE_RATIO) {

@@ -9,6 +9,5 @@ package com.himanshoe.charty.line.data
  */
 data class LineGroup(
     val label: String,
-    val values: List<Float>
+    val values: List<Float>,
 )
-

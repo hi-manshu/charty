@@ -14,7 +14,9 @@ sealed interface Animation {
      *
      * @param duration Animation duration in milliseconds
      */
-    data class Enabled(val duration: Int = 800) : Animation {
+    data class Enabled(
+        val duration: Int = 800,
+    ) : Animation {
         init {
             require(duration > 0) { "Animation duration must be positive" }
         }
@@ -40,4 +42,3 @@ sealed interface Animation {
         val Slow = Enabled(duration = 1200)
     }
 }
-

@@ -14,10 +14,9 @@ data class SpanData(
     val label: String,
     val startValue: Float,
     val endValue: Float,
-    val color: ChartyColor? = null
+    val color: ChartyColor? = null,
 ) {
     init {
         require(endValue >= startValue) { "endValue must be greater than or equal to startValue" }
     }
 }
-

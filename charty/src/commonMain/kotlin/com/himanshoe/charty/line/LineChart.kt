@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.line
 
@@ -23,8 +33,8 @@ import com.himanshoe.charty.common.AxisConfig
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.calculateMaxValue
@@ -72,27 +82,29 @@ fun LineChart(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
     lineConfig: LineChartConfig = LineChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Line chart data cannot be empty" }
 
-    val (minValue, maxValue) = remember(dataList, lineConfig.negativeValuesDrawMode) {
-        val values = dataList.getValues()
-        calculateMinValue(values) to calculateMaxValue(values)
-    }
+    val (minValue, maxValue) =
+        remember(dataList, lineConfig.negativeValuesDrawMode) {
+            val values = dataList.getValues()
+            calculateMinValue(values) to calculateMaxValue(values)
+        }
 
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    val animationProgress = remember {
-        Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = lineConfig.animation.duration)
+                animationSpec = tween(durationMillis = lineConfig.animation.duration),
             )
         }
     }
@@ -102,21 +114,23 @@ fun LineChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
-            drawAxisAtZero = isBelowAxisMode
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
+                drawAxisAtZero = isBelowAxisMode,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
-        val pointPositions = dataList.fastMapIndexed { index, point ->
-            Offset(
-                x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                y = chartContext.convertValueToYPosition(point.value)
-            )
-        }
+        val pointPositions =
+            dataList.fastMapIndexed { index, point ->
+                Offset(
+                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                    y = chartContext.convertValueToYPosition(point.value),
+                )
+            }
 
         if (lineConfig.smoothCurve) {
             val path = Path()
@@ -134,20 +148,24 @@ fun LineChart(
                     val controlPoint2Y = next.y
 
                     path.cubicTo(
-                        controlPoint1X, controlPoint1Y,
-                        controlPoint2X, controlPoint2Y,
-                        next.x, next.y
+                        controlPoint1X,
+                        controlPoint1Y,
+                        controlPoint2X,
+                        controlPoint2Y,
+                        next.x,
+                        next.y,
                     )
                 }
 
                 drawPath(
                     path = path,
                     brush = Brush.linearGradient(color.value),
-                    style = Stroke(
-                        width = lineConfig.lineWidth,
-                        cap = lineConfig.strokeCap
-                    ),
-                    alpha = animationProgress.value
+                    style =
+                        Stroke(
+                            width = lineConfig.lineWidth,
+                            cap = lineConfig.strokeCap,
+                        ),
+                    alpha = animationProgress.value,
                 )
             }
         } else {
@@ -161,7 +179,7 @@ fun LineChart(
                     start = pointPositions[i],
                     end = pointPositions[i + 1],
                     strokeWidth = lineConfig.lineWidth,
-                    cap = lineConfig.strokeCap
+                    cap = lineConfig.strokeCap,
                 )
             }
 
@@ -169,16 +187,17 @@ fun LineChart(
             if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
                 val start = pointPositions[segmentsToDraw]
                 val end = pointPositions[segmentsToDraw + 1]
-                val partialEnd = Offset(
-                    x = start.x + (end.x - start.x) * segmentProgress,
-                    y = start.y + (end.y - start.y) * segmentProgress
-                )
+                val partialEnd =
+                    Offset(
+                        x = start.x + (end.x - start.x) * segmentProgress,
+                        y = start.y + (end.y - start.y) * segmentProgress,
+                    )
                 drawLine(
                     brush = Brush.linearGradient(color.value),
                     start = start,
                     end = partialEnd,
                     strokeWidth = lineConfig.lineWidth,
-                    cap = lineConfig.strokeCap
+                    cap = lineConfig.strokeCap,
                 )
             }
         }
@@ -193,7 +212,7 @@ fun LineChart(
                         brush = Brush.linearGradient(color.value),
                         radius = lineConfig.pointRadius,
                         center = position,
-                        alpha = lineConfig.pointAlpha
+                        alpha = lineConfig.pointAlpha,
                     )
                 }
             }
@@ -205,7 +224,7 @@ fun LineChart(
                 chartContext = chartContext,
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
-                textMeasurer = textMeasurer
+                textMeasurer = textMeasurer,
             )
         }
     }

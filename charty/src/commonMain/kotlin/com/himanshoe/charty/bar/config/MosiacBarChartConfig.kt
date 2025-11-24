@@ -7,10 +7,9 @@ import com.himanshoe.charty.common.config.Animation
  */
 data class MosiacBarChartConfig(
     val barWidthFraction: Float = 0.9f,
-    val animation: Animation = Animation.Default
+    val animation: Animation = Animation.Default,
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
     }
 }
-

@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.line
 
@@ -18,8 +28,8 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.getLabels
@@ -68,45 +78,49 @@ import com.himanshoe.charty.line.ext.getLabels
 fun StackedAreaChart(
     data: () -> List<LineGroup>,
     modifier: Modifier = Modifier,
-    colors: ChartyColor = ChartyColor.Gradient(
-        listOf(
-            Color(0xFF2196F3),
-            Color(0xFF4CAF50),
-            Color(0xFFFF9800)
-        )
-    ),
+    colors: ChartyColor =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFF2196F3),
+                Color(0xFF4CAF50),
+                Color(0xFFFF9800),
+            ),
+        ),
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
-    fillAlpha: Float = 0.7f
+    fillAlpha: Float = 0.7f,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Stacked area chart data cannot be empty" }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
-    val (maxValue, colorList) = remember(dataList, colors) {
-        val allStackedValues = dataList.flatMap { group ->
-            val cumulativeValues = mutableListOf<Float>()
-            var sum = 0f
-            group.values.forEach { value ->
-                sum += value
-                cumulativeValues.add(sum)
-            }
-            cumulativeValues
+    val (maxValue, colorList) =
+        remember(dataList, colors) {
+            val allStackedValues =
+                dataList.flatMap { group ->
+                    val cumulativeValues = mutableListOf<Float>()
+                    var sum = 0f
+                    group.values.forEach { value ->
+                        sum += value
+                        cumulativeValues.add(sum)
+                    }
+                    cumulativeValues
+                }
+            calculateMaxValue(allStackedValues) to colors.value
         }
-        calculateMaxValue(allStackedValues) to colors.value
-    }
 
     val minValue = 0f
 
-    val animationProgress = remember {
-        Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = lineConfig.animation.duration)
+                animationSpec = tween(durationMillis = lineConfig.animation.duration),
             )
         }
     }
@@ -114,13 +128,14 @@ fun StackedAreaChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = false // Stacked charts always draw from bottom
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                drawAxisAtZero = false, // Stacked charts always draw from bottom
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
         val baselineY = chartContext.bottom
         val startX = chartContext.left
@@ -129,126 +144,135 @@ fun StackedAreaChart(
         for (seriesIndex in seriesCount - 1 downTo 0) {
             val seriesColor = colorList[seriesIndex % colorList.size]
 
-            val cumulativePositions = dataList.fastMapIndexed { index, group ->
-                var cumulativeValue = 0f
-                for (i in 0..seriesIndex) {
-                    cumulativeValue += group.values.getOrNull(i) ?: 0f
+            val cumulativePositions =
+                dataList.fastMapIndexed { index, group ->
+                    var cumulativeValue = 0f
+                    for (i in 0..seriesIndex) {
+                        cumulativeValue += group.values.getOrNull(i) ?: 0f
+                    }
+                    Offset(
+                        x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                        y = chartContext.convertValueToYPosition(cumulativeValue),
+                    )
                 }
-                Offset(
-                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                    y = chartContext.convertValueToYPosition(cumulativeValue)
-                )
-            }
 
             if (cumulativePositions.isNotEmpty()) {
-                val areaPath = Path().apply {
-                    val firstPoint = cumulativePositions[0]
+                val areaPath =
+                    Path().apply {
+                        val firstPoint = cumulativePositions[0]
 
-                    if (lineConfig.smoothCurve) {
-                        // Smooth cubic start from (0,0) for ALL series
-                        val control1X = startX + (firstPoint.x - startX) / 3f
-                        val control2X = startX + 2 * (firstPoint.x - startX) / 3f
-                        val control2Y = firstPoint.y
-                        moveTo(startX, baselineY)
-                        cubicTo(control1X, baselineY, control2X, control2Y, firstPoint.x, firstPoint.y)
+                        if (lineConfig.smoothCurve) {
+                            // Smooth cubic start from (0,0) for ALL series
+                            val control1X = startX + (firstPoint.x - startX) / 3f
+                            val control2X = startX + 2 * (firstPoint.x - startX) / 3f
+                            val control2Y = firstPoint.y
+                            moveTo(startX, baselineY)
+                            cubicTo(control1X, baselineY, control2X, control2Y, firstPoint.x, firstPoint.y)
 
-                        // Draw smooth curve along top edge
-                        for (i in 0 until cumulativePositions.size - 1) {
-                            val current = cumulativePositions[i]
-                            val next = cumulativePositions[i + 1]
+                            // Draw smooth curve along top edge
+                            for (i in 0 until cumulativePositions.size - 1) {
+                                val current = cumulativePositions[i]
+                                val next = cumulativePositions[i + 1]
 
-                            val controlPoint1X = current.x + (next.x - current.x) / 3f
-                            val controlPoint1Y = current.y
-                            val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                            val controlPoint2Y = next.y
+                                val controlPoint1X = current.x + (next.x - current.x) / 3f
+                                val controlPoint1Y = current.y
+                                val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
+                                val controlPoint2Y = next.y
 
-                            cubicTo(
-                                controlPoint1X, controlPoint1Y,
-                                controlPoint2X, controlPoint2Y,
-                                next.x, next.y
-                            )
+                                cubicTo(
+                                    controlPoint1X,
+                                    controlPoint1Y,
+                                    controlPoint2X,
+                                    controlPoint2Y,
+                                    next.x,
+                                    next.y,
+                                )
+                            }
+
+                            // Close path back to baseline
+                            lineTo(cumulativePositions.last().x, baselineY)
+                            lineTo(startX, baselineY)
+                        } else {
+                            // Straight line from (0,0) for ALL series
+                            moveTo(startX, baselineY)
+                            lineTo(firstPoint.x, firstPoint.y)
+
+                            // Draw straight lines through data points
+                            for (i in 1 until cumulativePositions.size) {
+                                lineTo(cumulativePositions[i].x, cumulativePositions[i].y)
+                            }
+
+                            // Close path back to baseline
+                            lineTo(cumulativePositions.last().x, baselineY)
+                            lineTo(startX, baselineY)
                         }
 
-                        // Close path back to baseline
-                        lineTo(cumulativePositions.last().x, baselineY)
-                        lineTo(startX, baselineY)
-                    } else {
-                        // Straight line from (0,0) for ALL series
-                        moveTo(startX, baselineY)
-                        lineTo(firstPoint.x, firstPoint.y)
-
-                        // Draw straight lines through data points
-                        for (i in 1 until cumulativePositions.size) {
-                            lineTo(cumulativePositions[i].x, cumulativePositions[i].y)
-                        }
-
-                        // Close path back to baseline
-                        lineTo(cumulativePositions.last().x, baselineY)
-                        lineTo(startX, baselineY)
+                        close()
                     }
-
-                    close()
-                }
 
                 // Draw filled area with animation
                 drawPath(
                     path = areaPath,
                     color = seriesColor.copy(alpha = fillAlpha),
                     style = Fill,
-                    alpha = animationProgress.value
+                    alpha = animationProgress.value,
                 )
 
                 // Draw top border line - ALL series start from axis intersection
-                val linePath = Path().apply {
-                    val firstPoint = cumulativePositions[0]
+                val linePath =
+                    Path().apply {
+                        val firstPoint = cumulativePositions[0]
 
-                    if (lineConfig.smoothCurve) {
-                        // Smooth cubic start from (0,0) for ALL series
-                        val control1X = startX + (firstPoint.x - startX) / 3f
-                        val control2X = startX + 2 * (firstPoint.x - startX) / 3f
-                        val control2Y = firstPoint.y
-                        moveTo(startX, baselineY)
-                        cubicTo(control1X, baselineY, control2X, control2Y, firstPoint.x, firstPoint.y)
+                        if (lineConfig.smoothCurve) {
+                            // Smooth cubic start from (0,0) for ALL series
+                            val control1X = startX + (firstPoint.x - startX) / 3f
+                            val control2X = startX + 2 * (firstPoint.x - startX) / 3f
+                            val control2Y = firstPoint.y
+                            moveTo(startX, baselineY)
+                            cubicTo(control1X, baselineY, control2X, control2Y, firstPoint.x, firstPoint.y)
 
-                        // Draw smooth curve through data points
-                        for (i in 0 until cumulativePositions.size - 1) {
-                            val current = cumulativePositions[i]
-                            val next = cumulativePositions[i + 1]
+                            // Draw smooth curve through data points
+                            for (i in 0 until cumulativePositions.size - 1) {
+                                val current = cumulativePositions[i]
+                                val next = cumulativePositions[i + 1]
 
-                            val controlPoint1X = current.x + (next.x - current.x) / 3f
-                            val controlPoint1Y = current.y
-                            val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                            val controlPoint2Y = next.y
+                                val controlPoint1X = current.x + (next.x - current.x) / 3f
+                                val controlPoint1Y = current.y
+                                val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
+                                val controlPoint2Y = next.y
 
-                            cubicTo(
-                                controlPoint1X, controlPoint1Y,
-                                controlPoint2X, controlPoint2Y,
-                                next.x, next.y
-                            )
-                        }
-                    } else {
-                        // Straight line from (0,0) for ALL series
-                        moveTo(startX, baselineY)
-                        lineTo(firstPoint.x, firstPoint.y)
+                                cubicTo(
+                                    controlPoint1X,
+                                    controlPoint1Y,
+                                    controlPoint2X,
+                                    controlPoint2Y,
+                                    next.x,
+                                    next.y,
+                                )
+                            }
+                        } else {
+                            // Straight line from (0,0) for ALL series
+                            moveTo(startX, baselineY)
+                            lineTo(firstPoint.x, firstPoint.y)
 
-                        // Draw straight lines through data points
-                        for (i in 1 until cumulativePositions.size) {
-                            lineTo(cumulativePositions[i].x, cumulativePositions[i].y)
+                            // Draw straight lines through data points
+                            for (i in 1 until cumulativePositions.size) {
+                                lineTo(cumulativePositions[i].x, cumulativePositions[i].y)
+                            }
                         }
                     }
-                }
 
                 drawPath(
                     path = linePath,
                     color = seriesColor,
-                    style = Stroke(
-                        width = lineConfig.lineWidth,
-                        cap = lineConfig.strokeCap
-                    ),
-                    alpha = animationProgress.value
+                    style =
+                        Stroke(
+                            width = lineConfig.lineWidth,
+                            cap = lineConfig.strokeCap,
+                        ),
+                    alpha = animationProgress.value,
                 )
             }
         }
     }
 }
-

@@ -19,7 +19,7 @@ data class LollipopBarChartConfig(
     val circleRadius: Float = 14f,
     val circleStrokeWidth: Float = 0f,
     val circleColor: ChartyColor? = null,
-    val animation: Animation = Animation.Enabled()
+    val animation: Animation = Animation.Enabled(),
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
@@ -28,4 +28,3 @@ data class LollipopBarChartConfig(
         require(circleStrokeWidth >= 0f) { "Circle stroke width cannot be negative" }
     }
 }
-

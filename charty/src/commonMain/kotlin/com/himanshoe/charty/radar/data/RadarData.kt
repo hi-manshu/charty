@@ -12,7 +12,7 @@ import com.himanshoe.charty.color.ChartyColor
 data class RadarAxisData(
     val label: String,
     val value: Float,
-    val maxValue: Float = DEFAULT_MAX_VALUE
+    val maxValue: Float = DEFAULT_MAX_VALUE,
 ) {
     init {
         require(label.isNotBlank()) { "Radar axis label cannot be blank" }
@@ -44,7 +44,7 @@ data class RadarDataSet(
     val label: String,
     val axes: List<RadarAxisData>,
     val color: ChartyColor,
-    val fillAlpha: Float = DEFAULT_FILL_ALPHA
+    val fillAlpha: Float = DEFAULT_FILL_ALPHA,
 ) {
     init {
         require(label.isNotBlank()) { "Dataset label cannot be blank" }

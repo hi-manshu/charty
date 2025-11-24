@@ -13,10 +13,9 @@ data class WaterfallChartConfig(
     val cornerRadius: CornerRadius = CornerRadius.Medium,
     val positiveColor: ChartyColor = ChartyColor.Solid(Color.Yellow),
     val negativeColor: ChartyColor = ChartyColor.Solid(Color(0xFFD64C66)),
-    val animation: Animation = Animation.Default
+    val animation: Animation = Animation.Default,
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
     }
 }
-

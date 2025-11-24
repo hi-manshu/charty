@@ -14,7 +14,10 @@ import kotlin.math.floor
  * @param stepSize Step size for rounding (default 10)
  * @return Rounded max value
  */
-internal fun calculateMaxValue(values: List<Float>, stepSize: Int = 10): Float {
+internal fun calculateMaxValue(
+    values: List<Float>,
+    stepSize: Int = 10,
+): Float {
     val maxData = values.maxOrNull() ?: 0f
     return ceil(maxData / stepSize).toInt() * stepSize.toFloat()
 }
@@ -27,7 +30,10 @@ internal fun calculateMaxValue(values: List<Float>, stepSize: Int = 10): Float {
  * @param stepSize Step size for rounding (default 10)
  * @return Rounded min value
  */
-internal fun calculateMinValue(values: List<Float>, stepSize: Int = 10): Float {
+internal fun calculateMinValue(
+    values: List<Float>,
+    stepSize: Int = 10,
+): Float {
     val minData = values.minOrNull() ?: 0f
     return floor(minData / stepSize).toInt() * stepSize.toFloat()
 }
@@ -55,4 +61,3 @@ fun List<BarGroup>.getAllValues(): List<Float> = flatMap { it.values }
  */
 @JvmName("getBarGroupLabels")
 fun List<BarGroup>.getLabels(): List<String> = map { it.label }
-

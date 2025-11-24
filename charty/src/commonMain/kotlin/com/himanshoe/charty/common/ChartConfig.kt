@@ -18,7 +18,7 @@ data class AxisConfig(
     val maxValue: Float = 100f,
     val steps: Int = 5,
     val label: String = "",
-    val drawAxisAtZero: Boolean = true
+    val drawAxisAtZero: Boolean = true,
 )
 
 /**
@@ -41,5 +41,5 @@ data class ChartScaffoldConfig(
     val gridColor: Color = Color.LightGray,
     val axisThickness: Float = 2f,
     val gridThickness: Float = 1f,
-    val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = 12.sp)
+    val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = 12.sp),
 )

@@ -8,5 +8,5 @@ package com.himanshoe.charty.line.data
  */
 data class LineData(
     val label: String,
-    val value: Float
+    val value: Float,
 )

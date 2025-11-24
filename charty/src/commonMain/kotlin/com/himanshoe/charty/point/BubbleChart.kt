@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.point
 
@@ -11,13 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.util.fastForEachIndexed
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
-import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.common.config.Animation
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.BubbleData
 import kotlin.math.sqrt
 
@@ -61,7 +71,7 @@ fun BubbleChart(
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
     pointConfig: PointChartConfig = PointChartConfig(pointRadius = 30f),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
-    minBubbleRadius: Float = 10f
+    minBubbleRadius: Float = 10f,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Bubble chart data cannot be empty" }
@@ -73,22 +83,23 @@ fun BubbleChart(
         val maxValue: Float,
         val minSize: Float,
         val maxSize: Float,
-        val sizeRange: Float
+        val sizeRange: Float,
     )
 
-    val sizeInfo = remember(dataList) {
-        val yValues = dataList.map { it.yValue }
-        val sizes = dataList.map { it.size }
-        val min = sizes.minOrNull() ?: 0f
-        val max = sizes.maxOrNull() ?: 1f
-        BubbleSizeInfo(
-            calculateMinValue(yValues),
-            calculateMaxValue(yValues),
-            min,
-            max,
-            max - min
-        )
-    }
+    val sizeInfo =
+        remember(dataList) {
+            val yValues = dataList.map { it.yValue }
+            val sizes = dataList.map { it.size }
+            val min = sizes.minOrNull() ?: 0f
+            val max = sizes.maxOrNull() ?: 1f
+            BubbleSizeInfo(
+                calculateMinValue(yValues),
+                calculateMaxValue(yValues),
+                min,
+                max,
+                max - min,
+            )
+        }
 
     val minValue = sizeInfo.minValue
     val maxValue = sizeInfo.maxValue
@@ -97,15 +108,16 @@ fun BubbleChart(
 
     val isBelowAxisMode = pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    val animationProgress = remember {
-        Animatable(if (pointConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (pointConfig.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(pointConfig.animation) {
         if (pointConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = pointConfig.animation.duration)
+                animationSpec = tween(durationMillis = pointConfig.animation.duration),
             )
         }
     }
@@ -113,13 +125,14 @@ fun BubbleChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.map { it.label },
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = isBelowAxisMode
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                drawAxisAtZero = isBelowAxisMode,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
         dataList.fastForEachIndexed { index, bubble ->
             val bubbleProgress = index.toFloat() / dataList.size
@@ -128,25 +141,27 @@ fun BubbleChart(
             val bubbleX = chartContext.calculateCenteredXPosition(index, dataList.size)
             val bubbleY = chartContext.convertValueToYPosition(bubble.yValue)
 
-            val normalizedSize = if (sizeRange > 0f) {
-                (bubble.size - minSize) / sizeRange
-            } else {
-                0.5f
-            }
+            val normalizedSize =
+                if (sizeRange > 0f) {
+                    (bubble.size - minSize) / sizeRange
+                } else {
+                    0.5f
+                }
             val radiusRange = pointConfig.pointRadius - minBubbleRadius
             val bubbleRadius = minBubbleRadius + (sqrt(normalizedSize) * radiusRange)
 
-            val bubbleColor = when (color) {
-                is ChartyColor.Solid -> color.color
-                is ChartyColor.Gradient -> color.colors[index % color.colors.size]
-            }
+            val bubbleColor =
+                when (color) {
+                    is ChartyColor.Solid -> color.color
+                    is ChartyColor.Gradient -> color.colors[index % color.colors.size]
+                }
 
             if (bubbleAnimationProgress > 0f) {
                 drawCircle(
                     color = bubbleColor.copy(alpha = 0.3f),
                     radius = bubbleRadius * bubbleAnimationProgress,
                     center = Offset(bubbleX, bubbleY),
-                    alpha = pointConfig.pointAlpha * bubbleAnimationProgress
+                    alpha = pointConfig.pointAlpha * bubbleAnimationProgress,
                 )
 
                 // Draw inner circle (main bubble)
@@ -154,10 +169,9 @@ fun BubbleChart(
                     color = bubbleColor,
                     radius = (bubbleRadius * 0.85f) * bubbleAnimationProgress,
                     center = Offset(bubbleX, bubbleY),
-                    alpha = pointConfig.pointAlpha * bubbleAnimationProgress
+                    alpha = pointConfig.pointAlpha * bubbleAnimationProgress,
                 )
             }
         }
     }
 }
-

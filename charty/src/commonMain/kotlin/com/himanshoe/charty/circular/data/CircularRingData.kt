@@ -44,7 +44,7 @@ data class CircularRingData(
     val backgroundColor: ChartyColor? = null,
     val shadowColor: Color? = null,
     val shadowRadius: Float = 0f,
-    val metadata: Map<String, Any>? = null
+    val metadata: Map<String, Any>? = null,
 ) {
     init {
         require(progress >= 0f) { "Progress must be non-negative, got: $progress" }
@@ -56,42 +56,31 @@ data class CircularRingData(
     /**
      * Get the primary color for the ring (first color from ChartyColor)
      */
-    fun getPrimaryColor(): Color {
-        return color.value.first()
-    }
+    fun getPrimaryColor(): Color = color.value.first()
 
     /**
      * Get the background color for the ring, with automatic fallback
      */
-    fun getBackgroundColor(): Color {
-        return backgroundColor?.value?.first() ?: getPrimaryColor().copy(alpha = 0.2f)
-    }
+    fun getBackgroundColor(): Color = backgroundColor?.value?.first() ?: getPrimaryColor().copy(alpha = 0.2f)
 
     /**
      * Calculates the percentage of completion (0f to 100f)
      */
-    fun calculatePercentage(): Float {
-        return ((progress / maxValue) * PERCENTAGE_MULTIPLIER).coerceIn(0f, PERCENTAGE_MULTIPLIER)
-    }
+    fun calculatePercentage(): Float =
+        ((progress / maxValue) * PERCENTAGE_MULTIPLIER).coerceIn(0f, PERCENTAGE_MULTIPLIER)
 
     /**
      * Calculates the sweep angle in degrees for drawing (0f to 360f)
      */
-    fun calculateSweepAngle(): Float {
-        return ((progress / maxValue) * DEGREES_IN_CIRCLE).coerceIn(0f, DEGREES_IN_CIRCLE)
-    }
+    fun calculateSweepAngle(): Float = ((progress / maxValue) * DEGREES_IN_CIRCLE).coerceIn(0f, DEGREES_IN_CIRCLE)
 
     /**
      * Returns true if the ring is complete (progress >= maxValue)
      */
-    fun isComplete(): Boolean {
-        return progress >= maxValue
-    }
+    fun isComplete(): Boolean = progress >= maxValue
 
     /**
      * Creates a copy with clamped progress (useful for animations)
      */
-    fun withClampedProgress(newProgress: Float): CircularRingData {
-        return copy(progress = newProgress.coerceIn(0f, maxValue))
-    }
+    fun withClampedProgress(newProgress: Float): CircularRingData = copy(progress = newProgress.coerceIn(0f, maxValue))
 }

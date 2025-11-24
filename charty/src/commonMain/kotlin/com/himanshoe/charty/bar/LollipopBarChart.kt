@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.bar
 
@@ -40,25 +50,27 @@ fun LollipopBarChart(
     modifier: Modifier = Modifier,
     colors: ChartyColor = ChartyColor.Solid(Color(0xFFE91E63)),
     config: LollipopBarChartConfig = LollipopBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Lollipop bar chart data cannot be empty" }
 
-    val (minValue, maxValue) = remember(dataList) {
-        val values = dataList.getValues()
-        0f to calculateMaxValue(values)
-    }
+    val (minValue, maxValue) =
+        remember(dataList) {
+            val values = dataList.getValues()
+            0f to calculateMaxValue(values)
+        }
 
-    val animationProgress = remember {
-        Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(config.animation) {
         if (config.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = config.animation.duration)
+                animationSpec = tween(durationMillis = config.animation.duration),
             )
         }
     }
@@ -66,13 +78,14 @@ fun LollipopBarChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = true
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                drawAxisAtZero = true,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
         val baselineY = chartContext.bottom
 
@@ -87,29 +100,33 @@ fun LollipopBarChart(
             val chartyColor = bar.color ?: colors
             val circleChartyColor = config.circleColor ?: chartyColor
 
-            val stemBrush = when (chartyColor) {
-                is ChartyColor.Solid -> Brush.verticalGradient(
-                    colors = listOf(chartyColor.color, chartyColor.color),
-                    startY = baselineY,
-                    endY = barValueY
-                )
-                is ChartyColor.Gradient -> Brush.verticalGradient(
-                    colors = chartyColor.colors,
-                    startY = baselineY,
-                    endY = barValueY
-                )
-            }
+            val stemBrush =
+                when (chartyColor) {
+                    is ChartyColor.Solid ->
+                        Brush.verticalGradient(
+                            colors = listOf(chartyColor.color, chartyColor.color),
+                            startY = baselineY,
+                            endY = barValueY,
+                        )
+                    is ChartyColor.Gradient ->
+                        Brush.verticalGradient(
+                            colors = chartyColor.colors,
+                            startY = baselineY,
+                            endY = barValueY,
+                        )
+                }
 
-            val circleColor = when (circleChartyColor) {
-                is ChartyColor.Solid -> circleChartyColor.color
-                is ChartyColor.Gradient -> circleChartyColor.colors[index % circleChartyColor.colors.size]
-            }
+            val circleColor =
+                when (circleChartyColor) {
+                    is ChartyColor.Solid -> circleChartyColor.color
+                    is ChartyColor.Gradient -> circleChartyColor.colors[index % circleChartyColor.colors.size]
+                }
 
             drawLine(
                 brush = stemBrush,
                 start = Offset(centerX, baselineY),
                 end = Offset(centerX, animatedTopY),
-                strokeWidth = config.stemThickness
+                strokeWidth = config.stemThickness,
             )
 
             if (config.circleStrokeWidth > 0f) {
@@ -117,13 +134,13 @@ fun LollipopBarChart(
                     color = circleColor,
                     radius = config.circleRadius,
                     center = Offset(centerX, animatedTopY),
-                    style = Stroke(width = config.circleStrokeWidth)
+                    style = Stroke(width = config.circleStrokeWidth),
                 )
             } else {
                 drawCircle(
                     color = circleColor,
                     radius = config.circleRadius,
-                    center = Offset(centerX, animatedTopY)
+                    center = Offset(centerX, animatedTopY),
                 )
             }
         }

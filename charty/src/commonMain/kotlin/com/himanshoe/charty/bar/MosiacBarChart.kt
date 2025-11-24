@@ -1,4 +1,14 @@
-@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+@file:Suppress(
+    "LongMethod",
+    "LongParameterList",
+    "FunctionNaming",
+    "CyclomaticComplexMethod",
+    "WildcardImport",
+    "MagicNumber",
+    "MaxLineLength",
+    "ReturnCount",
+    "UnusedImports",
+)
 
 package com.himanshoe.charty.bar
 
@@ -34,21 +44,22 @@ fun MosiacBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
     config: MosiacBarChartConfig = MosiacBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig()
+    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
     val groups = remember(data) { data() }
     require(groups.isNotEmpty()) { "Mosiac bar chart data cannot be empty" }
     require(groups.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val animationProgress = remember {
-        Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress =
+        remember {
+            Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
+        }
 
     LaunchedEffect(config.animation) {
         if (config.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = config.animation.duration)
+                animationSpec = tween(durationMillis = config.animation.duration),
             )
         }
     }
@@ -56,12 +67,13 @@ fun MosiacBarChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = groups.map { it.label },
-        yAxisConfig = AxisConfig(
-            minValue = 0f,
-            maxValue = 100f,
-            steps = 5
-        ),
-        config = scaffoldConfig
+        yAxisConfig =
+            AxisConfig(
+                minValue = 0f,
+                maxValue = 100f,
+                steps = 5,
+            ),
+        config = scaffoldConfig,
     ) { chartContext ->
         groups.fastForEachIndexed { groupIndex, group ->
             val barX = chartContext.calculateBarLeftPosition(groupIndex, groups.size, config.barWidthFraction)
@@ -77,19 +89,22 @@ fun MosiacBarChart(
                 val top = currentTop - animatedHeight
 
                 // Use per-segment color from BarGroup.colors if provided; fall back to a default palette
-                val chartyColor = group.colors?.getOrNull(segmentIndex)
-                    ?: defaultMosiacColors[segmentIndex % defaultMosiacColors.size]
+                val chartyColor =
+                    group.colors?.getOrNull(segmentIndex)
+                        ?: defaultMosiacColors[segmentIndex % defaultMosiacColors.size]
 
-                val color = when (chartyColor) {
-                    is ChartyColor.Solid -> chartyColor.color
-                    is ChartyColor.Gradient -> chartyColor.colors.first()
-                }
+                val color =
+                    when (chartyColor) {
+                        is ChartyColor.Solid -> chartyColor.color
+                        is ChartyColor.Gradient -> chartyColor.colors.first()
+                    }
 
-                val segmentBrush = Brush.verticalGradient(
-                    colors = listOf(color, color),
-                    startY = top,
-                    endY = currentTop
-                )
+                val segmentBrush =
+                    Brush.verticalGradient(
+                        colors = listOf(color, color),
+                        startY = top,
+                        endY = currentTop,
+                    )
 
                 val isTop = segmentIndex == group.values.lastIndex
 
@@ -99,7 +114,7 @@ fun MosiacBarChart(
                     y = top,
                     width = barWidth,
                     height = animatedHeight,
-                    cornerRadius = if (isTop) CornerRadius(0f, 0f) else CornerRadius.Zero
+                    cornerRadius = if (isTop) CornerRadius(0f, 0f) else CornerRadius.Zero,
                 )
 
                 currentTop -= animatedHeight
@@ -108,11 +123,12 @@ fun MosiacBarChart(
     }
 }
 
-private val defaultMosiacColors = listOf(
-    ChartyColor.Solid(Color(0xFF0B1D3B)),
-    ChartyColor.Solid(Color(0xFFD64C66)),
-    ChartyColor.Solid(Color(0xFFFFA64D))
-)
+private val defaultMosiacColors =
+    listOf(
+        ChartyColor.Solid(Color(0xFF0B1D3B)),
+        ChartyColor.Solid(Color(0xFFD64C66)),
+        ChartyColor.Solid(Color(0xFFFFA64D)),
+    )
 
 private fun DrawScope.drawMosiacSegment(
     brush: Brush,
@@ -120,21 +136,22 @@ private fun DrawScope.drawMosiacSegment(
     y: Float,
     width: Float,
     height: Float,
-    cornerRadius: CornerRadius
+    cornerRadius: CornerRadius,
 ) {
-    val path = Path().apply {
-        addRoundRect(
-            RoundRect(
-                left = x,
-                top = y,
-                right = x + width,
-                bottom = y + height,
-                topLeftCornerRadius = cornerRadius,
-                topRightCornerRadius = cornerRadius,
-                bottomLeftCornerRadius = CornerRadius.Zero,
-                bottomRightCornerRadius = CornerRadius.Zero
+    val path =
+        Path().apply {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = cornerRadius,
+                    topRightCornerRadius = cornerRadius,
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius.Zero,
+                ),
             )
-        )
-    }
+        }
     drawPath(path, brush)
 }

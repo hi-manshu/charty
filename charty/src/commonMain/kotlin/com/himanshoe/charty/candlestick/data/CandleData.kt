@@ -17,7 +17,7 @@ data class CandleData(
     val high: Float,
     val low: Float,
     val close: Float,
-    val volume: Float? = null
+    val volume: Float? = null,
 ) {
     init {
         require(high >= low) { "High value must be greater than or equal to low value" }
@@ -68,4 +68,3 @@ data class CandleData(
         return if (range == 0f) true else bodyHeight / range < threshold
     }
 }
-

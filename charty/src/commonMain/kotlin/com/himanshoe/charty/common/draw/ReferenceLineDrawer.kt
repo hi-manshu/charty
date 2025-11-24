@@ -18,7 +18,11 @@ import com.himanshoe.charty.common.formatAxisLabel
  * These are chart-agnostic utilities that rely on [ChartContext] for coordinate mapping.
  */
 
-private fun referenceValueWithinRange(value: Float, minValue: Float, maxValue: Float): Boolean {
+private fun referenceValueWithinRange(
+    value: Float,
+    minValue: Float,
+    maxValue: Float,
+): Boolean {
     if (minValue == maxValue) return false
     return value in minValue..maxValue
 }
@@ -54,13 +58,14 @@ private fun DrawScope.drawHorizontalReferenceLine(
     val start = Offset(chartContext.left, y)
     val end = Offset(chartContext.right, y)
 
-    val pathEffect = when (config.strokeStyle) {
-        ReferenceLineStrokeStyle.SOLID -> null
-        ReferenceLineStrokeStyle.DASHED -> {
-            val intervals = config.dashIntervals ?: floatArrayOf(10f, 10f)
-            PathEffect.dashPathEffect(intervals, 0f)
+    val pathEffect =
+        when (config.strokeStyle) {
+            ReferenceLineStrokeStyle.SOLID -> null
+            ReferenceLineStrokeStyle.DASHED -> {
+                val intervals = config.dashIntervals ?: floatArrayOf(10f, 10f)
+                PathEffect.dashPathEffect(intervals, 0f)
+            }
         }
-    }
 
     drawLine(
         color = config.color,
@@ -70,33 +75,37 @@ private fun DrawScope.drawHorizontalReferenceLine(
         pathEffect = pathEffect,
     )
 
-    val labelText = when {
-        config.label != null -> config.label
-        config.showValueInLabelWhenNoText -> formatAxisLabel(config.value)
-        else -> null
-    } ?: return
+    val labelText =
+        when {
+            config.label != null -> config.label
+            config.showValueInLabelWhenNoText -> formatAxisLabel(config.value)
+            else -> null
+        } ?: return
 
-    val textLayoutResult: TextLayoutResult = textMeasurer.measure(
-        text = labelText,
-        style = config.labelTextStyle,
-    )
+    val textLayoutResult: TextLayoutResult =
+        textMeasurer.measure(
+            text = labelText,
+            style = config.labelTextStyle,
+        )
 
     val textWidth = textLayoutResult.size.width.toFloat()
     val textHeight = textLayoutResult.size.height.toFloat()
 
-    val x = when (config.labelPosition) {
-        ReferenceLineLabelPosition.START -> chartContext.left
-        ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
-            chartContext.left + (chartContext.width - textWidth) / 2f
-        ReferenceLineLabelPosition.END -> chartContext.right - textWidth
-    }
+    val x =
+        when (config.labelPosition) {
+            ReferenceLineLabelPosition.START -> chartContext.left
+            ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
+                chartContext.left + (chartContext.width - textWidth) / 2f
+            ReferenceLineLabelPosition.END -> chartContext.right - textWidth
+        }
 
-    val yText = when (config.labelPosition) {
-        ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
-            y - config.labelOffset - textHeight
-        ReferenceLineLabelPosition.BELOW -> y + config.labelOffset
-        ReferenceLineLabelPosition.CENTER -> y - textHeight / 2f
-    }
+    val yText =
+        when (config.labelPosition) {
+            ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
+                y - config.labelOffset - textHeight
+            ReferenceLineLabelPosition.BELOW -> y + config.labelOffset
+            ReferenceLineLabelPosition.CENTER -> y - textHeight / 2f
+        }
 
     drawText(
         textLayoutResult = textLayoutResult,
@@ -119,13 +128,14 @@ private fun DrawScope.drawVerticalReferenceLine(
     val start = Offset(x, chartContext.top)
     val end = Offset(x, chartContext.bottom)
 
-    val pathEffect = when (config.strokeStyle) {
-        ReferenceLineStrokeStyle.SOLID -> null
-        ReferenceLineStrokeStyle.DASHED -> {
-            val intervals = config.dashIntervals ?: floatArrayOf(10f, 10f)
-            PathEffect.dashPathEffect(intervals, 0f)
+    val pathEffect =
+        when (config.strokeStyle) {
+            ReferenceLineStrokeStyle.SOLID -> null
+            ReferenceLineStrokeStyle.DASHED -> {
+                val intervals = config.dashIntervals ?: floatArrayOf(10f, 10f)
+                PathEffect.dashPathEffect(intervals, 0f)
+            }
         }
-    }
 
     drawLine(
         color = config.color,
@@ -135,33 +145,37 @@ private fun DrawScope.drawVerticalReferenceLine(
         pathEffect = pathEffect,
     )
 
-    val labelText = when {
-        config.label != null -> config.label
-        config.showValueInLabelWhenNoText -> formatAxisLabel(config.value)
-        else -> null
-    } ?: return
+    val labelText =
+        when {
+            config.label != null -> config.label
+            config.showValueInLabelWhenNoText -> formatAxisLabel(config.value)
+            else -> null
+        } ?: return
 
-    val textLayoutResult: TextLayoutResult = textMeasurer.measure(
-        text = labelText,
-        style = config.labelTextStyle,
-    )
+    val textLayoutResult: TextLayoutResult =
+        textMeasurer.measure(
+            text = labelText,
+            style = config.labelTextStyle,
+        )
 
     val textWidth = textLayoutResult.size.width.toFloat()
     val textHeight = textLayoutResult.size.height.toFloat()
 
-    val y = when (config.labelPosition) {
-        ReferenceLineLabelPosition.START -> chartContext.bottom - textHeight
-        ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
-            chartContext.top + (chartContext.height - textHeight) / 2f
-        ReferenceLineLabelPosition.END -> chartContext.top
-    }
+    val y =
+        when (config.labelPosition) {
+            ReferenceLineLabelPosition.START -> chartContext.bottom - textHeight
+            ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
+                chartContext.top + (chartContext.height - textHeight) / 2f
+            ReferenceLineLabelPosition.END -> chartContext.top
+        }
 
-    val xText = when (config.labelPosition) {
-        ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
-            x - textWidth - config.labelOffset
-        ReferenceLineLabelPosition.BELOW -> x + config.labelOffset
-        ReferenceLineLabelPosition.CENTER -> x - textWidth / 2f
-    }
+    val xText =
+        when (config.labelPosition) {
+            ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
+                x - textWidth - config.labelOffset
+            ReferenceLineLabelPosition.BELOW -> x + config.labelOffset
+            ReferenceLineLabelPosition.CENTER -> x - textWidth / 2f
+        }
 
     drawText(
         textLayoutResult = textLayoutResult,
