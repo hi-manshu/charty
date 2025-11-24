@@ -1,5 +1,7 @@
 package com.himanshoe.charty.radar.config
 
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 
 private const val DEFAULT_STAGGER_DELAY = 0.15f
 
@@ -12,6 +14,7 @@ private const val DEFAULT_STAGGER_DELAY = 0.15f
  * @param radarConfig Base radar chart configuration
  * @param showLegend Whether to show a legend for datasets
  * @param legendPosition Position of the legend (TOP, BOTTOM, LEFT, RIGHT)
+ * @param legendTextStyle TextStyle for legend labels - allows full customization of text appearance
  * @param allowDatasetToggle Allow clicking datasets to toggle visibility
  * @param highlightOnHover Highlight dataset when hovering/clicking
  * @param staggerAnimation Animate datasets with a stagger effect
@@ -26,6 +29,7 @@ data class MultipleRadarChartConfig(
     val radarConfig: RadarChartConfig = RadarChartConfig(),
     val showLegend: Boolean = false,
     val legendPosition: LegendPosition = LegendPosition.TOP,
+    val legendTextStyle: TextStyle = TextStyle(fontSize = 12.sp),
     val allowDatasetToggle: Boolean = false,
     val highlightOnHover: Boolean = false,
     val staggerAnimation: Boolean = true,

@@ -1369,7 +1369,6 @@ fun App() {
                                 animation = Animation.Enabled(duration = 800),
                                 sliceSpacingDegrees = 3f,
                                 shouldShowCenterText = true,
-                                centerTextSizeSp = 20f
                             ),
                             onSliceClick = { slice, index ->
                                 println("Clicked ${slice.label} at index $index")

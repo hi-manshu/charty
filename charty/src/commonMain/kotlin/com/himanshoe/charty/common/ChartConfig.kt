@@ -1,6 +1,8 @@
 package com.himanshoe.charty.common
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 
 /**
  * Configuration for chart axis.
@@ -27,9 +29,9 @@ data class AxisConfig(
  * @param showLabels Whether to show axis labels
  * @param axisColor Color of the axis lines
  * @param gridColor Color of the grid lines
- * @param labelColor Color of the labels
  * @param axisThickness Thickness of axis lines
  * @param gridThickness Thickness of grid lines
+ * @param labelTextStyle TextStyle for axis labels - allows full customization of text appearance
  */
 data class ChartScaffoldConfig(
     val showAxis: Boolean = true,
@@ -37,7 +39,7 @@ data class ChartScaffoldConfig(
     val showLabels: Boolean = true,
     val axisColor: Color = Color.Black,
     val gridColor: Color = Color.LightGray,
-    val labelColor: Color = Color.Black,
     val axisThickness: Float = 2f,
-    val gridThickness: Float = 1f
+    val gridThickness: Float = 1f,
+    val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = 12.sp)
 )

@@ -1,4 +1,4 @@
-@file:Suppress("LongMethod", "CyclomaticComplexMethod", "MagicNumber")
+@file:Suppress("LongMethod", "CyclomaticComplexMethod", "MagicNumber", "LongParameterList", "UnusedParameter")
 
 package com.himanshoe.charty.radar
 
@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
@@ -331,12 +330,7 @@ private fun DrawScope.drawAxisLabels(
     startAngle: Float
 ) {
     val labelDistance = maxRadius * config.labelConfig.labelDistanceMultiplier
-
-    // Extract color from ChartyColor
-    val labelColor = when (config.labelConfig.labelColor) {
-        is ChartyColor.Solid -> config.labelConfig.labelColor.color
-        is ChartyColor.Gradient -> config.labelConfig.labelColor.colors.first()
-    }
+    val textStyle = config.labelConfig.labelTextStyle
 
     labels.fastForEachIndexed { index, label ->
         val angle = (startAngle + (FULL_CIRCLE_DEGREES * index / numberOfAxes)) * DEGREES_TO_RADIANS
@@ -345,10 +339,7 @@ private fun DrawScope.drawAxisLabels(
 
         val textLayoutResult = textMeasurer.measure(
             text = label,
-            style = TextStyle(
-                fontSize = config.labelConfig.labelTextSizeSp.sp,
-                color = labelColor
-            )
+            style = textStyle
         )
 
         // Adjust position based on angle to center text properly

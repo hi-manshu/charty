@@ -235,11 +235,7 @@ private fun PieChartContent(
         } else if (config.style == PieChartStyle.DONUT && config.shouldShowCenterText) {
             Text(
                 text = total.toInt().toString(),
-                style = TextStyle(
-                    fontSize = config.centerTextSizeSp.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                style = config.centerTextStyle
             )
         }
     }
@@ -371,13 +367,7 @@ private fun DrawScope.drawSliceLabel(
 
     if (labelText.isEmpty()) return
 
-    val textStyle = TextStyle(
-        fontSize = config.labelConfig.labelTextSize.sp,
-        color = Color.White,
-        fontWeight = FontWeight.Bold
-    )
-
-    val textLayoutResult = textMeasurer.measure(labelText, textStyle)
+    val textLayoutResult = textMeasurer.measure(labelText, config.labelConfig.labelTextStyle)
 
     // Position label in the middle of the slice
     val labelRadius = when (config.style) {

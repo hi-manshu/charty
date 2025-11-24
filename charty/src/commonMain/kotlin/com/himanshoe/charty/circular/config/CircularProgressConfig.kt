@@ -1,6 +1,10 @@
 package com.himanshoe.charty.circular.config
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.Animation
 
 private const val DEFAULT_START_ANGLE_DEGREES = -90f
@@ -120,14 +124,18 @@ data class CircularProgressConfig(
     val showCenterText: Boolean = false,
 
     /**
-     * Text size for center text in SP (Scalable Pixels)
-     */
-    val centerTextSizeSp: Float = 24f,
-
-    /**
      * Padding around the entire circular progress indicator (to accommodate shadows)
      */
-    val paddingDp: Float = 16f
+    val paddingDp: Float = 16f,
+
+    /**
+     * TextStyle for center text - allows full customization of text appearance
+     */
+    val centerTextStyle: TextStyle = TextStyle(
+        fontSize = 24.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.Black
+    )
 ) {
     init {
         require(gapBetweenRings >= 0f) {
@@ -138,9 +146,6 @@ data class CircularProgressConfig(
         }
         require(rotationDurationMs > 0) {
             "rotationDurationMs must be positive, got: $rotationDurationMs"
-        }
-        require(centerTextSizeSp > 0f) {
-            "centerTextSizeSp must be positive, got: $centerTextSizeSp"
         }
         require(paddingDp >= 0f) {
             "paddingDp must be non-negative, got: $paddingDp"

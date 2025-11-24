@@ -1,5 +1,9 @@
 package com.himanshoe.charty.pie.config
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.Animation
 
 private const val DEFAULT_CENTER_TEXT_SIZE_SP = 16f
@@ -45,19 +49,30 @@ data class LabelConfig(
     val minimumPercentageToShowLabel: Float = 3f,
 
     /**
-     * Text size for labels in SP (Scalable Pixels)
+     * Text size for labels in SP (Scalable Pixels) - deprecated, use labelTextStyle instead
      */
+    @Deprecated("Use labelTextStyle instead for more control")
     val labelTextSize: Float = 12f,
 
     /**
      * Whether to show labels outside the chart with connecting lines (future feature)
      */
-    val shouldShowLabelsOutside: Boolean = false
+    val shouldShowLabelsOutside: Boolean = false,
+
+    /**
+     * TextStyle for labels on slices - allows full customization of text appearance
+     */
+    val labelTextStyle: TextStyle = TextStyle(
+        fontSize = 12.sp,
+        color = Color.White,
+        fontWeight = FontWeight.Bold
+    )
 ) {
     init {
         require(minimumPercentageToShowLabel in 0f..100f) {
             "minimumPercentageToShowLabel must be between 0 and 100, got: $minimumPercentageToShowLabel"
         }
+        @Suppress("DEPRECATION")
         require(labelTextSize > 0f) {
             "labelTextSize must be positive, got: $labelTextSize"
         }
@@ -125,7 +140,7 @@ data class InteractionConfig(
  * @param animation Animation configuration for entry and transitions
  * @param sliceSpacingDegrees Gap between slices in degrees (0 for no gap, typical: 2-5)
  * @param shouldShowCenterText Whether to show numeric text in the center of donut charts
- * @param centerTextSizeSp Text size for center text in SP (Scalable Pixels)
+ * @param centerTextStyle TextStyle for center text - allows full customization of text appearance
  *
  * Usage:
  * ```kotlin
@@ -159,7 +174,11 @@ data class PieChartConfig(
     val animation: Animation = Animation.Default,
     val sliceSpacingDegrees: Float = 0f,
     val shouldShowCenterText: Boolean = false,
-    val centerTextSizeSp: Float = DEFAULT_CENTER_TEXT_SIZE_SP
+    val centerTextStyle: TextStyle = TextStyle(
+        fontSize = DEFAULT_CENTER_TEXT_SIZE_SP.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.Black
+    )
 ) {
     init {
         require(donutHoleRatio in 0f..0.9f) {
@@ -167,9 +186,6 @@ data class PieChartConfig(
         }
         require(sliceSpacingDegrees in 0f..10f) {
             "sliceSpacingDegrees must be between 0 and 10 degrees, got: $sliceSpacingDegrees"
-        }
-        require(centerTextSizeSp > 0f) {
-            "centerTextSizeSp must be positive, got: $centerTextSizeSp"
         }
     }
 }

@@ -269,9 +269,7 @@ fun CircularProgressIndicator(
 
             Text(
                 text = "$percentage%",
-                fontSize = config.centerTextSizeSp.sp,
-                fontWeight = FontWeight.Bold,
-                color = firstRing.getPrimaryColor()
+                style = config.centerTextStyle
             )
         }
     }

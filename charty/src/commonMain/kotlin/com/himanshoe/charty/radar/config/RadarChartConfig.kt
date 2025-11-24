@@ -2,9 +2,10 @@ package com.himanshoe.charty.radar.config
 
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.Animation
 import androidx.compose.ui.graphics.Color
-import com.himanshoe.charty.color.ChartyColor
 
 private const val DEFAULT_GRID_LINE_WIDTH = 1f
 private const val DEFAULT_AXIS_LINE_WIDTH = 1f
@@ -31,24 +32,18 @@ enum class RadarGridStyle {
  *
  * @param showLabels Whether to show axis labels
  * @param showValues Whether to show values on data points
- * @param labelTextSizeSp Text size for axis labels in SP
- * @param valueTextSizeSp Text size for values in SP
  * @param labelDistanceMultiplier Distance multiplier for label positioning (1.0 = at edge, >1.0 = outside)
- * @param labelColor Color for labels (ChartyColor)
- * @param valueColor Color for values (ChartyColor)
+ * @param labelTextStyle TextStyle for axis labels - allows full customization of text appearance
+ * @param valueTextStyle TextStyle for value labels - allows full customization of text appearance
  */
 data class RadarLabelConfig(
     val showLabels: Boolean = false,
     val showValues: Boolean = false,
-    val labelTextSizeSp: Float = DEFAULT_LABEL_TEXT_SIZE_SP,
-    val valueTextSizeSp: Float = DEFAULT_VALUE_TEXT_SIZE_SP,
     val labelDistanceMultiplier: Float = DEFAULT_LABEL_DISTANCE_MULTIPLIER,
-    val labelColor: ChartyColor = ChartyColor.Solid(Color.Black),
-    val valueColor: ChartyColor = ChartyColor.Solid(Color.Black)
+    val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = DEFAULT_LABEL_TEXT_SIZE_SP.sp),
+    val valueTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = DEFAULT_VALUE_TEXT_SIZE_SP.sp)
 ) {
     init {
-        require(labelTextSizeSp > 0f) { "Label text size must be positive" }
-        require(valueTextSizeSp > 0f) { "Value text size must be positive" }
         require(labelDistanceMultiplier > 0f) { "Label distance multiplier must be positive" }
     }
 }

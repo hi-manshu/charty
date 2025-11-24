@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.*
 import androidx.compose.ui.unit.sp
@@ -205,7 +206,7 @@ private fun DrawAxisAndLabels(
     orientation: ChartOrientation
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(color = config.labelColor, fontSize = 12.sp)
+    val labelStyle = config.labelTextStyle
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         when (orientation) {

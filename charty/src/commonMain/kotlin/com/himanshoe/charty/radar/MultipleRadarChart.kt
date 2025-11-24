@@ -1,10 +1,11 @@
-@file:Suppress("LongMethod", "CyclomaticComplexMethod", "MagicNumber", "LongParameterList")
+@file:Suppress("LongMethod", "CyclomaticComplexMethod", "MagicNumber", "LongParameterList", "UnusedParameter")
 
 package com.himanshoe.charty.radar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -126,7 +127,7 @@ fun MultipleRadarChart(
         when (config.legendPosition) {
             LegendPosition.TOP -> {
                 Column(modifier = modifier) {
-                    Legend(dataSetsList, Modifier.padding(bottom = 8.dp))
+                    Legend(dataSetsList, Modifier.padding(bottom = 8.dp), config.legendTextStyle)
                     RadarChartContent(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
@@ -143,12 +144,12 @@ fun MultipleRadarChart(
                         config = config,
                         modifier = Modifier.weight(1f)
                     )
-                    Legend(dataSetsList, Modifier.padding(top = 8.dp))
+                    Legend(dataSetsList, Modifier.padding(top = 8.dp), config.legendTextStyle)
                 }
             }
             LegendPosition.LEFT -> {
                 Row(modifier = modifier) {
-                    Legend(dataSetsList, Modifier.padding(end = 8.dp))
+                    Legend(dataSetsList, Modifier.padding(end = 8.dp), config.legendTextStyle)
                     RadarChartContent(
                         dataSetsList = dataSetsList,
                         numberOfAxes = numberOfAxes,
@@ -165,7 +166,7 @@ fun MultipleRadarChart(
                         config = config,
                         modifier = Modifier.weight(1f)
                     )
-                    Legend(dataSetsList, Modifier.padding(start = 8.dp))
+                    Legend(dataSetsList, Modifier.padding(start = 8.dp), config.legendTextStyle)
                 }
             }
             LegendPosition.TOP_LEFT -> {
@@ -180,7 +181,8 @@ fun MultipleRadarChart(
                         dataSetsList,
                         Modifier
                             .align(Alignment.TopStart)
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        config.legendTextStyle
                     )
                 }
             }
@@ -196,7 +198,8 @@ fun MultipleRadarChart(
                         dataSetsList,
                         Modifier
                             .align(Alignment.TopEnd)
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        config.legendTextStyle
                     )
                 }
             }
@@ -212,7 +215,8 @@ fun MultipleRadarChart(
                         dataSetsList,
                         Modifier
                             .align(Alignment.BottomStart)
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        config.legendTextStyle
                     )
                 }
             }
@@ -228,7 +232,8 @@ fun MultipleRadarChart(
                         dataSetsList,
                         Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        config.legendTextStyle
                     )
                 }
             }
@@ -249,13 +254,15 @@ fun MultipleRadarChart(
 @Composable
 private fun Legend(
     dataSets: List<RadarDataSet>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    legendTextStyle: TextStyle = TextStyle(fontSize = 12.sp),
+    onDataSetClick: ((label: String, index: Int) -> Unit)? = null
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        dataSets.forEach { dataSet ->
+        dataSets.forEachIndexed { index, dataSet ->
             val dataColor = when (dataSet.color) {
                 is ChartyColor.Solid -> dataSet.color.color
                 is ChartyColor.Gradient -> dataSet.color.colors.first()
@@ -263,7 +270,12 @@ private fun Legend(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = if (onDataSetClick != null) {
+                    Modifier.clickable { onDataSetClick(dataSet.label, index) }
+                } else {
+                    Modifier
+                }
             ) {
                 Surface(
                     modifier = Modifier.size(12.dp),
@@ -272,9 +284,12 @@ private fun Legend(
                 ) {}
                 Text(
                     text = dataSet.label,
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = dataColor
+                    style = legendTextStyle.copy(
+                        color = if (legendTextStyle.color == Color.Unspecified) {
+                            dataColor
+                        } else {
+                            legendTextStyle.color
+                        }
                     )
                 )
             }
@@ -553,12 +568,7 @@ private fun DrawScope.drawAxisLabels(
     startAngle: Float
 ) {
     val labelDistance = maxRadius * config.radarConfig.labelConfig.labelDistanceMultiplier
-
-    // Extract color from ChartyColor
-    val labelColor = when (config.radarConfig.labelConfig.labelColor) {
-        is ChartyColor.Solid -> config.radarConfig.labelConfig.labelColor.color
-        is ChartyColor.Gradient -> config.radarConfig.labelConfig.labelColor.colors.first()
-    }
+    val textStyle = config.radarConfig.labelConfig.labelTextStyle
 
     labels.fastForEachIndexed { index, label ->
         val angle = (startAngle + (FULL_CIRCLE_DEGREES * index / numberOfAxes)) * DEGREES_TO_RADIANS
@@ -567,10 +577,7 @@ private fun DrawScope.drawAxisLabels(
 
         val textLayoutResult = textMeasurer.measure(
             text = label,
-            style = TextStyle(
-                fontSize = config.radarConfig.labelConfig.labelTextSizeSp.sp,
-                color = labelColor
-            )
+            style = textStyle
         )
 
         // Calculate offset to center the text around the point
