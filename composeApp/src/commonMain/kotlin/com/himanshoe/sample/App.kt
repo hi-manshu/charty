@@ -62,6 +62,15 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.candlestick.CandlestickChart
 import com.himanshoe.charty.candlestick.data.CandleData
 import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
+import com.himanshoe.charty.radar.MultipleRadarChart
+import com.himanshoe.charty.radar.config.LegendPosition
+import com.himanshoe.charty.radar.data.RadarAxisData
+import com.himanshoe.charty.radar.data.RadarDataSet
+import com.himanshoe.charty.radar.config.MultipleRadarChartConfig
+import com.himanshoe.charty.radar.config.RadarChartConfig
+import com.himanshoe.charty.radar.config.RadarGridConfig
+import com.himanshoe.charty.radar.config.RadarGridStyle
+import com.himanshoe.charty.radar.config.RadarLabelConfig
 
 @Composable
 @Preview
@@ -1365,6 +1374,317 @@ fun App() {
                             onSliceClick = { slice, index ->
                                 println("Clicked ${slice.label} at index $index")
                             }
+                        )
+                    }
+                }
+
+                // Multiple Radar Chart - Basic Example
+                item {
+                    ChartCard(
+                        title = "Multiple Radar Chart - Player Comparison",
+                        description = "Compare multiple entities with overlapping radar charts and legend"
+                    ) {
+                        MultipleRadarChart(
+                            modifier = Modifier.fillMaxWidth().height(400.dp),
+                            dataSets = {
+                                listOf(
+                                    RadarDataSet(
+                                        label = "Player 1",
+                                        axes = listOf(
+                                            RadarAxisData("Speed", 85f),
+                                            RadarAxisData("Power", 75f),
+                                            RadarAxisData("Defense", 90f),
+                                            RadarAxisData("Skill", 80f),
+                                            RadarAxisData("Stamina", 70f),
+                                            RadarAxisData("Accuracy", 88f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFF00BCD4)),
+                                        fillAlpha = 0.3f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Player 2",
+                                        axes = listOf(
+                                            RadarAxisData("Speed", 70f),
+                                            RadarAxisData("Power", 90f),
+                                            RadarAxisData("Defense", 75f),
+                                            RadarAxisData("Skill", 85f),
+                                            RadarAxisData("Stamina", 88f),
+                                            RadarAxisData("Accuracy", 72f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFFE91E63)),
+                                        fillAlpha = 0.3f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Player 3",
+                                        axes = listOf(
+                                            RadarAxisData("Speed", 92f),
+                                            RadarAxisData("Power", 65f),
+                                            RadarAxisData("Defense", 70f),
+                                            RadarAxisData("Skill", 95f),
+                                            RadarAxisData("Stamina", 80f),
+                                            RadarAxisData("Accuracy", 90f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFF4CAF50)),
+                                        fillAlpha = 0.3f
+                                    )
+                                )
+                            },
+                            config = MultipleRadarChartConfig(
+                                showLegend = true,
+                                legendPosition = LegendPosition.TOP_RIGHT,
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.POLYGON,
+                                        numberOfGridLevels = 5,
+                                        gridLineColor = Color(0xFF424242).copy(alpha = 0.4f),
+                                        axisLineColor = Color(0xFF616161).copy(alpha = 0.5f)
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = false
+                                    ),
+                                    animation = Animation.Enabled(duration = 1000),
+                                    showDataPoints = true,
+                                    dataPointRadius = 5f
+                                ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.2f,
+                                showPointInnerCircle = true
+                            ),
+                            onDataSetClick = { label, index ->
+                                println("Clicked dataset: $label at index $index")
+                            }
+                        )
+                    }
+                }
+
+                // Multiple Radar Chart - Product Features
+                item {
+                    ChartCard(
+                        title = "Multiple Radar Chart - Product Features",
+                        description = "Circular grid with 8 attributes comparison"
+                    ) {
+                        MultipleRadarChart(
+                            modifier = Modifier.fillMaxWidth().height(400.dp),
+                            dataSets = {
+                                listOf(
+                                    RadarDataSet(
+                                        label = "Product A",
+                                        axes = listOf(
+                                            RadarAxisData("Price", 70f),
+                                            RadarAxisData("Quality", 90f),
+                                            RadarAxisData("Durability", 85f),
+                                            RadarAxisData("Design", 95f),
+                                            RadarAxisData("Features", 80f),
+                                            RadarAxisData("Support", 75f),
+                                            RadarAxisData("Warranty", 88f),
+                                            RadarAxisData("Value", 82f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFF9C27B0)),
+                                        fillAlpha = 0.25f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Product B",
+                                        axes = listOf(
+                                            RadarAxisData("Price", 95f),
+                                            RadarAxisData("Quality", 75f),
+                                            RadarAxisData("Durability", 70f),
+                                            RadarAxisData("Design", 80f),
+                                            RadarAxisData("Features", 90f),
+                                            RadarAxisData("Support", 85f),
+                                            RadarAxisData("Warranty", 65f),
+                                            RadarAxisData("Value", 88f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFFFF9800)),
+                                        fillAlpha = 0.25f
+                                    )
+                                )
+                            },
+                            config = MultipleRadarChartConfig(
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.CIRCULAR,
+                                        numberOfGridLevels = 4,
+                                        gridLineColor = Color(0xFF37474F).copy(alpha = 0.4f),
+                                        axisLineColor = Color(0xFF546E7A).copy(alpha = 0.5f)
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = false
+                                    ),
+                                    animation = Animation.Enabled(duration = 1200),
+                                    showDataPoints = true,
+                                    dataPointRadius = 6f
+                                ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.15f,
+                                showPointInnerCircle = true
+                            )
+                        )
+                    }
+                }
+
+                // Multiple Radar Chart - Skills Assessment
+                item {
+                    ChartCard(
+                        title = "Multiple Radar Chart - Team Skills",
+                        description = "Pentagon chart with minimal points and custom styling"
+                    ) {
+                        MultipleRadarChart(
+                            modifier = Modifier.fillMaxWidth().height(380.dp),
+                            dataSets = {
+                                listOf(
+                                    RadarDataSet(
+                                        label = "Frontend",
+                                        axes = listOf(
+                                            RadarAxisData("React", 95f),
+                                            RadarAxisData("Vue", 80f),
+                                            RadarAxisData("Angular", 70f),
+                                            RadarAxisData("Svelte", 85f),
+                                            RadarAxisData("Mobile", 75f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFF2196F3)),
+                                        fillAlpha = 0.35f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Backend",
+                                        axes = listOf(
+                                            RadarAxisData("React", 60f),
+                                            RadarAxisData("Vue", 55f),
+                                            RadarAxisData("Angular", 50f),
+                                            RadarAxisData("Svelte", 45f),
+                                            RadarAxisData("Mobile", 40f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFFFF5722)),
+                                        fillAlpha = 0.35f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Full Stack",
+                                        axes = listOf(
+                                            RadarAxisData("React", 88f),
+                                            RadarAxisData("Vue", 75f),
+                                            RadarAxisData("Angular", 70f),
+                                            RadarAxisData("Svelte", 65f),
+                                            RadarAxisData("Mobile", 82f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFF00C853)),
+                                        fillAlpha = 0.35f
+                                    )
+                                )
+                            },
+                            config = MultipleRadarChartConfig(
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.POLYGON,
+                                        numberOfGridLevels = 5,
+                                        gridLineWidth = 1.5f,
+                                        gridLineColor = Color(0xFF455A64).copy(alpha = 0.4f),
+                                        axisLineColor = Color(0xFF607D8B).copy(alpha = 0.5f)
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = false
+                                    ),
+                                    animation = Animation.Enabled(duration = 1500),
+                                    showDataPoints = true,
+                                    dataPointRadius = 7f,
+                                    dataLineWidth = 2.5f
+                                ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.25f,
+                                showPointInnerCircle = false,
+                                datasetLineWidth = 3f,
+                                datasetPointRadius = 8f
+                            )
+                        )
+                    }
+                }
+
+                // Multiple Radar Chart - Performance Metrics
+                item {
+                    ChartCard(
+                        title = "Multiple Radar Chart - Performance Metrics",
+                        description = "4 datasets with circular grid and gradient colors"
+                    ) {
+                        MultipleRadarChart(
+                            modifier = Modifier.fillMaxWidth().height(420.dp),
+                            dataSets = {
+                                listOf(
+                                    RadarDataSet(
+                                        label = "Q1 2024",
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 75f),
+                                            RadarAxisData("Growth", 68f),
+                                            RadarAxisData("Profit", 82f),
+                                            RadarAxisData("Customer Sat", 90f),
+                                            RadarAxisData("Market Share", 70f),
+                                            RadarAxisData("Innovation", 85f),
+                                            RadarAxisData("Efficiency", 78f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFFFF6B6B)),
+                                        fillAlpha = 0.28f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Q2 2024",
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 82f),
+                                            RadarAxisData("Growth", 75f),
+                                            RadarAxisData("Profit", 88f),
+                                            RadarAxisData("Customer Sat", 92f),
+                                            RadarAxisData("Market Share", 78f),
+                                            RadarAxisData("Innovation", 80f),
+                                            RadarAxisData("Efficiency", 85f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFF4ECDC4)),
+                                        fillAlpha = 0.28f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Q3 2024",
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 88f),
+                                            RadarAxisData("Growth", 85f),
+                                            RadarAxisData("Profit", 90f),
+                                            RadarAxisData("Customer Sat", 95f),
+                                            RadarAxisData("Market Share", 85f),
+                                            RadarAxisData("Innovation", 88f),
+                                            RadarAxisData("Efficiency", 92f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFF95E1D3)),
+                                        fillAlpha = 0.28f
+                                    ),
+                                    RadarDataSet(
+                                        label = "Q4 2024 (Projected)",
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 92f),
+                                            RadarAxisData("Growth", 90f),
+                                            RadarAxisData("Profit", 93f),
+                                            RadarAxisData("Customer Sat", 97f),
+                                            RadarAxisData("Market Share", 88f),
+                                            RadarAxisData("Innovation", 92f),
+                                            RadarAxisData("Efficiency", 95f)
+                                        ),
+                                        color = ChartyColor.Solid(Color(0xFFF38181)),
+                                        fillAlpha = 0.28f
+                                    )
+                                )
+                            },
+                            config = MultipleRadarChartConfig(
+                                showLegend = true,
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.CIRCULAR,
+                                        numberOfGridLevels = 5,
+                                        gridLineColor = Color(0xFF546E7A).copy(alpha = 0.35f),
+                                        axisLineColor = Color(0xFF78909C).copy(alpha = 0.45f)
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = true
+                                    ),
+                                    animation = Animation.Enabled(duration = 1800),
+                                    showDataPoints = true,
+                                    dataPointRadius = 4f
+                                ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.1f,
+                                showPointInnerCircle = true
+                            )
                         )
                     }
                 }

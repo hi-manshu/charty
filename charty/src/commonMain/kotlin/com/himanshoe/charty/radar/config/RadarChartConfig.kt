@@ -38,13 +38,13 @@ enum class RadarGridStyle {
  * @param valueColor Color for values (ChartyColor)
  */
 data class RadarLabelConfig(
-    val showLabels: Boolean = true,
+    val showLabels: Boolean = false,
     val showValues: Boolean = false,
     val labelTextSizeSp: Float = DEFAULT_LABEL_TEXT_SIZE_SP,
     val valueTextSizeSp: Float = DEFAULT_VALUE_TEXT_SIZE_SP,
     val labelDistanceMultiplier: Float = DEFAULT_LABEL_DISTANCE_MULTIPLIER,
-    val labelColor: ChartyColor = ChartyColor.Solid(Color.White),
-    val valueColor: ChartyColor = ChartyColor.Solid(Color.White)
+    val labelColor: ChartyColor = ChartyColor.Solid(Color.Black),
+    val valueColor: ChartyColor = ChartyColor.Solid(Color.Black)
 ) {
     init {
         require(labelTextSizeSp > 0f) { "Label text size must be positive" }
@@ -73,9 +73,9 @@ data class RadarGridConfig(
     val showAxisLines: Boolean = true,
     val gridLineWidth: Float = DEFAULT_GRID_LINE_WIDTH,
     val axisLineWidth: Float = DEFAULT_AXIS_LINE_WIDTH,
-    val gridLineColor: Color = Color.White.copy(alpha = 0.3f),
-    val axisLineColor: Color = Color.White.copy(alpha = 0.5f),
-    val gridLineAlpha: Float = 0.3f
+    val gridLineColor: Color = Color(0xFFBDBDBD).copy(alpha = 0.5f),
+    val axisLineColor: Color = Color(0xFF9E9E9E).copy(alpha = 0.6f),
+    val gridLineAlpha: Float = 0.5f
 ) {
     init {
         require(numberOfGridLevels > 0) { "Number of grid levels must be positive" }
