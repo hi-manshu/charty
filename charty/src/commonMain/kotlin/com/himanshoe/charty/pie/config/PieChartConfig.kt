@@ -7,6 +7,8 @@ import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.Animation
 
 private const val DEFAULT_CENTER_TEXT_SIZE_SP = 16f
+private const val MAX_DONUT_HOLE_RATIO = 0.9f
+private const val MAX_SLICE_SPACING_DEGREES = 10f
 
 /**
  * Style for pie/donut chart visualization
@@ -181,12 +183,11 @@ data class PieChartConfig(
     )
 ) {
     init {
-        require(donutHoleRatio in 0f..0.9f) {
-            "donutHoleRatio must be between 0 and 0.9, got: $donutHoleRatio"
+        require(donutHoleRatio in 0f..MAX_DONUT_HOLE_RATIO) {
+            "donutHoleRatio must be between 0 and $MAX_DONUT_HOLE_RATIO, got: $donutHoleRatio"
         }
-        require(sliceSpacingDegrees in 0f..10f) {
-            "sliceSpacingDegrees must be between 0 and 10 degrees, got: $sliceSpacingDegrees"
+        require(sliceSpacingDegrees in 0f..MAX_SLICE_SPACING_DEGREES) {
+            "sliceSpacingDegrees must be between 0 and $MAX_SLICE_SPACING_DEGREES degrees, got: $sliceSpacingDegrees"
         }
     }
 }
-

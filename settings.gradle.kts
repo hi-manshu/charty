@@ -34,3 +34,4 @@ plugins {
 
 include(":composeApp")
 include(":charty")
+include(":detekt-rules")

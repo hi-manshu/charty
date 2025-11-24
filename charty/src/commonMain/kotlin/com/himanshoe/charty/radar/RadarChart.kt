@@ -1,4 +1,12 @@
-@file:Suppress("LongMethod", "CyclomaticComplexMethod", "MagicNumber", "LongParameterList", "UnusedParameter")
+@file:Suppress(
+    "LongMethod",
+    "CyclomaticComplexMethod",
+    "MagicNumber",
+    "LongParameterList",
+    "UnusedParameter",
+    "NestedBlockDepth",
+    "FunctionNaming"
+)
 
 package com.himanshoe.charty.radar
 
@@ -19,17 +27,16 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.config.RadarGridStyle
 import com.himanshoe.charty.radar.data.RadarDataSet
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import kotlin.math.PI
 
 private const val FULL_CIRCLE_DEGREES = 360f
 private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
@@ -352,4 +359,3 @@ private fun DrawScope.drawAxisLabels(
         )
     }
 }
-

@@ -17,11 +17,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
@@ -101,8 +98,8 @@ fun PieChart(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(Color(0xFF2196F3)),
     config: PieChartConfig = PieChartConfig(),
-    centerContent: @Composable (() -> Unit)? = null,
-    onSliceClick: ((PieData, Int) -> Unit)? = null
+    onSliceClick: ((PieData, Int) -> Unit)? = null,
+    centerContent: @Composable (() -> Unit)? = null
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Pie chart data cannot be empty" }
@@ -157,12 +154,20 @@ fun PieChart(
         selectedSliceIndex = selectedSliceIndex,
         selectedScale = selectedScale.value,
         centerContent = centerContent,
-        modifier = modifier,
-        onSliceClick = { index ->
+        onSliceClick = onSliceClickLambda(dataList) { index ->
             selectedSliceIndex = if (selectedSliceIndex == index) null else index
             onSliceClick?.invoke(dataList[index], index)
-        }
+        },
+        modifier = modifier
     )
+}
+
+private fun onSliceClickLambda(
+    dataList: List<PieData>,
+    handler: (Int) -> Unit
+): (Int) -> Unit = { index ->
+    require(index in dataList.indices) { "Invalid slice index: $index" }
+    handler(index)
 }
 
 /**
@@ -178,8 +183,8 @@ private fun PieChartContent(
     selectedSliceIndex: Int?,
     selectedScale: Float,
     centerContent: @Composable (() -> Unit)?,
-    modifier: Modifier = Modifier,
-    onSliceClick: (Int) -> Unit
+    onSliceClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val textMeasurer = rememberTextMeasurer()
 
@@ -458,4 +463,3 @@ private fun generateSliceColors(dataList: List<PieData>, color: ChartyColor): Li
         }
     }
 }
-

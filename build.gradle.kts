@@ -33,7 +33,9 @@ subprojects {
         ignoreFailures = false
     }
 
-    dependencies {
-        "detektPlugins"(rootProject.libs.detekt.compose.rules)
+    plugins.withId("io.gitlab.arturbosch.detekt") {
+        dependencies {
+            add("detektPlugins", project(":detekt-rules"))
+        }
     }
 }

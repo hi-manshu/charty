@@ -1,4 +1,12 @@
-@file:Suppress("LongMethod", "CyclomaticComplexMethod", "MagicNumber", "LongParameterList", "UnusedParameter")
+@file:Suppress(
+    "LongMethod",
+    "CyclomaticComplexMethod",
+    "MagicNumber",
+    "LongParameterList",
+    "UnusedParameter",
+    "NestedBlockDepth",
+    "FunctionNaming"
+)
 
 package com.himanshoe.charty.radar
 
@@ -49,64 +57,12 @@ private const val FULL_CIRCLE_DEGREES = 360f
 private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
 
 /**
- * Multiple Radar Chart - Display multiple overlapping radar/spider charts with enhanced flexibility
+ * Multiple Radar Chart that displays overlapping datasets with optional legend.
  *
- * An advanced radar chart that displays multiple datasets as overlapping polygons,
- * perfect for comparing multiple entities across various attributes.
- * Supports individual dataset customization, legends, and interactive features.
- *
- * Usage:
- * ```kotlin
- * MultipleRadarChart(
- *     dataSets = {
- *         listOf(
- *             RadarDataSet(
- *                 label = "Player 1",
- *                 axes = listOf(
- *                     RadarAxisData("Speed", 80f),
- *                     RadarAxisData("Power", 90f),
- *                     RadarAxisData("Defense", 70f),
- *                     RadarAxisData("Skill", 85f),
- *                     RadarAxisData("Stamina", 75f)
- *                 ),
- *                 color = ChartyColor.Solid(Color.Cyan),
- *                 fillAlpha = 0.3f
- *             ),
- *             RadarDataSet(
- *                 label = "Player 2",
- *                 axes = listOf(
- *                     RadarAxisData("Speed", 70f),
- *                     RadarAxisData("Power", 85f),
- *                     RadarAxisData("Defense", 90f),
- *                     RadarAxisData("Skill", 75f),
- *                     RadarAxisData("Stamina", 80f)
- *                 ),
- *                 color = ChartyColor.Solid(Color.Magenta),
- *                 fillAlpha = 0.3f
- *             )
- *         )
- *     },
- *     config = MultipleRadarChartConfig(
- *         showLegend = true,
- *         allowDatasetToggle = true,
- *         highlightOnHover = true
- *     )
- * )
- * ```
- *
- * Features:
- * - Multiple overlapping datasets
- * - Individual dataset styling (color, fill alpha, line width)
- * - Optional legend display
- * - Dataset toggle functionality
- * - Hover/highlight effects
- * - Flexible grid styles (circular or polygon)
- * - Customizable animations
- *
- * @param dataSets Lambda returning list of radar datasets to display
- * @param modifier Modifier for the chart
- * @param config Configuration for multiple radar chart appearance and behavior
- * @param onDataSetClick Optional callback when a dataset is clicked (receives dataset label and index)
+ * @param dataSets Lambda providing datasets to render
+ * @param modifier Modifier for the composable root
+ * @param config Visual and behavioral configuration
+ * @param onDataSetClick Optional callback when a dataset entry is clicked
  */
 @Composable
 fun MultipleRadarChart(
@@ -491,7 +447,9 @@ private fun DrawScope.drawRadarDataSet(
 
     // Calculate all points
     dataSet.axes.fastForEachIndexed { index, axisData ->
-        val angle = (config.radarConfig.startAngleDegrees + (FULL_CIRCLE_DEGREES * index / numberOfAxes)) * DEGREES_TO_RADIANS
+        val baseAngle = config.radarConfig.startAngleDegrees
+        val sweepPerAxis = FULL_CIRCLE_DEGREES * index / numberOfAxes
+        val angle = (baseAngle + sweepPerAxis) * DEGREES_TO_RADIANS
         val normalizedValue = axisData.getNormalizedValue()
         val radius = maxRadius * normalizedValue * animationProgress
 
@@ -580,21 +538,23 @@ private fun DrawScope.drawAxisLabels(
             style = textStyle
         )
 
-        // Calculate offset to center the text around the point
         val textWidth = textLayoutResult.size.width
         val textHeight = textLayoutResult.size.height
 
+        val isBottom = angle > PI / 4 && angle < 3 * PI / 4
+        val isTop = angle > -3 * PI / 4 && angle < -PI / 4
+        val isRight = angle >= -PI / 4 && angle <= PI / 4
+
         val offsetX = when {
-            angle > PI / 4 && angle < 3 * PI / 4 -> -textWidth / 2f  // Bottom
-            angle > -3 * PI / 4 && angle < -PI / 4 -> -textWidth / 2f  // Top
-            angle >= -PI / 4 && angle <= PI / 4 -> 0f  // Right
-            else -> -textWidth.toFloat()  // Left
+            isBottom || isTop -> -textWidth / 2f
+            isRight -> 0f
+            else -> -textWidth.toFloat()
         }
 
         val offsetY = when {
-            angle > PI / 4 && angle < 3 * PI / 4 -> 0f  // Bottom
-            angle > -3 * PI / 4 && angle < -PI / 4 -> -textHeight.toFloat()  // Top
-            else -> -textHeight / 2f  // Middle
+            isBottom -> 0f
+            isTop -> -textHeight.toFloat()
+            else -> -textHeight / 2f
         }
 
         drawText(
@@ -603,5 +563,3 @@ private fun DrawScope.drawAxisLabels(
         )
     }
 }
-
-

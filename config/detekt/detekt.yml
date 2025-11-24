@@ -408,3 +408,6 @@ style:
     active: true
     excludeImports: ['java.util.*', 'kotlinx.android.synthetic.*']
 
+custom-rules:
+  ColorMagicNumber:
+    active: true

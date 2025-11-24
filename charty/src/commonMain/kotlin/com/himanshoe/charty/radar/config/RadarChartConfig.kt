@@ -15,6 +15,8 @@ private const val DEFAULT_LABEL_DISTANCE_MULTIPLIER = 1.15f
 private const val DEFAULT_LABEL_TEXT_SIZE_SP = 12f
 private const val DEFAULT_VALUE_TEXT_SIZE_SP = 10f
 private const val DEFAULT_CENTER_ICON_SIZE = 40f
+private const val DEFAULT_PADDING_FRACTION = 0.15f
+private const val GRID_LINE_ALPHA_DEFAULT = 0.5f
 
 /**
  * Style for radar chart grid
@@ -68,9 +70,9 @@ data class RadarGridConfig(
     val showAxisLines: Boolean = true,
     val gridLineWidth: Float = DEFAULT_GRID_LINE_WIDTH,
     val axisLineWidth: Float = DEFAULT_AXIS_LINE_WIDTH,
-    val gridLineColor: Color = Color(0xFFBDBDBD).copy(alpha = 0.5f),
+    val gridLineColor: Color = Color(0xFFBDBDBD).copy(alpha = GRID_LINE_ALPHA_DEFAULT),
     val axisLineColor: Color = Color(0xFF9E9E9E).copy(alpha = 0.6f),
-    val gridLineAlpha: Float = 0.5f
+    val gridLineAlpha: Float = GRID_LINE_ALPHA_DEFAULT
 ) {
     init {
         require(numberOfGridLevels > 0) { "Number of grid levels must be positive" }
@@ -128,7 +130,7 @@ data class RadarChartConfig(
     val centerConfig: RadarCenterConfig = RadarCenterConfig(),
     val animation: Animation = Animation.Default,
     val scaleToFit: Boolean = true,
-    val paddingFraction: Float = 0.15f
+    val paddingFraction: Float = DEFAULT_PADDING_FRACTION
 ) {
     init {
         require(dataLineWidth > 0f) { "Data line width must be positive" }
@@ -136,4 +138,3 @@ data class RadarChartConfig(
         require(paddingFraction in 0f..0.5f) { "Padding fraction must be between 0 and 0.5" }
     }
 }
-

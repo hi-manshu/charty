@@ -25,6 +25,7 @@ data class RadarAxisData(
      */
     fun getNormalizedValue(): Float = (value / maxValue).coerceIn(0f, 1f)
 
+    /** Constants for [RadarAxisData]. */
     companion object {
         private const val DEFAULT_MAX_VALUE = 100f
     }
@@ -52,9 +53,9 @@ data class RadarDataSet(
         require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1, got: $fillAlpha" }
     }
 
+    /** Constants for [RadarDataSet]. */
     companion object {
         private const val MIN_AXES = 3
         private const val DEFAULT_FILL_ALPHA = 0.3f
     }
 }
-
