@@ -55,6 +55,9 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.point.BubbleChart
 import com.himanshoe.charty.point.BubbleData
+import com.himanshoe.charty.combo.ComboChart
+import com.himanshoe.charty.combo.data.ComboChartData
+import com.himanshoe.charty.combo.config.ComboChartConfig
 
 @Composable
 @Preview
@@ -90,6 +93,37 @@ fun App() {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                item {
+                    ChartCard(
+                        title = "Combo Chart (Bar + Line)",
+                        description = "Combines bars and line in one chart - perfect for comparing two related metrics"
+                    ) {
+                        ComboChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    ComboChartData("Jan", barValue = 100f, lineValue = 80f),
+                                    ComboChartData("Feb", barValue = 150f, lineValue = 120f),
+                                    ComboChartData("Mar", barValue = 120f, lineValue = 140f),
+                                    ComboChartData("Apr", barValue = 180f, lineValue = 160f),
+                                    ComboChartData("May", barValue = 160f, lineValue = 145f),
+                                    ComboChartData("Jun", barValue = 200f, lineValue = 180f)
+                                )
+                            },
+                            barColor = ChartyColor.Solid(Color(0xFF2196F3)),
+                            lineColor = ChartyColor.Solid(Color(0xFFFF5722)),
+                            comboConfig = ComboChartConfig(
+                                barWidthFraction = 0.6f,
+                                lineWidth = 3f,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                smoothCurve = false,
+                                animation = Animation.Enabled(duration = 1200)
+                            )
+                        )
+                    }
+                }
+                
                 // Horizontal Bar Chart
                 item {
                     Box(
@@ -916,6 +950,8 @@ fun App() {
                         )
                     }
                 }
+
+                // Combo Chart
 
                 // Pie Chart
                 item {
