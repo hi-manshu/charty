@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+
 package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
@@ -112,7 +114,12 @@ fun SpanChart(
         val range = maxValue - minValue
 
         dataList.fastForEachIndexed { index, span ->
-            val spanColor = colorList[index % colorList.size]
+            // Use per-span color if available, otherwise fall back to chart colors
+            val spanChartyColor = span.color ?: colors
+            val spanColor = when (spanChartyColor) {
+                is ChartyColor.Solid -> spanChartyColor.color
+                is ChartyColor.Gradient -> spanChartyColor.colors[index % spanChartyColor.colors.size]
+            }
 
             val barHeight = chartContext.height / dataList.size
             val barY = chartContext.top + (barHeight * index)

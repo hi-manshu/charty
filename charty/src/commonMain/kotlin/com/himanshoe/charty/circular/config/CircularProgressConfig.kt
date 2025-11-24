@@ -3,6 +3,8 @@ package com.himanshoe.charty.circular.config
 import androidx.compose.ui.graphics.StrokeCap
 import com.himanshoe.charty.common.config.Animation
 
+private const val DEFAULT_START_ANGLE_DEGREES = -90f
+
 /**
  * Direction for drawing the circular rings
  */
@@ -66,7 +68,7 @@ data class CircularProgressConfig(
      * - 90° = bottom (6 o'clock position)
      * - 180° = left (9 o'clock position)
      */
-    val startAngleDegrees: Float = -90f,
+    val startAngleDegrees: Float = DEFAULT_START_ANGLE_DEGREES,
 
     /**
      * Direction to draw the rings (default: CLOCKWISE)
@@ -145,4 +147,3 @@ data class CircularProgressConfig(
         }
     }
 }
-

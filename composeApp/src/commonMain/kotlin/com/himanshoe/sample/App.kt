@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber", "LongMethod", "FunctionNaming", "UndocumentedPublicFunction", "WildcardImport", "MaxLineLength")
+
 package com.himanshoe.sample
 
 import androidx.compose.foundation.Canvas
@@ -20,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.bar.BarChart
-import com.himanshoe.charty.bar.BarData
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.ComparisonBarChart
 import com.himanshoe.charty.bar.HorizontalBarChart
 import com.himanshoe.charty.bar.StackedBarChart
@@ -274,6 +276,34 @@ fun App() {
                                 pointRadius = 6f,
                                 smoothCurve = false,
                                 animation = Animation.Enabled(duration = 1200)
+                            )
+                        )
+                    }
+                }
+
+                // Bar Chart with Per-Bar Colors
+                item {
+                    ChartCard(
+                        title = "Bar Chart with Per-Bar Colors",
+                        description = "Each bar can have its own color - no need to match data size with color array!"
+                    ) {
+                        BarChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    BarData("Jan", 100f, ChartyColor.Solid(Color(0xFF2196F3))),
+                                    BarData("Feb", 150f, ChartyColor.Solid(Color(0xFF4CAF50))),
+                                    BarData("Mar", 120f, ChartyColor.Solid(Color(0xFFFF9800))),
+                                    BarData("Apr", 180f, ChartyColor.Solid(Color(0xFFE91E63))),
+                                    BarData("May", 160f, ChartyColor.Solid(Color(0xFF9C27B0))),
+                                    BarData("Jun", 200f, ChartyColor.Solid(Color(0xFF00BCD4)))
+                                )
+                            },
+                            color = ChartyColor.Solid(Color.Gray), // Fallback color (not used since each bar has its own)
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Medium,
+                                animation = Animation.Enabled(duration = 1000)
                             )
                         )
                     }
@@ -850,6 +880,64 @@ fun App() {
                                     Color(0xFFFF9800)
                                 )
                             ),
+                            stackedConfig = StackedBarChartConfig(
+                                barWidthFraction = 0.7f,
+                                topCornerRadius = CornerRadius.Medium,
+                                animation = Animation.Enabled(duration = 1000)
+                            )
+                        )
+                    }
+                }
+
+                // Stacked Bar Chart with Per-Segment Gradients
+                item {
+                    ChartCard(
+                        title = "Stacked Bar Chart with Gradient Segments",
+                        description = "Each stack segment can have its own gradient - beautiful multi-color effects!"
+                    ) {
+                        StackedBarChart(
+                            modifier = Modifier.fillMaxWidth().height(300.dp),
+                            data = {
+                                listOf(
+                                    BarGroup(
+                                        "Q1",
+                                        listOf(20f, 30f, 15f),
+                                        listOf(
+                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
+                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
+                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                        )
+                                    ),
+                                    BarGroup(
+                                        "Q2",
+                                        listOf(25f, 35f, 20f),
+                                        listOf(
+                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
+                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
+                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                        )
+                                    ),
+                                    BarGroup(
+                                        "Q3",
+                                        listOf(30f, 25f, 25f),
+                                        listOf(
+                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
+                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
+                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                        )
+                                    ),
+                                    BarGroup(
+                                        "Q4",
+                                        listOf(28f, 40f, 18f),
+                                        listOf(
+                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF64B5F6))),
+                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
+                                            ChartyColor.Gradient(listOf(Color(0xFFE64A19), Color(0xFFFF8A65)))
+                                        )
+                                    )
+                                )
+                            },
+                            colors = ChartyColor.Solid(Color.Gray), // Fallback (not used)
                             stackedConfig = StackedBarChartConfig(
                                 barWidthFraction = 0.7f,
                                 topCornerRadius = CornerRadius.Medium,

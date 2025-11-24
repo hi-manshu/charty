@@ -1,6 +1,6 @@
 package com.himanshoe.charty.bar.ext
 
-import com.himanshoe.charty.bar.BarData
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
 import kotlin.jvm.JvmName
 import kotlin.math.ceil

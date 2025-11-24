@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+
 package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
@@ -8,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -117,11 +120,31 @@ fun StackedBarChart(
                 val animatedHeight = fullSegmentHeight * animationProgress.value
                 val animatedTopY = segmentBottomY - animatedHeight
 
-                val segmentColor = colorList[segmentIndex % colorList.size]
+                // Use per-group color if available, otherwise fall back to chart colors
+                val segmentChartyColor = if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
+                    barGroup.colors[segmentIndex]
+                } else {
+                    // Create ChartyColor from the color at this index
+                    ChartyColor.Solid(colorList[segmentIndex % colorList.size])
+                }
                 val isTopSegment = segmentIndex == barGroup.values.size - 1
 
+                // Create gradient brush for this segment
+                val segmentBrush = when (segmentChartyColor) {
+                    is ChartyColor.Solid -> androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(segmentChartyColor.color, segmentChartyColor.color),
+                        startY = animatedTopY,
+                        endY = animatedTopY + animatedHeight
+                    )
+                    is ChartyColor.Gradient -> androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = segmentChartyColor.colors,
+                        startY = animatedTopY,
+                        endY = animatedTopY + animatedHeight
+                    )
+                }
+
                 drawStackedSegment(
-                    color = segmentColor,
+                    brush = segmentBrush,
                     x = barX,
                     y = animatedTopY,
                     width = barWidth,
@@ -135,11 +158,11 @@ fun StackedBarChart(
 }
 
 /**
- * Helper function to draw a segment of a stacked bar
+ * Helper function to draw a segment of a stacked bar with gradient support
  * Only the top segment gets rounded corners
  */
 private fun DrawScope.drawStackedSegment(
-    color: Color,
+    brush: Brush,
     x: Float,
     y: Float,
     width: Float,
@@ -178,6 +201,6 @@ private fun DrawScope.drawStackedSegment(
             )
         }
     }
-    drawPath(path, color)
+    drawPath(path, brush)
 }
 

@@ -1,3 +1,5 @@
+@file:Suppress("FunctionNaming") // Composable functions should start with capital letter
+
 package com.himanshoe.charty.point
 
 import androidx.compose.animation.core.Animatable
@@ -115,4 +117,3 @@ fun PointChart(
         }
     }
 }
-

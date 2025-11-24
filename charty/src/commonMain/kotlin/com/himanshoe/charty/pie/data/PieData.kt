@@ -2,6 +2,9 @@ package com.himanshoe.charty.pie.data
 
 import androidx.compose.ui.graphics.Color
 
+private const val PERCENTAGE_MULTIPLIER = 100f
+private const val DEGREES_IN_CIRCLE = 360f
+
 /**
  * Data class representing a single slice in a Pie or Donut chart
  *
@@ -34,7 +37,7 @@ data class PieData(
      * @return Percentage as a float (0.0 to 100.0)
      */
     fun calculatePercentage(total: Float): Float {
-        return if (total > 0f) (value / total) * 100f else 0f
+        return if (total > 0f) (value / total) * PERCENTAGE_MULTIPLIER else 0f
     }
 
     /**
@@ -43,6 +46,7 @@ data class PieData(
      * @return Angle in degrees (0.0 to 360.0)
      */
     fun calculateSweepAngle(total: Float): Float {
-        return if (total > 0f) (value / total) * 360f else 0f
+        return if (total > 0f) (value / total) * DEGREES_IN_CIRCLE else 0f
     }
 }
+

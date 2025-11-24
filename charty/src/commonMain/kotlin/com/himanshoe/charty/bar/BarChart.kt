@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+
 package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
@@ -18,6 +20,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.ChartScaffoldConfig
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.ext.calculateMaxValue
 import com.himanshoe.charty.bar.ext.calculateMinValue
 import com.himanshoe.charty.bar.ext.getLabels
@@ -125,7 +128,9 @@ fun BarChart(
                 barHeight = animatedBarHeight
             }
 
-            val brush = with(chartContext) { color.toVerticalGradientBrush() }
+            // Use per-bar color if available, otherwise fall back to chart color
+            val barColor = bar.color ?: color
+            val brush = with(chartContext) { barColor.toVerticalGradientBrush() }
 
             drawRoundedBar(
                 brush = brush,

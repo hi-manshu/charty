@@ -16,6 +16,9 @@ data class ChartAxisConfig(
 
     val ySteps: Int get() = yAxisLabels.size - 1
 
+    /**
+     * Companion object providing factory methods for creating ChartAxisConfig instances
+     */
     companion object {
         /**
          * Helper factory that builds evenly spaced Y labels for numeric data.

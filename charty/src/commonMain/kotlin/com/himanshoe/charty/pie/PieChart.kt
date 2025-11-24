@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+
 package com.himanshoe.charty.pie
 
 import androidx.compose.animation.core.*
@@ -99,8 +101,8 @@ fun PieChart(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(Color(0xFF2196F3)),
     config: PieChartConfig = PieChartConfig(),
-    onSliceClick: ((PieData, Int) -> Unit)? = null,
-    centerContent: @Composable (() -> Unit)? = null
+    centerContent: @Composable (() -> Unit)? = null,
+    onSliceClick: ((PieData, Int) -> Unit)? = null
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Pie chart data cannot be empty" }

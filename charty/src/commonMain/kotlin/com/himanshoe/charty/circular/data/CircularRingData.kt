@@ -3,6 +3,9 @@ package com.himanshoe.charty.circular.data
 import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.color.ChartyColor
 
+private const val PERCENTAGE_MULTIPLIER = 100f
+private const val DEGREES_IN_CIRCLE = 360f
+
 /**
  * Data class representing a single ring in the CircularProgressIndicator
  *
@@ -65,17 +68,17 @@ data class CircularRingData(
     }
 
     /**
-     * Calculates the percentage progress (0f to 100f)
+     * Calculates the percentage of completion (0f to 100f)
      */
     fun calculatePercentage(): Float {
-        return ((progress / maxValue) * 100f).coerceIn(0f, 100f)
+        return ((progress / maxValue) * PERCENTAGE_MULTIPLIER).coerceIn(0f, PERCENTAGE_MULTIPLIER)
     }
 
     /**
      * Calculates the sweep angle in degrees for drawing (0f to 360f)
      */
     fun calculateSweepAngle(): Float {
-        return ((progress / maxValue) * 360f).coerceIn(0f, 360f)
+        return ((progress / maxValue) * DEGREES_IN_CIRCLE).coerceIn(0f, DEGREES_IN_CIRCLE)
     }
 
     /**

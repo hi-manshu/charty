@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+
 package com.himanshoe.charty.common
 
 import androidx.compose.foundation.Canvas

@@ -2,6 +2,9 @@ package com.himanshoe.charty.candlestick.ext
 
 import com.himanshoe.charty.candlestick.data.CandleData
 
+private const val CHART_PADDING_MULTIPLIER_HIGH = 1.05f
+private const val CHART_PADDING_MULTIPLIER_LOW = 0.95f
+
 /**
  * Extension functions for CandleData list operations
  */
@@ -26,7 +29,7 @@ internal fun List<CandleData>.getLowValues(): List<Float> = map { it.low }
  */
 internal fun calculateMaxValue(data: List<CandleData>): Float {
     val maxHigh = data.maxOfOrNull { it.high } ?: 0f
-    return maxHigh * 1.05f // Add 5% padding
+    return maxHigh * CHART_PADDING_MULTIPLIER_HIGH // Add 5% padding
 }
 
 /**
@@ -34,6 +37,5 @@ internal fun calculateMaxValue(data: List<CandleData>): Float {
  */
 internal fun calculateMinValue(data: List<CandleData>): Float {
     val minLow = data.minOfOrNull { it.low } ?: 0f
-    return minLow * 0.95f // Subtract 5% padding
+    return minLow * CHART_PADDING_MULTIPLIER_LOW // Subtract 5% padding
 }
-

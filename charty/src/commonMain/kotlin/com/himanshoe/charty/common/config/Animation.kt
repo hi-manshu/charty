@@ -20,6 +20,9 @@ sealed interface Animation {
         }
     }
 
+    /**
+     * Companion object providing common animation presets
+     */
     companion object {
         /**
          * Default animation with 800ms duration

@@ -2,6 +2,8 @@ package com.himanshoe.charty.pie.config
 
 import com.himanshoe.charty.common.config.Animation
 
+private const val DEFAULT_CENTER_TEXT_SIZE_SP = 16f
+
 /**
  * Style for pie/donut chart visualization
  */
@@ -157,7 +159,7 @@ data class PieChartConfig(
     val animation: Animation = Animation.Default,
     val sliceSpacingDegrees: Float = 0f,
     val shouldShowCenterText: Boolean = false,
-    val centerTextSizeSp: Float = 16f
+    val centerTextSizeSp: Float = DEFAULT_CENTER_TEXT_SIZE_SP
 ) {
     init {
         require(donutHoleRatio in 0f..0.9f) {

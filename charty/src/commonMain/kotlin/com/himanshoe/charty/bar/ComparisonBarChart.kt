@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
@@ -5,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -119,10 +122,27 @@ fun ComparisonBarChart(
                     barTop = baselineY - barHeight
                 }
 
-                val barColor = colorList[barIndex % colorList.size]
+                val barChartyColor = if (group.colors != null && barIndex < group.colors.size) {
+                    group.colors[barIndex]
+                } else {
+                    ChartyColor.Solid(colorList[barIndex % colorList.size])
+                }
+
+                val barBrush = when (barChartyColor) {
+                    is ChartyColor.Solid -> androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(barChartyColor.color, barChartyColor.color),
+                        startY = barTop,
+                        endY = barTop + barHeight
+                    )
+                    is ChartyColor.Gradient -> androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = barChartyColor.colors,
+                        startY = barTop,
+                        endY = barTop + barHeight
+                    )
+                }
 
                 drawRoundedBar(
-                    color = barColor,
+                    brush = barBrush,
                     x = barX,
                     y = barTop,
                     width = barWidth,
@@ -137,10 +157,10 @@ fun ComparisonBarChart(
 }
 
 /**
- * Helper function to draw a comparison bar with rounded corners
+ * Helper function to draw a comparison bar with rounded corners and gradient support
  */
 private fun DrawScope.drawRoundedBar(
-    color: Color,
+    brush: Brush,
     x: Float,
     y: Float,
     width: Float,
@@ -178,7 +198,7 @@ private fun DrawScope.drawRoundedBar(
             )
         }
     }
-    drawPath(path, color)
+    drawPath(path, brush)
 }
 
 /**

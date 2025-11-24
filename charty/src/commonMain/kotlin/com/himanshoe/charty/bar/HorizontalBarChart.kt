@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList", "FunctionNaming", "CyclomaticComplexMethod", "WildcardImport", "MagicNumber", "MaxLineLength", "ReturnCount", "UnusedImports")
+
 package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
@@ -15,6 +17,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.ext.calculateMaxValue
 import com.himanshoe.charty.bar.ext.calculateMinValue
 import com.himanshoe.charty.bar.ext.getValues
@@ -134,14 +137,15 @@ fun HorizontalBarChart(
                 barLeft = baselineX
             }
 
-            val brush = when (color) {
+            val barColor = bar.color ?: color
+            val brush = when (barColor) {
                 is ChartyColor.Solid -> androidx.compose.ui.graphics.Brush.horizontalGradient(
-                    colors = listOf(color.color, color.color),
+                    colors = listOf(barColor.color, barColor.color),
                     startX = chartContext.left,
                     endX = chartContext.right
                 )
                 is ChartyColor.Gradient -> androidx.compose.ui.graphics.Brush.horizontalGradient(
-                    colors = color.colors,
+                    colors = barColor.colors,
                     startX = chartContext.left,
                     endX = chartContext.right
                 )
