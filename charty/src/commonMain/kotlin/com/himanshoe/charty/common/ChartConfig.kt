@@ -3,6 +3,7 @@ package com.himanshoe.charty.common
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.common.axis.LabelRotation
 
 /**
  * Configuration for chart axis.
@@ -32,12 +33,14 @@ data class AxisConfig(
  * @param axisThickness Thickness of axis lines
  * @param gridThickness Thickness of grid lines
  * @param labelTextStyle TextStyle for axis labels - allows full customization of text appearance
+ * @param leftLabelRotation Rotation for left-side labels. Default is LabelRotation.Straight. Use LabelRotation.Angle45Negative for -45-degree rotation.
  */
 data class ChartScaffoldConfig(
     val showAxis: Boolean = true,
     val showGrid: Boolean = true,
     val showLabels: Boolean = true,
     val axisColor: Color = Color.Black,
+    val leftLabelRotation: LabelRotation = LabelRotation.Straight,
     val gridColor: Color = Color.LightGray,
     val axisThickness: Float = 2f,
     val gridThickness: Float = 1f,

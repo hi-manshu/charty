@@ -57,6 +57,8 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.ComboChart
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
+import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
@@ -64,6 +66,7 @@ import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
 import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPadding
+import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
@@ -185,9 +188,9 @@ fun App() {
                                         showArrow = true,
                                         arrowSize = 10.dp
                                     ),
-                                    tooltipPosition = com.himanshoe.charty.common.tooltip.TooltipPosition.AUTO
+                                    tooltipPosition = TooltipPosition.AUTO
                                 ),
-                                // Click listener - direct parameter
+                                scaffoldConfig = ChartScaffoldConfig(leftLabelRotation = LabelRotation.Angle45Negative),
                                 onBarClick = { barData ->
                                     selectedBar = barData
                                     println("Bar clicked: ${barData.label} = ${barData.value}")

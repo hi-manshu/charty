@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.*
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.axis.LabelRotation
 import kotlin.math.round
 
 /**
@@ -166,6 +167,7 @@ data class ChartContext(
  * @param yAxisConfig Configuration for Y-axis values and range
  * @param config Scaffold configuration for styling
  * @param orientation Chart orientation (VERTICAL or HORIZONTAL)
+ * @param leftLabelRotation Rotation for left-side labels (Y-axis labels in VERTICAL mode, category labels in HORIZONTAL mode). Default is LabelRotation.Straight. Use LabelRotation.Angle45Negative for -45-degree rotation.
  * @param content Drawing lambda that receives ChartContext for positioning
  */
 @Composable
@@ -175,6 +177,7 @@ fun ChartScaffold(
     yAxisConfig: AxisConfig = AxisConfig(),
     config: ChartScaffoldConfig = ChartScaffoldConfig(),
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
+    leftLabelRotation: LabelRotation = LabelRotation.Straight,
     content: DrawScope.(ChartContext) -> Unit,
 ) {
     Box(modifier = modifier) {
@@ -183,6 +186,7 @@ fun ChartScaffold(
             yAxisConfig = yAxisConfig,
             config = config,
             orientation = orientation,
+            leftLabelRotation = leftLabelRotation,
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -219,6 +223,7 @@ private fun DrawAxisAndLabels(
     yAxisConfig: AxisConfig,
     config: ChartScaffoldConfig,
     orientation: ChartOrientation,
+    leftLabelRotation: LabelRotation,
 ) {
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = config.labelTextStyle
@@ -232,6 +237,7 @@ private fun DrawAxisAndLabels(
                     config = config,
                     textMeasurer = textMeasurer,
                     labelStyle = labelStyle,
+                    leftLabelRotation = leftLabelRotation,
                 )
             ChartOrientation.HORIZONTAL ->
                 drawHorizontalChartAxes(
@@ -240,6 +246,7 @@ private fun DrawAxisAndLabels(
                     config = config,
                     textMeasurer = textMeasurer,
                     labelStyle = labelStyle,
+                    leftLabelRotation = leftLabelRotation,
                 )
         }
     }
@@ -254,6 +261,7 @@ private fun DrawScope.drawVerticalChartAxes(
     config: ChartScaffoldConfig,
     textMeasurer: TextMeasurer,
     labelStyle: TextStyle,
+    leftLabelRotation: LabelRotation,
 ) {
     // Calculate chart area
     val leftPadding = if (config.showLabels) 60f else 20f
@@ -323,14 +331,35 @@ private fun DrawScope.drawVerticalChartAxes(
             val labelText = formatAxisLabel(value)
             val textLayout = textMeasurer.measure(AnnotatedString(labelText), labelStyle)
 
-            drawText(
-                textLayoutResult = textLayout,
-                topLeft =
-                    Offset(
-                        chartLeft - textLayout.size.width - 10f,
-                        y - textLayout.size.height / 2,
-                    ),
-            )
+            if (leftLabelRotation.degrees != 0f) {
+                // Draw rotated label
+                drawContext.transform.rotate(
+                    degrees = leftLabelRotation.degrees,
+                    pivot = Offset(chartLeft - 10f, y),
+                )
+                drawText(
+                    textLayoutResult = textLayout,
+                    topLeft =
+                        Offset(
+                            chartLeft - textLayout.size.width - 10f,
+                            y - textLayout.size.height / 2,
+                        ),
+                )
+                drawContext.transform.rotate(
+                    degrees = -leftLabelRotation.degrees,
+                    pivot = Offset(chartLeft - 10f, y),
+                )
+            } else {
+                // Draw non-rotated label
+                drawText(
+                    textLayoutResult = textLayout,
+                    topLeft =
+                        Offset(
+                            chartLeft - textLayout.size.width - 10f,
+                            y - textLayout.size.height / 2,
+                        ),
+                )
+            }
         }
     }
 
@@ -363,6 +392,7 @@ private fun DrawScope.drawHorizontalChartAxes(
     config: ChartScaffoldConfig,
     textMeasurer: TextMeasurer,
     labelStyle: TextStyle,
+    leftLabelRotation: LabelRotation,
 ) {
     // Calculate chart area - more space for category labels on left
     val leftPadding = if (config.showLabels) 100f else 20f
@@ -449,14 +479,35 @@ private fun DrawScope.drawHorizontalChartAxes(
             val centerY = chartTop + barHeight * (index + 0.5f)
             val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
 
-            drawText(
-                textLayoutResult = textLayout,
-                topLeft =
-                    Offset(
-                        chartLeft - textLayout.size.width - 10f,
-                        centerY - textLayout.size.height / 2,
-                    ),
-            )
+            if (leftLabelRotation.degrees != 0f) {
+                // Draw rotated label
+                drawContext.transform.rotate(
+                    degrees = leftLabelRotation.degrees,
+                    pivot = Offset(chartLeft - 10f, centerY),
+                )
+                drawText(
+                    textLayoutResult = textLayout,
+                    topLeft =
+                        Offset(
+                            chartLeft - textLayout.size.width - 10f,
+                            centerY - textLayout.size.height / 2,
+                        ),
+                )
+                drawContext.transform.rotate(
+                    degrees = -leftLabelRotation.degrees,
+                    pivot = Offset(chartLeft - 10f, centerY),
+                )
+            } else {
+                // Draw non-rotated label
+                drawText(
+                    textLayoutResult = textLayout,
+                    topLeft =
+                        Offset(
+                            chartLeft - textLayout.size.width - 10f,
+                            centerY - textLayout.size.height / 2,
+                        ),
+                )
+            }
         }
     }
 }
