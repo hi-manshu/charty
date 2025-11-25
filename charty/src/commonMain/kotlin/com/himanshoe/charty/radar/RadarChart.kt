@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -192,7 +193,7 @@ private fun DrawScope.drawRadarGrid(
     numberOfLevels: Int,
     gridStyle: RadarGridStyle,
     gridLineWidth: Float,
-    gridLineColor: Color,
+    gridLineColor: ChartyColor,
     startAngle: Float,
 ) {
     for (level in 1..numberOfLevels) {
@@ -201,12 +202,13 @@ private fun DrawScope.drawRadarGrid(
         when (gridStyle) {
             RadarGridStyle.CIRCULAR -> {
                 drawCircle(
-                    color = gridLineColor,
+                    brush = Brush.linearGradient(gridLineColor.value),
                     radius = radius,
                     center = center,
                     style = Stroke(width = gridLineWidth),
                 )
             }
+
             RadarGridStyle.POLYGON -> {
                 val path = Path()
                 for (i in 0 until numberOfAxes) {
@@ -224,7 +226,7 @@ private fun DrawScope.drawRadarGrid(
 
                 drawPath(
                     path = path,
-                    color = gridLineColor,
+                    brush = Brush.linearGradient(gridLineColor.value),
                     style = Stroke(width = gridLineWidth),
                 )
             }
@@ -240,7 +242,7 @@ private fun DrawScope.drawAxisLines(
     maxRadius: Float,
     numberOfAxes: Int,
     axisLineWidth: Float,
-    axisLineColor: Color,
+    axisLineColor: ChartyColor,
     startAngle: Float,
 ) {
     for (i in 0 until numberOfAxes) {
@@ -249,7 +251,7 @@ private fun DrawScope.drawAxisLines(
         val endY = center.y + maxRadius * sin(angle)
 
         drawLine(
-            color = axisLineColor,
+            brush = Brush.linearGradient(axisLineColor.value),
             start = center,
             end = Offset(endX, endY),
             strokeWidth = axisLineWidth,

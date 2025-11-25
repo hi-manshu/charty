@@ -1796,8 +1796,8 @@ fun App() {
                                                 RadarGridConfig(
                                                     gridStyle = RadarGridStyle.POLYGON,
                                                     numberOfGridLevels = 5,
-                                                    gridLineColor = Color(0xFF424242).copy(alpha = 0.4f),
-                                                    axisLineColor = Color(0xFF616161).copy(alpha = 0.5f),
+                                                    gridLineColor =  ChartyColor.Solid(Color(0xFF455A64)),
+                                                    axisLineColor =  ChartyColor.Solid(Color(0xFF607D8B)),
                                                 ),
                                             labelConfig =
                                                 RadarLabelConfig(
@@ -1870,8 +1870,8 @@ fun App() {
                                                 RadarGridConfig(
                                                     gridStyle = RadarGridStyle.CIRCULAR,
                                                     numberOfGridLevels = 4,
-                                                    gridLineColor = Color(0xFF37474F).copy(alpha = 0.4f),
-                                                    axisLineColor = Color(0xFF546E7A).copy(alpha = 0.5f),
+                                                    gridLineColor =  ChartyColor.Solid(Color(0xFF455A64)),
+                                                    axisLineColor =  ChartyColor.Solid(Color(0xFF607D8B)),
                                                 ),
                                             labelConfig =
                                                 RadarLabelConfig(
@@ -1949,8 +1949,8 @@ fun App() {
                                                     gridStyle = RadarGridStyle.POLYGON,
                                                     numberOfGridLevels = 5,
                                                     gridLineWidth = 1.5f,
-                                                    gridLineColor = Color(0xFF455A64).copy(alpha = 0.4f),
-                                                    axisLineColor = Color(0xFF607D8B).copy(alpha = 0.5f),
+                                                    gridLineColor =  ChartyColor.Solid(Color(0xFF455A64)),
+                                                    axisLineColor =  ChartyColor.Solid(Color(0xFF607D8B)),
                                                 ),
                                             labelConfig =
                                                 RadarLabelConfig(
@@ -2052,8 +2052,8 @@ fun App() {
                                                 RadarGridConfig(
                                                     gridStyle = RadarGridStyle.CIRCULAR,
                                                     numberOfGridLevels = 5,
-                                                    gridLineColor = Color(0xFF546E7A).copy(alpha = 0.35f),
-                                                    axisLineColor = Color(0xFF78909C).copy(alpha = 0.45f),
+                                                    gridLineColor = ChartyColor.Solid(Color(0xFF546E7A).copy(alpha = 0.35f)),
+                                                    axisLineColor = ChartyColor.Solid(Color(0xFF78909C).copy(alpha = 0.45f)),
                                                 ),
                                             labelConfig =
                                                 RadarLabelConfig(

@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 
 private const val DEFAULT_GRID_LINE_WIDTH = 1f
@@ -18,6 +19,8 @@ private const val DEFAULT_CENTER_ICON_SIZE = 40f
 private const val DEFAULT_PADDING_FRACTION = 0.15f
 private const val DEFAULT_START_ANGLE = -90f
 private const val GRID_LINE_ALPHA_DEFAULT = 0.5f
+private const val DEFAULT_GRID_LINE_COLOR = 0xFFBDBDBD
+private const val DEFAULT_AXIS_LINE_COLOR = 0xFF9E9E9E
 
 /**
  * Style for radar chart grid
@@ -71,8 +74,8 @@ data class RadarGridConfig(
     val showAxisLines: Boolean = true,
     val gridLineWidth: Float = DEFAULT_GRID_LINE_WIDTH,
     val axisLineWidth: Float = DEFAULT_AXIS_LINE_WIDTH,
-    val gridLineColor: Color = Color(0xFFBDBDBD).copy(alpha = GRID_LINE_ALPHA_DEFAULT),
-    val axisLineColor: Color = Color(0xFF9E9E9E).copy(alpha = 0.6f),
+    val gridLineColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_GRID_LINE_COLOR).copy(alpha = GRID_LINE_ALPHA_DEFAULT)),
+    val axisLineColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_AXIS_LINE_COLOR).copy(alpha = 0.6f)),
     val gridLineAlpha: Float = GRID_LINE_ALPHA_DEFAULT,
 ) {
     init {
