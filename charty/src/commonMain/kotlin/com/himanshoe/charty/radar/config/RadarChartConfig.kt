@@ -16,6 +16,7 @@ private const val DEFAULT_LABEL_TEXT_SIZE_SP = 12f
 private const val DEFAULT_VALUE_TEXT_SIZE_SP = 10f
 private const val DEFAULT_CENTER_ICON_SIZE = 40f
 private const val DEFAULT_PADDING_FRACTION = 0.15f
+private const val DEFAULT_START_ANGLE = -90f
 private const val GRID_LINE_ALPHA_DEFAULT = 0.5f
 
 /**
@@ -124,7 +125,7 @@ data class RadarChartConfig(
     val dataPointRadius: Float = DEFAULT_POINT_RADIUS,
     val strokeCap: StrokeCap = StrokeCap.Round,
     val strokeJoin: StrokeJoin = StrokeJoin.Round,
-    val startAngleDegrees: Float = -90f,
+    val startAngleDegrees: Float = DEFAULT_START_ANGLE,
     val labelConfig: RadarLabelConfig = RadarLabelConfig(),
     val gridConfig: RadarGridConfig = RadarGridConfig(),
     val centerConfig: RadarCenterConfig = RadarCenterConfig(),

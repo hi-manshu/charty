@@ -8,6 +8,8 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 
+private const val DEFAULT_NEGATIVE_COLOR = 0xFFD64C66
+
 /**
  * Configuration for [com.himanshoe.charty.bar.WaterfallChart]
  *
@@ -23,7 +25,7 @@ data class WaterfallChartConfig(
     val barWidthFraction: Float = 0.6f,
     val cornerRadius: CornerRadius = CornerRadius.Medium,
     val positiveColor: ChartyColor = ChartyColor.Solid(Color.Yellow),
-    val negativeColor: ChartyColor = ChartyColor.Solid(Color(0xFFD64C66)),
+    val negativeColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_NEGATIVE_COLOR)),
     val animation: Animation = Animation.Default,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,

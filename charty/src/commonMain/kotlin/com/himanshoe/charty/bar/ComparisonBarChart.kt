@@ -32,10 +32,10 @@ import com.himanshoe.charty.bar.ext.calculateMinValue
 import com.himanshoe.charty.bar.ext.getAllValues
 import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 
 /**

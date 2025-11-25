@@ -8,10 +8,10 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.axis.formatAxisLabel
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
 import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
-import com.himanshoe.charty.common.formatAxisLabel
 
 /**
  * Internal drawing helpers for reference / target / average lines.
@@ -96,6 +96,7 @@ private fun DrawScope.drawHorizontalReferenceLine(
             ReferenceLineLabelPosition.START -> chartContext.left
             ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
                 chartContext.left + (chartContext.width - textWidth) / 2f
+
             ReferenceLineLabelPosition.END -> chartContext.right - textWidth
         }
 
@@ -103,6 +104,7 @@ private fun DrawScope.drawHorizontalReferenceLine(
         when (config.labelPosition) {
             ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
                 y - config.labelOffset - textHeight
+
             ReferenceLineLabelPosition.BELOW -> y + config.labelOffset
             ReferenceLineLabelPosition.CENTER -> y - textHeight / 2f
         }
@@ -128,14 +130,13 @@ private fun DrawScope.drawVerticalReferenceLine(
     val start = Offset(x, chartContext.top)
     val end = Offset(x, chartContext.bottom)
 
-    val pathEffect =
-        when (config.strokeStyle) {
-            ReferenceLineStrokeStyle.SOLID -> null
-            ReferenceLineStrokeStyle.DASHED -> {
-                val intervals = config.dashIntervals ?: floatArrayOf(10f, 10f)
-                PathEffect.dashPathEffect(intervals, 0f)
-            }
+    val pathEffect = when (config.strokeStyle) {
+        ReferenceLineStrokeStyle.SOLID -> null
+        ReferenceLineStrokeStyle.DASHED -> {
+            val intervals = config.dashIntervals ?: floatArrayOf(10f, 10f)
+            PathEffect.dashPathEffect(intervals, 0f)
         }
+    }
 
     drawLine(
         color = config.color,
@@ -152,11 +153,10 @@ private fun DrawScope.drawVerticalReferenceLine(
             else -> null
         } ?: return
 
-    val textLayoutResult: TextLayoutResult =
-        textMeasurer.measure(
-            text = labelText,
-            style = config.labelTextStyle,
-        )
+    val textLayoutResult = textMeasurer.measure(
+        text = labelText,
+        style = config.labelTextStyle,
+    )
 
     val textWidth = textLayoutResult.size.width.toFloat()
     val textHeight = textLayoutResult.size.height.toFloat()
@@ -166,6 +166,7 @@ private fun DrawScope.drawVerticalReferenceLine(
             ReferenceLineLabelPosition.START -> chartContext.bottom - textHeight
             ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
                 chartContext.top + (chartContext.height - textHeight) / 2f
+
             ReferenceLineLabelPosition.END -> chartContext.top
         }
 
@@ -173,6 +174,7 @@ private fun DrawScope.drawVerticalReferenceLine(
         when (config.labelPosition) {
             ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
                 x - textWidth - config.labelOffset
+
             ReferenceLineLabelPosition.BELOW -> x + config.labelOffset
             ReferenceLineLabelPosition.CENTER -> x - textWidth / 2f
         }

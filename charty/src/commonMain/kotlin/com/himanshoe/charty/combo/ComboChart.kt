@@ -35,10 +35,10 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.ext.getAllValues
 import com.himanshoe.charty.combo.ext.getLabels
-import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import kotlin.math.max

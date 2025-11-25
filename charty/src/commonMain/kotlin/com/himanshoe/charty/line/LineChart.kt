@@ -29,10 +29,10 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.line.config.LineChartConfig

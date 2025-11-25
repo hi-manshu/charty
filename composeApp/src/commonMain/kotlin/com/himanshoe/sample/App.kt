@@ -57,7 +57,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.ComboChart
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
-import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius

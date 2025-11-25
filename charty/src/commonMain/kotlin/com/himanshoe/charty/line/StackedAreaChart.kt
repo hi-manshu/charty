@@ -25,9 +25,9 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.AxisConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup

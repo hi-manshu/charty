@@ -62,14 +62,14 @@ complexity:
     threshold: 15
   LargeClass:
     active: true
-    threshold: 600
+    threshold: 1000
   LongMethod:
     active: true
-    threshold: 60
+    threshold: 100
   LongParameterList:
     active: true
-    functionThreshold: 6
-    constructorThreshold: 7
+    functionThreshold: 10
+    constructorThreshold: 10
   NestedBlockDepth:
     active: true
     threshold: 4
