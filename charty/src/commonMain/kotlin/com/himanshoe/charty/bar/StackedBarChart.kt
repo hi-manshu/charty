@@ -14,20 +14,27 @@ package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
+import com.himanshoe.charty.bar.config.StackedBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -36,6 +43,8 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 
 /**
  * Stacked Bar Chart - Display data as stacked vertical bars showing composition
@@ -85,6 +94,7 @@ fun StackedBarChart(
         ),
     stackedConfig: StackedBarChartConfig = StackedBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onSegmentClick: ((StackedBarSegment) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
@@ -101,6 +111,14 @@ fun StackedBarChart(
             Animatable(if (stackedConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which segment is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store segment bounds for hit testing
+    val segmentBounds = remember { mutableListOf<Pair<Rect, StackedBarSegment>>() }
+
+    val textMeasurer = rememberTextMeasurer()
+
     LaunchedEffect(stackedConfig.animation) {
         if (stackedConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -110,10 +128,33 @@ fun StackedBarChart(
         }
     }
 
-    val textMeasurer = rememberTextMeasurer()
-
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onSegmentClick != null) {
+                Modifier.pointerInput(dataList, stackedConfig, onSegmentClick) {
+                    detectTapGestures { offset ->
+                        val clickedSegment = segmentBounds.find { (rect, _) ->
+                            rect.contains(offset)
+                        }
+
+                        clickedSegment?.let { (rect, segment) ->
+                            onSegmentClick.invoke(segment)
+                            tooltipState = TooltipState(
+                                content = stackedConfig.tooltipFormatter(segment),
+                                x = rect.left,
+                                y = rect.top,
+                                barWidth = rect.width,
+                                position = stackedConfig.tooltipPosition,
+                            )
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.map { it.label },
         yAxisConfig =
             AxisConfig(
@@ -123,6 +164,8 @@ fun StackedBarChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        segmentBounds.clear()
+
         dataList.fastForEachIndexed { groupIndex, barGroup ->
             val barX = chartContext.calculateBarLeftPosition(groupIndex, dataList.size, stackedConfig.barWidthFraction)
             val barWidth = chartContext.calculateBarWidth(dataList.size, stackedConfig.barWidthFraction)
@@ -140,6 +183,22 @@ fun StackedBarChart(
                 val fullSegmentHeight = segmentBottomY - segmentTopY
                 val animatedHeight = fullSegmentHeight * animationProgress.value
                 val animatedTopY = segmentBottomY - animatedHeight
+
+                // Store segment bounds for hit testing
+                if (onSegmentClick != null && animatedHeight > 0) {
+                    segmentBounds.add(
+                        Rect(
+                            left = barX,
+                            top = animatedTopY,
+                            right = barX + barWidth,
+                            bottom = segmentBottomY,
+                        ) to StackedBarSegment(
+                            barGroup = barGroup,
+                            segmentIndex = segmentIndex,
+                            segmentValue = value,
+                        ),
+                    )
+                }
 
                 // Use per-group color if available, otherwise fall back to chart colors
                 val segmentChartyColor =
@@ -187,6 +246,18 @@ fun StackedBarChart(
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
                 textMeasurer = textMeasurer,
+            )
+        }
+
+        // Draw tooltip
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = stackedConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }

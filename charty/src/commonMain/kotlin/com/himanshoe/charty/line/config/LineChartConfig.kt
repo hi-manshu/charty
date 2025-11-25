@@ -4,6 +4,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.line.data.LineData
 
 /**
  * Configuration for Line Chart appearance and behavior
@@ -17,6 +20,9 @@ import com.himanshoe.charty.common.config.ReferenceLineConfig
  * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param animation Animation configuration (Disabled or Enabled with duration)
  * @param referenceLine Optional configuration for a reference line (e.g., target or average line)
+ * @param tooltipConfig Configuration for tooltip appearance when a point is clicked
+ * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @param tooltipFormatter Function to format tooltip content from LineData
  */
 data class LineChartConfig(
     val lineWidth: Float = 3f,
@@ -28,6 +34,11 @@ data class LineChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
+    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
+    val tooltipFormatter: (LineData) -> String = { lineData ->
+        "${lineData.label}: ${lineData.value}"
+    },
 ) {
     init {
         require(lineWidth > 0) { "Line width must be greater than 0" }

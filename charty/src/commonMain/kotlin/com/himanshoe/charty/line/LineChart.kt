@@ -14,15 +14,20 @@ package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -35,12 +40,16 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.ext.getValues
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Line Chart - Connect data points with lines
@@ -65,7 +74,10 @@ import com.himanshoe.charty.line.ext.getValues
  *         showPoints = true,
  *         pointRadius = 6f,
  *         animation = Animation.Enabled()
- *     )
+ *     ),
+ *     onPointClick = { lineData ->
+ *         println("Clicked: ${lineData.label}")
+ *     }
  * )
  * ```
  *
@@ -74,6 +86,7 @@ import com.himanshoe.charty.line.ext.getValues
  * @param color Color configuration for line and points
  * @param lineConfig Configuration for line appearance and behavior
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onPointClick Optional callback when a point is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -83,6 +96,7 @@ fun LineChart(
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onPointClick: ((LineData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Line chart data cannot be empty" }
@@ -100,6 +114,12 @@ fun LineChart(
             Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which point is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store point bounds for hit testing
+    val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
+
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -112,7 +132,44 @@ fun LineChart(
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onPointClick != null) {
+                Modifier.pointerInput(dataList, lineConfig, onPointClick) {
+                    detectTapGestures { offset ->
+                        // Find the closest point within tap radius
+                        val tapRadius = lineConfig.pointRadius * 2.5f
+                        val clickedPoint = pointBounds.minByOrNull { (position, _) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            sqrt(dx.pow(2) + dy.pow(2))
+                        }
+
+                        clickedPoint?.let { (position, lineData) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            val distance = sqrt(dx.pow(2) + dy.pow(2))
+
+                            if (distance <= tapRadius) {
+                                onPointClick.invoke(lineData)
+                                tooltipState = TooltipState(
+                                    content = lineConfig.tooltipFormatter(lineData),
+                                    x = position.x - lineConfig.pointRadius,
+                                    y = position.y,
+                                    barWidth = lineConfig.pointRadius * 2,
+                                    position = lineConfig.tooltipPosition,
+                                )
+                            } else {
+                                tooltipState = null
+                            }
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.getLabels(),
         yAxisConfig =
             AxisConfig(
@@ -124,12 +181,21 @@ fun LineChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        pointBounds.clear()
+
         val pointPositions =
             dataList.fastMapIndexed { index, point ->
-                Offset(
+                val position = Offset(
                     x = chartContext.calculateCenteredXPosition(index, dataList.size),
                     y = chartContext.convertValueToYPosition(point.value),
                 )
+
+                // Store point bounds for hit testing
+                if (onPointClick != null) {
+                    pointBounds.add(position to point)
+                }
+
+                position
             }
 
         if (lineConfig.smoothCurve) {
@@ -225,6 +291,46 @@ fun LineChart(
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
                 textMeasurer = textMeasurer,
+            )
+        }
+
+        // Draw highlight indicator and tooltip for clicked point
+        tooltipState?.let { state ->
+            // Draw a subtle vertical line from point to bottom
+            val clickedPosition = pointBounds.find { (_, data) ->
+                lineConfig.tooltipFormatter(data) == state.content
+            }?.first
+
+            clickedPosition?.let { position ->
+                // Draw subtle vertical indicator line
+                drawLine(
+                    color = Color.Black.copy(alpha = 0.1f),
+                    start = Offset(position.x, chartContext.top),
+                    end = Offset(position.x, chartContext.bottom),
+                    strokeWidth = 1.5f,
+                )
+
+                // Draw highlight circle around the clicked point
+                drawCircle(
+                    color = Color.White,
+                    radius = lineConfig.pointRadius + 3f,
+                    center = position,
+                )
+                drawCircle(
+                    brush = Brush.linearGradient(color.value),
+                    radius = lineConfig.pointRadius + 2f,
+                    center = position,
+                )
+            }
+
+            // Draw tooltip
+            drawTooltip(
+                tooltipState = state,
+                config = lineConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }

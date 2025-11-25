@@ -2,9 +2,12 @@ package com.himanshoe.charty.combo.config
 
 import androidx.compose.ui.graphics.StrokeCap
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.common.tooltip.TooltipPosition
 
 /**
  * Configuration for Combo Chart appearance and behavior
@@ -20,6 +23,8 @@ import com.himanshoe.charty.common.config.ReferenceLineConfig
  * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param animation Animation configuration (Disabled or Enabled with duration)
  * @param referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
+ * @param tooltipConfig Configuration for tooltip appearance when a data point is clicked
+ * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
 data class ComboChartConfig(
     val barWidthFraction: Float = 0.6f,
@@ -33,6 +38,11 @@ data class ComboChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
+    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
+    val tooltipFormatter: (ComboChartData) -> String = { data ->
+        "${data.label}: Bar=${data.barValue}, Line=${data.lineValue}"
+    },
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }

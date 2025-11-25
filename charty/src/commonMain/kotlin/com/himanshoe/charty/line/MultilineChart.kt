@@ -14,27 +14,52 @@ package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getAllValues
 import com.himanshoe.charty.line.ext.getLabels
+import kotlin.math.pow
+import kotlin.math.sqrt
+
+/**
+ * Represents a point in a multiline chart that was clicked
+ *
+ * @param lineGroup The line group containing this point
+ * @param seriesIndex The index of the line series (0 = first line, 1 = second line, etc.)
+ * @param dataIndex The index of the data point within the line
+ * @param value The value at this point
+ */
+data class MultilinePoint(
+    val lineGroup: LineGroup,
+    val seriesIndex: Int,
+    val dataIndex: Int,
+    val value: Float,
+)
 
 /**
  * Multiline Chart - Display multiple line series on the same chart
@@ -75,6 +100,7 @@ import com.himanshoe.charty.line.ext.getLabels
  * @param colors Color configuration - Gradient recommended for distinguishing multiple lines
  * @param lineConfig Configuration for line appearance and behavior
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onPointClick Optional callback when a point is clicked
  */
 @Composable
 fun MultilineChart(
@@ -90,6 +116,7 @@ fun MultilineChart(
         ),
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onPointClick: ((MultilinePoint) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Multiline chart data cannot be empty" }
@@ -106,10 +133,20 @@ fun MultilineChart(
 
     val isBelowAxisMode =
         lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
+
     val animationProgress =
         remember {
             Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
         }
+
+    // State to track which point is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store point bounds for hit testing
+    val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
+
+    val textMeasurer = rememberTextMeasurer()
+
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -120,7 +157,44 @@ fun MultilineChart(
     }
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onPointClick != null) {
+                Modifier.pointerInput(dataList, lineConfig, onPointClick) {
+                    detectTapGestures { offset ->
+                        // Find closest point within tap radius
+                        val tapRadius = lineConfig.pointRadius * 2.5f
+                        val clickedPoint = pointBounds.minByOrNull { (position, _) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            sqrt(dx.pow(2) + dy.pow(2))
+                        }
+
+                        clickedPoint?.let { (position, point) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            val distance = sqrt(dx.pow(2) + dy.pow(2))
+
+                            if (distance <= tapRadius) {
+                                onPointClick.invoke(point)
+                                tooltipState = TooltipState(
+                                    content = "${point.lineGroup.label} Line ${point.seriesIndex + 1}: ${point.value}",
+                                    x = position.x - lineConfig.pointRadius,
+                                    y = position.y,
+                                    barWidth = lineConfig.pointRadius * 2,
+                                    position = lineConfig.tooltipPosition,
+                                )
+                            } else {
+                                tooltipState = null
+                            }
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.getLabels(),
         yAxisConfig =
             AxisConfig(
@@ -131,6 +205,8 @@ fun MultilineChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        pointBounds.clear()
+
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
 
         for (seriesIndex in 0 until seriesCount) {
@@ -214,6 +290,20 @@ fun MultilineChart(
                         }
 
                     if (pointProgress > 0f) {
+                        // Store point bounds for hit testing
+                        if (onPointClick != null) {
+                            val group = dataList[index]
+                            val value = group.values.getOrNull(seriesIndex) ?: 0f
+                            pointBounds.add(
+                                position to MultilinePoint(
+                                    lineGroup = group,
+                                    seriesIndex = seriesIndex,
+                                    dataIndex = index,
+                                    value = value,
+                                ),
+                            )
+                        }
+
                         drawCircle(
                             color = seriesColor,
                             radius = lineConfig.pointRadius,
@@ -223,6 +313,18 @@ fun MultilineChart(
                     }
                 }
             }
+        }
+
+        // Draw tooltip
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = lineConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
+            )
         }
     }
 }

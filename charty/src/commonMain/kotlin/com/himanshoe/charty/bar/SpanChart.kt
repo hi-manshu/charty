@@ -14,16 +14,24 @@ package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.data.SpanData
@@ -33,6 +41,8 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 
 /**
  * Span Chart - Display ranges/spans horizontally across categories
@@ -67,6 +77,7 @@ import com.himanshoe.charty.common.config.Animation
  * @param barConfig Configuration for span bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun SpanChart(
     data: () -> List<SpanData>,
@@ -81,6 +92,7 @@ fun SpanChart(
         ),
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onSpanClick: ((SpanData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Span chart data cannot be empty" }
@@ -100,6 +112,14 @@ fun SpanChart(
             Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which span is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store span bounds for hit testing
+    val spanBounds = remember { mutableListOf<Pair<Rect, SpanData>>() }
+
+    val textMeasurer = rememberTextMeasurer()
+
     LaunchedEffect(barConfig.animation) {
         if (barConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -110,7 +130,32 @@ fun SpanChart(
     }
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onSpanClick != null) {
+                Modifier.pointerInput(dataList, barConfig, onSpanClick) {
+                    detectTapGestures { offset ->
+                        val clickedSpan = spanBounds.find { (rect, _) ->
+                            rect.contains(offset)
+                        }
+
+                        clickedSpan?.let { (rect, spanData) ->
+                            onSpanClick.invoke(spanData)
+                            tooltipState = TooltipState(
+                                content = "${spanData.label}: ${spanData.startValue} - ${spanData.endValue}",
+                                x = rect.left,
+                                y = rect.top,
+                                barWidth = rect.width,
+                                position = barConfig.tooltipPosition,
+                            )
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.map { it.label },
         yAxisConfig =
             AxisConfig(
@@ -122,6 +167,8 @@ fun SpanChart(
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
+        spanBounds.clear()
+
         // Add offset so bars don't overlap with Y-axis line
         val axisOffset = if (scaffoldConfig.showAxis) scaffoldConfig.axisThickness * 20f else 0f
 
@@ -150,6 +197,18 @@ fun SpanChart(
             val fullSpanWidth = endX - startX
             val animatedSpanWidth = fullSpanWidth * animationProgress.value
 
+            // Store span bounds for hit testing
+            if (onSpanClick != null && animatedSpanWidth > 0) {
+                spanBounds.add(
+                    Rect(
+                        left = startX,
+                        top = centeredBarY,
+                        right = startX + animatedSpanWidth,
+                        bottom = centeredBarY + barThickness,
+                    ) to span,
+                )
+            }
+
             val brush =
                 Brush.horizontalGradient(
                     colors = listOf(spanColor, spanColor),
@@ -164,6 +223,18 @@ fun SpanChart(
                 width = animatedSpanWidth,
                 height = barThickness,
                 cornerRadius = barConfig.cornerRadius.value,
+            )
+        }
+
+        // Draw tooltip
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = barConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }

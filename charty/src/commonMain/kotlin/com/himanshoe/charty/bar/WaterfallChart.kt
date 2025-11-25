@@ -14,15 +14,22 @@ package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -33,9 +40,17 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 
 /**
  * Waterfall Chart - visualizes cumulative effect of sequential gains/losses.
+ *
+ * @param data Lambda returning list of bar data to display
+ * @param modifier Modifier for the chart
+ * @param config Configuration for waterfall chart appearance
+ * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onBarClick Optional callback when a bar is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -44,6 +59,7 @@ fun WaterfallChart(
     modifier: Modifier = Modifier,
     config: WaterfallChartConfig = WaterfallChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onBarClick: ((BarData) -> Unit)? = null,
 ) {
     val items = remember(data) { data() }
     require(items.isNotEmpty()) { "Waterfall chart data cannot be empty" }
@@ -67,6 +83,14 @@ fun WaterfallChart(
             Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which bar is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store bar bounds for hit testing
+    val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
+
+    val textMeasurer = rememberTextMeasurer()
+
     LaunchedEffect(config.animation) {
         if (config.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -77,7 +101,32 @@ fun WaterfallChart(
     }
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onBarClick != null) {
+                Modifier.pointerInput(items, config, onBarClick) {
+                    detectTapGestures { offset ->
+                        val clickedBar = barBounds.find { (rect, _) ->
+                            rect.contains(offset)
+                        }
+
+                        clickedBar?.let { (rect, barData) ->
+                            onBarClick.invoke(barData)
+                            tooltipState = TooltipState(
+                                content = config.tooltipFormatter(barData),
+                                x = rect.left,
+                                y = rect.top,
+                                barWidth = rect.width,
+                                position = config.tooltipPosition,
+                            )
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = items.map { it.label },
         yAxisConfig =
             AxisConfig(
@@ -88,6 +137,8 @@ fun WaterfallChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        barBounds.clear()
+
         items.fastForEachIndexed { index, bar ->
             val barX = chartContext.calculateBarLeftPosition(index, items.size, config.barWidthFraction)
             val barWidth = chartContext.calculateBarWidth(items.size, config.barWidthFraction)
@@ -102,6 +153,18 @@ fun WaterfallChart(
             val fullHeight = kotlin.math.abs(endY - startY)
             val animatedHeight = fullHeight * animationProgress.value
             val animatedTop = if (isIncrease) startY - animatedHeight else startY
+
+            // Store bar bounds for hit testing
+            if (onBarClick != null) {
+                barBounds.add(
+                    Rect(
+                        left = barX,
+                        top = animatedTop,
+                        right = barX + barWidth,
+                        bottom = animatedTop + animatedHeight,
+                    ) to bar,
+                )
+            }
 
             val baseColor = if (isIncrease) config.positiveColor else config.negativeColor
             val chartyColor = bar.color ?: baseColor
@@ -118,6 +181,18 @@ fun WaterfallChart(
                 width = barWidth,
                 height = animatedHeight,
                 cornerRadius = config.cornerRadius.value,
+            )
+        }
+
+        // Draw tooltip
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = config.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }
@@ -148,3 +223,4 @@ private fun DrawScope.drawWaterfallBar(
         }
     drawPath(path, color)
 }
+

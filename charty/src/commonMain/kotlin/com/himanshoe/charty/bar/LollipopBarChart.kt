@@ -14,14 +14,21 @@ package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
@@ -33,6 +40,10 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Lollipop Bar Chart - vertical line with a circular head for each value.
@@ -43,7 +54,15 @@ import com.himanshoe.charty.common.config.Animation
  *
  * Configuration options allow customizing stem thickness, circle radius and circle
  * color, along with standard bar width fraction and animation.
+ *
+ * @param data Lambda returning list of bar data to display
+ * @param modifier Modifier for the chart
+ * @param colors Color configuration for stems and circles
+ * @param config Configuration for lollipop chart appearance
+ * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onBarClick Optional callback when a lollipop is clicked
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun LollipopBarChart(
     data: () -> List<BarData>,
@@ -51,6 +70,7 @@ fun LollipopBarChart(
     colors: ChartyColor = ChartyColor.Solid(Color(0xFFE91E63)),
     config: LollipopBarChartConfig = LollipopBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onBarClick: ((BarData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Lollipop bar chart data cannot be empty" }
@@ -75,8 +95,53 @@ fun LollipopBarChart(
         }
     }
 
+    // State to track which bar is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store lollipop positions for hit testing (storing circle center and data)
+    val lollipopBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
+
+    val textMeasurer = rememberTextMeasurer()
+
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onBarClick != null) {
+                Modifier.pointerInput(dataList, config, onBarClick) {
+                    detectTapGestures { offset ->
+                        // Find the closest lollipop circle within tap radius
+                        val tapRadius = config.circleRadius * 2f
+                        val clickedLollipop = lollipopBounds.minByOrNull { (position, _) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            sqrt(dx.pow(2) + dy.pow(2))
+                        }
+
+                        clickedLollipop?.let { (position, barData) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            val distance = sqrt(dx.pow(2) + dy.pow(2))
+
+                            if (distance <= tapRadius) {
+                                onBarClick.invoke(barData)
+                                tooltipState = TooltipState(
+                                    content = config.tooltipFormatter(barData),
+                                    x = position.x - config.circleRadius,
+                                    y = position.y,
+                                    barWidth = config.circleRadius * 2,
+                                    position = config.tooltipPosition,
+                                )
+                            } else {
+                                tooltipState = null
+                            }
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.getLabels(),
         yAxisConfig =
             AxisConfig(
@@ -87,6 +152,8 @@ fun LollipopBarChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        lollipopBounds.clear()
+
         val baselineY = chartContext.bottom
 
         dataList.fastForEachIndexed { index, bar ->
@@ -96,6 +163,11 @@ fun LollipopBarChart(
 
             val barValueY = chartContext.convertValueToYPosition(bar.value)
             val animatedTopY = baselineY - (baselineY - barValueY) * animationProgress.value
+
+            // Store lollipop position for hit testing
+            if (onBarClick != null) {
+                lollipopBounds.add(Offset(centerX, animatedTopY) to bar)
+            }
 
             val chartyColor = bar.color ?: colors
             val circleChartyColor = config.circleColor ?: chartyColor
@@ -143,6 +215,46 @@ fun LollipopBarChart(
                     center = Offset(centerX, animatedTopY),
                 )
             }
+        }
+
+        // Draw highlight and tooltip for clicked lollipop
+        tooltipState?.let { state ->
+            // Find the clicked lollipop position
+            val clickedPosition = lollipopBounds.find { (_, data) ->
+                config.tooltipFormatter(data) == state.content
+            }?.first
+
+            clickedPosition?.let { position ->
+                // Draw subtle vertical indicator line
+                drawLine(
+                    color = Color.Black.copy(alpha = 0.1f),
+                    start = Offset(position.x, chartContext.top),
+                    end = Offset(position.x, chartContext.bottom),
+                    strokeWidth = 1.5f,
+                )
+
+                // Draw highlight circle around the clicked lollipop
+                drawCircle(
+                    color = Color.White,
+                    radius = config.circleRadius + 3f,
+                    center = position,
+                )
+                drawCircle(
+                    color = Color.Black.copy(alpha = 0.3f),
+                    radius = config.circleRadius + 2f,
+                    center = position,
+                )
+            }
+
+            // Draw tooltip
+            drawTooltip(
+                tooltipState = state,
+                config = config.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
+            )
         }
     }
 }

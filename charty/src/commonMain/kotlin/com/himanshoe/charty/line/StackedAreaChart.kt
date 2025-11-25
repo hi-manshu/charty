@@ -16,23 +16,47 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.getLabels
+
+/**
+ * Represents an area segment in a stacked area chart that was clicked
+ *
+ * @param lineGroup The line group containing this segment
+ * @param seriesIndex The index of the area series (0 = bottom area, 1 = next area, etc.)
+ * @param dataIndex The index of the data point within the area
+ * @param value The value of this segment (not cumulative)
+ * @param cumulativeValue The cumulative value at this point
+ */
+data class StackedAreaPoint(
+    val lineGroup: LineGroup,
+    val seriesIndex: Int,
+    val dataIndex: Int,
+    val value: Float,
+    val cumulativeValue: Float,
+)
 
 /**
  * Stacked Area Chart - Display multiple series as stacked filled areas
@@ -68,12 +92,15 @@ import com.himanshoe.charty.line.ext.getLabels
  * ```
  *
  * @param data Lambda returning list of line groups, each containing values for all series at that X position
+ * @param data Lambda returning list of line groups, each containing values for all series at that X position
  * @param modifier Modifier for the chart
  * @param colors Color configuration - Gradient recommended for distinguishing stacked areas
  * @param lineConfig Configuration for line appearance and behavior
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param fillAlpha Alpha transparency for the filled areas (0.0f - 1.0f)
+ * @param onAreaClick Optional callback when an area is clicked
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun StackedAreaChart(
     data: () -> List<LineGroup>,
@@ -89,6 +116,7 @@ fun StackedAreaChart(
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     fillAlpha: Float = 0.7f,
+    onAreaClick: ((StackedAreaPoint) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Stacked area chart data cannot be empty" }
@@ -116,6 +144,14 @@ fun StackedAreaChart(
             Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which area point is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store area point positions for hit testing
+    val areaPointBounds = remember { mutableListOf<Pair<Offset, StackedAreaPoint>>() }
+
+    val textMeasurer = rememberTextMeasurer()
+
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -137,6 +173,8 @@ fun StackedAreaChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        areaPointBounds.clear()
+
         val baselineY = chartContext.bottom
         val startX = chartContext.left
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
@@ -273,6 +311,18 @@ fun StackedAreaChart(
                     alpha = animationProgress.value,
                 )
             }
+        }
+
+        // Draw tooltip
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = lineConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
+            )
         }
     }
 }

@@ -39,6 +39,7 @@ import com.himanshoe.charty.bar.StackedBarChart
 import com.himanshoe.charty.bar.WaterfallChart
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
+import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.config.MosiacBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -70,7 +71,9 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
+import com.himanshoe.charty.line.MultilinePoint
 import com.himanshoe.charty.line.StackedAreaChart
+import com.himanshoe.charty.line.StackedAreaPoint
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
@@ -201,29 +204,63 @@ fun App() {
                 }
 
                 item {
-                    ChartCard(
-                        title = "Waterfall Chart",
-                        description = "Cumulative gains and losses across categories",
-                    ) {
-                        WaterfallChart(
-                            modifier =
-                                Modifier
+                    var selectedBar by remember { mutableStateOf<BarData?>(null) }
+
+                    Column {
+                        // Show selected bar info
+                        selectedBar?.let { bar ->
+                            Card(
+                                modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(280.dp),
-                            data = {
-                                listOf(
-                                    BarData("A", 10f, ChartyColor.Solid(Color(0xFFD64C66))),
-                                    BarData("B", 7f, ChartyColor.Solid(Color(0xFF6A1B9A))),
-                                    BarData("C", 15f, ChartyColor.Solid(Color(0xFF0B1D3B))),
-                                    BarData("D", 32f, ChartyColor.Solid(Color(0xFFD64C66))),
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
                                 )
-                            },
-                            config =
-                                WaterfallChartConfig(
-                                    barWidthFraction = 0.6f,
-                                    cornerRadius = CornerRadius.Medium,
-                                ),
-                        )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${bar.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                    Text(
+                                        text = "Cumulative Value: ${bar.value}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Waterfall Chart (Interactive)",
+                            description = "Click on bars to see cumulative gains/losses with tooltip",
+                        ) {
+                            WaterfallChart(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(280.dp),
+                                data = {
+                                    listOf(
+                                        BarData("A", 10f, ChartyColor.Solid(Color(0xFFD64C66))),
+                                        BarData("B", 7f, ChartyColor.Solid(Color(0xFF6A1B9A))),
+                                        BarData("C", 15f, ChartyColor.Solid(Color(0xFF0B1D3B))),
+                                        BarData("D", 32f, ChartyColor.Solid(Color(0xFFD64C66))),
+                                    )
+                                },
+                                config =
+                                    WaterfallChartConfig(
+                                        barWidthFraction = 0.6f,
+                                        cornerRadius = CornerRadius.Medium,
+                                    ),
+                                onBarClick = { barData ->
+                                    selectedBar = barData
+                                    println("Waterfall bar clicked: ${barData.label} = ${barData.value}")
+                                },
+                            )
+                        }
                     }
                 }
                 item {
@@ -284,38 +321,67 @@ fun App() {
                     }
                 }
                 item {
-                    ChartCard(
-                        title = "Lollipop Bar Chart",
-                        description = "Vertical lollipop bars with configurable stem and circle colors",
-                    ) {
-                        LollipopBarChart(
-                            modifier =
-                                Modifier
+                    var selectedLollipop by remember { mutableStateOf<BarData?>(null) }
+
+                    Column {
+                        // Show selected lollipop info
+                        selectedLollipop?.let { bar ->
+                            Card(
+                                modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(280.dp),
-                            data = {
-                                listOf(
-                                    BarData("A", 210f),
-                                    BarData("B", 380f),
-                                    BarData("C", 310f),
-                                    BarData("D", 170f),
-                                    BarData("D", 170f),
-                                    BarData("D", 170f),
-                                    BarData("D", 170f),
-                                    BarData("D", 170f),
-                                    BarData("D", 170f),
-                                    BarData("E", 450f),
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                                 )
-                            },
-                            colors = ChartyColor.Solid(Color(0xFFE91E63)),
-                            config =
-                                LollipopBarChartConfig(
-                                    barWidthFraction = 0.25f,
-                                    stemThickness = 8f,
-                                    circleRadius = 16f,
-                                    circleColor = ChartyColor.Solid(Color.Yellow),
-                                ),
-                        )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${bar.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "Value: ${bar.value.toInt()}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Lollipop Bar Chart (Interactive)",
+                            description = "Click on lollipops to see values with tooltip",
+                        ) {
+                            LollipopBarChart(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(280.dp),
+                                data = {
+                                    listOf(
+                                        BarData("A", 210f),
+                                        BarData("B", 380f),
+                                        BarData("C", 310f),
+                                        BarData("D", 170f),
+                                        BarData("E", 450f),
+                                    )
+                                },
+                                colors = ChartyColor.Solid(Color(0xFFE91E63)),
+                                config =
+                                    LollipopBarChartConfig(
+                                        barWidthFraction = 0.25f,
+                                        stemThickness = 8f,
+                                        circleRadius = 16f,
+                                        circleColor = ChartyColor.Solid(Color.Yellow),
+                                    ),
+                                onBarClick = { barData ->
+                                    selectedLollipop = barData
+                                    println("Lollipop clicked: ${barData.label} = ${barData.value}")
+                                },
+                            )
+                        }
                     }
                 }
                 // Candlestick Chart
@@ -492,43 +558,82 @@ fun App() {
                     }
                 }
                 item {
-                    ChartCard(
-                        title = "Combo Chart (Bar + Line)",
-                        description = "Combines bars and line in one chart - perfect for comparing two related metrics",
-                    ) {
-                        ComboChart(
-                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                            data = {
-                                listOf(
-                                    ComboChartData("Jan", barValue = 100f, lineValue = 80f),
-                                    ComboChartData("Feb", barValue = 150f, lineValue = 120f),
-                                    ComboChartData("Mar", barValue = 120f, lineValue = 140f),
-                                    ComboChartData("Apr", barValue = 180f, lineValue = 160f),
-                                    ComboChartData("May", barValue = 160f, lineValue = 145f),
-                                    ComboChartData("Jun", barValue = 200f, lineValue = 180f),
+                    var selectedComboData by remember { mutableStateOf<ComboChartData?>(null) }
+
+                    Column {
+                        // Show selected data info
+                        selectedComboData?.let { data ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
                                 )
-                            },
-                            barColor = ChartyColor.Solid(Color(0xFF2196F3)),
-                            lineColor = ChartyColor.Solid(Color(0xFFFF5722)),
-                            comboConfig =
-                                ComboChartConfig(
-                                    barWidthFraction = 0.6f,
-                                    lineWidth = 3f,
-                                    showPoints = true,
-                                    pointRadius = 6f,
-                                    smoothCurve = false,
-                                    animation = Animation.Enabled(duration = 1200),
-                                    referenceLine =
-                                        ReferenceLineConfig(
-                                            value = 150f,
-                                            color = Color(0xFF4CAF50),
-                                            strokeWidth = 2f,
-                                            strokeStyle = ReferenceLineStrokeStyle.DASHED,
-                                            label = "Target 150",
-                                            labelPosition = ReferenceLineLabelPosition.END,
-                                        ),
-                                ),
-                        )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${data.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Bar Value: ${data.barValue.toInt()}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Line Value: ${data.lineValue.toInt()}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Combo Chart (Bar + Line) - Interactive",
+                            description = "Click on bars or line points to see detailed values with tooltip",
+                        ) {
+                            ComboChart(
+                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                data = {
+                                    listOf(
+                                        ComboChartData("Jan", barValue = 100f, lineValue = 80f),
+                                        ComboChartData("Feb", barValue = 150f, lineValue = 120f),
+                                        ComboChartData("Mar", barValue = 120f, lineValue = 140f),
+                                        ComboChartData("Apr", barValue = 180f, lineValue = 160f),
+                                        ComboChartData("May", barValue = 160f, lineValue = 145f),
+                                        ComboChartData("Jun", barValue = 200f, lineValue = 180f),
+                                    )
+                                },
+                                barColor = ChartyColor.Solid(Color(0xFF2196F3)),
+                                lineColor = ChartyColor.Solid(Color(0xFFFF5722)),
+                                comboConfig =
+                                    ComboChartConfig(
+                                        barWidthFraction = 0.6f,
+                                        lineWidth = 3f,
+                                        showPoints = true,
+                                        pointRadius = 6f,
+                                        smoothCurve = false,
+                                        animation = Animation.Enabled(duration = 1200),
+                                        referenceLine =
+                                            ReferenceLineConfig(
+                                                value = 150f,
+                                                color = Color(0xFF4CAF50),
+                                                strokeWidth = 2f,
+                                                strokeStyle = ReferenceLineStrokeStyle.DASHED,
+                                                label = "Target 150",
+                                                labelPosition = ReferenceLineLabelPosition.END,
+                                            ),
+                                    ),
+                                onDataClick = { comboData ->
+                                    selectedComboData = comboData
+                                    println("Combo chart clicked: ${comboData.label} - Bar: ${comboData.barValue}, Line: ${comboData.lineValue}")
+                                },
+                            )
+                        }
                     }
                 }
 
@@ -561,91 +666,165 @@ fun App() {
                     }
                 }
 
-                // Horizontal Bar Chart
+                // Circular Progress Indicator (Interactive)
                 item {
-                    Box(
-                        modifier =
-                            Modifier
-                                .size(300.dp)
-                                .background(Color.Black),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator(
-                            rings = {
-                                listOf(
-                                    CircularRingData(
-                                        label = "Move",
-                                        progress = 450f,
-                                        maxValue = 600f,
-                                        color = ChartyColor.Solid(Color(0xFFFF3B58)),
-                                        backgroundColor = ChartyColor.Solid(Color(0x33FF3B58)),
-                                    ),
-                                    CircularRingData(
-                                        label = "Exercise",
-                                        progress = 25f,
-                                        maxValue = 30f,
-                                        color = ChartyColor.Solid(Color(0xFFACFF3D)),
-                                        backgroundColor = ChartyColor.Solid(Color(0x33ACFF3D)),
-                                    ),
-                                    CircularRingData(
-                                        label = "Stand",
-                                        progress = 10f,
-                                        maxValue = 12f,
-                                        color = ChartyColor.Solid(Color(0xFF34D5FF)),
-                                        backgroundColor = ChartyColor.Solid(Color(0x3334D5FF)),
-                                    ),
+                    var selectedRing by remember { mutableStateOf<Pair<CircularRingData, Int>?>(null) }
+
+                    Column {
+                        // Show selected ring info
+                        selectedRing?.let { (ring, index) ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                                 )
-                            },
-                            modifier =
-                                Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                            config =
-                                CircularProgressConfig(
-                                    centerHoleRatio = 0.4f,
-                                    gapBetweenRings = 12f,
-                                    startAngleDegrees = -90f,
-                                    strokeCap = StrokeCap.Round,
-                                    showCenterText = false,
-                                    animation = Animation.Enabled(duration = 1500),
-                                ),
-                            centerContent = {
-                                Canvas(modifier = Modifier.fillMaxSize()) {
-                                    val holeRadius = (size.minDimension / 2f) * 0.34f
-                                    drawCircle(
-                                        color = Color.Black,
-                                        radius = holeRadius,
-                                        center = Offset(size.width / 2f, size.height / 2f),
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${ring.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "Progress: ${ring.progress.toInt()} / ${ring.maxValue.toInt()}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "Percentage: ${((ring.progress / ring.maxValue) * 100).toInt()}%",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
-                            },
-                        )
+                            }
+                        }
+
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(300.dp)
+                                    .background(Color.Black),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(
+                                rings = {
+                                    listOf(
+                                        CircularRingData(
+                                            label = "Move",
+                                            progress = 450f,
+                                            maxValue = 600f,
+                                            color = ChartyColor.Solid(Color(0xFFFF3B58)),
+                                            backgroundColor = ChartyColor.Solid(Color(0x33FF3B58)),
+                                        ),
+                                        CircularRingData(
+                                            label = "Exercise",
+                                            progress = 25f,
+                                            maxValue = 30f,
+                                            color = ChartyColor.Solid(Color(0xFFACFF3D)),
+                                            backgroundColor = ChartyColor.Solid(Color(0x33ACFF3D)),
+                                        ),
+                                        CircularRingData(
+                                            label = "Stand",
+                                            progress = 10f,
+                                            maxValue = 12f,
+                                            color = ChartyColor.Solid(Color(0xFF34D5FF)),
+                                            backgroundColor = ChartyColor.Solid(Color(0x3334D5FF)),
+                                        ),
+                                    )
+                                },
+                                modifier =
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(16.dp),
+                                config =
+                                    CircularProgressConfig(
+                                        centerHoleRatio = 0.4f,
+                                        gapBetweenRings = 12f,
+                                        startAngleDegrees = -90f,
+                                        strokeCap = StrokeCap.Round,
+                                        showCenterText = false,
+                                        animation = Animation.Enabled(duration = 1500),
+                                        interactionEnabled = true,
+                                    ),
+                                onRingClick = { ring, index ->
+                                    selectedRing = ring to index
+                                    println("Ring clicked: ${ring.label} (Ring $index) - ${((ring.progress / ring.maxValue) * 100).toInt()}%")
+                                },
+                                centerContent = {
+                                    Canvas(modifier = Modifier.fillMaxSize()) {
+                                        val holeRadius = (size.minDimension / 2f) * 0.34f
+                                        drawCircle(
+                                            color = Color.Black,
+                                            radius = holeRadius,
+                                            center = Offset(size.width / 2f, size.height / 2f),
+                                        )
+                                    }
+                                },
+                            )
+                        }
                     }
                 }
                 item {
-                    ChartCard(
-                        title = "Horizontal Bar Chart",
-                        description = "Bars extending horizontally - great for long category labels",
-                    ) {
-                        HorizontalBarChart(
-                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                            data = {
-                                listOf(
-                                    BarData("Marketing", 50f),
-                                    BarData("Development", 60f),
-                                    BarData("Sales", 60f),
-                                    BarData("Operations", 60f),
-                                    BarData("Support", 61f),
+                    var selectedBar by remember { mutableStateOf<BarData?>(null) }
+
+                    Column {
+                        // Show selected bar info
+                        selectedBar?.let { bar ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
                                 )
-                            },
-                            color = ChartyColor.Solid(Color(0xFF9C27B0)),
-                            barConfig =
-                                BarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    cornerRadius = CornerRadius.Large,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
-                        )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Department: ${bar.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Score: ${bar.value.toInt()}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Horizontal Bar Chart (Interactive)",
+                            description = "Click on bars to see department scores with tooltip",
+                        ) {
+                            HorizontalBarChart(
+                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                data = {
+                                    listOf(
+                                        BarData("Marketing", 50f),
+                                        BarData("Development", 60f),
+                                        BarData("Sales", 60f),
+                                        BarData("Operations", 60f),
+                                        BarData("Support", 61f),
+                                    )
+                                },
+                                color = ChartyColor.Solid(Color(0xFF9C27B0)),
+                                barConfig =
+                                    BarChartConfig(
+                                        barWidthFraction = 0.7f,
+                                        cornerRadius = CornerRadius.Large,
+                                        animation = Animation.Enabled(duration = 1000),
+                                    ),
+                                onBarClick = { barData ->
+                                    selectedBar = barData
+                                    println("Horizontal bar clicked: ${barData.label} = ${barData.value}")
+                                },
+                            )
+                        }
                     }
                 }
 
@@ -776,25 +955,59 @@ fun App() {
 
                 // Comparison Bar Chart (formerly Grouped)
                 item {
-                    ChartCard(
-                        title = "Comparison Bar Chart",
-                        description = "Multiple bars per category with gradient colors",
-                    ) {
-                        ComparisonBarChart(
-                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                            data = {
-                                listOf(
-                                    BarGroup("A", listOf(17f, 25f)),
-                                    BarGroup("B", listOf(15f, 16f)),
-                                    BarGroup("C", listOf(44f, 48f)),
-                                    BarGroup("D", listOf(30f, 44f)),
+                    var selectedSegment by remember { mutableStateOf<com.himanshoe.charty.bar.config.ComparisonBarSegment?>(null) }
+
+                    Column {
+                        // Show selected segment info
+                        selectedSegment?.let { segment ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
                                 )
-                            },
-                            colors =
-                                ChartyColor.Gradient(
-                                    listOf(Color(0xFFE91E63), Color(0xFF2196F3)),
-                                ),
-                        )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Category: ${segment.barGroup.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                    Text(
+                                        text = "Bar ${segment.barIndex + 1}: ${segment.barValue.toInt()}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Comparison Bar Chart (Interactive)",
+                            description = "Click on any bar to see individual segment values with tooltip",
+                        ) {
+                            ComparisonBarChart(
+                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                data = {
+                                    listOf(
+                                        BarGroup("A", listOf(17f, 25f)),
+                                        BarGroup("B", listOf(15f, 16f)),
+                                        BarGroup("C", listOf(44f, 48f)),
+                                        BarGroup("D", listOf(30f, 44f)),
+                                    )
+                                },
+                                colors =
+                                    ChartyColor.Gradient(
+                                        listOf(Color(0xFFE91E63), Color(0xFF2196F3)),
+                                    ),
+                                onBarClick = { segment ->
+                                    selectedSegment = segment
+                                    println("Comparison bar clicked: ${segment.barGroup.label} [${segment.barIndex}] = ${segment.barValue}")
+                                },
+                            )
+                        }
                     }
                 }
 
@@ -1362,150 +1575,316 @@ fun App() {
                     }
                 }
 
-                // Multiline Chart - Smooth Curves
+                // Multiline Chart - Smooth Curves (Interactive)
                 item {
-                    ChartCard(
-                        title = "Multiline Chart (Smooth)",
-                        description = "Multiple series with smooth curves starting from axis (0,0)",
-                    ) {
-                        MultilineChart(
-                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                            data = {
-                                listOf(
-                                    LineGroup("Mon", listOf(20f, 35f, 15f)),
-                                    LineGroup("Tue", listOf(45f, 28f, 38f)),
-                                    LineGroup("Wed", listOf(30f, 52f, 25f)),
-                                    LineGroup("Thu", listOf(70f, 40f, 55f)),
-                                    LineGroup("Fri", listOf(55f, 65f, 45f)),
-                                    LineGroup("Sat", listOf(40f, 50f, 35f)),
+                    var selectedPoint by remember { mutableStateOf<MultilinePoint?>(null) }
+
+                    Column {
+                        // Show selected point info
+                        selectedPoint?.let { point ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
                                 )
-                            },
-                            colors =
-                                ChartyColor.Gradient(
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${point.lineGroup.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                    Text(
+                                        text = "Line Series ${point.seriesIndex + 1}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                    Text(
+                                        text = "Value: ${point.value}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Multiline Chart (Smooth) - Interactive",
+                            description = "Click on any point to see details with tooltip",
+                        ) {
+                            MultilineChart(
+                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                data = {
                                     listOf(
-                                        Color(0xFFE91E63),
-                                        Color(0xFF2196F3),
-                                        Color(0xFF4CAF50),
+                                        LineGroup("Mon", listOf(20f, 35f, 15f)),
+                                        LineGroup("Tue", listOf(45f, 28f, 38f)),
+                                        LineGroup("Wed", listOf(30f, 52f, 25f)),
+                                        LineGroup("Thu", listOf(70f, 40f, 55f)),
+                                        LineGroup("Fri", listOf(55f, 65f, 45f)),
+                                        LineGroup("Sat", listOf(40f, 50f, 35f)),
+                                    )
+                                },
+                                colors =
+                                    ChartyColor.Gradient(
+                                        listOf(
+                                            Color(0xFFE91E63),
+                                            Color(0xFF2196F3),
+                                            Color(0xFF4CAF50),
+                                        ),
                                     ),
-                                ),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 3f,
-                                    smoothCurve = true,
-                                    showPoints = true,
-                                    pointRadius = 6f,
-                                    animation = Animation.Enabled(duration = 1200),
-                                ),
-                        )
+                                lineConfig =
+                                    LineChartConfig(
+                                        lineWidth = 3f,
+                                        smoothCurve = true,
+                                        showPoints = true,
+                                        pointRadius = 6f,
+                                        animation = Animation.Enabled(duration = 1200),
+                                    ),
+                                onPointClick = { point ->
+                                    selectedPoint = point
+                                    println("Multiline point clicked: ${point.lineGroup.label} Line ${point.seriesIndex + 1} = ${point.value}")
+                                },
+                            )
+                        }
                     }
                 }
 
-                // Multiline Chart - Straight Lines
+                // Multiline Chart - Straight Lines (Interactive)
                 item {
-                    ChartCard(
-                        title = "Multiline Chart (Straight)",
-                        description = "Multiple series with straight lines starting from axis (0,0)",
-                    ) {
-                        MultilineChart(
-                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                            data = {
-                                listOf(
-                                    LineGroup("Jan", listOf(25f, 40f)),
-                                    LineGroup("Feb", listOf(35f, 30f)),
-                                    LineGroup("Mar", listOf(50f, 45f)),
-                                    LineGroup("Apr", listOf(45f, 60f)),
-                                    LineGroup("May", listOf(60f, 50f)),
-                                    LineGroup("Jun", listOf(55f, 70f)),
+                    var selectedPoint by remember { mutableStateOf<MultilinePoint?>(null) }
+
+                    Column {
+                        // Show selected point info
+                        selectedPoint?.let { point ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                                 )
-                            },
-                            colors =
-                                ChartyColor.Gradient(
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${point.lineGroup.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "Line Series ${point.seriesIndex + 1}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "Value: ${point.value}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Multiline Chart (Straight) - Interactive",
+                            description = "Click on any point to see line details with tooltip",
+                        ) {
+                            MultilineChart(
+                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                data = {
                                     listOf(
-                                        Color(0xFFFF9800),
-                                        Color(0xFF9C27B0),
+                                        LineGroup("Jan", listOf(25f, 40f)),
+                                        LineGroup("Feb", listOf(35f, 30f)),
+                                        LineGroup("Mar", listOf(50f, 45f)),
+                                        LineGroup("Apr", listOf(45f, 60f)),
+                                        LineGroup("May", listOf(60f, 50f)),
+                                        LineGroup("Jun", listOf(55f, 70f)),
+                                    )
+                                },
+                                colors =
+                                    ChartyColor.Gradient(
+                                        listOf(
+                                            Color(0xFFFF9800),
+                                            Color(0xFF9C27B0),
+                                        ),
                                     ),
-                                ),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 3f,
-                                    smoothCurve = false,
-                                    showPoints = true,
-                                    pointRadius = 7f,
-                                    animation = Animation.Enabled(duration = 1200),
-                                ),
-                        )
+                                lineConfig =
+                                    LineChartConfig(
+                                        lineWidth = 3f,
+                                        smoothCurve = false,
+                                        showPoints = true,
+                                        pointRadius = 7f,
+                                        animation = Animation.Enabled(duration = 1200),
+                                    ),
+                                onPointClick = { point ->
+                                    selectedPoint = point
+                                    println("Multiline point clicked: ${point.lineGroup.label} Line ${point.seriesIndex + 1} = ${point.value}")
+                                },
+                            )
+                        }
                     }
                 }
 
-                // Stacked Area Chart - Smooth
+                // Stacked Area Chart - Smooth (Interactive)
                 item {
-                    ChartCard(
-                        title = "Stacked Area Chart (Smooth)",
-                        description = "Cumulative stacked areas with smooth curves from axis (0,0)",
-                    ) {
-                        StackedAreaChart(
-                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                            data = {
-                                listOf(
-                                    LineGroup("Mon", listOf(20f, 15f, 10f)),
-                                    LineGroup("Tue", listOf(45f, 28f, 12f)),
-                                    LineGroup("Wed", listOf(30f, 22f, 18f)),
-                                    LineGroup("Thu", listOf(70f, 30f, 15f)),
-                                    LineGroup("Fri", listOf(55f, 35f, 20f)),
-                                    LineGroup("Sat", listOf(40f, 25f, 15f)),
+                    var selectedAreaPoint by remember { mutableStateOf<StackedAreaPoint?>(null) }
+
+                    Column {
+                        // Show selected area point info
+                        selectedAreaPoint?.let { point ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
                                 )
-                            },
-                            colors =
-                                ChartyColor.Gradient(
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${point.lineGroup.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Area Series ${point.seriesIndex + 1}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Value: ${point.value}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Cumulative Total: ${point.cumulativeValue}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Stacked Area Chart (Smooth) - Interactive",
+                            description = "Click on any area to see segment and cumulative values",
+                        ) {
+                            StackedAreaChart(
+                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                data = {
                                     listOf(
-                                        Color(0xFF2196F3),
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFFF9800),
+                                        LineGroup("Mon", listOf(20f, 15f, 10f)),
+                                        LineGroup("Tue", listOf(45f, 28f, 12f)),
+                                        LineGroup("Wed", listOf(30f, 22f, 18f)),
+                                        LineGroup("Thu", listOf(70f, 30f, 15f)),
+                                        LineGroup("Fri", listOf(55f, 35f, 20f)),
+                                        LineGroup("Sat", listOf(40f, 25f, 15f)),
+                                    )
+                                },
+                                colors =
+                                    ChartyColor.Gradient(
+                                        listOf(
+                                            Color(0xFF2196F3),
+                                            Color(0xFF4CAF50),
+                                            Color(0xFFFF9800),
+                                        ),
                                     ),
-                                ),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 2f,
-                                    smoothCurve = true,
-                                    animation = Animation.Enabled(duration = 1200),
-                                ),
-                            fillAlpha = 0.7f,
-                        )
+                                lineConfig =
+                                    LineChartConfig(
+                                        lineWidth = 2f,
+                                        smoothCurve = true,
+                                        animation = Animation.Enabled(duration = 1200),
+                                    ),
+                                fillAlpha = 0.7f,
+                                onAreaClick = { point ->
+                                    selectedAreaPoint = point
+                                    println("Stacked area clicked: ${point.lineGroup.label} Area ${point.seriesIndex + 1} = ${point.value} (Total: ${point.cumulativeValue})")
+                                },
+                            )
+                        }
                     }
                 }
 
-                // Stacked Area Chart - Straight
+                // Stacked Area Chart - Straight (Interactive)
                 item {
-                    ChartCard(
-                        title = "Stacked Area Chart (Straight)",
-                        description = "Cumulative stacked areas with straight lines from axis (0,0)",
-                    ) {
-                        StackedAreaChart(
-                            modifier = Modifier.fillMaxWidth().height(300.dp),
-                            data = {
-                                listOf(
-                                    LineGroup("Q1", listOf(30f, 25f, 20f)),
-                                    LineGroup("Q2", listOf(40f, 35f, 25f)),
-                                    LineGroup("Q3", listOf(50f, 30f, 30f)),
-                                    LineGroup("Q4", listOf(45f, 40f, 28f)),
+                    var selectedAreaPoint by remember { mutableStateOf<StackedAreaPoint?>(null) }
+
+                    Column {
+                        // Show selected area point info
+                        selectedAreaPoint?.let { point ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer
                                 )
-                            },
-                            colors =
-                                ChartyColor.Gradient(
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${point.lineGroup.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        text = "Area Series ${point.seriesIndex + 1}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        text = "Segment Value: ${point.value}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        text = "Total: ${point.cumulativeValue}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Stacked Area Chart (Straight) - Interactive",
+                            description = "Click on any area to see breakdown with tooltip",
+                        ) {
+                            StackedAreaChart(
+                                modifier = Modifier.fillMaxWidth().height(300.dp),
+                                data = {
                                     listOf(
-                                        Color(0xFFE91E63),
-                                        Color(0xFF9C27B0),
-                                        Color(0xFF00BCD4),
+                                        LineGroup("Q1", listOf(30f, 25f, 20f)),
+                                        LineGroup("Q2", listOf(40f, 35f, 25f)),
+                                        LineGroup("Q3", listOf(50f, 30f, 30f)),
+                                        LineGroup("Q4", listOf(45f, 40f, 28f)),
+                                    )
+                                },
+                                colors =
+                                    ChartyColor.Gradient(
+                                        listOf(
+                                            Color(0xFFE91E63),
+                                            Color(0xFF9C27B0),
+                                            Color(0xFF00BCD4),
+                                        ),
                                     ),
-                                ),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 2f,
-                                    smoothCurve = false,
-                                    animation = Animation.Enabled(duration = 1200),
-                                ),
-                            fillAlpha = 0.8f,
-                        )
+                                lineConfig =
+                                    LineChartConfig(
+                                        lineWidth = 2f,
+                                        smoothCurve = false,
+                                        animation = Animation.Enabled(duration = 1200),
+                                    ),
+                                fillAlpha = 0.8f,
+                                onAreaClick = { point ->
+                                    selectedAreaPoint = point
+                                    println("Stacked area clicked: ${point.lineGroup.label} Area ${point.seriesIndex + 1} = ${point.value} (Total: ${point.cumulativeValue})")
+                                },
+                            )
+                        }
                     }
                 }
 

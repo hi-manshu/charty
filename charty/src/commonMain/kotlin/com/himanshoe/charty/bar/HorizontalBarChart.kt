@@ -16,9 +16,13 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -39,6 +43,8 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 
 /**
  * Horizontal Bar Chart - Display data as horizontal bars
@@ -70,6 +76,7 @@ import com.himanshoe.charty.common.draw.drawReferenceLine
  * @param color Color configuration - Solid for uniform bars, Gradient for horizontal gradient effect
  * @param barConfig Configuration for bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onBarClick Optional callback when a bar is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -79,6 +86,7 @@ fun HorizontalBarChart(
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onBarClick: ((BarData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
@@ -106,6 +114,12 @@ fun HorizontalBarChart(
         }
     }
 
+    // State to track which bar is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store bar bounds for hit testing
+    val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
+
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
@@ -121,6 +135,8 @@ fun HorizontalBarChart(
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
+        barBounds.clear()
+
         val axisOffset = if (scaffoldConfig.showAxis) scaffoldConfig.axisThickness * 20f else 0f
 
         val baselineX =
@@ -155,6 +171,18 @@ fun HorizontalBarChart(
                 val fullBarWidth = barValueX - baselineX
                 barWidth = fullBarWidth * animationProgress.value
                 barLeft = baselineX
+            }
+
+            // Store bar bounds for hit testing
+            if (onBarClick != null) {
+                barBounds.add(
+                    Rect(
+                        left = barLeft,
+                        top = centeredBarY,
+                        right = barLeft + barWidth,
+                        bottom = centeredBarY + barThickness,
+                    ) to bar,
+                )
             }
 
             val barColor = bar.color ?: color
@@ -193,6 +221,18 @@ fun HorizontalBarChart(
                 orientation = ChartOrientation.HORIZONTAL,
                 config = referenceLineConfig,
                 textMeasurer = textMeasurer,
+            )
+        }
+
+        // Draw tooltip
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = barConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }

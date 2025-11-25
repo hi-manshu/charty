@@ -4,12 +4,17 @@ package com.himanshoe.charty.point
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -21,8 +26,12 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.PointData
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Point Chart (Scatter Chart) - Display data as individual points
@@ -46,7 +55,10 @@ import com.himanshoe.charty.point.data.PointData
  *         pointRadius = 8f,
  *         pointAlpha = 1f,
  *         animation = Animation.Enabled()
- *     )
+ *     ),
+ *     onPointClick = { pointData ->
+ *         println("Clicked: ${pointData.label}")
+ *     }
  * )
  * ```
  *
@@ -55,6 +67,7 @@ import com.himanshoe.charty.point.data.PointData
  * @param color Color configuration - Solid for uniform color, Gradient for multi-color points
  * @param pointConfig Configuration for point appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onPointClick Optional callback when a point is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -64,6 +77,7 @@ fun PointChart(
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
     pointConfig: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onPointClick: ((PointData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Point chart data cannot be empty" }
@@ -81,6 +95,12 @@ fun PointChart(
             Animatable(if (pointConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which point is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store point bounds for hit testing
+    val pointBounds = remember { mutableListOf<Pair<Offset, PointData>>() }
+
     LaunchedEffect(pointConfig.animation) {
         if (pointConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -93,7 +113,44 @@ fun PointChart(
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onPointClick != null) {
+                Modifier.pointerInput(dataList, pointConfig, onPointClick) {
+                    detectTapGestures { offset ->
+                        // Find the closest point within tap radius
+                        val tapRadius = pointConfig.pointRadius * 2.5f
+                        val clickedPoint = pointBounds.minByOrNull { (position, _) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            sqrt(dx.pow(2) + dy.pow(2))
+                        }
+
+                        clickedPoint?.let { (position, pointData) ->
+                            val dx = position.x - offset.x
+                            val dy = position.y - offset.y
+                            val distance = sqrt(dx.pow(2) + dy.pow(2))
+
+                            if (distance <= tapRadius) {
+                                onPointClick.invoke(pointData)
+                                tooltipState = TooltipState(
+                                    content = pointConfig.tooltipFormatter(pointData),
+                                    x = position.x - pointConfig.pointRadius,
+                                    y = position.y,
+                                    barWidth = pointConfig.pointRadius * 2,
+                                    position = pointConfig.tooltipPosition,
+                                )
+                            } else {
+                                tooltipState = null
+                            }
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.getLabels(),
         yAxisConfig =
             AxisConfig(
@@ -104,12 +161,20 @@ fun PointChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        pointBounds.clear()
+
         dataList.fastForEachIndexed { index, point ->
             val pointProgress = index.toFloat() / dataList.size
             val pointAnimationProgress = ((animationProgress.value - pointProgress) * dataList.size).coerceIn(0f, 1f)
 
             val pointX = chartContext.calculateCenteredXPosition(index, dataList.size)
             val pointY = chartContext.convertValueToYPosition(point.value)
+            val position = Offset(pointX, pointY)
+
+            // Store point bounds for hit testing
+            if (onPointClick != null) {
+                pointBounds.add(position to point)
+            }
 
             val pointColor =
                 when (color) {
@@ -121,7 +186,7 @@ fun PointChart(
                 drawCircle(
                     color = pointColor,
                     radius = pointConfig.pointRadius * pointAnimationProgress,
-                    center = Offset(pointX, pointY),
+                    center = position,
                     alpha = pointConfig.pointAlpha * pointAnimationProgress,
                 )
             }
@@ -134,6 +199,55 @@ fun PointChart(
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
                 textMeasurer = textMeasurer,
+            )
+        }
+
+        // Draw highlight indicator and tooltip for clicked point
+        tooltipState?.let { state ->
+            // Find the clicked point position
+            val clickedPosition = pointBounds.find { (_, data) ->
+                pointConfig.tooltipFormatter(data) == state.content
+            }?.first
+
+            clickedPosition?.let { position ->
+                // Draw subtle vertical indicator line
+                drawLine(
+                    color = Color.Black.copy(alpha = 0.1f),
+                    start = Offset(position.x, chartContext.top),
+                    end = Offset(position.x, chartContext.bottom),
+                    strokeWidth = 1.5f,
+                )
+
+                // Draw highlight circle around the clicked point
+                drawCircle(
+                    color = Color.White,
+                    radius = pointConfig.pointRadius + 3f,
+                    center = position,
+                )
+
+                val highlightColor = when (color) {
+                    is ChartyColor.Solid -> color.color
+                    is ChartyColor.Gradient -> {
+                        val index = pointBounds.indexOfFirst { it.first == position }
+                        if (index >= 0) color.colors[index % color.colors.size] else color.colors[0]
+                    }
+                }
+
+                drawCircle(
+                    color = highlightColor,
+                    radius = pointConfig.pointRadius + 2f,
+                    center = position,
+                )
+            }
+
+            // Draw tooltip
+            drawTooltip(
+                tooltipState = state,
+                config = pointConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }

@@ -14,18 +14,24 @@ package com.himanshoe.charty.combo
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -41,6 +47,8 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
 import kotlin.math.max
 import kotlin.math.min
 
@@ -79,6 +87,7 @@ import kotlin.math.min
  * @param lineColor Color configuration for line and points
  * @param comboConfig Configuration for both bar and line appearance and behavior
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onDataClick Optional callback when a data point is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -89,6 +98,7 @@ fun ComboChart(
     lineColor: ChartyColor = ChartyColor.Solid(Color.Red),
     comboConfig: ComboChartConfig = ComboChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    onDataClick: ((ComboChartData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Combo chart data cannot be empty" }
@@ -121,6 +131,14 @@ fun ComboChart(
             Animatable(if (comboConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
+    // State to track which data point is currently showing a tooltip
+    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
+
+    // Store data point bounds for hit testing (both bars and line points)
+    val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
+
+    val textMeasurer = rememberTextMeasurer()
+
     LaunchedEffect(comboConfig.animation) {
         if (comboConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -130,10 +148,34 @@ fun ComboChart(
         }
     }
 
-    val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onDataClick != null) {
+                Modifier.pointerInput(dataList, comboConfig, onDataClick) {
+                    detectTapGestures { offset ->
+                        val clickedData = dataBounds.find { (rect, _) ->
+                            rect.contains(offset)
+                        }
+
+                        clickedData?.let { (rect, comboData) ->
+                            onDataClick.invoke(comboData)
+                            tooltipState = TooltipState(
+                                content = comboConfig.tooltipFormatter(comboData),
+                                x = rect.left,
+                                y = rect.top,
+                                barWidth = rect.width,
+                                position = comboConfig.tooltipPosition,
+                            )
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.getLabels(),
         yAxisConfig =
             AxisConfig(
@@ -144,6 +186,8 @@ fun ComboChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
+        dataBounds.clear()
+
         val baselineY =
             if (minValue < 0f && isBelowAxisMode) {
                 chartContext.convertValueToYPosition(0f)
@@ -179,6 +223,18 @@ fun ComboChart(
                 val animatedBarHeight = fullBarHeight * animationProgress.value
                 barTop = baselineY - animatedBarHeight
                 barHeight = animatedBarHeight
+            }
+
+            // Store bar bounds for hit testing
+            if (onDataClick != null && barHeight > 0) {
+                dataBounds.add(
+                    Rect(
+                        left = barX,
+                        top = barTop,
+                        right = barX + barWidth,
+                        bottom = barTop + barHeight,
+                    ) to comboData,
+                )
             }
 
             val brush = with(chartContext) { barColor.toVerticalGradientBrush() }
@@ -280,6 +336,19 @@ fun ComboChart(
                 // Only draw points up to animation progress
                 val pointProgress = index.toFloat() / (pointPositions.size - 1)
                 if (pointProgress <= animationProgress.value) {
+                    // Store point bounds for hit testing (larger hit area than visual)
+                    if (onDataClick != null) {
+                        val hitRadius = comboConfig.pointRadius * 2f
+                        dataBounds.add(
+                            Rect(
+                                left = position.x - hitRadius,
+                                top = position.y - hitRadius,
+                                right = position.x + hitRadius,
+                                bottom = position.y + hitRadius,
+                            ) to dataList[index],
+                        )
+                    }
+
                     drawCircle(
                         brush = Brush.linearGradient(lineColor.value),
                         radius = comboConfig.pointRadius,
@@ -297,6 +366,18 @@ fun ComboChart(
                 orientation = ChartOrientation.VERTICAL,
                 config = referenceLineConfig,
                 textMeasurer = textMeasurer,
+            )
+        }
+
+        // Draw tooltip
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = comboConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
             )
         }
     }
