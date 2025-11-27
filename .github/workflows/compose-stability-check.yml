@@ -1,0 +1,110 @@
+name: Compose Stability Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.kt'
+      - '**.kts'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  compose-stability-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build project and generate Compose reports
+        run: |
+          ./gradlew clean
+          ./gradlew :charty:compileDebugKotlinAndroid --rerun-tasks
+          ./gradlew :composeApp:compileDebugKotlinAndroid --rerun-tasks
+        continue-on-error: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Analyze Compose stability
+        id: analyze
+        run: |
+          python3 scripts/analyze_compose_stability.py . stability_report.md || true
+
+          # Read the report content
+          if [ -f stability_report.md ]; then
+            echo "report_exists=true" >> $GITHUB_OUTPUT
+
+            # Store report for commenting (escape special chars for GitHub)
+            {
+              echo 'STABILITY_REPORT<<EOF'
+              cat stability_report.md
+              echo 'EOF'
+            } >> $GITHUB_ENV
+          else
+            echo "report_exists=false" >> $GITHUB_OUTPUT
+            echo 'STABILITY_REPORT=No stability report generated. Build may have failed.' >> $GITHUB_ENV
+          fi
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '## 🔍 Compose Stability Report'
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            ${{ env.STABILITY_REPORT }}
+
+            ---
+            *Generated automatically by Compose Stability Check*
+            *Last updated: ${{ github.event.pull_request.updated_at }}*
+
+      - name: Upload stability report
+        uses: actions/upload-artifact@v4
+        if: steps.analyze.outputs.report_exists == 'true'
+        with:
+          name: compose-stability-report
+          path: stability_report.md
+          retention-days: 30
+
+      - name: Upload Compose reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compose-compiler-reports
+          path: |
+            charty/build/compose_reports/**
+            charty/build/compose_metrics/**
+            composeApp/build/compose_reports/**
+            composeApp/build/compose_metrics/**
+          retention-days: 30
+          if-no-files-found: warn
+

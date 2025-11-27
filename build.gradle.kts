@@ -49,3 +49,78 @@ subprojects {
         }
     }
 }
+
+// Task to generate Compose compiler reports
+tasks.register("generateComposeReports") {
+    group = "compose"
+    description = "Generate Compose compiler stability reports for all modules"
+
+    dependsOn(
+        ":charty:compileDebugKotlinAndroid",
+        ":composeApp:compileDebugKotlinAndroid"
+    )
+
+    doLast {
+        println("Compose reports generated in:")
+        println("  - charty/build/compose_reports/")
+        println("  - composeApp/build/compose_reports/")
+    }
+}
+
+// Task to check Compose stability
+tasks.register<Exec>("checkComposeStability") {
+    group = "compose"
+    description = "Analyze Compose stability and generate report"
+
+    dependsOn("generateComposeReports")
+
+    commandLine("python3", "scripts/analyze_compose_stability.py", ".", "stability_report.md")
+
+    isIgnoreExitValue = true
+
+    doLast {
+        val reportFile = file("stability_report.md")
+        if (reportFile.exists()) {
+            println("\n✓ Stability report generated: stability_report.md")
+            println("\nPreview:")
+            println("=".repeat(60))
+            reportFile.readLines().take(20).forEach { println(it) }
+            if (reportFile.readLines().size > 20) {
+                println("\n... (see stability_report.md for full report)")
+            }
+            println("=".repeat(60))
+        }
+    }
+}
+
+// Task to open compose reports directory
+tasks.register("openComposeReports") {
+    group = "compose"
+    description = "Open the Compose reports directory"
+
+    doLast {
+        val chartyReports = file("charty/build/compose_reports")
+        val composeAppReports = file("composeApp/build/compose_reports")
+
+        if (chartyReports.exists()) {
+            println("Opening: ${chartyReports.absolutePath}")
+            project.exec {
+                commandLine("open", chartyReports.absolutePath)
+                isIgnoreExitValue = true
+            }
+        }
+
+        if (composeAppReports.exists()) {
+            println("Opening: ${composeAppReports.absolutePath}")
+            project.exec {
+                commandLine("open", composeAppReports.absolutePath)
+                isIgnoreExitValue = true
+            }
+        }
+
+        if (!chartyReports.exists() && !composeAppReports.exists()) {
+            println("No Compose reports found. Run 'generateComposeReports' first.")
+        }
+    }
+}
+

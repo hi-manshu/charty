@@ -8,6 +8,11 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+composeCompiler {
+    metricsDestination.set(project.layout.buildDirectory.dir("compose_metrics"))
+    reportsDestination.set(project.layout.buildDirectory.dir("compose_reports"))
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
