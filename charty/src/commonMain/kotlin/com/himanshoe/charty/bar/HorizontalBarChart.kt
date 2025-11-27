@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -94,12 +95,14 @@ fun HorizontalBarChart(
     val (minValue, maxValue) =
         remember(dataList, barConfig.negativeValuesDrawMode) {
             val values = dataList.getValues()
-            calculateMinValue(values) to calculateMaxValue(values)
+            val calculatedMin = calculateMinValue(values)
+            val calculatedMax = calculateMaxValue(values)
+            val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+            finalMin to calculatedMax
         }
 
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
-
     val animationProgress =
         remember {
             Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
@@ -113,13 +116,8 @@ fun HorizontalBarChart(
             )
         }
     }
-
-    // State to track which bar is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store bar bounds for hit testing
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
-
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
@@ -136,9 +134,7 @@ fun HorizontalBarChart(
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         barBounds.clear()
-
         val axisOffset = if (scaffoldConfig.showAxis) scaffoldConfig.axisThickness * 20f else 0f
-
         val baselineX =
             if (drawAxisAtZero) {
                 val range = maxValue - minValue
@@ -163,7 +159,6 @@ fun HorizontalBarChart(
             val barWidth: Float
 
             if (isNegative && isBelowAxisMode) {
-                // For negative values in BELOW_AXIS mode: bar extends from value to baseline (zero line)
                 val fullBarWidth = baselineX - barValueX
                 barWidth = fullBarWidth * animationProgress.value
                 barLeft = barValueX
@@ -172,8 +167,6 @@ fun HorizontalBarChart(
                 barWidth = fullBarWidth * animationProgress.value
                 barLeft = baselineX
             }
-
-            // Store bar bounds for hit testing
             if (onBarClick != null) {
                 barBounds.add(
                     Rect(
@@ -186,22 +179,11 @@ fun HorizontalBarChart(
             }
 
             val barColor = bar.color ?: color
-            val brush =
-                when (barColor) {
-                    is ChartyColor.Solid ->
-                        androidx.compose.ui.graphics.Brush.horizontalGradient(
-                            colors = listOf(barColor.color, barColor.color),
-                            startX = chartContext.left,
-                            endX = chartContext.right,
-                        )
-                    is ChartyColor.Gradient ->
-                        androidx.compose.ui.graphics.Brush.horizontalGradient(
-                            colors = barColor.colors,
-                            startX = chartContext.left,
-                            endX = chartContext.right,
-                        )
-                }
-
+            val brush = Brush.horizontalGradient(
+                colors = barColor.value,
+                startX = chartContext.left,
+                endX = chartContext.right,
+            )
             drawRoundedHorizontalBar(
                 brush = brush,
                 x = barLeft,
@@ -213,8 +195,6 @@ fun HorizontalBarChart(
                 cornerRadius = barConfig.cornerRadius.value,
             )
         }
-
-        // Draw reference / target line if configured
         barConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -224,7 +204,6 @@ fun HorizontalBarChart(
             )
         }
 
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
@@ -242,7 +221,7 @@ fun HorizontalBarChart(
  * Helper function to draw a horizontal bar with rounded corners
  */
 private fun DrawScope.drawRoundedHorizontalBar(
-    brush: androidx.compose.ui.graphics.Brush,
+    brush: Brush,
     x: Float,
     y: Float,
     width: Float,
@@ -254,7 +233,6 @@ private fun DrawScope.drawRoundedHorizontalBar(
     val path =
         Path().apply {
             if (isNegative && isBelowAxisMode) {
-                // Negative bar extending left: round left corners
                 addRoundRect(
                     RoundRect(
                         left = x,
@@ -268,7 +246,6 @@ private fun DrawScope.drawRoundedHorizontalBar(
                     ),
                 )
             } else {
-                // Positive bar extending right: round right corners
                 addRoundRect(
                     RoundRect(
                         left = x,

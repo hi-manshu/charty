@@ -100,26 +100,16 @@ fun LineChart(
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Line chart data cannot be empty" }
-
-    val (minValue, maxValue) =
-        remember(dataList, lineConfig.negativeValuesDrawMode) {
-            val values = dataList.getValues()
-            calculateMinValue(values) to calculateMaxValue(values)
-        }
-
+    val (minValue, maxValue) = remember(dataList, lineConfig.negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-
-    val animationProgress =
-        remember {
-            Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-        }
-
-    // State to track which point is currently showing a tooltip
+    val animationProgress = remember {
+        Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
+    }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store point bounds for hit testing
     val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
-
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -128,27 +118,22 @@ fun LineChart(
             )
         }
     }
-
     val textMeasurer = rememberTextMeasurer()
-
     ChartScaffold(
         modifier = modifier.then(
             if (onPointClick != null) {
                 Modifier.pointerInput(dataList, lineConfig, onPointClick) {
                     detectTapGestures { offset ->
-                        // Find the closest point within tap radius
                         val tapRadius = lineConfig.pointRadius * 2.5f
                         val clickedPoint = pointBounds.minByOrNull { (position, _) ->
                             val dx = position.x - offset.x
                             val dy = position.y - offset.y
                             sqrt(dx.pow(2) + dy.pow(2))
                         }
-
                         clickedPoint?.let { (position, lineData) ->
                             val dx = position.x - offset.x
                             val dy = position.y - offset.y
                             val distance = sqrt(dx.pow(2) + dy.pow(2))
-
                             if (distance <= tapRadius) {
                                 onPointClick.invoke(lineData)
                                 tooltipState = TooltipState(
@@ -176,7 +161,6 @@ fun LineChart(
                 minValue = minValue,
                 maxValue = maxValue,
                 steps = 6,
-                // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
                 drawAxisAtZero = isBelowAxisMode,
             ),
         config = scaffoldConfig,
@@ -189,12 +173,9 @@ fun LineChart(
                     x = chartContext.calculateCenteredXPosition(index, dataList.size),
                     y = chartContext.convertValueToYPosition(point.value),
                 )
-
-                // Store point bounds for hit testing
                 if (onPointClick != null) {
                     pointBounds.add(position to point)
                 }
-
                 position
             }
 
@@ -203,16 +184,13 @@ fun LineChart(
 
             if (pointPositions.isNotEmpty()) {
                 path.moveTo(pointPositions[0].x, pointPositions[0].y)
-
                 for (i in 0 until pointPositions.size - 1) {
                     val current = pointPositions[i]
                     val next = pointPositions[i + 1]
-
                     val controlPoint1X = current.x + (next.x - current.x) / 3f
                     val controlPoint1Y = current.y
                     val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
                     val controlPoint2Y = next.y
-
                     path.cubicTo(
                         controlPoint1X,
                         controlPoint1Y,
@@ -235,10 +213,8 @@ fun LineChart(
                 )
             }
         } else {
-            // Draw straight lines connecting consecutive points with animation
             val segmentsToDraw = ((pointPositions.size - 1) * animationProgress.value).toInt()
             val segmentProgress = ((pointPositions.size - 1) * animationProgress.value) - segmentsToDraw
-
             for (i in 0 until segmentsToDraw) {
                 drawLine(
                     brush = Brush.linearGradient(color.value),
@@ -248,8 +224,6 @@ fun LineChart(
                     cap = lineConfig.strokeCap,
                 )
             }
-
-            // Draw partial segment for smooth animation
             if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
                 val start = pointPositions[segmentsToDraw]
                 val end = pointPositions[segmentsToDraw + 1]
@@ -267,8 +241,6 @@ fun LineChart(
                 )
             }
         }
-
-        // Optionally draw circular markers at data points with fastForEach
         if (lineConfig.showPoints) {
             pointPositions.fastForEachIndexed { index, position ->
                 // Only draw points up to animation progress
@@ -283,8 +255,6 @@ fun LineChart(
                 }
             }
         }
-
-        // Draw reference / target line if configured
         lineConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -293,24 +263,17 @@ fun LineChart(
                 textMeasurer = textMeasurer,
             )
         }
-
-        // Draw highlight indicator and tooltip for clicked point
         tooltipState?.let { state ->
-            // Draw a subtle vertical line from point to bottom
             val clickedPosition = pointBounds.find { (_, data) ->
                 lineConfig.tooltipFormatter(data) == state.content
             }?.first
-
             clickedPosition?.let { position ->
-                // Draw subtle vertical indicator line
                 drawLine(
                     color = Color.Black.copy(alpha = 0.1f),
                     start = Offset(position.x, chartContext.top),
                     end = Offset(position.x, chartContext.bottom),
                     strokeWidth = 1.5f,
                 )
-
-                // Draw highlight circle around the clicked point
                 drawCircle(
                     color = Color.White,
                     radius = lineConfig.pointRadius + 3f,
@@ -322,8 +285,6 @@ fun LineChart(
                     center = position,
                 )
             }
-
-            // Draw tooltip
             drawTooltip(
                 tooltipState = state,
                 config = lineConfig.tooltipConfig,

@@ -101,7 +101,10 @@ fun BubbleBarChart(
     val (minValue, maxValue) =
         remember(dataList, bubbleConfig.negativeValuesDrawMode) {
             val values = dataList.getValues()
-            calculateMinValue(values) to calculateMaxValue(values)
+            val calculatedMin = calculateMinValue(values)
+            val calculatedMax = calculateMaxValue(values)
+            val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+            finalMin to calculatedMax
         }
 
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -111,10 +114,8 @@ fun BubbleBarChart(
             Animatable(if (bubbleConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
-    // State to track which bar is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
 
-    // Store bar bounds for hit testing
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
 
     LaunchedEffect(bubbleConfig.animation) {
@@ -194,7 +195,6 @@ fun BubbleBarChart(
                 barHeight = animatedBarHeight
             }
 
-            // Store bar bounds for hit testing
             if (onBarClick != null) {
                 barBounds.add(
                     Rect(
@@ -208,7 +208,6 @@ fun BubbleBarChart(
 
             val barColor = bar.color ?: color
 
-            // Draw bubbles stacked in the bar
             drawBubbleBar(
                 color = barColor,
                 x = barX,
@@ -242,9 +241,6 @@ fun BubbleBarChart(
     }
 }
 
-/**
- * Helper function to draw bubbles stacked vertically in a bar
- */
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBubbleBar(
     color: ChartyColor,
     x: Float,
@@ -259,39 +255,23 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBubbleBar(
     val centerX = x + width / 2f
     val diameter = bubbleRadius * 2
     val verticalStep = diameter + bubbleSpacing
-
-    // Calculate how many bubbles can fit
     val bubbleCount = max(1, ceil(height / verticalStep).toInt())
 
-    // Determine colors for gradient if applicable
-    val colors = when (color) {
-        is ChartyColor.Gradient -> color.colors
-        is ChartyColor.Solid -> listOf(color.color, color.color)
-    }
-
-    // Draw bubbles from bottom to top
     for (i in 0 until bubbleCount) {
         val bubbleY = y + height - (i * verticalStep) - bubbleRadius
 
-        // Skip if bubble would be drawn outside the bar area
         if (bubbleY < y - bubbleRadius) break
 
-        // Calculate color based on position for gradient effect
-
-        val bubbleColor = if (colors.size > 1) {
-            // Interpolate between colors
-            val ratio = i.toFloat() / bubbleCount.coerceAtLeast(1)
-            val scaledRatio = ratio * (colors.size - 1)
-            val index = scaledRatio.toInt().coerceIn(0, colors.size - 2)
-            val localRatio = scaledRatio - index
-
-            lerp(
-                colors[index],
-                colors[index + 1],
-                localRatio
-            )
-        } else {
-            colors[0]
+        val bubbleColor = when (color) {
+            is ChartyColor.Solid -> color.color
+            is ChartyColor.Gradient -> {
+                val colors = color.colors
+                val ratio = i.toFloat() / bubbleCount.coerceAtLeast(1)
+                val scaledRatio = ratio * (colors.size - 1)
+                val index = scaledRatio.toInt().coerceIn(0, colors.size - 2)
+                val localRatio = scaledRatio - index
+                lerp(colors[index], colors[index + 1], localRatio)
+            }
         }
 
         drawCircle(

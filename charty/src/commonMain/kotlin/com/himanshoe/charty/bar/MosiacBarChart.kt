@@ -72,14 +72,9 @@ fun MosiacBarChart(
             Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
         }
 
-    // State to track which segment is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store segment bounds for hit testing
     val segmentBounds = remember { mutableListOf<Pair<Rect, MosiacBarSegment>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(config.animation) {
         if (config.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -139,8 +134,6 @@ fun MosiacBarChart(
                 val fullHeight = chartContext.height * fraction
                 val animatedHeight = fullHeight * animationProgress.value
                 val top = currentTop - animatedHeight
-
-                // Store segment bounds for hit testing
                 if (onSegmentClick != null && animatedHeight > 0) {
                     segmentBounds.add(
                         Rect(
@@ -156,27 +149,15 @@ fun MosiacBarChart(
                         ),
                     )
                 }
+                val chartyColor = group.colors?.getOrNull(segmentIndex)
+                    ?: defaultMosiacColors[segmentIndex % defaultMosiacColors.size]
 
-                // Use per-segment color from BarGroup.colors if provided; fall back to a default palette
-                val chartyColor =
-                    group.colors?.getOrNull(segmentIndex)
-                        ?: defaultMosiacColors[segmentIndex % defaultMosiacColors.size]
-
-                val color =
-                    when (chartyColor) {
-                        is ChartyColor.Solid -> chartyColor.color
-                        is ChartyColor.Gradient -> chartyColor.colors.first()
-                    }
-
-                val segmentBrush =
-                    Brush.verticalGradient(
-                        colors = listOf(color, color),
-                        startY = top,
-                        endY = currentTop,
-                    )
-
+                val segmentBrush = Brush.verticalGradient(
+                    colors = chartyColor.value,
+                    startY = top,
+                    endY = currentTop,
+                )
                 val isTop = segmentIndex == group.values.lastIndex
-
                 drawMosiacSegment(
                     brush = segmentBrush,
                     x = barX,
@@ -190,7 +171,6 @@ fun MosiacBarChart(
             }
         }
 
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,

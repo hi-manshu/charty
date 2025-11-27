@@ -36,6 +36,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
@@ -108,37 +109,23 @@ fun ComboChart(
             val allValues = dataList.getAllValues()
             val calculatedMin = allValues.minOrNull() ?: 0f
             val calculatedMax = allValues.maxOrNull() ?: 0f
-
-            val minVal =
-                if (comboConfig.negativeValuesDrawMode ==
-                    com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
-                ) {
-                    min(calculatedMin, 0f)
-                } else {
-                    calculatedMin
-                }
+            val minVal = if (comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS) {
+                min(calculatedMin, 0f)
+            } else {
+                calculatedMin
+            }
 
             val maxVal = max(calculatedMax, if (minVal < 0f) 0f else calculatedMin)
             minVal to maxVal
         }
 
-    val isBelowAxisMode =
-        comboConfig.negativeValuesDrawMode ==
-            com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
-
-    val animationProgress =
-        remember {
-            Animatable(if (comboConfig.animation is Animation.Enabled) 0f else 1f)
-        }
-
-    // State to track which data point is currently showing a tooltip
+    val isBelowAxisMode = comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
+    val animationProgress = remember {
+        Animatable(if (comboConfig.animation is Animation.Enabled) 0f else 1f)
+    }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store data point bounds for hit testing (both bars and line points)
     val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(comboConfig.animation) {
         if (comboConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -177,25 +164,21 @@ fun ComboChart(
             },
         ),
         xLabels = dataList.getLabels(),
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = isBelowAxisMode,
-            ),
+        yAxisConfig = AxisConfig(
+            minValue = minValue,
+            maxValue = maxValue,
+            steps = 6,
+            drawAxisAtZero = isBelowAxisMode,
+        ),
         config = scaffoldConfig,
     ) { chartContext ->
         dataBounds.clear()
 
-        val baselineY =
-            if (minValue < 0f && isBelowAxisMode) {
-                chartContext.convertValueToYPosition(0f)
-            } else {
-                chartContext.bottom
-            }
-
-        // Draw bars first (background layer)
+        val baselineY = if (minValue < 0f && isBelowAxisMode) {
+            chartContext.convertValueToYPosition(0f)
+        } else {
+            chartContext.bottom
+        }
         dataList.fastForEachIndexed { index, comboData ->
             val barX =
                 chartContext.calculateBarLeftPosition(
@@ -225,7 +208,6 @@ fun ComboChart(
                 barHeight = animatedBarHeight
             }
 
-            // Store bar bounds for hit testing
             if (onDataClick != null && barHeight > 0) {
                 dataBounds.add(
                     Rect(
@@ -238,7 +220,6 @@ fun ComboChart(
             }
 
             val brush = with(chartContext) { barColor.toVerticalGradientBrush() }
-
             drawRoundedBar(
                 brush = brush,
                 x = barX,
@@ -251,7 +232,6 @@ fun ComboChart(
             )
         }
 
-        // Draw line on top (foreground layer)
         val pointPositions =
             dataList.fastMapIndexed { index, comboData ->
                 Offset(
@@ -297,10 +277,8 @@ fun ComboChart(
                 )
             }
         } else {
-            // Draw straight lines connecting consecutive points with animation
             val segmentsToDraw = ((pointPositions.size - 1) * animationProgress.value).toInt()
             val segmentProgress = ((pointPositions.size - 1) * animationProgress.value) - segmentsToDraw
-
             for (i in 0 until segmentsToDraw) {
                 drawLine(
                     brush = Brush.linearGradient(lineColor.value),
@@ -310,16 +288,13 @@ fun ComboChart(
                     cap = comboConfig.strokeCap,
                 )
             }
-
-            // Draw partial segment for smooth animation
             if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
                 val start = pointPositions[segmentsToDraw]
                 val end = pointPositions[segmentsToDraw + 1]
-                val partialEnd =
-                    Offset(
-                        x = start.x + (end.x - start.x) * segmentProgress,
-                        y = start.y + (end.y - start.y) * segmentProgress,
-                    )
+                val partialEnd = Offset(
+                    x = start.x + (end.x - start.x) * segmentProgress,
+                    y = start.y + (end.y - start.y) * segmentProgress,
+                )
                 drawLine(
                     brush = Brush.linearGradient(lineColor.value),
                     start = start,
@@ -329,14 +304,10 @@ fun ComboChart(
                 )
             }
         }
-
-        // Draw circular markers at data points
         if (comboConfig.showPoints) {
             pointPositions.fastForEachIndexed { index, position ->
-                // Only draw points up to animation progress
                 val pointProgress = index.toFloat() / (pointPositions.size - 1)
                 if (pointProgress <= animationProgress.value) {
-                    // Store point bounds for hit testing (larger hit area than visual)
                     if (onDataClick != null) {
                         val hitRadius = comboConfig.pointRadius * 2f
                         dataBounds.add(
@@ -358,8 +329,6 @@ fun ComboChart(
                 }
             }
         }
-
-        // Draw reference / target line if configured
         comboConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -368,8 +337,6 @@ fun ComboChart(
                 textMeasurer = textMeasurer,
             )
         }
-
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,

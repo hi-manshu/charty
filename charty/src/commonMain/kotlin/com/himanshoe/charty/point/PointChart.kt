@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -94,11 +95,7 @@ fun PointChart(
         remember {
             Animatable(if (pointConfig.animation is Animation.Enabled) 0f else 1f)
         }
-
-    // State to track which point is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store point bounds for hit testing
     val pointBounds = remember { mutableListOf<Pair<Offset, PointData>>() }
 
     LaunchedEffect(pointConfig.animation) {
@@ -117,7 +114,6 @@ fun PointChart(
             if (onPointClick != null) {
                 Modifier.pointerInput(dataList, pointConfig, onPointClick) {
                     detectTapGestures { offset ->
-                        // Find the closest point within tap radius
                         val tapRadius = pointConfig.pointRadius * 2.5f
                         val clickedPoint = pointBounds.minByOrNull { (position, _) ->
                             val dx = position.x - offset.x
@@ -166,33 +162,22 @@ fun PointChart(
         dataList.fastForEachIndexed { index, point ->
             val pointProgress = index.toFloat() / dataList.size
             val pointAnimationProgress = ((animationProgress.value - pointProgress) * dataList.size).coerceIn(0f, 1f)
-
             val pointX = chartContext.calculateCenteredXPosition(index, dataList.size)
             val pointY = chartContext.convertValueToYPosition(point.value)
             val position = Offset(pointX, pointY)
-
-            // Store point bounds for hit testing
             if (onPointClick != null) {
                 pointBounds.add(position to point)
             }
 
-            val pointColor =
-                when (color) {
-                    is ChartyColor.Solid -> color.color
-                    is ChartyColor.Gradient -> color.colors[index % color.colors.size]
-                }
-
             if (pointAnimationProgress > 0f) {
                 drawCircle(
-                    color = pointColor,
+                    brush = Brush.linearGradient(color.value),
                     radius = pointConfig.pointRadius * pointAnimationProgress,
                     center = position,
                     alpha = pointConfig.pointAlpha * pointAnimationProgress,
                 )
             }
         }
-
-        // Draw reference / target line if configured
         pointConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -201,46 +186,29 @@ fun PointChart(
                 textMeasurer = textMeasurer,
             )
         }
-
-        // Draw highlight indicator and tooltip for clicked point
         tooltipState?.let { state ->
-            // Find the clicked point position
             val clickedPosition = pointBounds.find { (_, data) ->
                 pointConfig.tooltipFormatter(data) == state.content
             }?.first
 
             clickedPosition?.let { position ->
-                // Draw subtle vertical indicator line
                 drawLine(
                     color = Color.Black.copy(alpha = 0.1f),
                     start = Offset(position.x, chartContext.top),
                     end = Offset(position.x, chartContext.bottom),
                     strokeWidth = 1.5f,
                 )
-
-                // Draw highlight circle around the clicked point
                 drawCircle(
                     color = Color.White,
                     radius = pointConfig.pointRadius + 3f,
                     center = position,
                 )
-
-                val highlightColor = when (color) {
-                    is ChartyColor.Solid -> color.color
-                    is ChartyColor.Gradient -> {
-                        val index = pointBounds.indexOfFirst { it.first == position }
-                        if (index >= 0) color.colors[index % color.colors.size] else color.colors[0]
-                    }
-                }
-
                 drawCircle(
-                    color = highlightColor,
+                    brush = Brush.linearGradient(color.value),
                     radius = pointConfig.pointRadius + 2f,
                     center = position,
                 )
             }
-
-            // Draw tooltip
             drawTooltip(
                 tooltipState = state,
                 config = pointConfig.tooltipConfig,

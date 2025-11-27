@@ -33,6 +33,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
@@ -102,7 +103,7 @@ fun StackedBarChart(
 
     val (maxTotal, colorList) =
         remember(dataList, colors) {
-            val totals = dataList.map { group -> group.values.sum() }
+            val totals = dataList.fastMap { group -> group.values.sum() }
             (totals.maxOrNull() ?: 0f) to colors.value
         }
 
@@ -111,14 +112,9 @@ fun StackedBarChart(
             Animatable(if (stackedConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
-    // State to track which segment is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store segment bounds for hit testing
     val segmentBounds = remember { mutableListOf<Pair<Rect, StackedBarSegment>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(stackedConfig.animation) {
         if (stackedConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -169,22 +165,17 @@ fun StackedBarChart(
         dataList.fastForEachIndexed { groupIndex, barGroup ->
             val barX = chartContext.calculateBarLeftPosition(groupIndex, dataList.size, stackedConfig.barWidthFraction)
             val barWidth = chartContext.calculateBarWidth(dataList.size, stackedConfig.barWidthFraction)
-
             var cumulativeValue = 0f
-
             barGroup.values.fastForEachIndexed { segmentIndex, value ->
                 val segmentBottomValue = cumulativeValue
                 val segmentTopValue = cumulativeValue + value
                 cumulativeValue = segmentTopValue
-
                 val segmentBottomY = chartContext.convertValueToYPosition(segmentBottomValue)
                 val segmentTopY = chartContext.convertValueToYPosition(segmentTopValue)
-
                 val fullSegmentHeight = segmentBottomY - segmentTopY
                 val animatedHeight = fullSegmentHeight * animationProgress.value
                 val animatedTopY = segmentBottomY - animatedHeight
 
-                // Store segment bounds for hit testing
                 if (onSegmentClick != null && animatedHeight > 0) {
                     segmentBounds.add(
                         Rect(
@@ -200,33 +191,19 @@ fun StackedBarChart(
                     )
                 }
 
-                // Use per-group color if available, otherwise fall back to chart colors
                 val segmentChartyColor =
                     if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
                         barGroup.colors[segmentIndex]
                     } else {
-                        // Create ChartyColor from the color at this index
                         ChartyColor.Solid(colorList[segmentIndex % colorList.size])
                     }
                 val isTopSegment = segmentIndex == barGroup.values.size - 1
 
-                // Create gradient brush for this segment
-                val segmentBrush =
-                    when (segmentChartyColor) {
-                        is ChartyColor.Solid ->
-                            androidx.compose.ui.graphics.Brush.verticalGradient(
-                                colors = listOf(segmentChartyColor.color, segmentChartyColor.color),
-                                startY = animatedTopY,
-                                endY = animatedTopY + animatedHeight,
-                            )
-                        is ChartyColor.Gradient ->
-                            androidx.compose.ui.graphics.Brush.verticalGradient(
-                                colors = segmentChartyColor.colors,
-                                startY = animatedTopY,
-                                endY = animatedTopY + animatedHeight,
-                            )
-                    }
-
+                val segmentBrush = Brush.verticalGradient(
+                    colors = segmentChartyColor.value,
+                    startY = animatedTopY,
+                    endY = animatedTopY + animatedHeight,
+                )
                 drawStackedSegment(
                     brush = segmentBrush,
                     x = barX,
@@ -239,7 +216,6 @@ fun StackedBarChart(
             }
         }
 
-        // Draw reference / target line if configured
         stackedConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -249,7 +225,6 @@ fun StackedBarChart(
             )
         }
 
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
@@ -276,37 +251,34 @@ private fun DrawScope.drawStackedSegment(
     cornerRadius: Float,
     isTopSegment: Boolean,
 ) {
-    val path =
-        Path().apply {
-            if (isTopSegment && cornerRadius > 0f) {
-                // Top segment with rounded corners
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    ),
-                )
-            } else {
-                // Regular rectangle for middle/bottom segments
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius.Zero,
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    ),
-                )
-            }
+    val path = Path().apply {
+        if (isTopSegment && cornerRadius > 0f) {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius.Zero,
+                ),
+            )
+        } else {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = CornerRadius.Zero,
+                    topRightCornerRadius = CornerRadius.Zero,
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius.Zero,
+                ),
+            )
         }
+    }
     drawPath(path, brush)
 }

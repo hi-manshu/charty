@@ -95,12 +95,8 @@ fun LollipopBarChart(
         }
     }
 
-    // State to track which bar is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store lollipop positions for hit testing (storing circle center and data)
     val lollipopBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
-
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
@@ -108,7 +104,6 @@ fun LollipopBarChart(
             if (onBarClick != null) {
                 Modifier.pointerInput(dataList, config, onBarClick) {
                     detectTapGestures { offset ->
-                        // Find the closest lollipop circle within tap radius
                         val tapRadius = config.circleRadius * 2f
                         val clickedLollipop = lollipopBounds.minByOrNull { (position, _) ->
                             val dx = position.x - offset.x
@@ -164,7 +159,6 @@ fun LollipopBarChart(
             val barValueY = chartContext.convertValueToYPosition(bar.value)
             val animatedTopY = baselineY - (baselineY - barValueY) * animationProgress.value
 
-            // Store lollipop position for hit testing
             if (onBarClick != null) {
                 lollipopBounds.add(Offset(centerX, animatedTopY) to bar)
             }
@@ -217,15 +211,12 @@ fun LollipopBarChart(
             }
         }
 
-        // Draw highlight and tooltip for clicked lollipop
         tooltipState?.let { state ->
-            // Find the clicked lollipop position
             val clickedPosition = lollipopBounds.find { (_, data) ->
                 config.tooltipFormatter(data) == state.content
             }?.first
 
             clickedPosition?.let { position ->
-                // Draw subtle vertical indicator line
                 drawLine(
                     color = Color.Black.copy(alpha = 0.1f),
                     start = Offset(position.x, chartContext.top),
@@ -233,7 +224,6 @@ fun LollipopBarChart(
                     strokeWidth = 1.5f,
                 )
 
-                // Draw highlight circle around the clicked lollipop
                 drawCircle(
                     color = Color.White,
                     radius = config.circleRadius + 3f,
@@ -246,7 +236,6 @@ fun LollipopBarChart(
                 )
             }
 
-            // Draw tooltip
             drawTooltip(
                 tooltipState = state,
                 config = config.tooltipConfig,

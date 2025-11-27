@@ -311,8 +311,6 @@ private fun RadarChartContent(
                     startAngle = config.radarConfig.startAngleDegrees,
                 )
             }
-
-            // Draw axis lines
             if (config.radarConfig.gridConfig.showAxisLines) {
                 drawAxisLines(
                     center = Offset(centerX, centerY),
@@ -323,8 +321,6 @@ private fun RadarChartContent(
                     startAngle = config.radarConfig.startAngleDegrees,
                 )
             }
-
-            // Draw all data sets with staggered animation if enabled
             dataSetsList.fastForEachIndexed { index, dataSet ->
                 val datasetAnimationProgress =
                     if (config.staggerAnimation) {
@@ -343,8 +339,6 @@ private fun RadarChartContent(
                     animationProgress = datasetAnimationProgress.coerceIn(0f, 1f),
                 )
             }
-
-            // Draw labels
             if (config.radarConfig.labelConfig.showLabels) {
                 drawAxisLabels(
                     center = Offset(centerX, centerY),
@@ -356,8 +350,6 @@ private fun RadarChartContent(
                     startAngle = config.radarConfig.startAngleDegrees,
                 )
             }
-
-            // Draw center background
             if (config.radarConfig.centerConfig.centerBackgroundRadius > 0f) {
                 drawCircle(
                     color = config.radarConfig.centerConfig.centerBackgroundColor,

@@ -127,20 +127,13 @@ fun PieChart(
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Pie chart data cannot be empty" }
-
-    // Calculate total and validate
     val total = remember(dataList) { dataList.sumOf { it.value.toDouble() }.toFloat() }
     require(total > 0f) { "Total of all pie slices must be positive" }
-
-    // Generate colors for slices
     val sliceColors =
         remember(dataList, color) {
             generateSliceColors(dataList, color)
         }
-
-    // Animation progress
     val animationProgress = remember { Animatable(if (config.animation is Animation.Enabled) 0f else 1f) }
-
     LaunchedEffect(config.animation, dataList) {
         if (config.animation is Animation.Enabled) {
             animationProgress.snapTo(0f)
@@ -150,11 +143,8 @@ fun PieChart(
             )
         }
     }
-
-    // Selected slice state
     var selectedSliceIndex by remember { mutableStateOf<Int?>(null) }
     val selectedScale = remember { Animatable(1f) }
-
     LaunchedEffect(selectedSliceIndex) {
         if (selectedSliceIndex != null && config.interactionConfig.isEnabled) {
             selectedScale.animateTo(
@@ -168,8 +158,6 @@ fun PieChart(
             )
         }
     }
-
-    // Render chart without legend
     PieChartContent(
         dataList = dataList,
         sliceColors = sliceColors,
@@ -229,15 +217,14 @@ private fun PieChartContent(
                                 val center = Offset(size.width / 2f, size.height / 2f)
                                 val radius = minOf(size.width, size.height) / 2f * 0.8f
 
-                                val clickedIndex =
-                                    findClickedSlice(
-                                        offset,
-                                        center,
-                                        radius,
-                                        dataList,
-                                        total,
-                                        config,
-                                    )
+                                val clickedIndex = findClickedSlice(
+                                    touchPosition = offset,
+                                    center = center,
+                                    radius = radius,
+                                    dataList = dataList,
+                                    total = total,
+                                    config = config,
+                                )
 
                                 if (clickedIndex != null) {
                                     onSliceClick(clickedIndex)
@@ -262,8 +249,6 @@ private fun PieChartContent(
                 textMeasurer = textMeasurer,
             )
         }
-
-        // Center content for donut charts
         if (config.style == PieChartStyle.DONUT && centerContent != null) {
             Box(
                 modifier = Modifier.fillMaxSize(config.donutHoleRatio),
@@ -311,8 +296,6 @@ private fun DrawScope.drawPieSlices(
                 } else {
                     1f
                 }
-
-            // Calculate offset for selected slice
             val sliceCenter = center
             val offset =
                 if (isSelected && config.interactionConfig.isEnabled) {
@@ -327,8 +310,6 @@ private fun DrawScope.drawPieSlices(
 
             val actualRadius = radius * scale
             val drawCenter = sliceCenter + offset
-
-            // Draw slice based on style
             when (config.style) {
                 PieChartStyle.PIE -> {
                     drawArc(
@@ -345,6 +326,7 @@ private fun DrawScope.drawPieSlices(
                         alpha = alpha,
                     )
                 }
+
                 PieChartStyle.DONUT -> {
                     val strokeWidth = actualRadius * (1f - config.donutHoleRatio)
                     val arcRadius = actualRadius - strokeWidth / 2
@@ -365,8 +347,6 @@ private fun DrawScope.drawPieSlices(
                     )
                 }
             }
-
-            // Draw labels if configured
             if (config.labelConfig.shouldShowLabels &&
                 percentage >= config.labelConfig.minimumPercentageToShowLabel &&
                 animationProgress > 0.5f

@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -138,15 +139,9 @@ fun MultilineChart(
         remember {
             Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
         }
-
-    // State to track which point is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store point bounds for hit testing
     val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -206,45 +201,33 @@ fun MultilineChart(
         config = scaffoldConfig,
     ) { chartContext ->
         pointBounds.clear()
-
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
-
         for (seriesIndex in 0 until seriesCount) {
-            val seriesColor = colorList[seriesIndex % colorList.size]
-
-            val pointPositions =
-                dataList.fastMapIndexed { index, group ->
-                    val value = group.values.getOrNull(seriesIndex) ?: 0f
-                    Offset(
-                        x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                        y = chartContext.convertValueToYPosition(value),
-                    )
-                }
-
+            val pointPositions = dataList.fastMapIndexed { index, group ->
+                val value = group.values.getOrNull(seriesIndex) ?: 0f
+                Offset(
+                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                    y = chartContext.convertValueToYPosition(value),
+                )
+            }
             if (pointPositions.isNotEmpty()) {
                 val path = Path()
                 val startX = chartContext.left
                 val startY = chartContext.bottom
                 val firstPoint = pointPositions[0]
-
                 if (lineConfig.smoothCurve) {
-                    // Smooth start with cubic bezier from (0,0) to first point
                     val control1X = startX + (firstPoint.x - startX) / 3f
                     val control2X = startX + 2 * (firstPoint.x - startX) / 3f
                     val control2Y = firstPoint.y
                     path.moveTo(startX, startY)
                     path.cubicTo(control1X, startY, control2X, control2Y, firstPoint.x, firstPoint.y)
-
-                    // Draw smooth curves between data points
                     for (i in 0 until pointPositions.size - 1) {
                         val current = pointPositions[i]
                         val next = pointPositions[i + 1]
-
                         val controlPoint1X = current.x + (next.x - current.x) / 3f
                         val controlPoint1Y = current.y
                         val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
                         val controlPoint2Y = next.y
-
                         path.cubicTo(
                             controlPoint1X,
                             controlPoint1Y,
@@ -255,42 +238,31 @@ fun MultilineChart(
                         )
                     }
                 } else {
-                    // Straight line start from (0,0) to first point
                     path.moveTo(startX, startY)
                     path.lineTo(firstPoint.x, firstPoint.y)
-
-                    // Draw straight lines between data points
                     for (i in 1 until pointPositions.size) {
                         path.lineTo(pointPositions[i].x, pointPositions[i].y)
                     }
                 }
-
-                // Draw the path with animation
                 drawPath(
                     path = path,
-                    color = seriesColor,
-                    style =
-                        Stroke(
-                            width = lineConfig.lineWidth,
-                            cap = lineConfig.strokeCap,
-                        ),
+                    brush = Brush.verticalGradient(colorList),
+                    style = Stroke(
+                        width = lineConfig.lineWidth,
+                        cap = lineConfig.strokeCap,
+                    ),
                     alpha = animationProgress.value,
                 )
             }
-
-            // Draw points if enabled
             if (lineConfig.showPoints) {
                 pointPositions.fastForEachIndexed { index, position ->
-                    // Only draw points up to animation progress
-                    val pointProgress =
-                        if (lineConfig.animation is Animation.Enabled) {
-                            ((index + 1).toFloat() / pointPositions.size).coerceAtMost(animationProgress.value * 1.2f)
-                        } else {
-                            1f
-                        }
+                    val pointProgress = if (lineConfig.animation is Animation.Enabled) {
+                        ((index + 1).toFloat() / pointPositions.size).coerceAtMost(animationProgress.value * 1.2f)
+                    } else {
+                        1f
+                    }
 
                     if (pointProgress > 0f) {
-                        // Store point bounds for hit testing
                         if (onPointClick != null) {
                             val group = dataList[index]
                             val value = group.values.getOrNull(seriesIndex) ?: 0f
@@ -305,7 +277,7 @@ fun MultilineChart(
                         }
 
                         drawCircle(
-                            color = seriesColor,
+                            brush = Brush.verticalGradient(colorList),
                             radius = lineConfig.pointRadius,
                             center = position,
                             alpha = (pointProgress.coerceIn(0f, 1f) * lineConfig.pointAlpha),

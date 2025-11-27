@@ -111,15 +111,9 @@ fun SpanChart(
         remember {
             Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
         }
-
-    // State to track which span is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store span bounds for hit testing
     val spanBounds = remember { mutableListOf<Pair<Rect, SpanData>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(barConfig.animation) {
         if (barConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -168,36 +162,20 @@ fun SpanChart(
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         spanBounds.clear()
-
-        // Add offset so bars don't overlap with Y-axis line
         val axisOffset = if (scaffoldConfig.showAxis) scaffoldConfig.axisThickness * 20f else 0f
-
         val range = maxValue - minValue
-
         dataList.fastForEachIndexed { index, span ->
-            // Use per-span color if available, otherwise fall back to chart colors
             val spanChartyColor = span.color ?: colors
-            val spanColor =
-                when (spanChartyColor) {
-                    is ChartyColor.Solid -> spanChartyColor.color
-                    is ChartyColor.Gradient -> spanChartyColor.colors[index % spanChartyColor.colors.size]
-                }
-
             val barHeight = chartContext.height / dataList.size
             val barY = chartContext.top + (barHeight * index)
             val barThickness = barHeight * barConfig.barWidthFraction
             val centeredBarY = barY + (barHeight - barThickness) / 2
-
             val startNormalized = (span.startValue - minValue) / range
             val endNormalized = (span.endValue - minValue) / range
-
             val startX = chartContext.left + axisOffset + (startNormalized * (chartContext.width - axisOffset))
             val endX = chartContext.left + axisOffset + (endNormalized * (chartContext.width - axisOffset))
-
             val fullSpanWidth = endX - startX
             val animatedSpanWidth = fullSpanWidth * animationProgress.value
-
-            // Store span bounds for hit testing
             if (onSpanClick != null && animatedSpanWidth > 0) {
                 spanBounds.add(
                     Rect(
@@ -211,7 +189,7 @@ fun SpanChart(
 
             val brush =
                 Brush.horizontalGradient(
-                    colors = listOf(spanColor, spanColor),
+                    colors = spanChartyColor.value,
                     startX = startX,
                     endX = endX,
                 )
@@ -225,8 +203,6 @@ fun SpanChart(
                 cornerRadius = barConfig.cornerRadius.value,
             )
         }
-
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
@@ -251,21 +227,19 @@ private fun DrawScope.drawRoundedSpan(
     height: Float,
     cornerRadius: Float,
 ) {
-    val path =
-        Path().apply {
-            // Span with all corners rounded
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                ),
-            )
-        }
+    val path = Path().apply {
+        addRoundRect(
+            RoundRect(
+                left = x,
+                top = y,
+                right = x + width,
+                bottom = y + height,
+                topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+            ),
+        )
+    }
     drawPath(path, brush)
 }

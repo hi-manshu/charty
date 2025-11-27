@@ -163,8 +163,6 @@ fun BubbleChart(
                     center = Offset(bubbleX, bubbleY),
                     alpha = pointConfig.pointAlpha * bubbleAnimationProgress,
                 )
-
-                // Draw inner circle (main bubble)
                 drawCircle(
                     color = bubbleColor,
                     radius = (bubbleRadius * 0.85f) * bubbleAnimationProgress,

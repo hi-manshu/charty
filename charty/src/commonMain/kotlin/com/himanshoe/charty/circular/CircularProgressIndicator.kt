@@ -133,8 +133,6 @@ fun CircularProgressIndicator(
     centerContent: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     val ringsList = remember(rings) { rings() }
-
-    // Animation for progress
     val animatedProgress =
         ringsList.map { ring ->
             val targetProgress = ring.progress.coerceIn(0f, ring.maxValue)
@@ -157,7 +155,6 @@ fun CircularProgressIndicator(
             }
         }
 
-    // Rotation animation if enabled
     val infiniteTransition = rememberInfiniteTransition(label = "rotation")
     val rotationAngle by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -174,7 +171,6 @@ fun CircularProgressIndicator(
         label = "rotationAngle",
     )
 
-    // Track selected ring
     var selectedRingIndex by remember { mutableStateOf<Int?>(null) }
 
     Box(
@@ -189,25 +185,18 @@ fun CircularProgressIndicator(
                         if (config.interactionEnabled && onRingClick != null) {
                             Modifier.pointerInput(ringsList) {
                                 detectTapGestures { offset ->
-                                    // Detect which ring was clicked
                                     val center = Offset(size.width / 2f, size.height / 2f)
                                     val dx = offset.x - center.x
                                     val dy = offset.y - center.y
                                     val distance = sqrt(dx * dx + dy * dy)
-
-                                    // Calculate which ring was tapped based on distance from center
                                     val canvasSize = minOf(size.width, size.height)
                                     val radius = canvasSize / 2f
-
-                                    // Calculate stroke width
-                                    val strokeWidth =
-                                        calculateStrokeWidth(
-                                            radius = radius,
-                                            config = config,
-                                            ringCount = ringsList.size,
-                                        )
-
-                                    ringsList.forEachIndexed { index, ring ->
+                                    val strokeWidth = calculateStrokeWidth(
+                                        radius = radius,
+                                        config = config,
+                                        ringCount = ringsList.size,
+                                    )
+                                    ringsList.fastForEachIndexed { index, ring ->
                                         val ringRadius =
                                             calculateRingRadius(
                                                 index = index,
@@ -233,16 +222,11 @@ fun CircularProgressIndicator(
             val canvasSize = size.minDimension
             val radius = canvasSize / 2f
             val center = Offset(size.width / 2f, size.height / 2f)
-
-            // Calculate stroke width based on available space
-            val strokeWidth =
-                calculateStrokeWidth(
-                    radius = radius,
-                    config = config,
-                    ringCount = ringsList.size,
-                )
-
-            // Draw each ring
+            val strokeWidth = calculateStrokeWidth(
+                radius = radius,
+                config = config,
+                ringCount = ringsList.size,
+            )
             ringsList.fastForEachIndexed { index, ring ->
                 val ringRadius =
                     calculateRingRadius(
@@ -253,14 +237,11 @@ fun CircularProgressIndicator(
                         strokeWidth = strokeWidth,
                     )
 
-                val animProgress =
-                    if (index < animatedProgress.size) {
-                        animatedProgress[index]
-                    } else {
-                        ring.progress
-                    }
-
-                // Draw background ring (unfilled portion)
+                val animProgress = if (index < animatedProgress.size) {
+                    animatedProgress[index]
+                } else {
+                    ring.progress
+                }
                 drawRingBackground(
                     center = center,
                     radius = ringRadius,
@@ -269,8 +250,6 @@ fun CircularProgressIndicator(
                     rotationAngle = rotationAngle,
                     strokeWidth = strokeWidth,
                 )
-
-                // Draw progress ring (filled portion)
                 drawRingProgress(
                     center = center,
                     radius = ringRadius,
@@ -283,8 +262,6 @@ fun CircularProgressIndicator(
                 )
             }
         }
-
-        // Center content
         if (centerContent != null) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -292,13 +269,11 @@ fun CircularProgressIndicator(
                 content = centerContent,
             )
         } else if (config.showCenterText && ringsList.isNotEmpty()) {
-            // Default center text showing first ring's percentage
             val firstRing = ringsList.first()
-            val percentage =
-                remember(animatedProgress.firstOrNull()) {
-                    val progress = animatedProgress.firstOrNull() ?: firstRing.progress
-                    ((progress / firstRing.maxValue) * 100f).toInt()
-                }
+            val percentage = remember(animatedProgress.firstOrNull()) {
+                val progress = animatedProgress.firstOrNull() ?: firstRing.progress
+                ((progress / firstRing.maxValue) * 100f).toInt()
+            }
 
             Text(
                 text = "$percentage%",
@@ -322,7 +297,6 @@ private fun calculateStrokeWidth(
     val availableRadius = radius - centerHoleSize
     val totalGapSpace = config.gapBetweenRings * (ringCount - 1)
     val availableForStrokes = availableRadius - totalGapSpace
-
     return (availableForStrokes / ringCount).coerceAtLeast(1f)
 }
 
@@ -336,10 +310,7 @@ private fun calculateRingRadius(
     config: CircularProgressConfig,
     strokeWidth: Float,
 ): Float {
-    // Calculate position for this ring (outermost first)
     val accumulatedWidth = index * (strokeWidth + config.gapBetweenRings)
-
-    // Return radius from outer edge
     return radius - accumulatedWidth - (strokeWidth / 2f)
 }
 
@@ -364,11 +335,10 @@ private fun DrawScope.drawRingBackground(
         useCenter = false,
         topLeft = topLeft,
         size = size,
-        style =
-            Stroke(
-                width = strokeWidth,
-                cap = config.strokeCap,
-            ),
+        style = Stroke(
+            width = strokeWidth,
+            cap = config.strokeCap,
+        ),
     )
 }
 
@@ -387,19 +357,15 @@ private fun DrawScope.drawRingProgress(
 ) {
     val topLeft = Offset(center.x - radius, center.y - radius)
     val size = Size(radius * 2f, radius * 2f)
-
     val sweepAngle = ((progress / ring.maxValue) * 360f).coerceIn(0f, 360f)
-    val actualSweepAngle =
-        if (config.ringDirection == RingDirection.CLOCKWISE) {
-            sweepAngle
-        } else {
-            -sweepAngle
-        }
+    val actualSweepAngle = if (config.ringDirection == RingDirection.CLOCKWISE) {
+        sweepAngle
+    } else {
+        -sweepAngle
+    }
 
     if (sweepAngle > 0f) {
-        // Draw shadow layers if enabled (using multiple blurred arcs for cross-platform compatibility)
         if (config.enableShadows && ring.shadowColor != null && ring.shadowRadius > 0f) {
-            // Draw multiple shadow layers for a blur effect
             val shadowLayers = 4
             for (i in shadowLayers downTo 1) {
                 val shadowAlpha = (0.15f / i)
@@ -421,8 +387,6 @@ private fun DrawScope.drawRingProgress(
                 )
             }
         }
-
-        // Draw the main progress arc
         drawArc(
             color = ring.getPrimaryColor(),
             startAngle = config.startAngleDegrees + rotationAngle,
@@ -430,11 +394,10 @@ private fun DrawScope.drawRingProgress(
             useCenter = false,
             topLeft = topLeft,
             size = size,
-            style =
-                Stroke(
-                    width = strokeWidth,
-                    cap = config.strokeCap,
-                ),
+            style = Stroke(
+                width = strokeWidth,
+                cap = config.strokeCap,
+            ),
         )
     }
 }

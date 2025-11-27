@@ -19,9 +19,9 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
 data class BubbleBarChartConfig(
-    val barWidthFraction: Float = 0.6f,
-    val bubbleRadius: Float = 8f,
-    val bubbleSpacing: Float = 4f,
+    val barWidthFraction: Float = 0.2f,
+    val bubbleRadius: Float = 100f,
+    val bubbleSpacing: Float = 8f,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,

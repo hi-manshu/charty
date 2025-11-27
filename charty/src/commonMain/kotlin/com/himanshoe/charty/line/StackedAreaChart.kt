@@ -143,15 +143,9 @@ fun StackedAreaChart(
         remember {
             Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
         }
-
-    // State to track which area point is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store area point positions for hit testing
     val areaPointBounds = remember { mutableListOf<Pair<Offset, StackedAreaPoint>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -164,13 +158,12 @@ fun StackedAreaChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = false, // Stacked charts always draw from bottom
-            ),
+        yAxisConfig = AxisConfig(
+            minValue = minValue,
+            maxValue = maxValue,
+            steps = 6,
+            drawAxisAtZero = false,
+        ),
         config = scaffoldConfig,
     ) { chartContext ->
         areaPointBounds.clear()
@@ -178,45 +171,35 @@ fun StackedAreaChart(
         val baselineY = chartContext.bottom
         val startX = chartContext.left
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
-
         for (seriesIndex in seriesCount - 1 downTo 0) {
             val seriesColor = colorList[seriesIndex % colorList.size]
-
-            val cumulativePositions =
-                dataList.fastMapIndexed { index, group ->
-                    var cumulativeValue = 0f
-                    for (i in 0..seriesIndex) {
-                        cumulativeValue += group.values.getOrNull(i) ?: 0f
-                    }
-                    Offset(
-                        x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                        y = chartContext.convertValueToYPosition(cumulativeValue),
-                    )
+            val cumulativePositions = dataList.fastMapIndexed { index, group ->
+                var cumulativeValue = 0f
+                for (i in 0..seriesIndex) {
+                    cumulativeValue += group.values.getOrNull(i) ?: 0f
                 }
-
+                Offset(
+                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                    y = chartContext.convertValueToYPosition(cumulativeValue),
+                )
+            }
             if (cumulativePositions.isNotEmpty()) {
                 val areaPath =
                     Path().apply {
                         val firstPoint = cumulativePositions[0]
-
                         if (lineConfig.smoothCurve) {
-                            // Smooth cubic start from (0,0) for ALL series
                             val control1X = startX + (firstPoint.x - startX) / 3f
                             val control2X = startX + 2 * (firstPoint.x - startX) / 3f
                             val control2Y = firstPoint.y
                             moveTo(startX, baselineY)
                             cubicTo(control1X, baselineY, control2X, control2Y, firstPoint.x, firstPoint.y)
-
-                            // Draw smooth curve along top edge
                             for (i in 0 until cumulativePositions.size - 1) {
                                 val current = cumulativePositions[i]
                                 val next = cumulativePositions[i + 1]
-
                                 val controlPoint1X = current.x + (next.x - current.x) / 3f
                                 val controlPoint1Y = current.y
                                 val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
                                 val controlPoint2Y = next.y
-
                                 cubicTo(
                                     controlPoint1X,
                                     controlPoint1Y,
@@ -226,29 +209,20 @@ fun StackedAreaChart(
                                     next.y,
                                 )
                             }
-
-                            // Close path back to baseline
                             lineTo(cumulativePositions.last().x, baselineY)
                             lineTo(startX, baselineY)
                         } else {
-                            // Straight line from (0,0) for ALL series
                             moveTo(startX, baselineY)
                             lineTo(firstPoint.x, firstPoint.y)
-
-                            // Draw straight lines through data points
                             for (i in 1 until cumulativePositions.size) {
                                 lineTo(cumulativePositions[i].x, cumulativePositions[i].y)
                             }
-
-                            // Close path back to baseline
                             lineTo(cumulativePositions.last().x, baselineY)
                             lineTo(startX, baselineY)
                         }
 
                         close()
                     }
-
-                // Draw filled area with animation
                 drawPath(
                     path = areaPath,
                     color = seriesColor.copy(alpha = fillAlpha),
@@ -289,11 +263,9 @@ fun StackedAreaChart(
                                 )
                             }
                         } else {
-                            // Straight line from (0,0) for ALL series
                             moveTo(startX, baselineY)
                             lineTo(firstPoint.x, firstPoint.y)
 
-                            // Draw straight lines through data points
                             for (i in 1 until cumulativePositions.size) {
                                 lineTo(cumulativePositions[i].x, cumulativePositions[i].y)
                             }
@@ -313,7 +285,6 @@ fun StackedAreaChart(
             }
         }
 
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,

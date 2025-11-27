@@ -99,21 +99,20 @@ fun ComparisonBarChart(
     val (minValue, maxValue, colorList) =
         remember(dataList, colors) {
             val allValues = dataList.getAllValues()
+            val calculatedMin = calculateMinValue(allValues)
+            val calculatedMax = calculateMaxValue(allValues)
+            val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+
             Triple(
-                calculateMinValue(allValues),
-                calculateMaxValue(allValues),
+                finalMin,
+                calculatedMax,
                 colors.value,
             )
         }
 
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-
-    // State to track which bar is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store bar bounds for hit testing
     val barBounds = remember { mutableListOf<Pair<Rect, ComparisonBarSegment>>() }
-
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
@@ -149,7 +148,6 @@ fun ComparisonBarChart(
                 minValue = minValue,
                 maxValue = maxValue,
                 steps = 6,
-                // When using FROM_MIN_VALUE mode, always draw axis at bottom (not centered at zero)
                 drawAxisAtZero = isBelowAxisMode,
             ),
         config = scaffoldConfig,
@@ -187,8 +185,6 @@ fun ComparisonBarChart(
                     barHeight = baselineY - barValueY
                     barTop = baselineY - barHeight
                 }
-
-                // Store bar bounds for hit testing
                 if (onBarClick != null) {
                     barBounds.add(
                         Rect(
@@ -204,29 +200,26 @@ fun ComparisonBarChart(
                     )
                 }
 
-                val barChartyColor =
-                    if (group.colors != null && barIndex < group.colors.size) {
-                        group.colors[barIndex]
-                    } else {
-                        ChartyColor.Solid(colorList[barIndex % colorList.size])
-                    }
+                val barChartyColor = if (group.colors != null && barIndex < group.colors.size) {
+                    group.colors[barIndex]
+                } else {
+                    ChartyColor.Solid(colorList[barIndex % colorList.size])
+                }
 
                 val barBrush =
                     when (barChartyColor) {
-                        is ChartyColor.Solid ->
-                            androidx.compose.ui.graphics.Brush.verticalGradient(
-                                colors = listOf(barChartyColor.color, barChartyColor.color),
-                                startY = barTop,
-                                endY = barTop + barHeight,
-                            )
-                        is ChartyColor.Gradient ->
-                            androidx.compose.ui.graphics.Brush.verticalGradient(
-                                colors = barChartyColor.colors,
-                                startY = barTop,
-                                endY = barTop + barHeight,
-                            )
-                    }
+                        is ChartyColor.Solid -> Brush.verticalGradient(
+                            colors = listOf(barChartyColor.color, barChartyColor.color),
+                            startY = barTop,
+                            endY = barTop + barHeight,
+                        )
 
+                        is ChartyColor.Gradient -> Brush.verticalGradient(
+                            colors = barChartyColor.colors,
+                            startY = barTop,
+                            endY = barTop + barHeight,
+                        )
+                    }
                 drawRoundedBar(
                     brush = barBrush,
                     x = barX,
@@ -240,7 +233,6 @@ fun ComparisonBarChart(
             }
         }
 
-        // Draw reference / target line if configured
         comparisonConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -249,8 +241,6 @@ fun ComparisonBarChart(
                 textMeasurer = textMeasurer,
             )
         }
-
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
@@ -277,36 +267,35 @@ private fun DrawScope.drawRoundedBar(
     isBelowAxisMode: Boolean,
     cornerRadius: Float,
 ) {
-    val path =
-        Path().apply {
-            if (isNegative && isBelowAxisMode) {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius.Zero,
-                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    ),
-                )
-            } else {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    ),
-                )
-            }
+    val path = Path().apply {
+        if (isNegative && isBelowAxisMode) {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = CornerRadius.Zero,
+                    topRightCornerRadius = CornerRadius.Zero,
+                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                ),
+            )
+        } else {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius.Zero,
+                ),
+            )
         }
+    }
     drawPath(path, brush)
 }
 

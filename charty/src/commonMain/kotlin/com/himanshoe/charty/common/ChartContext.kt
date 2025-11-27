@@ -80,18 +80,9 @@ data class ChartContext(
      * @return Brush for drawing with gradient support
      */
     fun ChartyColor.toVerticalGradientBrush(): Brush =
-        when (this) {
-            is ChartyColor.Solid ->
-                Brush.verticalGradient(
-                    colors = listOf(color, color),
-                    startY = top,
-                    endY = bottom,
-                )
-            is ChartyColor.Gradient ->
-                Brush.verticalGradient(
-                    colors = colors,
-                    startY = top,
-                    endY = bottom,
-                )
-        }
+        Brush.verticalGradient(
+            colors = value,
+            startY = top,
+            endY = bottom,
+        )
 }

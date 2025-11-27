@@ -33,6 +33,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -106,28 +107,17 @@ fun AreaChart(
     require(dataList.isNotEmpty()) { "Area chart data cannot be empty" }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
-    val (minValue, maxValue) =
-        remember(dataList, lineConfig.negativeValuesDrawMode) {
-            val values = dataList.getValues()
-            calculateMinValue(values) to calculateMaxValue(values)
-        }
-
-    val isBelowAxisMode =
-        lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
-
-    val animationProgress =
-        remember {
-            Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-        }
-
-    // State to track which point is currently showing a tooltip
+    val (minValue, maxValue) = remember(dataList, lineConfig.negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
+    val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
+    val animationProgress = remember {
+        Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
+    }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store point bounds for hit testing
     val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -142,14 +132,12 @@ fun AreaChart(
             if (onPointClick != null) {
                 Modifier.pointerInput(dataList, lineConfig, onPointClick) {
                     detectTapGestures { offset ->
-                        // Find the closest point within tap radius
                         val tapRadius = lineConfig.pointRadius * 2.5f
                         val clickedPoint = pointBounds.minByOrNull { (position, _) ->
                             val dx = position.x - offset.x
                             val dy = position.y - offset.y
                             sqrt(dx.pow(2) + dy.pow(2))
                         }
-
                         clickedPoint?.let { (position, lineData) ->
                             val dx = position.x - offset.x
                             val dy = position.y - offset.y
@@ -177,25 +165,21 @@ fun AreaChart(
             },
         ),
         xLabels = dataList.getLabels(),
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = isBelowAxisMode,
-            ),
+        yAxisConfig = AxisConfig(
+            minValue = minValue,
+            maxValue = maxValue,
+            steps = 6,
+            drawAxisAtZero = isBelowAxisMode,
+        ),
         config = scaffoldConfig,
     ) { chartContext ->
         pointBounds.clear()
-
         val pointPositions =
             dataList.fastMapIndexed { index, point ->
                 val position = Offset(
                     x = chartContext.calculateCenteredXPosition(index, dataList.size),
                     y = chartContext.convertValueToYPosition(point.value),
                 )
-
-                // Store point bounds for hit testing
                 if (onPointClick != null) {
                     pointBounds.add(position to point)
                 }
@@ -203,51 +187,43 @@ fun AreaChart(
                 position
             }
 
-        val baselineY =
-            if (minValue < 0f && isBelowAxisMode) {
-                chartContext.convertValueToYPosition(0f)
-            } else {
-                chartContext.bottom
-            }
+        val baselineY = if (minValue < 0f && isBelowAxisMode) {
+            chartContext.convertValueToYPosition(0f)
+        } else {
+            chartContext.bottom
+        }
 
         if (pointPositions.isNotEmpty()) {
-            val areaPath =
-                Path().apply {
-                    moveTo(pointPositions[0].x, baselineY)
-                    lineTo(pointPositions[0].x, pointPositions[0].y)
+            val areaPath = Path().apply {
+                moveTo(pointPositions[0].x, baselineY)
+                lineTo(pointPositions[0].x, pointPositions[0].y)
 
-                    if (lineConfig.smoothCurve) {
-                        for (i in 0 until pointPositions.size - 1) {
-                            val current = pointPositions[i]
-                            val next = pointPositions[i + 1]
+                if (lineConfig.smoothCurve) {
+                    for (i in 0 until pointPositions.size - 1) {
+                        val current = pointPositions[i]
+                        val next = pointPositions[i + 1]
+                        val controlPoint1X = current.x + (next.x - current.x) / 3f
+                        val controlPoint1Y = current.y
+                        val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
+                        val controlPoint2Y = next.y
 
-                            val controlPoint1X = current.x + (next.x - current.x) / 3f
-                            val controlPoint1Y = current.y
-                            val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                            val controlPoint2Y = next.y
-
-                            cubicTo(
-                                controlPoint1X,
-                                controlPoint1Y,
-                                controlPoint2X,
-                                controlPoint2Y,
-                                next.x,
-                                next.y,
-                            )
-                        }
-                    } else {
-                        // Straight lines through points
-                        for (i in 1 until pointPositions.size) {
-                            lineTo(pointPositions[i].x, pointPositions[i].y)
-                        }
+                        cubicTo(
+                            controlPoint1X,
+                            controlPoint1Y,
+                            controlPoint2X,
+                            controlPoint2Y,
+                            next.x,
+                            next.y,
+                        )
                     }
-
-                    // Close path by going down to baseline and back to start
-                    lineTo(pointPositions.last().x, baselineY)
-                    close()
+                } else {
+                    for (i in 1 until pointPositions.size) {
+                        lineTo(pointPositions[i].x, pointPositions[i].y)
+                    }
                 }
-
-            // Create gradient brush for area fill
+                lineTo(pointPositions.last().x, baselineY)
+                close()
+            }
             val areaBrush =
                 when (color) {
                     is ChartyColor.Solid ->
@@ -260,6 +236,7 @@ fun AreaChart(
                             startY = chartContext.top,
                             endY = chartContext.bottom,
                         )
+
                     is ChartyColor.Gradient ->
                         Brush.verticalGradient(
                             colors = color.colors.map { it.copy(alpha = it.alpha * fillAlpha) },
@@ -268,44 +245,40 @@ fun AreaChart(
                         )
                 }
 
-            // Draw filled area with animation
             drawPath(
                 path = areaPath,
                 brush = areaBrush,
                 style = Fill,
                 alpha = animationProgress.value,
             )
+            val linePath = Path().apply {
+                moveTo(pointPositions[0].x, pointPositions[0].y)
 
-            // Draw line on top of area
-            val linePath =
-                Path().apply {
-                    moveTo(pointPositions[0].x, pointPositions[0].y)
+                if (lineConfig.smoothCurve) {
+                    for (i in 0 until pointPositions.size - 1) {
+                        val current = pointPositions[i]
+                        val next = pointPositions[i + 1]
 
-                    if (lineConfig.smoothCurve) {
-                        for (i in 0 until pointPositions.size - 1) {
-                            val current = pointPositions[i]
-                            val next = pointPositions[i + 1]
+                        val controlPoint1X = current.x + (next.x - current.x) / 3f
+                        val controlPoint1Y = current.y
+                        val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
+                        val controlPoint2Y = next.y
 
-                            val controlPoint1X = current.x + (next.x - current.x) / 3f
-                            val controlPoint1Y = current.y
-                            val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                            val controlPoint2Y = next.y
-
-                            cubicTo(
-                                controlPoint1X,
-                                controlPoint1Y,
-                                controlPoint2X,
-                                controlPoint2Y,
-                                next.x,
-                                next.y,
-                            )
-                        }
-                    } else {
-                        for (i in 1 until pointPositions.size) {
-                            lineTo(pointPositions[i].x, pointPositions[i].y)
-                        }
+                        cubicTo(
+                            controlPoint1X,
+                            controlPoint1Y,
+                            controlPoint2X,
+                            controlPoint2Y,
+                            next.x,
+                            next.y,
+                        )
+                    }
+                } else {
+                    for (i in 1 until pointPositions.size) {
+                        lineTo(pointPositions[i].x, pointPositions[i].y)
                     }
                 }
+            }
 
             val lineBrush =
                 when (color) {
@@ -323,8 +296,6 @@ fun AreaChart(
                     ),
                 alpha = animationProgress.value,
             )
-
-            // Draw points
             if (lineConfig.showPoints) {
                 pointPositions.fastForEachIndexed { index, position ->
                     val pointProgress = index.toFloat() / (pointPositions.size - 1)
@@ -339,44 +310,30 @@ fun AreaChart(
                 }
             }
         }
-
-        // Draw highlight indicator and tooltip for clicked point
         tooltipState?.let { state ->
-            // Find the clicked point position
             val clickedPosition = pointBounds.find { (_, data) ->
                 lineConfig.tooltipFormatter(data) == state.content
             }?.first
 
             clickedPosition?.let { position ->
-                // Draw subtle vertical indicator line
                 drawLine(
                     color = Color.Black.copy(alpha = 0.1f),
                     start = Offset(position.x, chartContext.top),
                     end = Offset(position.x, chartContext.bottom),
                     strokeWidth = 1.5f,
                 )
-
-                // Draw highlight circle around the clicked point
                 drawCircle(
                     color = Color.White,
                     radius = lineConfig.pointRadius + 3f,
                     center = position,
                 )
 
-                val lineBrush =
-                    when (color) {
-                        is ChartyColor.Solid -> Brush.linearGradient(listOf(color.color, color.color))
-                        is ChartyColor.Gradient -> Brush.linearGradient(color.colors)
-                    }
-
                 drawCircle(
-                    brush = lineBrush,
+                    brush = Brush.linearGradient(color.value),
                     radius = lineConfig.pointRadius + 2f,
                     center = position,
                 )
             }
-
-            // Draw tooltip
             drawTooltip(
                 tooltipState = state,
                 config = lineConfig.tooltipConfig,

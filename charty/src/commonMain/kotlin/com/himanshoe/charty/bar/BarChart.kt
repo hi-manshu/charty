@@ -100,7 +100,13 @@ fun BarChart(
     val (minValue, maxValue) =
         remember(dataList, barConfig.negativeValuesDrawMode) {
             val values = dataList.getValues()
-            calculateMinValue(values) to calculateMaxValue(values)
+            val calculatedMin = calculateMinValue(values)
+            val calculatedMax = calculateMaxValue(values)
+
+            // If all values are positive (or zero), start from 0
+            val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+
+            finalMin to calculatedMax
         }
 
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS

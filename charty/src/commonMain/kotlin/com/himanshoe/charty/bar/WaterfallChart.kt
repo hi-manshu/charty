@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
@@ -34,7 +34,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.WaterfallChartConfig
 import com.himanshoe.charty.bar.data.BarData
-import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
@@ -81,15 +80,9 @@ fun WaterfallChart(
         remember {
             Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
         }
-
-    // State to track which bar is currently showing a tooltip
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
-    // Store bar bounds for hit testing
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
-
     val textMeasurer = rememberTextMeasurer()
-
     LaunchedEffect(config.animation) {
         if (config.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -141,19 +134,14 @@ fun WaterfallChart(
         items.fastForEachIndexed { index, bar ->
             val barX = chartContext.calculateBarLeftPosition(index, items.size, config.barWidthFraction)
             val barWidth = chartContext.calculateBarWidth(items.size, config.barWidthFraction)
-
             val prevTotal = if (index == 0) 0f else cumulativeValues[index - 1]
             val currTotal = cumulativeValues[index]
-
             val startY = chartContext.convertValueToYPosition(prevTotal)
             val endY = chartContext.convertValueToYPosition(currTotal)
-
             val isIncrease = bar.value >= 0f
             val fullHeight = kotlin.math.abs(endY - startY)
             val animatedHeight = fullHeight * animationProgress.value
             val animatedTop = if (isIncrease) startY - animatedHeight else startY
-
-            // Store bar bounds for hit testing
             if (onBarClick != null) {
                 barBounds.add(
                     Rect(
@@ -167,14 +155,8 @@ fun WaterfallChart(
 
             val baseColor = if (isIncrease) config.positiveColor else config.negativeColor
             val chartyColor = bar.color ?: baseColor
-            val color =
-                when (chartyColor) {
-                    is ChartyColor.Solid -> chartyColor.color
-                    is ChartyColor.Gradient -> chartyColor.colors.first()
-                }
-
             drawWaterfallBar(
-                color = color,
+                brush = Brush.verticalGradient(chartyColor.value),
                 x = barX,
                 y = animatedTop,
                 width = barWidth,
@@ -198,7 +180,7 @@ fun WaterfallChart(
 }
 
 private fun DrawScope.drawWaterfallBar(
-    color: Color,
+    brush: Brush,
     x: Float,
     y: Float,
     width: Float,
@@ -220,6 +202,6 @@ private fun DrawScope.drawWaterfallBar(
                 ),
             )
         }
-    drawPath(path, color)
+    drawPath(path = path, brush = brush)
 }
 

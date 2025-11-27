@@ -271,8 +271,6 @@ private fun DrawScope.drawRadarDataSet(
     val numberOfAxes = dataSet.axes.size
     val path = Path()
     val points = mutableListOf<Offset>()
-
-    // Calculate all points
     dataSet.axes.fastForEachIndexed { index, axisData ->
         val angle = (config.startAngleDegrees + (FULL_CIRCLE_DEGREES * index / numberOfAxes)) * DEGREES_TO_RADIANS
         val normalizedValue = axisData.getNormalizedValue()
@@ -290,21 +288,16 @@ private fun DrawScope.drawRadarDataSet(
         }
     }
     path.close()
-
-    // Get color from ChartyColor
-    val dataColor =
-        when (dataSet.color) {
-            is ChartyColor.Solid -> dataSet.color.color
-            is ChartyColor.Gradient -> dataSet.color.colors.first()
-        }
+    val dataColor = when (dataSet.color) {
+        is ChartyColor.Solid -> dataSet.color.color
+        is ChartyColor.Gradient -> dataSet.color.colors.first()
+    }
 
     // Draw filled polygon
     drawPath(
         path = path,
         color = dataColor.copy(alpha = dataSet.fillAlpha * animationProgress),
     )
-
-    // Draw outline
     drawPath(
         path = path,
         color = dataColor,
@@ -315,8 +308,6 @@ private fun DrawScope.drawRadarDataSet(
                 join = config.strokeJoin,
             ),
     )
-
-    // Draw data points
     if (config.showDataPoints) {
         points.forEach { point ->
             drawCircle(
@@ -348,13 +339,11 @@ private fun DrawScope.drawAxisLabels(
         val x = center.x + labelDistance * cos(angle)
         val y = center.y + labelDistance * sin(angle)
 
-        val textLayoutResult =
-            textMeasurer.measure(
+        val textLayoutResult = textMeasurer.measure(
                 text = label,
                 style = textStyle,
             )
 
-        // Adjust position based on angle to center text properly
         val textX = x - textLayoutResult.size.width / 2f
         val textY = y - textLayoutResult.size.height / 2f
 
