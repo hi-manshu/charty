@@ -11,14 +11,27 @@ package com.himanshoe.sample
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -28,8 +41,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.BarChart
+import com.himanshoe.charty.bar.BubbleBarChart
 import com.himanshoe.charty.bar.ComparisonBarChart
 import com.himanshoe.charty.bar.HorizontalBarChart
 import com.himanshoe.charty.bar.LollipopBarChart
@@ -38,8 +51,8 @@ import com.himanshoe.charty.bar.SpanChart
 import com.himanshoe.charty.bar.StackedBarChart
 import com.himanshoe.charty.bar.WaterfallChart
 import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.config.BubbleBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
-import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.config.MosiacBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -58,9 +71,9 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.ComboChart
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
@@ -115,6 +128,99 @@ fun App() {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
+                // Bubble Bar Chart - NEW EXAMPLE AT POSITION 0
+                item {
+                    var selectedBar by remember { mutableStateOf<BarData?>(null) }
+
+                    Column {
+                        // Show selected bar info in a card above the chart
+                        selectedBar?.let { bar ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Selected: ${bar.label}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "Sales: $${bar.value.toInt()}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        ChartCard(
+                            title = "Bubble Bar Chart",
+                            description = "Data visualized as stacked bubbles. Click on any column to see details.",
+                        ) {
+                            BubbleBarChart(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(320.dp),
+                                data = {
+                                    listOf(
+                                        BarData("100", 50f),
+                                        BarData("200", 200f),
+                                        BarData("300", 300f),
+                                        BarData("400", 400f),
+                                        BarData("500", 500f),
+                                        BarData("600", 600f),
+                                        BarData("700", 700f),
+                                        BarData("800", 800f),
+                                        BarData("900", 900f),
+                                    )
+                                },
+                                color = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFFFFA64D),
+                                        Color(0xFFEF7B45),
+                                        Color(0xFFD64C66)
+                                    )
+                                ),
+                                bubbleConfig = BubbleBarChartConfig(
+                                    barWidthFraction = 0.6f,
+                                    bubbleRadius = 8f,
+                                    bubbleSpacing = 4f,
+                                    animation = Animation.Enabled(duration = 800),
+                                    // Tooltip styling
+                                    tooltipConfig = TooltipConfig(
+                                        backgroundColor = Color.Black,
+                                        textStyle = TextStyle(
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        shape = RoundedCornerShape(8.dp),
+                                        padding = TooltipPadding(
+                                            horizontal = 16.dp,
+                                            vertical = 10.dp
+                                        ),
+                                        elevation = 8.dp,
+                                        showArrow = true,
+                                        arrowSize = 10.dp
+                                    ),
+                                    tooltipPosition = TooltipPosition.AUTO
+                                ),
+                                scaffoldConfig = ChartScaffoldConfig(leftLabelRotation = LabelRotation.Angle45Negative),
+                                onBarClick = { barData ->
+                                    selectedBar = barData
+                                    println("Bubble bar clicked: ${barData.label} = ${barData.value}")
+                                },
+                            )
+                        }
+                    }
+                }
+
                 // Interactive Bar Chart with Tooltips - NEW EXAMPLE AT POSITION 0
                 item {
                     var selectedBar by remember { mutableStateOf<BarData?>(null) }

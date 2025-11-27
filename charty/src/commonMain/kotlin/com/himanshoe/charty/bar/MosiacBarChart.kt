@@ -36,10 +36,10 @@ import com.himanshoe.charty.bar.config.MosiacBarChartConfig
 import com.himanshoe.charty.bar.config.MosiacBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 

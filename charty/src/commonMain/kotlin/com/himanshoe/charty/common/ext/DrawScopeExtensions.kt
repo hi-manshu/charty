@@ -9,10 +9,10 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.axis.formatAxisLabel
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
 internal fun DrawScope.drawVerticalChartAxes(
     xLabels: List<String>,

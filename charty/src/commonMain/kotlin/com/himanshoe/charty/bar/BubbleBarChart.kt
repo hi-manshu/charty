@@ -22,17 +22,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
-import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.config.BubbleBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.ext.calculateMaxValue
@@ -49,16 +47,19 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import kotlin.math.ceil
+import kotlin.math.max
 
 /**
- * Bar Chart - Display data as vertical bars
+ * Bubble Bar Chart - Display data as stacked bubbles in vertical columns
  *
- * A bar chart presents categorical data with rectangular bars. The height of each bar
- * is proportional to the value it represents. Ideal for comparing discrete categories.
+ * A bubble bar chart presents categorical data with circles/bubbles stacked vertically.
+ * The number and size of bubbles is proportional to the value they represent.
+ * Ideal for creating visually appealing comparisons between discrete categories.
  *
  * Usage:
  * ```kotlin
- * BarChart(
+ * BubbleBarChart(
  *     data = {
  *         listOf(
  *             BarData("Jan", 100f),
@@ -67,10 +68,10 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
  *         )
  *     },
  *     color = ChartyColor.Solid(Color.Blue),
- *     barConfig = BarChartConfig(
+ *     bubbleConfig = BubbleBarChartConfig(
  *         barWidthFraction = 0.6f,
- *         roundedTopCorners = true,
- *         topCornerRadius = CornerRadius.Large,
+ *         bubbleRadius = 8.dp,
+ *         bubbleSpacing = 4.dp,
  *         animation = Animation.Enabled()
  *     )
  * )
@@ -78,36 +79,36 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
  *
  * @param data Lambda returning list of bar data to display
  * @param modifier Modifier for the chart
- * @param color Color configuration - Solid for uniform bars, Gradient for vertical gradient effect
- * @param barConfig Configuration for bar appearance
+ * @param color Color configuration - Solid for uniform bubbles, Gradient for gradient effect
+ * @param bubbleConfig Configuration for bubble appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param leftLabelRotation Rotation for Y-axis labels. Default is LabelRotation.Straight. Use LabelRotation.Angle45Negative for -45-degree rotation.
+ * @param leftLabelRotation Rotation for Y-axis labels. Default is LabelRotation.Straight.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
-fun BarChart(
+fun BubbleBarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(Color.Blue),
-    barConfig: BarChartConfig = BarChartConfig(),
+    bubbleConfig: BubbleBarChartConfig = BubbleBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     leftLabelRotation: LabelRotation = LabelRotation.Straight,
 ) {
     val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Bar chart data cannot be empty" }
+    require(dataList.isNotEmpty()) { "Bubble bar chart data cannot be empty" }
 
     val (minValue, maxValue) =
-        remember(dataList, barConfig.negativeValuesDrawMode) {
+        remember(dataList, bubbleConfig.negativeValuesDrawMode) {
             val values = dataList.getValues()
             calculateMinValue(values) to calculateMaxValue(values)
         }
 
-    val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
+    val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
     val animationProgress =
         remember {
-            Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
+            Animatable(if (bubbleConfig.animation is Animation.Enabled) 0f else 1f)
         }
 
     // State to track which bar is currently showing a tooltip
@@ -116,11 +117,11 @@ fun BarChart(
     // Store bar bounds for hit testing
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
 
-    LaunchedEffect(barConfig.animation) {
-        if (barConfig.animation is Animation.Enabled) {
+    LaunchedEffect(bubbleConfig.animation) {
+        if (bubbleConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = barConfig.animation.duration),
+                animationSpec = tween(durationMillis = bubbleConfig.animation.duration),
             )
         }
     }
@@ -130,7 +131,7 @@ fun BarChart(
     ChartScaffold(
         modifier = modifier.then(
             if (onBarClick != null) {
-                Modifier.pointerInput(dataList, barConfig, onBarClick) {
+                Modifier.pointerInput(dataList, bubbleConfig, onBarClick) {
                     detectTapGestures { offset ->
                         val clickedBar = barBounds.find { (rect, _) ->
                             rect.contains(offset)
@@ -139,11 +140,11 @@ fun BarChart(
                         clickedBar?.let { (rect, barData) ->
                             onBarClick.invoke(barData)
                             tooltipState = TooltipState(
-                                content = barConfig.tooltipFormatter(barData),
+                                content = bubbleConfig.tooltipFormatter(barData),
                                 x = rect.left,
                                 y = rect.top,
                                 barWidth = rect.width,
-                                position = barConfig.tooltipPosition,
+                                position = bubbleConfig.tooltipPosition,
                             )
                         } ?: run {
                             tooltipState = null
@@ -174,8 +175,8 @@ fun BarChart(
             }
 
         dataList.fastForEachIndexed { index, bar ->
-            val barX = chartContext.calculateBarLeftPosition(index, dataList.size, barConfig.barWidthFraction)
-            val barWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
+            val barX = chartContext.calculateBarLeftPosition(index, dataList.size, bubbleConfig.barWidthFraction)
+            val barWidth = chartContext.calculateBarWidth(dataList.size, bubbleConfig.barWidthFraction)
             val barValueY = chartContext.convertValueToYPosition(bar.value)
             val isNegative = bar.value < 0f
 
@@ -192,6 +193,7 @@ fun BarChart(
                 barTop = baselineY - animatedBarHeight
                 barHeight = animatedBarHeight
             }
+
             // Store bar bounds for hit testing
             if (onBarClick != null) {
                 barBounds.add(
@@ -205,21 +207,20 @@ fun BarChart(
             }
 
             val barColor = bar.color ?: color
-            val brush = with(chartContext) { barColor.toVerticalGradientBrush() }
 
-            drawRoundedBar(
-                brush = brush,
+            // Draw bubbles stacked in the bar
+            drawBubbleBar(
+                color = barColor,
                 x = barX,
                 y = barTop,
                 width = barWidth,
                 height = barHeight,
-                isNegative = isNegative,
-                isBelowAxisMode = isBelowAxisMode,
-                cornerRadius = barConfig.cornerRadius.value,
+                bubbleRadius = bubbleConfig.bubbleRadius,
+                bubbleSpacing = bubbleConfig.bubbleSpacing,
             )
         }
 
-        barConfig.referenceLine?.let { referenceLineConfig ->
+        bubbleConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
                 orientation = ChartOrientation.VERTICAL,
@@ -231,7 +232,7 @@ fun BarChart(
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
-                config = barConfig.tooltipConfig,
+                config = bubbleConfig.tooltipConfig,
                 textMeasurer = textMeasurer,
                 chartWidth = chartContext.right,
                 chartTop = chartContext.top,
@@ -242,47 +243,62 @@ fun BarChart(
 }
 
 /**
- * Helper function to draw a bar with rounded corners based on bar position
+ * Helper function to draw bubbles stacked vertically in a bar
  */
-private fun DrawScope.drawRoundedBar(
-    brush: androidx.compose.ui.graphics.Brush,
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBubbleBar(
+    color: ChartyColor,
     x: Float,
     y: Float,
     width: Float,
     height: Float,
-    isNegative: Boolean,
-    isBelowAxisMode: Boolean,
-    cornerRadius: Float,
+    bubbleRadius: Float,
+    bubbleSpacing: Float,
 ) {
-    val path =
-        Path().apply {
-            if (isNegative && isBelowAxisMode) {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius.Zero,
-                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    ),
-                )
-            } else {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    ),
-                )
-            }
+    if (height <= 0f) return
+
+    val centerX = x + width / 2f
+    val diameter = bubbleRadius * 2
+    val verticalStep = diameter + bubbleSpacing
+
+    // Calculate how many bubbles can fit
+    val bubbleCount = max(1, ceil(height / verticalStep).toInt())
+
+    // Determine colors for gradient if applicable
+    val colors = when (color) {
+        is ChartyColor.Gradient -> color.colors
+        is ChartyColor.Solid -> listOf(color.color, color.color)
+    }
+
+    // Draw bubbles from bottom to top
+    for (i in 0 until bubbleCount) {
+        val bubbleY = y + height - (i * verticalStep) - bubbleRadius
+
+        // Skip if bubble would be drawn outside the bar area
+        if (bubbleY < y - bubbleRadius) break
+
+        // Calculate color based on position for gradient effect
+
+        val bubbleColor = if (colors.size > 1) {
+            // Interpolate between colors
+            val ratio = i.toFloat() / bubbleCount.coerceAtLeast(1)
+            val scaledRatio = ratio * (colors.size - 1)
+            val index = scaledRatio.toInt().coerceIn(0, colors.size - 2)
+            val localRatio = scaledRatio - index
+
+            lerp(
+                colors[index],
+                colors[index + 1],
+                localRatio
+            )
+        } else {
+            colors[0]
         }
-    drawPath(path, brush)
+
+        drawCircle(
+            color = bubbleColor,
+            radius = bubbleRadius,
+            center = Offset(centerX, bubbleY)
+        )
+    }
 }
+

@@ -29,13 +29,15 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -44,8 +46,6 @@ import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.ext.getValues
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.rememberTextMeasurer
 import kotlin.math.pow
 import kotlin.math.sqrt
 

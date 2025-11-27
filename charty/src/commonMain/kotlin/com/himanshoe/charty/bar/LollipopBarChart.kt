@@ -36,10 +36,10 @@ import com.himanshoe.charty.bar.ext.calculateMaxValue
 import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.bar.ext.getValues
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import kotlin.math.pow
