@@ -19,6 +19,7 @@ private const val DEFAULT_CENTER_ICON_SIZE = 40f
 private const val DEFAULT_PADDING_FRACTION = 0.15f
 private const val DEFAULT_START_ANGLE = -90f
 private const val GRID_LINE_ALPHA_DEFAULT = 0.5f
+private const val AXIS_LINE_ALPHA_DEFAULT = 0.6f
 private const val DEFAULT_GRID_LINE_COLOR = 0xFFBDBDBD
 private const val DEFAULT_AXIS_LINE_COLOR = 0xFF9E9E9E
 
@@ -74,8 +75,16 @@ data class RadarGridConfig(
     val showAxisLines: Boolean = true,
     val gridLineWidth: Float = DEFAULT_GRID_LINE_WIDTH,
     val axisLineWidth: Float = DEFAULT_AXIS_LINE_WIDTH,
-    val gridLineColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_GRID_LINE_COLOR).copy(alpha = GRID_LINE_ALPHA_DEFAULT)),
-    val axisLineColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_AXIS_LINE_COLOR).copy(alpha = 0.6f)),
+    val gridLineColor: ChartyColor = ChartyColor.Solid(
+        Color(DEFAULT_GRID_LINE_COLOR).copy(
+            alpha = GRID_LINE_ALPHA_DEFAULT,
+        ),
+    ),
+    val axisLineColor: ChartyColor = ChartyColor.Solid(
+        Color(DEFAULT_AXIS_LINE_COLOR).copy(
+            alpha = AXIS_LINE_ALPHA_DEFAULT,
+        ),
+    ),
     val gridLineAlpha: Float = GRID_LINE_ALPHA_DEFAULT,
 ) {
     init {

@@ -11,19 +11,23 @@ import com.himanshoe.charty.common.axis.DrawAxisAndLabels
 import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
+private const val LEFT_PADDING_WITH_LABELS = 60f
+private const val LEFT_PADDING_WITHOUT_LABELS = 20f
+private const val RIGHT_PADDING = 20f
+private const val TOP_PADDING = 20f
+private const val BOTTOM_PADDING_WITH_LABELS = 50f
+private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
+
 /**
- * ChartScaffold - Clean and simple chart scaffold with axis and labels.
- *
- * All positioning is handled internally via ChartContext.
- * Supports both vertical and horizontal orientations.
+ * ChartScaffold - Provides a scaffold for charts with axis and labels.
  *
  * @param modifier Modifier for the chart
  * @param xLabels Labels for the X-axis
  * @param yAxisConfig Configuration for Y-axis values and range
  * @param config Scaffold configuration for styling
- * @param orientation Chart orientation (VERTICAL or HORIZONTAL)
- * @param leftLabelRotation Rotation for left-side labels (Y-axis labels in VERTICAL mode, category labels in HORIZONTAL mode). Default is LabelRotation.Straight. Use LabelRotation.Angle45Negative for -45-degree rotation.
- * @param content Drawing lambda that receives ChartContext for positioning
+ * @param orientation Chart orientation
+ * @param leftLabelRotation Rotation for left-side labels
+ * @param content Drawing lambda that receives ChartContext
  */
 @Composable
 fun ChartScaffold(
@@ -45,22 +49,27 @@ fun ChartScaffold(
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val leftPadding = if (config.showLabels) 60f else 20f
-            val rightPadding = 20f
-            val topPadding = 20f
-            val bottomPadding = if (config.showLabels && xLabels.isNotEmpty()) 50f else 20f
+            val leftPadding = if (config.showLabels) {
+                LEFT_PADDING_WITH_LABELS
+            } else {
+                LEFT_PADDING_WITHOUT_LABELS
+            }
+            val bottomPadding = if (config.showLabels && xLabels.isNotEmpty()) {
+                BOTTOM_PADDING_WITH_LABELS
+            } else {
+                BOTTOM_PADDING_WITHOUT_LABELS
+            }
 
-            val chartContext =
-                ChartContext(
-                    left = leftPadding,
-                    top = topPadding,
-                    right = size.width - rightPadding,
-                    bottom = size.height - bottomPadding,
-                    width = size.width - leftPadding - rightPadding,
-                    height = size.height - topPadding - bottomPadding,
-                    minValue = yAxisConfig.minValue,
-                    maxValue = yAxisConfig.maxValue,
-                )
+            val chartContext = ChartContext(
+                left = leftPadding,
+                top = TOP_PADDING,
+                right = size.width - RIGHT_PADDING,
+                bottom = size.height - bottomPadding,
+                width = size.width - leftPadding - RIGHT_PADDING,
+                height = size.height - TOP_PADDING - bottomPadding,
+                minValue = yAxisConfig.minValue,
+                maxValue = yAxisConfig.maxValue,
+            )
 
             content(chartContext)
         }

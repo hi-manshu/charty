@@ -167,6 +167,9 @@ naming:
     active: true
     excludes: ['**/test/**', '**/androidTest/**']
     functionPattern: '[a-z][a-zA-Z0-9]*'
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
   FunctionParameterNaming:
     active: true
   MatchingDeclarationName:

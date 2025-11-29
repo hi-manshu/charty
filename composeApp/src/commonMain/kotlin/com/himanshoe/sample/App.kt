@@ -84,12 +84,12 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
-import com.himanshoe.charty.line.MultilinePoint
 import com.himanshoe.charty.line.StackedAreaChart
-import com.himanshoe.charty.line.StackedAreaPoint
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
+import com.himanshoe.charty.line.data.MultilinePoint
+import com.himanshoe.charty.line.data.StackedAreaPoint
 import com.himanshoe.charty.pie.PieChart
 import com.himanshoe.charty.pie.config.InteractionConfig
 import com.himanshoe.charty.pie.config.LabelConfig
@@ -110,15 +110,14 @@ import com.himanshoe.charty.radar.config.RadarGridStyle
 import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-@Preview
-fun App() {
+@Suppress("CyclomaticComplexMethod")
+fun App(modifier: Modifier = Modifier) {
     MaterialTheme {
         Column(
             modifier =
-                Modifier
+                modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
         ) {
@@ -2596,10 +2595,11 @@ fun App() {
 fun ChartCard(
     title: String,
     description: String,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(12.dp),
     ) {

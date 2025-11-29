@@ -3,6 +3,11 @@ package com.himanshoe.charty.common
 import androidx.compose.ui.graphics.Brush
 import com.himanshoe.charty.color.ChartyColor
 
+private const val CENTER_OFFSET = 0.5f
+private const val DEFAULT_BAR_WIDTH_FRACTION = 0.6f
+private const val CENTER_DIVISOR = 2f
+private const val ZERO_RANGE = 0f
+
 /**
  * Context object passed to chart drawing lambdas.
  * Provides all necessary positioning and conversion functions.
@@ -25,7 +30,7 @@ data class ChartContext(
      */
     fun convertValueToYPosition(value: Float): Float {
         val range = maxValue - minValue
-        if (range == 0f) return bottom
+        if (range == ZERO_RANGE) return bottom
         val normalized = (value - minValue) / range
         return bottom - (normalized * height)
     }
@@ -42,11 +47,11 @@ data class ChartContext(
     fun calculateBarLeftPosition(
         index: Int,
         totalBars: Int,
-        barWidthFraction: Float = 0.6f,
+        barWidthFraction: Float = DEFAULT_BAR_WIDTH_FRACTION,
     ): Float {
         val sectionWidth = width / totalBars
         val barWidth = sectionWidth * barWidthFraction
-        return left + (sectionWidth * index) + (sectionWidth - barWidth) / 2
+        return left + (sectionWidth * index) + (sectionWidth - barWidth) / CENTER_DIVISOR
     }
 
     /**
@@ -58,7 +63,7 @@ data class ChartContext(
      */
     fun calculateBarWidth(
         totalBars: Int,
-        widthFraction: Float = 0.6f,
+        widthFraction: Float = DEFAULT_BAR_WIDTH_FRACTION,
     ): Float = (width / totalBars) * widthFraction
 
     /**
@@ -72,7 +77,7 @@ data class ChartContext(
     fun calculateCenteredXPosition(
         index: Int,
         totalItems: Int,
-    ): Float = left + (width * (index + 0.5f) / totalItems)
+    ): Float = left + (width * (index + CENTER_OFFSET) / totalItems)
 
     /**
      * Converts ChartyColor to a vertical gradient Brush

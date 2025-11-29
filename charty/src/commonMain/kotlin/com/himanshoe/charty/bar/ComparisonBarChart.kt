@@ -298,33 +298,3 @@ private fun DrawScope.drawRoundedBar(
     }
     drawPath(path, brush)
 }
-
-/**
- * @deprecated Use ComparisonBarChart instead. GroupedBarChart has been renamed to ComparisonBarChart.
- */
-@Deprecated(
-    message = "GroupedBarChart has been renamed to ComparisonBarChart",
-    replaceWith = ReplaceWith("ComparisonBarChart(data, modifier, colors, ComparisonBarChartConfig(), scaffoldConfig)"),
-    level = DeprecationLevel.WARNING,
-)
-@Composable
-fun GroupedBarChart(
-    data: () -> List<BarGroup>,
-    modifier: Modifier = Modifier,
-    colors: ChartyColor =
-        ChartyColor.Gradient(
-            listOf(
-                Color(0xFFE91E63),
-                Color(0xFF2196F3),
-            ),
-        ),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
-) {
-    ComparisonBarChart(
-        data = data,
-        modifier = modifier,
-        colors = colors,
-        comparisonConfig = ComparisonBarChartConfig(),
-        scaffoldConfig = scaffoldConfig,
-    )
-}

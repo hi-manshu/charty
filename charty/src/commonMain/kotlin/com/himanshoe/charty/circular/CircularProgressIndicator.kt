@@ -200,7 +200,6 @@ fun CircularProgressIndicator(
                                         val ringRadius =
                                             calculateRingRadius(
                                                 index = index,
-                                                totalRings = ringsList.size,
                                                 radius = radius,
                                                 config = config,
                                                 strokeWidth = strokeWidth,
@@ -231,7 +230,6 @@ fun CircularProgressIndicator(
                 val ringRadius =
                     calculateRingRadius(
                         index = index,
-                        totalRings = ringsList.size,
                         radius = radius,
                         config = config,
                         strokeWidth = strokeWidth,
@@ -257,7 +255,6 @@ fun CircularProgressIndicator(
                     progress = animProgress,
                     config = config,
                     rotationAngle = rotationAngle,
-                    isSelected = selectedRingIndex == index,
                     strokeWidth = strokeWidth,
                 )
             }
@@ -305,7 +302,6 @@ private fun calculateStrokeWidth(
  */
 private fun calculateRingRadius(
     index: Int,
-    @Suppress("UNUSED_PARAMETER") totalRings: Int,
     radius: Float,
     config: CircularProgressConfig,
     strokeWidth: Float,
@@ -352,7 +348,6 @@ private fun DrawScope.drawRingProgress(
     progress: Float,
     config: CircularProgressConfig,
     rotationAngle: Float,
-    @Suppress("UNUSED_PARAMETER") isSelected: Boolean,
     strokeWidth: Float,
 ) {
     val topLeft = Offset(center.x - radius, center.y - radius)

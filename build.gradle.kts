@@ -32,7 +32,7 @@ subprojects {
 
     plugins.withId("io.gitlab.arturbosch.detekt") {
         dependencies {
-            add("detektPlugins", project(":detekt-rules"))
+            add("detektPlugins", "io.nlopez.compose.rules:detekt:0.4.28")
         }
     }
 

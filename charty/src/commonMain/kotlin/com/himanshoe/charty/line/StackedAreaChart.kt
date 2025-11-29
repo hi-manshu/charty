@@ -14,6 +14,7 @@ package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,12 +23,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartScaffold
@@ -38,25 +42,9 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
+import com.himanshoe.charty.line.data.StackedAreaPoint
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.getLabels
-
-/**
- * Represents an area segment in a stacked area chart that was clicked
- *
- * @param lineGroup The line group containing this segment
- * @param seriesIndex The index of the area series (0 = bottom area, 1 = next area, etc.)
- * @param dataIndex The index of the data point within the area
- * @param value The value of this segment (not cumulative)
- * @param cumulativeValue The cumulative value at this point
- */
-data class StackedAreaPoint(
-    val lineGroup: LineGroup,
-    val seriesIndex: Int,
-    val dataIndex: Int,
-    val value: Float,
-    val cumulativeValue: Float,
-)
 
 /**
  * Stacked Area Chart - Display multiple series as stacked filled areas
@@ -138,13 +126,11 @@ fun StackedAreaChart(
         }
 
     val minValue = 0f
-
-    val animationProgress =
-        remember {
+    val animationProgress = remember {
             Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
         }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val areaPointBounds = remember { mutableListOf<Pair<Offset, StackedAreaPoint>>() }
+    val areaSegmentBounds = remember { mutableListOf<Triple<Rect, Path, StackedAreaPoint>>() }
     val textMeasurer = rememberTextMeasurer()
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
@@ -156,7 +142,32 @@ fun StackedAreaChart(
     }
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onAreaClick != null) {
+                Modifier.pointerInput(dataList, lineConfig, onAreaClick) {
+                    detectTapGestures { offset ->
+                        val clickedSegment = areaSegmentBounds.find { (bounds, _, _) ->
+                            bounds.contains(offset)
+                        }
+
+                        clickedSegment?.let { (bounds, _, areaPoint) ->
+                            onAreaClick.invoke(areaPoint)
+                            tooltipState = TooltipState(
+                                content = "${areaPoint.lineGroup.label}: ${areaPoint.value}",
+                                x = bounds.left + bounds.width / 2,
+                                y = bounds.top,
+                                barWidth = bounds.width,
+                                position = lineConfig.tooltipPosition,
+                            )
+                        } ?: run {
+                            tooltipState = null
+                        }
+                    }
+                }
+            } else {
+                Modifier
+            },
+        ),
         xLabels = dataList.getLabels(),
         yAxisConfig = AxisConfig(
             minValue = minValue,
@@ -166,13 +177,15 @@ fun StackedAreaChart(
         ),
         config = scaffoldConfig,
     ) { chartContext ->
-        areaPointBounds.clear()
+        areaSegmentBounds.clear()
 
         val baselineY = chartContext.bottom
         val startX = chartContext.left
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
         for (seriesIndex in seriesCount - 1 downTo 0) {
             val seriesColor = colorList[seriesIndex % colorList.size]
+
+            // Calculate cumulative positions for this series
             val cumulativePositions = dataList.fastMapIndexed { index, group ->
                 var cumulativeValue = 0f
                 for (i in 0..seriesIndex) {
@@ -183,6 +196,28 @@ fun StackedAreaChart(
                     y = chartContext.convertValueToYPosition(cumulativeValue),
                 )
             }
+
+            // Calculate lower bound positions (previous series cumulative or baseline)
+            val lowerPositions = if (seriesIndex > 0) {
+                dataList.fastMapIndexed { index, group ->
+                    var cumulativeValue = 0f
+                    for (i in 0 until seriesIndex) {
+                        cumulativeValue += group.values.getOrNull(i) ?: 0f
+                    }
+                    Offset(
+                        x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                        y = chartContext.convertValueToYPosition(cumulativeValue),
+                    )
+                }
+            } else {
+                dataList.fastMapIndexed { index, _ ->
+                    Offset(
+                        x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                        y = baselineY,
+                    )
+                }
+            }
+
             if (cumulativePositions.isNotEmpty()) {
                 val areaPath =
                     Path().apply {
@@ -282,6 +317,51 @@ fun StackedAreaChart(
                         ),
                     alpha = animationProgress.value,
                 )
+                if (onAreaClick != null) {
+                    dataList.fastForEachIndexed { dataIndex, group ->
+                        val segmentValue = group.values.getOrNull(seriesIndex) ?: 0f
+                        val upperPoint = cumulativePositions.getOrNull(dataIndex)
+                        val lowerPoint = lowerPositions.getOrNull(dataIndex)
+
+                        if (upperPoint != null && lowerPoint != null && dataIndex < cumulativePositions.size - 1) {
+                            val nextUpperPoint = cumulativePositions[dataIndex + 1]
+                            val nextLowerPoint = lowerPositions[dataIndex + 1]
+
+                            val segmentPath = Path().apply {
+                                moveTo(upperPoint.x, upperPoint.y)
+                                lineTo(nextUpperPoint.x, nextUpperPoint.y)
+                                lineTo(nextLowerPoint.x, nextLowerPoint.y)
+                                lineTo(lowerPoint.x, lowerPoint.y)
+                                close()
+                            }
+
+                            // Calculate bounds for this segment
+                            val minX = minOf(upperPoint.x, lowerPoint.x, nextUpperPoint.x, nextLowerPoint.x)
+                            val maxX = maxOf(upperPoint.x, lowerPoint.x, nextUpperPoint.x, nextLowerPoint.x)
+                            val minY = minOf(upperPoint.y, lowerPoint.y, nextUpperPoint.y, nextLowerPoint.y)
+                            val maxY = maxOf(upperPoint.y, lowerPoint.y, nextUpperPoint.y, nextLowerPoint.y)
+
+                            var cumulativeValue = 0f
+                            for (i in 0..seriesIndex) {
+                                cumulativeValue += group.values.getOrNull(i) ?: 0f
+                            }
+
+                            areaSegmentBounds.add(
+                                Triple(
+                                    Rect(left = minX, top = minY, right = maxX, bottom = maxY),
+                                    segmentPath,
+                                    StackedAreaPoint(
+                                        lineGroup = group,
+                                        seriesIndex = seriesIndex,
+                                        dataIndex = dataIndex,
+                                        value = segmentValue,
+                                        cumulativeValue = cumulativeValue,
+                                    )
+                                )
+                            )
+                        }
+                    }
+                }
             }
         }
 

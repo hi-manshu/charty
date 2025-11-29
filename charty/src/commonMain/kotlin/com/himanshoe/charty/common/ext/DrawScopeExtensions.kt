@@ -14,6 +14,87 @@ import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.axis.formatAxisLabel
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
+private const val VERTICAL_CHART_LEFT_PADDING_WITH_LABELS = 60f
+private const val VERTICAL_CHART_LEFT_PADDING_WITHOUT_LABELS = 20f
+private const val VERTICAL_CHART_RIGHT_PADDING = 20f
+private const val VERTICAL_CHART_TOP_PADDING = 20f
+private const val VERTICAL_CHART_BOTTOM_PADDING_WITH_LABELS = 50f
+private const val VERTICAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS = 20f
+
+private const val HORIZONTAL_CHART_LEFT_PADDING_WITH_LABELS = 100f
+private const val HORIZONTAL_CHART_LEFT_PADDING_WITHOUT_LABELS = 20f
+private const val HORIZONTAL_CHART_RIGHT_PADDING = 20f
+private const val HORIZONTAL_CHART_TOP_PADDING = 20f
+private const val HORIZONTAL_CHART_BOTTOM_PADDING_WITH_LABELS = 50f
+private const val HORIZONTAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS = 20f
+
+private const val LABEL_OFFSET = 10f
+private const val CENTER_DIVISOR = 2f
+private const val POSITION_OFFSET = 0.5f
+private const val MIN_STEPS = 2
+
+private const val ZERO_VALUE = 0f
+
+private data class ChartBounds(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
+    val width: Float,
+    val height: Float,
+)
+
+private fun calculateVerticalChartBounds(
+    size: androidx.compose.ui.geometry.Size,
+    showLabels: Boolean,
+    hasXLabels: Boolean,
+): ChartBounds {
+    val leftPadding =
+        if (showLabels) VERTICAL_CHART_LEFT_PADDING_WITH_LABELS else VERTICAL_CHART_LEFT_PADDING_WITHOUT_LABELS
+    val rightPadding = VERTICAL_CHART_RIGHT_PADDING
+    val topPadding = VERTICAL_CHART_TOP_PADDING
+    val bottomPadding = if (showLabels && hasXLabels) {
+        VERTICAL_CHART_BOTTOM_PADDING_WITH_LABELS
+    } else {
+        VERTICAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS
+    }
+
+    val right = size.width - rightPadding
+    val bottom = size.height - bottomPadding
+
+    return ChartBounds(
+        left = leftPadding,
+        top = topPadding,
+        right = right,
+        bottom = bottom,
+        width = right - leftPadding,
+        height = bottom - topPadding,
+    )
+}
+
+private fun calculateHorizontalAxisPosition(
+    yAxisConfig: AxisConfig,
+    chartBounds: ChartBounds,
+): Float =
+    if (yAxisConfig.minValue < ZERO_VALUE && yAxisConfig.maxValue > ZERO_VALUE && yAxisConfig.drawAxisAtZero) {
+        val range = yAxisConfig.maxValue - yAxisConfig.minValue
+        val zeroNormalized = (ZERO_VALUE - yAxisConfig.minValue) / range
+        chartBounds.bottom - (zeroNormalized * chartBounds.height)
+    } else {
+        chartBounds.bottom
+    }
+
+private fun DrawScope.drawRotatedText(
+    textLayout: androidx.compose.ui.text.TextLayoutResult,
+    topLeft: Offset,
+    rotation: Float,
+    pivot: Offset,
+) {
+    drawContext.transform.rotate(rotation, pivot)
+    drawText(textLayoutResult = textLayout, topLeft = topLeft)
+    drawContext.transform.rotate(-rotation, pivot)
+}
+
 internal fun DrawScope.drawVerticalChartAxes(
     xLabels: List<String>,
     yAxisConfig: AxisConfig,
@@ -22,121 +103,107 @@ internal fun DrawScope.drawVerticalChartAxes(
     labelStyle: TextStyle,
     leftLabelRotation: LabelRotation,
 ) {
-    // Calculate chart area
-    val leftPadding = if (config.showLabels) 60f else 20f
-    val rightPadding = 20f
-    val topPadding = 20f
-    val bottomPadding = if (config.showLabels && xLabels.isNotEmpty()) 50f else 20f
+    val bounds = calculateVerticalChartBounds(size, config.showLabels, xLabels.isNotEmpty())
+    val valueRange = yAxisConfig.maxValue - yAxisConfig.minValue
+    val steps = yAxisConfig.steps.coerceAtLeast(MIN_STEPS)
 
-    val chartRight = size.width - rightPadding
-    val chartBottom = size.height - bottomPadding
-    val chartHeight = chartBottom - topPadding
-    val chartWidth = chartRight - leftPadding
-
-    // Draw Y-axis line (left vertical line)
     if (config.showAxis) {
         drawLine(
             color = config.axisColor,
-            start = Offset(leftPadding, topPadding),
-            end = Offset(leftPadding, chartBottom),
+            start = Offset(bounds.left, bounds.top),
+            end = Offset(bounds.left, bounds.bottom),
+            strokeWidth = config.axisThickness,
+        )
+
+        val xAxisY = calculateHorizontalAxisPosition(yAxisConfig, bounds)
+        drawLine(
+            color = config.axisColor,
+            start = Offset(bounds.left, xAxisY),
+            end = Offset(bounds.right, xAxisY),
             strokeWidth = config.axisThickness,
         )
     }
 
-    // Draw X-axis line (horizontal line at bottom or zero)
-    if (config.showAxis) {
-        val xAxisPosition =
-            if (yAxisConfig.minValue < 0f && yAxisConfig.maxValue > 0f && yAxisConfig.drawAxisAtZero) {
-                // Position at zero when we have both positive and negative values and drawAxisAtZero is true
-                val range = yAxisConfig.maxValue - yAxisConfig.minValue
-                val zeroNormalized = (0f - yAxisConfig.minValue) / range
-                chartBottom - (zeroNormalized * chartHeight)
-            } else {
-                // Otherwise place the X axis at the bottom (min value)
-                chartBottom
-            }
-
-        drawLine(
-            color = config.axisColor,
-            start = Offset(leftPadding, xAxisPosition),
-            end = Offset(chartRight, xAxisPosition),
-            strokeWidth = config.axisThickness,
-        )
-    }
-
-    // Draw Y-axis grid and labels
-    val steps = yAxisConfig.steps.coerceAtLeast(2)
     for (i in 0..steps) {
-        val value =
-            yAxisConfig.minValue +
-                (yAxisConfig.maxValue - yAxisConfig.minValue) * (i.toFloat() / steps)
-        val normalized = (value - yAxisConfig.minValue) / (yAxisConfig.maxValue - yAxisConfig.minValue)
-        val y = chartBottom - (normalized * chartHeight)
+        val value = yAxisConfig.minValue + valueRange * (i.toFloat() / steps)
+        val normalized = (value - yAxisConfig.minValue) / valueRange
+        val y = bounds.bottom - (normalized * bounds.height)
 
-        // Grid line (horizontal)
         if (config.showGrid && i > 0 && i < steps) {
             drawLine(
                 color = config.gridColor,
-                start = Offset(leftPadding, y),
-                end = Offset(chartRight, y),
+                start = Offset(bounds.left, y),
+                end = Offset(bounds.right, y),
                 strokeWidth = config.gridThickness,
             )
         }
 
-        // Y-axis label (left side)
         if (config.showLabels) {
-            val labelText = formatAxisLabel(value)
-            val textLayout = textMeasurer.measure(AnnotatedString(labelText), labelStyle)
+            val textLayout = textMeasurer.measure(AnnotatedString(formatAxisLabel(value)), labelStyle)
+            val labelX = bounds.left - textLayout.size.width - LABEL_OFFSET
+            val labelY = y - textLayout.size.height / CENTER_DIVISOR
+            val topLeft = Offset(labelX, labelY)
 
-            if (leftLabelRotation.degrees != 0f) {
-                // Draw rotated label
-                drawContext.transform.rotate(
-                    degrees = leftLabelRotation.degrees,
-                    pivot = Offset(leftPadding - 10f, y),
-                )
-                drawText(
-                    textLayoutResult = textLayout,
-                    topLeft =
-                    Offset(
-                        leftPadding - textLayout.size.width - 10f,
-                        y - textLayout.size.height / 2,
-                    ),
-                )
-                drawContext.transform.rotate(
-                    degrees = -leftLabelRotation.degrees,
-                    pivot = Offset(leftPadding - 10f, y),
-                )
+            if (leftLabelRotation.degrees != ZERO_VALUE) {
+                val pivot = Offset(bounds.left - LABEL_OFFSET, y)
+                drawRotatedText(textLayout, topLeft, leftLabelRotation.degrees, pivot)
             } else {
-                // Draw non-rotated label
-                drawText(
-                    textLayoutResult = textLayout,
-                    topLeft =
-                    Offset(
-                        leftPadding - textLayout.size.width - 10f,
-                        y - textLayout.size.height / 2,
-                    ),
-                )
+                drawText(textLayoutResult = textLayout, topLeft = topLeft)
             }
         }
     }
 
-    // Draw X-axis labels (centered under each position)
     if (config.showLabels && xLabels.isNotEmpty()) {
+        val labelWidth = bounds.width / xLabels.size
         xLabels.forEachIndexed { index, label ->
-            val centerX = leftPadding + chartWidth * (index + 0.5f) / xLabels.size
             val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
-
+            val centerX = bounds.left + labelWidth * (index + POSITION_OFFSET)
             drawText(
                 textLayoutResult = textLayout,
-                topLeft =
-                Offset(
-                    centerX - textLayout.size.width / 2,
-                    chartBottom + 10f,
+                topLeft = Offset(
+                    centerX - textLayout.size.width / CENTER_DIVISOR,
+                    bounds.bottom + LABEL_OFFSET,
                 ),
             )
         }
     }
 }
+
+private fun calculateHorizontalChartBounds(
+    size: androidx.compose.ui.geometry.Size,
+    showLabels: Boolean,
+): ChartBounds {
+    val leftPadding =
+        if (showLabels) HORIZONTAL_CHART_LEFT_PADDING_WITH_LABELS else HORIZONTAL_CHART_LEFT_PADDING_WITHOUT_LABELS
+    val rightPadding = HORIZONTAL_CHART_RIGHT_PADDING
+    val topPadding = HORIZONTAL_CHART_TOP_PADDING
+    val bottomPadding =
+        if (showLabels) HORIZONTAL_CHART_BOTTOM_PADDING_WITH_LABELS else HORIZONTAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS
+
+    val right = size.width - rightPadding
+    val bottom = size.height - bottomPadding
+
+    return ChartBounds(
+        left = leftPadding,
+        top = topPadding,
+        right = right,
+        bottom = bottom,
+        width = right - leftPadding,
+        height = bottom - topPadding,
+    )
+}
+
+private fun calculateVerticalAxisPosition(
+    yAxisConfig: AxisConfig,
+    chartBounds: ChartBounds,
+): Float =
+    if (yAxisConfig.minValue < ZERO_VALUE && yAxisConfig.drawAxisAtZero) {
+        val range = yAxisConfig.maxValue - yAxisConfig.minValue
+        val zeroNormalized = (ZERO_VALUE - yAxisConfig.minValue) / range
+        chartBounds.left + (zeroNormalized * chartBounds.width)
+    } else {
+        chartBounds.left
+    }
 
 internal fun DrawScope.drawHorizontalChartAxes(
     xLabels: List<String>,
@@ -146,116 +213,74 @@ internal fun DrawScope.drawHorizontalChartAxes(
     labelStyle: TextStyle,
     leftLabelRotation: LabelRotation,
 ) {
-    // Calculate chart area - more space for category labels on left
-    val leftPadding = if (config.showLabels) 100f else 20f
-    val rightPadding = 20f
-    val topPadding = 20f
-    val bottomPadding = if (config.showLabels) 50f else 20f
+    val bounds = calculateHorizontalChartBounds(size, config.showLabels)
+    val baselineX = calculateVerticalAxisPosition(yAxisConfig, bounds)
+    val valueRange = yAxisConfig.maxValue - yAxisConfig.minValue
+    val steps = yAxisConfig.steps.coerceAtLeast(MIN_STEPS)
 
-    val chartRight = size.width - rightPadding
-    val chartBottom = size.height - bottomPadding
-    val chartWidth = chartRight - leftPadding
-    val chartHeight = chartBottom - topPadding
-
-    // Calculate baseline position (X position where bars start/end for zero)
-    val baselineX =
-        if (yAxisConfig.minValue < 0f && yAxisConfig.drawAxisAtZero) {
-            val range = yAxisConfig.maxValue - yAxisConfig.minValue
-            val zeroNormalized = (0f - yAxisConfig.minValue) / range
-            leftPadding + (zeroNormalized * chartWidth)
-        } else {
-            leftPadding
-        }
-
-    // Draw category axis (vertical line on left)
     if (config.showAxis) {
         drawLine(
             color = config.axisColor,
-            start = Offset(leftPadding, topPadding),
-            end = Offset(leftPadding, chartBottom),
+            start = Offset(bounds.left, bounds.top),
+            end = Offset(bounds.left, bounds.bottom),
+            strokeWidth = config.axisThickness,
+        )
+
+        drawLine(
+            color = config.axisColor,
+            start = Offset(baselineX, bounds.top),
+            end = Offset(baselineX, bounds.bottom),
             strokeWidth = config.axisThickness,
         )
     }
 
-    // Draw value axis (vertical line at baseline)
-    if (config.showAxis) {
-        drawLine(
-            color = config.axisColor,
-            start = Offset(baselineX, topPadding),
-            end = Offset(baselineX, chartBottom),
-            strokeWidth = config.axisThickness,
-        )
-    }
-
-    // Draw value grid and labels (vertical lines for horizontal chart)
-    val steps = yAxisConfig.steps.coerceAtLeast(2)
     for (i in 0..steps) {
-        val value =
-            yAxisConfig.minValue +
-                (yAxisConfig.maxValue - yAxisConfig.minValue) * (i.toFloat() / steps)
-        val normalized = (value - yAxisConfig.minValue) / (yAxisConfig.maxValue - yAxisConfig.minValue)
-        val x = leftPadding + (normalized * chartWidth)
+        val value = yAxisConfig.minValue + valueRange * (i.toFloat() / steps)
+        val normalized = (value - yAxisConfig.minValue) / valueRange
+        val x = bounds.left + (normalized * bounds.width)
 
-        // Grid line (vertical)
         if (config.showGrid && i > 0 && i < steps) {
             drawLine(
                 color = config.gridColor,
-                start = Offset(x, topPadding),
-                end = Offset(x, chartBottom),
+                start = Offset(x, bounds.top),
+                end = Offset(x, bounds.bottom),
                 strokeWidth = config.gridThickness,
             )
         }
 
-        // Value label (at bottom)
         if (config.showLabels) {
-            val labelText = formatAxisLabel(value)
-            val textLayout = textMeasurer.measure(AnnotatedString(labelText), labelStyle)
-
+            val textLayout = textMeasurer.measure(AnnotatedString(formatAxisLabel(value)), labelStyle)
             drawText(
                 textLayoutResult = textLayout,
-                topLeft =
-                Offset(
-                    x - textLayout.size.width / 2,
-                    chartBottom + 10f,
+                topLeft = Offset(
+                    x - textLayout.size.width / CENTER_DIVISOR,
+                    bounds.bottom + LABEL_OFFSET,
                 ),
             )
         }
     }
 
-    // Draw category labels (left side, vertically centered in each section)
     if (config.showLabels && xLabels.isNotEmpty()) {
+        val barHeight = bounds.height / xLabels.size
         xLabels.forEachIndexed { index, label ->
-            val barHeight = chartHeight / xLabels.size
-            val centerY = topPadding + barHeight * (index + 0.5f)
             val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
+            val centerY = bounds.top + barHeight * (index + POSITION_OFFSET)
+            val labelX = bounds.left - textLayout.size.width - LABEL_OFFSET
+            val labelY = centerY - textLayout.size.height / CENTER_DIVISOR
+            val topLeft = Offset(labelX, labelY)
 
-            if (leftLabelRotation.degrees != 0f) {
-                // Draw rotated label
-                drawContext.transform.rotate(
-                    degrees = leftLabelRotation.degrees,
-                    pivot = Offset(leftPadding - 10f, centerY),
-                )
-                drawText(
-                    textLayoutResult = textLayout,
-                    topLeft =
-                    Offset(
-                        leftPadding - textLayout.size.width - 10f,
-                        centerY - textLayout.size.height / 2,
-                    ),
-                )
-                drawContext.transform.rotate(
-                    degrees = -leftLabelRotation.degrees,
-                    pivot = Offset(leftPadding - 10f, centerY),
+            if (leftLabelRotation.degrees != ZERO_VALUE) {
+                val pivot = Offset(bounds.left - LABEL_OFFSET, centerY)
+                drawRotatedText(
+                    textLayout = textLayout,
+                    topLeft = topLeft,
+                    rotation = leftLabelRotation.degrees,
+                    pivot = pivot,
                 )
             } else {
-                // Draw non-rotated label
                 drawText(
                     textLayoutResult = textLayout,
-                    topLeft =
-                    Offset(
-                        leftPadding - textLayout.size.width - 10f,
-                        centerY - textLayout.size.height / 2,
-                    ),
+                    topLeft = topLeft,
                 )
             }
         }

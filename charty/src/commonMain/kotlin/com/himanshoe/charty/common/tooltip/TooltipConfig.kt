@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+private val DEFAULT_COLOR = Color(0xFF2D2D2D)
 /**
  * Configuration for tooltip appearance and positioning
  *
@@ -25,7 +26,7 @@ import androidx.compose.ui.unit.sp
  */
 data class TooltipConfig(
     val shape: Shape = RoundedCornerShape(8.dp),
-    val backgroundColor: Color = Color(0xFF2D2D2D),
+    val backgroundColor: Color = DEFAULT_COLOR,
     val borderColor: Color? = null,
     val borderWidth: Dp = 1.dp,
     val textStyle: TextStyle = TextStyle(

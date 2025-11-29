@@ -40,27 +40,13 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
+import com.himanshoe.charty.line.data.MultilinePoint
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getAllValues
 import com.himanshoe.charty.line.ext.getLabels
 import kotlin.math.pow
 import kotlin.math.sqrt
-
-/**
- * Represents a point in a multiline chart that was clicked
- *
- * @param lineGroup The line group containing this point
- * @param seriesIndex The index of the line series (0 = first line, 1 = second line, etc.)
- * @param dataIndex The index of the data point within the line
- * @param value The value at this point
- */
-data class MultilinePoint(
-    val lineGroup: LineGroup,
-    val seriesIndex: Int,
-    val dataIndex: Int,
-    val value: Float,
-)
 
 /**
  * Multiline Chart - Display multiple line series on the same chart

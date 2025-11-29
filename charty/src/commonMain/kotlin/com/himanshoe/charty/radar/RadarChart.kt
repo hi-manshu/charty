@@ -1,13 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "CyclomaticComplexMethod",
-    "MagicNumber",
-    "LongParameterList",
-    "UnusedParameter",
-    "NestedBlockDepth",
-    "FunctionNaming",
-)
-
 package com.himanshoe.charty.radar
 
 import androidx.compose.animation.core.Animatable
@@ -80,14 +70,12 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  * @param data Lambda returning list of datasets to display
  * @param modifier Modifier for the chart
  * @param config Configuration for radar chart appearance
- * @param centerContent Optional composable content for the center
  */
 @Composable
 fun RadarChart(
     data: () -> List<RadarDataSet>,
     modifier: Modifier = Modifier,
     config: RadarChartConfig = RadarChartConfig(),
-    centerContent: @Composable (() -> Unit)? = null,
 ) {
     val dataSets = remember(data) { data() }
     require(dataSets.isNotEmpty()) { "Radar chart data cannot be empty" }
@@ -182,6 +170,49 @@ fun RadarChart(
     }
 }
 
+private fun DrawScope.drawCircularGrid(
+    center: Offset,
+    radius: Float,
+    gridLineWidth: Float,
+    gridLineColor: ChartyColor,
+) {
+    drawCircle(
+        brush = Brush.linearGradient(gridLineColor.value),
+        radius = radius,
+        center = center,
+        style = Stroke(width = gridLineWidth),
+    )
+}
+
+private fun DrawScope.drawPolygonGrid(
+    center: Offset,
+    radius: Float,
+    numberOfAxes: Int,
+    gridLineWidth: Float,
+    gridLineColor: ChartyColor,
+    startAngle: Float,
+) {
+    val path = Path()
+    for (i in 0 until numberOfAxes) {
+        val angle = (startAngle + (FULL_CIRCLE_DEGREES * i / numberOfAxes)) * DEGREES_TO_RADIANS
+        val x = center.x + radius * cos(angle)
+        val y = center.y + radius * sin(angle)
+
+        if (i == 0) {
+            path.moveTo(x, y)
+        } else {
+            path.lineTo(x, y)
+        }
+    }
+    path.close()
+
+    drawPath(
+        path = path,
+        brush = Brush.linearGradient(gridLineColor.value),
+        style = Stroke(width = gridLineWidth),
+    )
+}
+
 /**
  * Draw the radar grid (circular or polygonal)
  */
@@ -200,34 +231,11 @@ private fun DrawScope.drawRadarGrid(
 
         when (gridStyle) {
             RadarGridStyle.CIRCULAR -> {
-                drawCircle(
-                    brush = Brush.linearGradient(gridLineColor.value),
-                    radius = radius,
-                    center = center,
-                    style = Stroke(width = gridLineWidth),
-                )
+                drawCircularGrid(center, radius, gridLineWidth, gridLineColor)
             }
 
             RadarGridStyle.POLYGON -> {
-                val path = Path()
-                for (i in 0 until numberOfAxes) {
-                    val angle = (startAngle + (FULL_CIRCLE_DEGREES * i / numberOfAxes)) * DEGREES_TO_RADIANS
-                    val x = center.x + radius * cos(angle)
-                    val y = center.y + radius * sin(angle)
-
-                    if (i == 0) {
-                        path.moveTo(x, y)
-                    } else {
-                        path.lineTo(x, y)
-                    }
-                }
-                path.close()
-
-                drawPath(
-                    path = path,
-                    brush = Brush.linearGradient(gridLineColor.value),
-                    style = Stroke(width = gridLineWidth),
-                )
+                drawPolygonGrid(center, radius, numberOfAxes, gridLineWidth, gridLineColor, startAngle)
             }
         }
     }
@@ -338,12 +346,10 @@ private fun DrawScope.drawAxisLabels(
         val angle = (startAngle + (FULL_CIRCLE_DEGREES * index / numberOfAxes)) * DEGREES_TO_RADIANS
         val x = center.x + labelDistance * cos(angle)
         val y = center.y + labelDistance * sin(angle)
-
         val textLayoutResult = textMeasurer.measure(
-                text = label,
-                style = textStyle,
-            )
-
+            text = label,
+            style = textStyle,
+        )
         val textX = x - textLayoutResult.size.width / 2f
         val textY = y - textLayoutResult.size.height / 2f
 
