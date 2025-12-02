@@ -1,19 +1,10 @@
-@file:Suppress(
-    "LongMethod",
-    "CyclomaticComplexMethod",
-    "MagicNumber",
-    "LongParameterList",
-    "UnusedParameter",
-    "NestedBlockDepth",
-    "FunctionNaming",
-)
-
 package com.himanshoe.charty.radar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -36,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -56,6 +48,20 @@ import kotlin.math.sin
 
 private const val FULL_CIRCLE_DEGREES = 360f
 private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
+private const val LEGEND_PADDING = 8
+private const val LEGEND_ITEM_SPACING = 4
+private const val LEGEND_ICON_SIZE = 12
+private const val LEGEND_ICON_TEXT_SPACING = 6
+private const val POINT_INNER_CIRCLE_FRACTION = 0.5f
+private const val LABEL_OFFSET_HALF = 2f
+private const val ANGLE_QUARTER = PI / 4
+private const val ANGLE_THREE_QUARTERS = 3 * PI / 4
+private const val ANGLE_MINUS_QUARTER = -PI / 4
+private const val ANGLE_MINUS_THREE_QUARTERS = -3 * PI / 4
+private const val DEFAULT_ANIMATION_START = 0f
+private const val DEFAULT_ANIMATION_END = 1f
+private const val MIN_STAGGER_DIVISOR = 0.01f
+private const val CLICK_TOLERANCE_MULTIPLIER = 2f
 
 /**
  * Multiple Radar Chart that displays overlapping datasets with optional legend.
@@ -81,133 +87,243 @@ fun MultipleRadarChart(
     }
 
     if (config.showLegend) {
-        when (config.legendPosition) {
-            LegendPosition.TOP -> {
-                Column(modifier = modifier) {
-                    Legend(dataSetsList, Modifier.padding(bottom = 8.dp), config.legendTextStyle)
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-
-            LegendPosition.BOTTOM -> {
-                Column(modifier = modifier) {
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Legend(dataSetsList, Modifier.padding(top = 8.dp), config.legendTextStyle)
-                }
-            }
-
-            LegendPosition.LEFT -> {
-                Row(modifier = modifier) {
-                    Legend(dataSetsList, Modifier.padding(end = 8.dp), config.legendTextStyle)
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-
-            LegendPosition.RIGHT -> {
-                Row(modifier = modifier) {
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Legend(dataSetsList, Modifier.padding(start = 8.dp), config.legendTextStyle)
-                }
-            }
-
-            LegendPosition.TOP_LEFT -> {
-                Box(modifier = modifier) {
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    Legend(
-                        dataSetsList,
-                        Modifier
-                            .align(Alignment.TopStart)
-                            .padding(8.dp),
-                        config.legendTextStyle,
-                    )
-                }
-            }
-
-            LegendPosition.TOP_RIGHT -> {
-                Box(modifier = modifier) {
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    Legend(
-                        dataSetsList,
-                        Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp),
-                        config.legendTextStyle,
-                    )
-                }
-            }
-
-            LegendPosition.BOTTOM_LEFT -> {
-                Box(modifier = modifier) {
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    Legend(
-                        dataSetsList,
-                        Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(8.dp),
-                        config.legendTextStyle,
-                    )
-                }
-            }
-
-            LegendPosition.BOTTOM_RIGHT -> {
-                Box(modifier = modifier) {
-                    RadarChartContent(
-                        dataSetsList = dataSetsList,
-                        numberOfAxes = numberOfAxes,
-                        config = config,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    Legend(
-                        dataSetsList,
-                        Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(8.dp),
-                        config.legendTextStyle,
-                    )
-                }
-            }
-        }
+        RadarChartWithLegend(
+            dataSetsList = dataSetsList,
+            numberOfAxes = numberOfAxes,
+            config = config,
+            modifier = modifier,
+            onDataSetClick = onDataSetClick,
+        )
     } else {
         RadarChartContent(
             dataSetsList = dataSetsList,
             numberOfAxes = numberOfAxes,
             config = config,
             modifier = modifier,
+            onDataSetClick = onDataSetClick,
+        )
+    }
+}
+
+/**
+ * Radar chart with legend in different positions
+ */
+@Composable
+private fun RadarChartWithLegend(
+    dataSetsList: List<RadarDataSet>,
+    numberOfAxes: Int,
+    config: MultipleRadarChartConfig,
+    modifier: Modifier = Modifier,
+    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
+) {
+    when (config.legendPosition) {
+        LegendPosition.TOP -> {
+            CreateVerticalLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                onDataSetClick = onDataSetClick,
+                legendFirst = true,
+            )
+        }
+
+        LegendPosition.BOTTOM -> {
+            CreateVerticalLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                onDataSetClick = onDataSetClick,
+                legendFirst = false,
+            )
+        }
+
+        LegendPosition.LEFT -> {
+            CreateHorizontalLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                onDataSetClick = onDataSetClick,
+                legendFirst = true,
+            )
+        }
+
+        LegendPosition.RIGHT -> {
+            CreateHorizontalLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                onDataSetClick = onDataSetClick,
+                legendFirst = false,
+            )
+        }
+
+        LegendPosition.TOP_LEFT -> {
+            CreateOverlayLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                alignment = Alignment.TopStart,
+                onDataSetClick = onDataSetClick,
+            )
+        }
+
+        LegendPosition.TOP_RIGHT -> {
+            CreateOverlayLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                alignment = Alignment.TopEnd,
+                onDataSetClick = onDataSetClick,
+            )
+        }
+
+        LegendPosition.BOTTOM_LEFT -> {
+            CreateOverlayLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                alignment = Alignment.BottomStart,
+                onDataSetClick = onDataSetClick,
+            )
+        }
+
+        LegendPosition.BOTTOM_RIGHT -> {
+            CreateOverlayLegendLayout(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = modifier,
+                alignment = Alignment.BottomEnd,
+                onDataSetClick = onDataSetClick,
+            )
+        }
+    }
+}
+
+/**
+ * Creates a vertical layout with legend (top or bottom)
+ */
+@Composable
+private fun CreateVerticalLegendLayout(
+    dataSetsList: List<RadarDataSet>,
+    numberOfAxes: Int,
+    config: MultipleRadarChartConfig,
+    onDataSetClick: ((label: String, index: Int) -> Unit)?,
+    legendFirst: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        if (legendFirst) {
+            Legend(
+                dataSetsList,
+                Modifier.padding(bottom = LEGEND_PADDING.dp),
+                config.legendTextStyle,
+                onDataSetClick,
+            )
+            RadarChartContent(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = Modifier.weight(1f),
+                onDataSetClick = onDataSetClick,
+            )
+        } else {
+            RadarChartContent(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = Modifier.weight(1f),
+                onDataSetClick = onDataSetClick,
+            )
+            Legend(
+                dataSetsList,
+                Modifier.padding(top = LEGEND_PADDING.dp),
+                config.legendTextStyle,
+                onDataSetClick,
+            )
+        }
+    }
+}
+
+/**
+ * Creates a horizontal layout with legend (left or right)
+ */
+@Composable
+private fun CreateHorizontalLegendLayout(
+    dataSetsList: List<RadarDataSet>,
+    numberOfAxes: Int,
+    config: MultipleRadarChartConfig,
+    onDataSetClick: ((label: String, index: Int) -> Unit)?,
+    legendFirst: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier) {
+        if (legendFirst) {
+            Legend(
+                dataSetsList,
+                Modifier.padding(end = LEGEND_PADDING.dp),
+                config.legendTextStyle,
+                onDataSetClick,
+            )
+            RadarChartContent(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = Modifier.weight(1f),
+                onDataSetClick = onDataSetClick,
+            )
+        } else {
+            RadarChartContent(
+                dataSetsList = dataSetsList,
+                numberOfAxes = numberOfAxes,
+                config = config,
+                modifier = Modifier.weight(1f),
+                onDataSetClick = onDataSetClick,
+            )
+            Legend(
+                dataSetsList,
+                Modifier.padding(start = LEGEND_PADDING.dp),
+                config.legendTextStyle,
+                onDataSetClick,
+            )
+        }
+    }
+}
+
+/**
+ * Creates a Box layout with legend overlaid on the chart
+ */
+@Composable
+private fun CreateOverlayLegendLayout(
+    dataSetsList: List<RadarDataSet>,
+    numberOfAxes: Int,
+    config: MultipleRadarChartConfig,
+    alignment: Alignment,
+    onDataSetClick: ((label: String, index: Int) -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier) {
+        RadarChartContent(
+            dataSetsList = dataSetsList,
+            numberOfAxes = numberOfAxes,
+            config = config,
+            modifier = Modifier.fillMaxSize(),
+            onDataSetClick = onDataSetClick,
+        )
+        Legend(
+            dataSetsList,
+            Modifier
+                .align(alignment)
+                .padding(LEGEND_PADDING.dp),
+            config.legendTextStyle,
+            onDataSetClick,
         )
     }
 }
@@ -219,12 +335,12 @@ fun MultipleRadarChart(
 private fun Legend(
     dataSets: List<RadarDataSet>,
     modifier: Modifier = Modifier,
-    legendTextStyle: TextStyle = TextStyle(fontSize = 12.sp),
+    legendTextStyle: TextStyle = TextStyle(fontSize = LEGEND_ICON_SIZE.sp),
     onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(LEGEND_ITEM_SPACING.dp),
     ) {
         dataSets.forEachIndexed { index, dataSet ->
             val dataColor =
@@ -235,7 +351,7 @@ private fun Legend(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(LEGEND_ICON_TEXT_SPACING.dp),
                 modifier =
                     if (onDataSetClick != null) {
                         Modifier.clickable { onDataSetClick(dataSet.label, index) }
@@ -244,7 +360,7 @@ private fun Legend(
                     },
             ) {
                 Surface(
-                    modifier = Modifier.size(12.dp),
+                    modifier = Modifier.size(LEGEND_ICON_SIZE.dp),
                     shape = CircleShape,
                     color = dataColor,
                 ) {}
@@ -274,34 +390,36 @@ private fun RadarChartContent(
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
     modifier: Modifier = Modifier,
+    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
 ) {
-    val animationProgress =
-        remember {
-            Animatable(if (config.radarConfig.animation is Animation.Enabled) 0f else 1f)
-        }
-
-    LaunchedEffect(config.radarConfig.animation) {
-        if (config.radarConfig.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = config.radarConfig.animation.duration),
-            )
-        }
-    }
-
+    val animationProgress = rememberRadarAnimation(config.radarConfig.animation)
     val textMeasurer = rememberTextMeasurer()
     val axisLabels = remember(dataSetsList) { dataSetsList.first().axes.map { it.label } }
+    val dataPointPositions = remember { mutableMapOf<Int, List<Offset>>() }
 
     BoxWithConstraints(modifier = modifier) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val centerX = size.width / 2f
-            val centerY = size.height / 2f
-            val maxRadius = min(centerX, centerY) * (1f - config.radarConfig.paddingFraction)
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (onDataSetClick != null) {
+                        Modifier.pointerInput(dataSetsList, dataPointPositions) {
+                            detectTapGestures { offset ->
+                                handleDataPointClick(offset, dataPointPositions, dataSetsList, config, onDataSetClick)
+                            }
+                        }
+                    } else {
+                        Modifier
+                    },
+                ),
+        ) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val maxRadius = min(size.width / 2f, size.height / 2f) * (1f - config.radarConfig.paddingFraction)
 
             // Draw grid
             if (config.radarConfig.gridConfig.showGridLines) {
                 drawRadarGrid(
-                    center = Offset(centerX, centerY),
+                    center = center,
                     maxRadius = maxRadius,
                     numberOfAxes = numberOfAxes,
                     numberOfLevels = config.radarConfig.gridConfig.numberOfGridLevels,
@@ -313,7 +431,7 @@ private fun RadarChartContent(
             }
             if (config.radarConfig.gridConfig.showAxisLines) {
                 drawAxisLines(
-                    center = Offset(centerX, centerY),
+                    center = center,
                     maxRadius = maxRadius,
                     numberOfAxes = numberOfAxes,
                     axisLineWidth = config.radarConfig.gridConfig.axisLineWidth,
@@ -322,26 +440,29 @@ private fun RadarChartContent(
                 )
             }
             dataSetsList.fastForEachIndexed { index, dataSet ->
-                val datasetAnimationProgress =
-                    if (config.staggerAnimation) {
-                        val delay = index * config.staggerDelay
-                        val adjustedProgress = (animationProgress.value - delay).coerceIn(0f, 1f)
-                        adjustedProgress / (1f - delay).coerceAtLeast(0.01f)
-                    } else {
-                        animationProgress.value
-                    }
+                val datasetAnimationProgress = calculateDatasetAnimationProgress(
+                    index = index,
+                    animationProgress = animationProgress.value,
+                    config = config,
+                )
 
-                drawRadarDataSet(
-                    center = Offset(centerX, centerY),
+                val points = drawRadarDataSet(
+                    center = center,
                     maxRadius = maxRadius,
                     dataSet = dataSet,
                     config = config,
-                    animationProgress = datasetAnimationProgress.coerceIn(0f, 1f),
+                    animationProgress = datasetAnimationProgress,
                 )
+
+                if (onDataSetClick != null) {
+                    dataPointPositions[index] = points
+                }
             }
+
+            // Draw labels
             if (config.radarConfig.labelConfig.showLabels) {
                 drawAxisLabels(
-                    center = Offset(centerX, centerY),
+                    center = center,
                     maxRadius = maxRadius,
                     labels = axisLabels,
                     numberOfAxes = numberOfAxes,
@@ -350,16 +471,60 @@ private fun RadarChartContent(
                     startAngle = config.radarConfig.startAngleDegrees,
                 )
             }
+
+            // Draw center background
             if (config.radarConfig.centerConfig.centerBackgroundRadius > 0f) {
                 drawCircle(
                     color = config.radarConfig.centerConfig.centerBackgroundColor,
                     radius = config.radarConfig.centerConfig.centerBackgroundRadius,
-                    center = Offset(centerX, centerY),
+                    center = center,
                 )
             }
         }
     }
 }
+
+/**
+ * Remember and manage radar chart animation
+ */
+@Composable
+private fun rememberRadarAnimation(animation: Animation): Animatable<Float, *> {
+    val animationProgress = remember {
+        Animatable(
+            if (animation is Animation.Enabled) DEFAULT_ANIMATION_START else DEFAULT_ANIMATION_END,
+        )
+    }
+
+    LaunchedEffect(animation) {
+        if (animation is Animation.Enabled) {
+            animationProgress.animateTo(
+                targetValue = DEFAULT_ANIMATION_END,
+                animationSpec = tween(durationMillis = animation.duration),
+            )
+        }
+    }
+
+    return animationProgress
+}
+
+/**
+ * Calculate animation progress for a specific dataset (with optional stagger)
+ */
+private fun calculateDatasetAnimationProgress(
+    index: Int,
+    animationProgress: Float,
+    config: MultipleRadarChartConfig,
+): Float {
+    return if (config.staggerAnimation) {
+        val delay = index * config.staggerDelay
+        val adjustedProgress = (animationProgress - delay).coerceIn(DEFAULT_ANIMATION_START, DEFAULT_ANIMATION_END)
+        (adjustedProgress / (DEFAULT_ANIMATION_END - delay).coerceAtLeast(MIN_STAGGER_DIVISOR))
+            .coerceIn(DEFAULT_ANIMATION_START, DEFAULT_ANIMATION_END)
+    } else {
+        animationProgress
+    }
+}
+
 
 /**
  * Draw the radar grid (circular or polygonal)
@@ -376,39 +541,15 @@ private fun DrawScope.drawRadarGrid(
 ) {
     for (level in 1..numberOfLevels) {
         val radius = (maxRadius * level) / numberOfLevels
-
-        when (gridStyle) {
-            RadarGridStyle.CIRCULAR -> {
-                drawCircle(
-                    brush = Brush.linearGradient(gridLineColor.value),
-                    radius = radius,
-                    center = center,
-                    style = Stroke(width = gridLineWidth),
-                )
-            }
-
-            RadarGridStyle.POLYGON -> {
-                val path = Path()
-                for (i in 0 until numberOfAxes) {
-                    val angle = (startAngle + (FULL_CIRCLE_DEGREES * i / numberOfAxes)) * DEGREES_TO_RADIANS
-                    val x = center.x + radius * cos(angle)
-                    val y = center.y + radius * sin(angle)
-
-                    if (i == 0) {
-                        path.moveTo(x, y)
-                    } else {
-                        path.lineTo(x, y)
-                    }
-                }
-                path.close()
-
-                drawPath(
-                    path = path,
-                    brush = Brush.linearGradient(gridLineColor.value),
-                    style = Stroke(width = gridLineWidth),
-                )
-            }
-        }
+        drawGridLevel(
+            center = center,
+            radius = radius,
+            numberOfAxes = numberOfAxes,
+            gridStyle = gridStyle,
+            gridLineWidth = gridLineWidth,
+            gridLineColor = gridLineColor,
+            startAngle = startAngle,
+        )
     }
 }
 
@@ -439,6 +580,7 @@ private fun DrawScope.drawAxisLines(
 
 /**
  * Draw a single radar dataset (polygon with fill and points)
+ * Returns the list of data point positions for click detection
  */
 private fun DrawScope.drawRadarDataSet(
     center: Offset,
@@ -446,7 +588,7 @@ private fun DrawScope.drawRadarDataSet(
     dataSet: RadarDataSet,
     config: MultipleRadarChartConfig,
     animationProgress: Float,
-) {
+): List<Offset> {
     val numberOfAxes = dataSet.axes.size
     val path = Path()
     val points = mutableListOf<Offset>()
@@ -513,12 +655,14 @@ private fun DrawScope.drawRadarDataSet(
             if (config.showPointInnerCircle) {
                 drawCircle(
                     color = Color.White,
-                    radius = (pointRadius * 0.5f) * animationProgress,
+                    radius = (pointRadius * POINT_INNER_CIRCLE_FRACTION) * animationProgress,
                     center = point,
                 )
             }
         }
     }
+
+    return points
 }
 
 /**
@@ -550,13 +694,13 @@ private fun DrawScope.drawAxisLabels(
         val textWidth = textLayoutResult.size.width
         val textHeight = textLayoutResult.size.height
 
-        val isBottom = angle > PI / 4 && angle < 3 * PI / 4
-        val isTop = angle > -3 * PI / 4 && angle < -PI / 4
-        val isRight = angle >= -PI / 4 && angle <= PI / 4
+        val isBottom = angle > ANGLE_QUARTER && angle < ANGLE_THREE_QUARTERS
+        val isTop = angle > ANGLE_MINUS_THREE_QUARTERS && angle < ANGLE_MINUS_QUARTER
+        val isRight = angle >= ANGLE_MINUS_QUARTER && angle <= ANGLE_QUARTER
 
         val offsetX =
             when {
-                isBottom || isTop -> -textWidth / 2f
+                isBottom || isTop -> -textWidth / LABEL_OFFSET_HALF
                 isRight -> 0f
                 else -> -textWidth.toFloat()
             }
@@ -565,7 +709,7 @@ private fun DrawScope.drawAxisLabels(
             when {
                 isBottom -> 0f
                 isTop -> -textHeight.toFloat()
-                else -> -textHeight / 2f
+                else -> -textHeight / LABEL_OFFSET_HALF
             }
 
         drawText(
@@ -574,3 +718,37 @@ private fun DrawScope.drawAxisLabels(
         )
     }
 }
+
+/**
+ * Handle clicks on data points in the radar chart
+ */
+private fun handleDataPointClick(
+    clickOffset: Offset,
+    dataPointPositions: Map<Int, List<Offset>>,
+    dataSetsList: List<RadarDataSet>,
+    config: MultipleRadarChartConfig,
+    onDataSetClick: (label: String, index: Int) -> Unit,
+) {
+    val clickTolerance = (config.datasetPointRadius ?: config.radarConfig.dataPointRadius) * CLICK_TOLERANCE_MULTIPLIER
+
+    // Iterate through datasets in reverse order (top to bottom in drawing)
+    // to prioritize clicking on the topmost dataset
+    for (datasetIndex in dataSetsList.indices.reversed()) {
+        val points = dataPointPositions[datasetIndex] ?: continue
+
+        // Check if any point in this dataset was clicked
+        for (pointIndex in points.indices) {
+            val point = points[pointIndex]
+            val distance = kotlin.math.sqrt(
+                (clickOffset.x - point.x) * (clickOffset.x - point.x) +
+                    (clickOffset.y - point.y) * (clickOffset.y - point.y),
+            )
+
+            if (distance <= clickTolerance) {
+                onDataSetClick(dataSetsList[datasetIndex].label, pointIndex)
+                return
+            }
+        }
+    }
+}
+
