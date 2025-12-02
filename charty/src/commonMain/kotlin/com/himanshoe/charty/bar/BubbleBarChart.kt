@@ -41,7 +41,6 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
@@ -81,8 +80,8 @@ import kotlin.math.max
  * @param modifier Modifier for the chart
  * @param color Color configuration - Solid for uniform bubbles, Gradient for gradient effect
  * @param bubbleConfig Configuration for bubble appearance
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param leftLabelRotation Rotation for Y-axis labels. Default is LabelRotation.Straight.
+ * @param scaffoldConfig Chart styling configuration for axis, grid, and labels (includes leftLabelRotation)
+ * @param onBarClick Optional callback when a bar is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -93,7 +92,6 @@ fun BubbleBarChart(
     bubbleConfig: BubbleBarChartConfig = BubbleBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
-    leftLabelRotation: LabelRotation = LabelRotation.Straight,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Bubble bar chart data cannot be empty" }
@@ -165,7 +163,7 @@ fun BubbleBarChart(
                 drawAxisAtZero = isBelowAxisMode,
             ),
         config = scaffoldConfig,
-        leftLabelRotation = leftLabelRotation,
+        leftLabelRotation = scaffoldConfig.leftLabelRotation,
     ) { chartContext ->
         barBounds.clear()
         val baselineY =

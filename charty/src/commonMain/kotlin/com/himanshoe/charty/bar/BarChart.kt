@@ -33,7 +33,6 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
@@ -70,8 +69,8 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
  * @param modifier Modifier for the chart
  * @param color Color configuration - Solid for uniform bars, Gradient for vertical gradient effect
  * @param barConfig Configuration for bar appearance
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param leftLabelRotation Rotation for Y-axis labels. Default is LabelRotation.Straight. Use LabelRotation.Angle45Negative for -45-degree rotation.
+ * @param scaffoldConfig Chart styling configuration for axis, grid, and labels (includes leftLabelRotation)
+ * @param onBarClick Optional callback when a bar is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -82,7 +81,6 @@ fun BarChart(
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
-    leftLabelRotation: LabelRotation = LabelRotation.Straight,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Bar chart data cannot be empty" }
@@ -108,7 +106,7 @@ fun BarChart(
         xLabels = dataList.getLabels(),
         yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
-        leftLabelRotation = leftLabelRotation,
+        leftLabelRotation = scaffoldConfig.leftLabelRotation,
     ) { chartContext ->
         barBounds.clear()
         val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
