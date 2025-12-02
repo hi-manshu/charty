@@ -1,15 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.point
 
 import androidx.compose.animation.core.Animatable
@@ -30,6 +18,8 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.BubbleData
 import kotlin.math.sqrt
+
+private const val DEFAULT_NORMALIZED_SIZE = 0.5f
 
 /**
  * Bubble Chart - Display data as circles with variable sizes
@@ -145,7 +135,7 @@ fun BubbleChart(
                 if (sizeRange > 0f) {
                     (bubble.size - minSize) / sizeRange
                 } else {
-                    0.5f
+                    DEFAULT_NORMALIZED_SIZE
                 }
             val radiusRange = pointConfig.pointRadius - minBubbleRadius
             val bubbleRadius = minBubbleRadius + (sqrt(normalizedSize) * radiusRange)

@@ -1,5 +1,3 @@
-@file:Suppress("FunctionNaming")
-
 package com.himanshoe.charty.point
 
 import androidx.compose.animation.core.Animatable

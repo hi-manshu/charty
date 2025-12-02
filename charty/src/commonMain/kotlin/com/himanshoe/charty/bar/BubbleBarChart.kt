@@ -1,15 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
@@ -96,146 +84,249 @@ fun BubbleBarChart(
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Bubble bar chart data cannot be empty" }
 
-    val (minValue, maxValue) =
-        remember(dataList, bubbleConfig.negativeValuesDrawMode) {
-            val values = dataList.getValues()
-            val calculatedMin = calculateMinValue(values)
-            val calculatedMax = calculateMaxValue(values)
-            val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
-            finalMin to calculatedMax
-        }
-
+    val (minValue, maxValue) = rememberValueRange(dataList, bubbleConfig.negativeValuesDrawMode)
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    val animationProgress =
-        remember {
-            Animatable(if (bubbleConfig.animation is Animation.Enabled) 0f else 1f)
-        }
-
+    val animationProgress = rememberBubbleAnimation(bubbleConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
-
-    LaunchedEffect(bubbleConfig.animation) {
-        if (bubbleConfig.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = bubbleConfig.animation.duration),
-            )
-        }
-    }
-
     val textMeasurer = rememberTextMeasurer()
 
-    ChartScaffold(
-        modifier = modifier.then(
-            if (onBarClick != null) {
-                Modifier.pointerInput(dataList, bubbleConfig, onBarClick) {
-                    detectTapGestures { offset ->
-                        val clickedBar = barBounds.find { (rect, _) ->
-                            rect.contains(offset)
-                        }
+    val chartModifier = createBubbleChartModifier(
+        modifier = modifier,
+        onBarClick = onBarClick,
+        dataList = dataList,
+        bubbleConfig = bubbleConfig,
+        barBounds = barBounds,
+        onTooltipUpdate = { tooltipState = it },
+    )
 
-                        clickedBar?.let { (rect, barData) ->
-                            onBarClick.invoke(barData)
-                            tooltipState = TooltipState(
-                                content = bubbleConfig.tooltipFormatter(barData),
-                                x = rect.left,
-                                y = rect.top,
-                                barWidth = rect.width,
-                                position = bubbleConfig.tooltipPosition,
-                            )
-                        } ?: run {
-                            tooltipState = null
-                        }
-                    }
-                }
-            } else {
-                Modifier
-            },
-        ),
+    ChartScaffold(
+        modifier = chartModifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = isBelowAxisMode,
-            ),
+        yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
         leftLabelRotation = scaffoldConfig.leftLabelRotation,
     ) { chartContext ->
         barBounds.clear()
-        val baselineY =
-            if (minValue < 0f && isBelowAxisMode) {
-                chartContext.convertValueToYPosition(0f)
-            } else {
-                chartContext.bottom
+        val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
+
+        drawBubbleBars(
+            dataList = dataList,
+            chartContext = chartContext,
+            bubbleConfig = bubbleConfig,
+            baselineY = baselineY,
+            animationProgress = animationProgress.value,
+            color = color,
+            onBarClick = onBarClick,
+            barBounds = barBounds,
+        )
+
+        drawReferenceLineIfNeeded(bubbleConfig, chartContext, textMeasurer)
+        drawTooltipIfNeeded(tooltipState, bubbleConfig, textMeasurer, chartContext)
+    }
+}
+
+@Composable
+private fun rememberValueRange(
+    dataList: List<BarData>,
+    negativeValuesDrawMode: NegativeValuesDrawMode,
+): Pair<Float, Float> {
+    return remember(dataList, negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        val calculatedMin = calculateMinValue(values)
+        val calculatedMax = calculateMaxValue(values)
+        val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+        finalMin to calculatedMax
+    }
+}
+
+@Composable
+private fun rememberBubbleAnimation(animation: Animation): Animatable<Float, *> {
+    val animationProgress = remember {
+        Animatable(if (animation is Animation.Enabled) 0f else 1f)
+    }
+
+    LaunchedEffect(animation) {
+        if (animation is Animation.Enabled) {
+            animationProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = animation.duration),
+            )
+        }
+    }
+
+    return animationProgress
+}
+
+@Composable
+private fun createBubbleChartModifier(
+    onBarClick: ((BarData) -> Unit)?,
+    dataList: List<BarData>,
+    bubbleConfig: BubbleBarChartConfig,
+    barBounds: List<Pair<Rect, BarData>>,
+    onTooltipUpdate: (TooltipState?) -> Unit,
+    modifier: Modifier = Modifier,
+): Modifier {
+    return if (onBarClick != null) {
+        modifier.pointerInput(dataList, bubbleConfig, onBarClick) {
+            detectTapGestures { offset ->
+                handleBubbleBarClick(offset, barBounds, onBarClick, bubbleConfig, onTooltipUpdate)
             }
+        }
+    } else {
+        modifier
+    }
+}
 
-        dataList.fastForEachIndexed { index, bar ->
-            val barX = chartContext.calculateBarLeftPosition(index, dataList.size, bubbleConfig.barWidthFraction)
-            val barWidth = chartContext.calculateBarWidth(dataList.size, bubbleConfig.barWidthFraction)
-            val barValueY = chartContext.convertValueToYPosition(bar.value)
-            val isNegative = bar.value < 0f
+private fun handleBubbleBarClick(
+    offset: Offset,
+    barBounds: List<Pair<Rect, BarData>>,
+    onBarClick: (BarData) -> Unit,
+    bubbleConfig: BubbleBarChartConfig,
+    onTooltipUpdate: (TooltipState?) -> Unit,
+) {
+    val clickedBar = barBounds.find { (rect, _) -> rect.contains(offset) }
 
-            val barTop: Float
-            val barHeight: Float
+    clickedBar?.let { (rect, barData) ->
+        onBarClick.invoke(barData)
+        onTooltipUpdate(
+            TooltipState(
+                content = bubbleConfig.tooltipFormatter(barData),
+                x = rect.left,
+                y = rect.top,
+                barWidth = rect.width,
+                position = bubbleConfig.tooltipPosition,
+            ),
+        )
+    } ?: onTooltipUpdate(null)
+}
 
-            if (isNegative) {
-                barTop = baselineY
-                val fullBarHeight = barValueY - baselineY
-                barHeight = fullBarHeight * animationProgress.value
-            } else {
-                val fullBarHeight = baselineY - barValueY
-                val animatedBarHeight = fullBarHeight * animationProgress.value
-                barTop = baselineY - animatedBarHeight
-                barHeight = animatedBarHeight
-            }
+private fun createAxisConfig(
+    minValue: Float,
+    maxValue: Float,
+    isBelowAxisMode: Boolean,
+): AxisConfig {
+    return AxisConfig(
+        minValue = minValue,
+        maxValue = maxValue,
+        steps = 6,
+        drawAxisAtZero = isBelowAxisMode,
+    )
+}
 
-            if (onBarClick != null) {
-                barBounds.add(
-                    Rect(
-                        left = barX,
-                        top = barTop,
-                        right = barX + barWidth,
-                        bottom = barTop + barHeight,
-                    ) to bar,
-                )
-            }
+private fun calculateBaselineY(
+    minValue: Float,
+    isBelowAxisMode: Boolean,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+): Float {
+    return if (minValue < 0f && isBelowAxisMode) {
+        chartContext.convertValueToYPosition(0f)
+    } else {
+        chartContext.bottom
+    }
+}
 
-            val barColor = bar.color ?: color
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBubbleBars(
+    dataList: List<BarData>,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+    bubbleConfig: BubbleBarChartConfig,
+    baselineY: Float,
+    animationProgress: Float,
+    color: ChartyColor,
+    onBarClick: ((BarData) -> Unit)?,
+    barBounds: MutableList<Pair<Rect, BarData>>,
+) {
+    dataList.fastForEachIndexed { index, bar ->
+        val barX = chartContext.calculateBarLeftPosition(index, dataList.size, bubbleConfig.barWidthFraction)
+        val barWidth = chartContext.calculateBarWidth(dataList.size, bubbleConfig.barWidthFraction)
+        val barValueY = chartContext.convertValueToYPosition(bar.value)
 
-            drawBubbleBar(
-                color = barColor,
-                x = barX,
-                y = barTop,
-                width = barWidth,
-                height = barHeight,
-                bubbleRadius = bubbleConfig.bubbleRadius,
-                bubbleSpacing = bubbleConfig.bubbleSpacing,
+        val (barTop, barHeight) = calculateBubbleBarDimensions(
+            barValue = bar.value,
+            baselineY = baselineY,
+            barValueY = barValueY,
+            animationProgress = animationProgress,
+        )
+
+        if (onBarClick != null) {
+            barBounds.add(
+                Rect(
+                    left = barX,
+                    top = barTop,
+                    right = barX + barWidth,
+                    bottom = barTop + barHeight,
+                ) to bar,
             )
         }
 
-        bubbleConfig.referenceLine?.let { referenceLineConfig ->
-            drawReferenceLine(
-                chartContext = chartContext,
-                orientation = ChartOrientation.VERTICAL,
-                config = referenceLineConfig,
-                textMeasurer = textMeasurer,
-            )
-        }
+        val barColor = bar.color ?: color
 
-        tooltipState?.let { state ->
-            drawTooltip(
-                tooltipState = state,
-                config = bubbleConfig.tooltipConfig,
-                textMeasurer = textMeasurer,
-                chartWidth = chartContext.right,
-                chartTop = chartContext.top,
-                chartBottom = chartContext.bottom,
-            )
-        }
+        drawBubbleBar(
+            color = barColor,
+            x = barX,
+            y = barTop,
+            width = barWidth,
+            height = barHeight,
+            bubbleRadius = bubbleConfig.bubbleRadius,
+            bubbleSpacing = bubbleConfig.bubbleSpacing,
+        )
+    }
+}
+
+private fun calculateBubbleBarDimensions(
+    barValue: Float,
+    baselineY: Float,
+    barValueY: Float,
+    animationProgress: Float,
+): Pair<Float, Float> {
+    val isNegative = barValue < 0f
+
+    return if (isNegative) {
+        val barTop = baselineY
+        val fullBarHeight = barValueY - baselineY
+        val barHeight = fullBarHeight * animationProgress
+        barTop to barHeight
+    } else {
+        val fullBarHeight = baselineY - barValueY
+        val animatedBarHeight = fullBarHeight * animationProgress
+        val barTop = baselineY - animatedBarHeight
+        barTop to animatedBarHeight
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawReferenceLineIfNeeded(
+    bubbleConfig: BubbleBarChartConfig,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+) {
+    bubbleConfig.referenceLine?.let { referenceLineConfig ->
+        drawReferenceLine(
+            chartContext = chartContext,
+            orientation = ChartOrientation.VERTICAL,
+            config = referenceLineConfig,
+            textMeasurer = textMeasurer,
+        )
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipIfNeeded(
+    tooltipState: TooltipState?,
+    bubbleConfig: BubbleBarChartConfig,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+) {
+    tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = bubbleConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
     }
 }
 
@@ -275,7 +366,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBubbleBar(
         drawCircle(
             color = bubbleColor,
             radius = bubbleRadius,
-            center = Offset(centerX, bubbleY)
+            center = Offset(centerX, bubbleY),
         )
     }
 }

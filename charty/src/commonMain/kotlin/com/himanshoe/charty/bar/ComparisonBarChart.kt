@@ -1,15 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.bar
 
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -23,7 +11,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
@@ -46,6 +33,10 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+
+private const val DEFAULT_AXIS_STEPS = 6
+private const val BAR_WIDTH_FRACTION = 0.8f
+private const val GROUP_PADDING_FRACTION = 0.1f
 
 /**
  * Comparison Bar Chart - Display multiple bars per category for comparison
@@ -70,9 +61,8 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
  * )
  * ```
  *
- * @param data Lambda returning list of bar groups, each containing multiple values
+ * @param data Lambda returning list of bar groups, each containing multiple values. Each BarGroup should specify its own colors via BarGroup.colors property
  * @param modifier Modifier for the chart
- * @param colors Color configuration - Gradient recommended for distinguishing bars in each group
  * @param comparisonConfig Configuration for comparison chart behavior (e.g., negative values draw mode)
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param onBarClick Optional callback when a bar segment is clicked
@@ -82,13 +72,6 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
 fun ComparisonBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
-    colors: ChartyColor =
-        ChartyColor.Gradient(
-            listOf(
-                Color(0xFFE91E63),
-                Color(0xFF2196F3),
-            ),
-        ),
     comparisonConfig: ComparisonBarChartConfig = ComparisonBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((ComparisonBarSegment) -> Unit)? = null,
@@ -96,161 +79,281 @@ fun ComparisonBarChart(
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
 
-    val (minValue, maxValue, colorList) =
-        remember(dataList, colors) {
-            val allValues = dataList.getAllValues()
-            val calculatedMin = calculateMinValue(allValues)
-            val calculatedMax = calculateMaxValue(allValues)
-            val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
-
-            Triple(
-                finalMin,
-                calculatedMax,
-                colors.value,
-            )
-        }
-
+    val (minValue, maxValue) = rememberComparisonChartValues(dataList)
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val barBounds = remember { mutableListOf<Pair<Rect, ComparisonBarSegment>>() }
     val textMeasurer = rememberTextMeasurer()
 
-    ChartScaffold(
-        modifier = modifier.then(
-            if (onBarClick != null) {
-                Modifier.pointerInput(dataList, comparisonConfig, onBarClick) {
-                    detectTapGestures { offset ->
-                        val clickedBar = barBounds.find { (rect, _) ->
-                            rect.contains(offset)
-                        }
+    val chartModifier = createComparisonChartModifier(
+        modifier = modifier,
+        onBarClick = onBarClick,
+        dataList = dataList,
+        comparisonConfig = comparisonConfig,
+        barBounds = barBounds,
+        onTooltipUpdate = { tooltipState = it },
+    )
 
-                        clickedBar?.let { (rect, segment) ->
-                            onBarClick.invoke(segment)
-                            tooltipState = TooltipState(
-                                content = comparisonConfig.tooltipFormatter(segment),
-                                x = rect.left,
-                                y = rect.top,
-                                barWidth = rect.width,
-                                position = comparisonConfig.tooltipPosition,
-                            )
-                        } ?: run {
-                            tooltipState = null
-                        }
-                    }
-                }
-            } else {
-                Modifier
-            },
-        ),
+    ChartScaffold(
+        modifier = chartModifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = isBelowAxisMode,
-            ),
+        yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
     ) { chartContext ->
         barBounds.clear()
+        val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
 
-        val baselineY =
-            if (minValue < 0f && isBelowAxisMode) {
-                chartContext.convertValueToYPosition(0f)
-            } else {
-                chartContext.bottom
+        drawComparisonBars(
+            dataList = dataList,
+            chartContext = chartContext,
+            comparisonConfig = comparisonConfig,
+            baselineY = baselineY,
+            onBarClick = onBarClick,
+            barBounds = barBounds,
+        )
+
+        drawReferenceLineIfNeeded(comparisonConfig, chartContext, textMeasurer)
+        drawTooltipIfNeeded(tooltipState, comparisonConfig, textMeasurer, chartContext)
+    }
+}
+
+@Composable
+private fun rememberComparisonChartValues(
+    dataList: List<BarGroup>,
+): Pair<Float, Float> {
+    return remember(dataList) {
+        val allValues = dataList.getAllValues()
+        val calculatedMin = calculateMinValue(allValues)
+        val calculatedMax = calculateMaxValue(allValues)
+        val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+
+        finalMin to calculatedMax
+    }
+}
+
+@Composable
+private fun createComparisonChartModifier(
+    onBarClick: ((ComparisonBarSegment) -> Unit)?,
+    dataList: List<BarGroup>,
+    comparisonConfig: ComparisonBarChartConfig,
+    barBounds: List<Pair<Rect, ComparisonBarSegment>>,
+    onTooltipUpdate: (TooltipState?) -> Unit,
+    modifier: Modifier = Modifier,
+): Modifier {
+    return if (onBarClick != null) {
+        modifier.pointerInput(dataList, comparisonConfig, onBarClick) {
+            detectTapGestures { offset ->
+                handleComparisonBarClick(offset, barBounds, onBarClick, comparisonConfig, onTooltipUpdate)
             }
+        }
+    } else {
+        modifier
+    }
+}
 
-        dataList.fastForEachIndexed { groupIndex, group ->
-            val groupWidth = chartContext.width / dataList.size
-            val barWidth = groupWidth / group.values.size * 0.8f
+private fun handleComparisonBarClick(
+    offset: androidx.compose.ui.geometry.Offset,
+    barBounds: List<Pair<Rect, ComparisonBarSegment>>,
+    onBarClick: (ComparisonBarSegment) -> Unit,
+    comparisonConfig: ComparisonBarChartConfig,
+    onTooltipUpdate: (TooltipState?) -> Unit,
+) {
+    val clickedBar = barBounds.find { (rect, _) -> rect.contains(offset) }
 
-            group.values.fastForEachIndexed { barIndex, value ->
-                val barX =
-                    chartContext.left +
-                        groupWidth * groupIndex +
-                        barWidth * barIndex +
-                        groupWidth * 0.1f
+    clickedBar?.let { (rect, segment) ->
+        onBarClick.invoke(segment)
+        onTooltipUpdate(
+            TooltipState(
+                content = comparisonConfig.tooltipFormatter(segment),
+                x = rect.left,
+                y = rect.top,
+                barWidth = rect.width,
+                position = comparisonConfig.tooltipPosition,
+            ),
+        )
+    } ?: onTooltipUpdate(null)
+}
 
-                val barValueY = chartContext.convertValueToYPosition(value)
-                val isNegative = value < 0f
+private fun createAxisConfig(
+    minValue: Float,
+    maxValue: Float,
+    isBelowAxisMode: Boolean,
+): AxisConfig {
+    return AxisConfig(
+        minValue = minValue,
+        maxValue = maxValue,
+        steps = DEFAULT_AXIS_STEPS,
+        drawAxisAtZero = isBelowAxisMode,
+    )
+}
 
-                val barTop: Float
-                val barHeight: Float
+private fun calculateBaselineY(
+    minValue: Float,
+    isBelowAxisMode: Boolean,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+): Float {
+    return if (minValue < 0f && isBelowAxisMode) {
+        chartContext.convertValueToYPosition(0f)
+    } else {
+        chartContext.bottom
+    }
+}
 
-                if (isNegative) {
-                    barTop = baselineY
-                    barHeight = barValueY - baselineY
-                } else {
-                    barHeight = baselineY - barValueY
-                    barTop = baselineY - barHeight
-                }
-                if (onBarClick != null) {
-                    barBounds.add(
-                        Rect(
-                            left = barX,
-                            top = barTop,
-                            right = barX + barWidth,
-                            bottom = barTop + barHeight,
-                        ) to ComparisonBarSegment(
-                            barGroup = group,
-                            barIndex = barIndex,
-                            barValue = value,
-                        ),
-                    )
-                }
+private fun DrawScope.drawComparisonBars(
+    dataList: List<BarGroup>,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+    comparisonConfig: ComparisonBarChartConfig,
+    baselineY: Float,
+    onBarClick: ((ComparisonBarSegment) -> Unit)?,
+    barBounds: MutableList<Pair<Rect, ComparisonBarSegment>>,
+) {
+    dataList.fastForEachIndexed { groupIndex, group ->
+        val groupWidth = chartContext.width / dataList.size
+        val barWidth = groupWidth / group.values.size * BAR_WIDTH_FRACTION
 
-                val barChartyColor = if (group.colors != null && barIndex < group.colors.size) {
-                    group.colors[barIndex]
-                } else {
-                    ChartyColor.Solid(colorList[barIndex % colorList.size])
-                }
+        group.values.fastForEachIndexed { barIndex, value ->
+            val barX = calculateBarX(
+                chartContext = chartContext,
+                groupWidth = groupWidth,
+                groupIndex = groupIndex,
+                barWidth = barWidth,
+                barIndex = barIndex,
+            )
 
-                val barBrush =
-                    when (barChartyColor) {
-                        is ChartyColor.Solid -> Brush.verticalGradient(
-                            colors = listOf(barChartyColor.color, barChartyColor.color),
-                            startY = barTop,
-                            endY = barTop + barHeight,
-                        )
+            val barValueY = chartContext.convertValueToYPosition(value)
+            val isNegative = value < 0f
 
-                        is ChartyColor.Gradient -> Brush.verticalGradient(
-                            colors = barChartyColor.colors,
-                            startY = barTop,
-                            endY = barTop + barHeight,
-                        )
-                    }
-                drawRoundedBar(
-                    brush = barBrush,
-                    x = barX,
-                    y = barTop,
-                    width = barWidth,
-                    height = barHeight,
-                    isNegative = isNegative,
-                    isBelowAxisMode = isBelowAxisMode,
-                    cornerRadius = comparisonConfig.cornerRadius.value,
+            val (barTop, barHeight) = calculateComparisonBarDimensions(
+                value = value,
+                baselineY = baselineY,
+                barValueY = barValueY,
+            )
+
+            if (onBarClick != null) {
+                barBounds.add(
+                    Rect(
+                        left = barX,
+                        top = barTop,
+                        right = barX + barWidth,
+                        bottom = barTop + barHeight,
+                    ) to ComparisonBarSegment(
+                        barGroup = group,
+                        barIndex = barIndex,
+                        barValue = value,
+                    ),
                 )
             }
+            val barChartyColor = getBarColor(group, barIndex)
+            val barBrush = createBarBrush(barChartyColor, barTop, barHeight)
+            drawRoundedBar(
+                brush = barBrush,
+                x = barX,
+                y = barTop,
+                width = barWidth,
+                height = barHeight,
+                isNegative = isNegative,
+                isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS,
+                cornerRadius = comparisonConfig.cornerRadius.value,
+            )
         }
+    }
+}
 
-        comparisonConfig.referenceLine?.let { referenceLineConfig ->
-            drawReferenceLine(
-                chartContext = chartContext,
-                orientation = ChartOrientation.VERTICAL,
-                config = referenceLineConfig,
-                textMeasurer = textMeasurer,
-            )
-        }
-        tooltipState?.let { state ->
-            drawTooltip(
-                tooltipState = state,
-                config = comparisonConfig.tooltipConfig,
-                textMeasurer = textMeasurer,
-                chartWidth = chartContext.right,
-                chartTop = chartContext.top,
-                chartBottom = chartContext.bottom,
-            )
-        }
+private fun calculateBarX(
+    chartContext: com.himanshoe.charty.common.ChartContext,
+    groupWidth: Float,
+    groupIndex: Int,
+    barWidth: Float,
+    barIndex: Int,
+): Float {
+    return chartContext.left +
+        groupWidth * groupIndex +
+        barWidth * barIndex +
+        groupWidth * GROUP_PADDING_FRACTION
+}
+
+private fun calculateComparisonBarDimensions(
+    value: Float,
+    baselineY: Float,
+    barValueY: Float,
+): Pair<Float, Float> {
+    val isNegative = value < 0f
+
+    return if (isNegative) {
+        val barTop = baselineY
+        val barHeight = barValueY - baselineY
+        barTop to barHeight
+    } else {
+        val barHeight = baselineY - barValueY
+        val barTop = baselineY - barHeight
+        barTop to barHeight
+    }
+}
+
+private fun getBarColor(
+    group: BarGroup,
+    barIndex: Int,
+): ChartyColor {
+    require(group.colors != null) {
+        "ComparisonBarChart requires each BarGroup to specify colors. Please set the 'colors' property in BarGroup."
+    }
+    require(barIndex < group.colors.size) {
+        "BarGroup '${group.label}' has ${group.values.size} values but only " +
+            "${group.colors.size} colors. Please provide a color for each value."
+    }
+    return group.colors[barIndex]
+}
+
+private fun createBarBrush(
+    barChartyColor: ChartyColor,
+    barTop: Float,
+    barHeight: Float,
+): Brush {
+    return when (barChartyColor) {
+        is ChartyColor.Solid -> Brush.verticalGradient(
+            colors = listOf(barChartyColor.color, barChartyColor.color),
+            startY = barTop,
+            endY = barTop + barHeight,
+        )
+
+        is ChartyColor.Gradient -> Brush.verticalGradient(
+            colors = barChartyColor.colors,
+            startY = barTop,
+            endY = barTop + barHeight,
+        )
+    }
+}
+
+private fun DrawScope.drawReferenceLineIfNeeded(
+    comparisonConfig: ComparisonBarChartConfig,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+) {
+    comparisonConfig.referenceLine?.let { referenceLineConfig ->
+        drawReferenceLine(
+            chartContext = chartContext,
+            orientation = ChartOrientation.VERTICAL,
+            config = referenceLineConfig,
+            textMeasurer = textMeasurer,
+        )
+    }
+}
+
+private fun DrawScope.drawTooltipIfNeeded(
+    tooltipState: TooltipState?,
+    comparisonConfig: ComparisonBarChartConfig,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+) {
+    tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = comparisonConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
     }
 }
 

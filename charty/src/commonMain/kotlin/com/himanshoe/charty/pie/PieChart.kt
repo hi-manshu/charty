@@ -1,15 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.pie
 
 import androidx.compose.animation.core.Animatable
@@ -49,6 +37,49 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
 import kotlin.math.sqrt
+
+private const val DEFAULT_COLOR = 0xFF2196F3
+private const val CHART_SIZE_MULTIPLIER = 0.8f
+private const val PIE_LABEL_RADIUS_MULTIPLIER = 0.65f
+private const val DONUT_LABEL_RADIUS_DIVISOR = 2f
+private const val LABEL_ANIMATION_THRESHOLD = 0.5f
+private const val PERCENTAGE_PRECISION_MULTIPLIER = 10.0
+private const val FULL_CIRCLE_DEGREES = 360f
+private const val HALF_DIVIDER = 2f
+private const val DOUBLE_MULTIPLIER = 2f
+private const val DEGREES_TO_RADIANS = PI / 180.0
+private const val RADIANS_TO_DEGREES = 180.0 / PI
+
+/**
+ * Parameters for drawing pie chart content
+ */
+private data class PieChartContentParams(
+    val dataList: List<PieData>,
+    val sliceColors: List<Color>,
+    val total: Float,
+    val config: PieChartConfig,
+    val animationProgress: Float,
+    val selectedSliceIndex: Int?,
+    val selectedScale: Float,
+    val centerContent: @Composable (() -> Unit)?,
+    val onSliceClick: (Int) -> Unit,
+)
+
+/**
+ * Parameters for drawing pie slices
+ */
+private data class PieSliceDrawParams(
+    val dataList: List<PieData>,
+    val colors: List<Color>,
+    val total: Float,
+    val center: Offset,
+    val radius: Float,
+    val config: PieChartConfig,
+    val animationProgress: Float,
+    val selectedSliceIndex: Int?,
+    val selectedScale: Float,
+    val textMeasurer: androidx.compose.ui.text.TextMeasurer,
+)
 
 /**
  * Pie/Donut Chart - Display data as circular slices with comprehensive features
@@ -120,7 +151,7 @@ import kotlin.math.sqrt
 fun PieChart(
     data: () -> List<PieData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(Color(0xFF2196F3)),
+    color: ChartyColor = ChartyColor.Solid(Color(DEFAULT_COLOR)),
     config: PieChartConfig = PieChartConfig(),
     onSliceClick: ((PieData, Int) -> Unit)? = null,
     centerContent: @Composable (() -> Unit)? = null,
@@ -159,19 +190,20 @@ fun PieChart(
         }
     }
     PieChartContent(
-        dataList = dataList,
-        sliceColors = sliceColors,
-        total = total,
-        config = config,
-        animationProgress = animationProgress.value,
-        selectedSliceIndex = selectedSliceIndex,
-        selectedScale = selectedScale.value,
-        centerContent = centerContent,
-        onSliceClick =
-            onSliceClickLambda(dataList) { index ->
+        params = PieChartContentParams(
+            dataList = dataList,
+            sliceColors = sliceColors,
+            total = total,
+            config = config,
+            animationProgress = animationProgress.value,
+            selectedSliceIndex = selectedSliceIndex,
+            selectedScale = selectedScale.value,
+            centerContent = centerContent,
+            onSliceClick = onSliceClickLambda(dataList) { index ->
                 selectedSliceIndex = if (selectedSliceIndex == index) null else index
                 onSliceClick?.invoke(dataList[index], index)
             },
+        ),
         modifier = modifier,
     )
 }
@@ -190,15 +222,7 @@ private fun onSliceClickLambda(
  */
 @Composable
 private fun PieChartContent(
-    dataList: List<PieData>,
-    sliceColors: List<Color>,
-    total: Float,
-    config: PieChartConfig,
-    animationProgress: Float,
-    selectedSliceIndex: Int?,
-    selectedScale: Float,
-    centerContent: @Composable (() -> Unit)?,
-    onSliceClick: (Int) -> Unit,
+    params: PieChartContentParams,
     modifier: Modifier = Modifier,
 ) {
     val textMeasurer = rememberTextMeasurer()
@@ -211,55 +235,55 @@ private fun PieChartContent(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .pointerInput(dataList, config.interactionConfig.isEnabled) {
-                        if (config.interactionConfig.isEnabled) {
+                    .pointerInput(params.dataList, params.config.interactionConfig.isEnabled) {
+                        if (params.config.interactionConfig.isEnabled) {
                             detectTapGestures { offset ->
-                                val center = Offset(size.width / 2f, size.height / 2f)
-                                val radius = minOf(size.width, size.height) / 2f * 0.8f
+                                val center = Offset(size.width / HALF_DIVIDER, size.height / HALF_DIVIDER)
+                                val radius = minOf(size.width, size.height) / HALF_DIVIDER * CHART_SIZE_MULTIPLIER
 
                                 val clickedIndex = findClickedSlice(
                                     touchPosition = offset,
                                     center = center,
                                     radius = radius,
-                                    dataList = dataList,
-                                    total = total,
-                                    config = config,
+                                    dataList = params.dataList,
+                                    total = params.total,
+                                    config = params.config,
                                 )
 
-                                if (clickedIndex != null) {
-                                    onSliceClick(clickedIndex)
-                                }
+                                clickedIndex?.let { params.onSliceClick(it) }
                             }
                         }
                     },
         ) {
-            val center = Offset(size.width / 2f, size.height / 2f)
-            val radius = minOf(size.width, size.height) / 2f * 0.8f
+            val center = Offset(size.width / HALF_DIVIDER, size.height / HALF_DIVIDER)
+            val radius = minOf(size.width, size.height) / HALF_DIVIDER * CHART_SIZE_MULTIPLIER
 
             drawPieSlices(
-                dataList = dataList,
-                colors = sliceColors,
-                total = total,
-                center = center,
-                radius = radius,
-                config = config,
-                animationProgress = animationProgress,
-                selectedSliceIndex = selectedSliceIndex,
-                selectedScale = selectedScale,
-                textMeasurer = textMeasurer,
+                params = PieSliceDrawParams(
+                    dataList = params.dataList,
+                    colors = params.sliceColors,
+                    total = params.total,
+                    center = center,
+                    radius = radius,
+                    config = params.config,
+                    animationProgress = params.animationProgress,
+                    selectedSliceIndex = params.selectedSliceIndex,
+                    selectedScale = params.selectedScale,
+                    textMeasurer = textMeasurer,
+                )
             )
         }
-        if (config.style == PieChartStyle.DONUT && centerContent != null) {
+        if (params.config.style == PieChartStyle.DONUT && params.centerContent != null) {
             Box(
-                modifier = Modifier.fillMaxSize(config.donutHoleRatio),
+                modifier = Modifier.fillMaxSize(params.config.donutHoleRatio),
                 contentAlignment = Alignment.Center,
             ) {
-                centerContent()
+                params.centerContent()
             }
-        } else if (config.style == PieChartStyle.DONUT && config.shouldShowCenterText) {
+        } else if (params.config.style == PieChartStyle.DONUT && params.config.shouldShowCenterText) {
             Text(
-                text = total.toInt().toString(),
-                style = config.centerTextStyle,
+                text = params.total.toInt().toString(),
+                style = params.config.centerTextStyle,
             )
         }
     }
@@ -268,97 +292,86 @@ private fun PieChartContent(
 /**
  * Draws all pie/donut slices with proper styling and animations
  */
-private fun DrawScope.drawPieSlices(
-    dataList: List<PieData>,
-    colors: List<Color>,
-    total: Float,
-    center: Offset,
-    radius: Float,
-    config: PieChartConfig,
-    animationProgress: Float,
-    selectedSliceIndex: Int?,
-    selectedScale: Float,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
-) {
-    var currentAngle = config.startAngleDegrees
+private fun DrawScope.drawPieSlices(params: PieSliceDrawParams) {
+    var currentAngle = params.config.startAngleDegrees
 
-    dataList.fastForEachIndexed { index, slice ->
-        val sweepAngle = slice.calculateSweepAngle(total) * animationProgress
-        val percentage = slice.calculatePercentage(total)
-        val sliceColor = colors.getOrElse(index) { colors.first() }
+    params.dataList.fastForEachIndexed { index, slice ->
+        val sweepAngle = slice.calculateSweepAngle(params.total) * params.animationProgress
+        val percentage = slice.calculatePercentage(params.total)
+        val sliceColor = params.colors.getOrElse(index) { params.colors.first() }
 
         if (sweepAngle > 0) {
-            val isSelected = index == selectedSliceIndex
-            val scale = if (isSelected) selectedScale else 1f
+            val isSelected = index == params.selectedSliceIndex
+            val scale = if (isSelected) params.selectedScale else 1f
             val alpha =
-                if (selectedSliceIndex != null && !isSelected) {
-                    config.interactionConfig.unselectedSliceOpacity
+                if (params.selectedSliceIndex != null && !isSelected) {
+                    params.config.interactionConfig.unselectedSliceOpacity
                 } else {
                     1f
                 }
-            val sliceCenter = center
+            val sliceCenter = params.center
             val offset =
-                if (isSelected && config.interactionConfig.isEnabled) {
-                    val angle = (currentAngle + sweepAngle / 2) * PI / 180.0
+                if (isSelected && params.config.interactionConfig.isEnabled) {
+                    val angle = (currentAngle + sweepAngle / HALF_DIVIDER) * DEGREES_TO_RADIANS
                     Offset(
-                        x = (cos(angle) * config.interactionConfig.selectedSlicePullOutDistance).toFloat(),
-                        y = (sin(angle) * config.interactionConfig.selectedSlicePullOutDistance).toFloat(),
+                        x = (cos(angle) * params.config.interactionConfig.selectedSlicePullOutDistance).toFloat(),
+                        y = (sin(angle) * params.config.interactionConfig.selectedSlicePullOutDistance).toFloat(),
                     )
                 } else {
                     Offset.Zero
                 }
 
-            val actualRadius = radius * scale
+            val actualRadius = params.radius * scale
             val drawCenter = sliceCenter + offset
-            when (config.style) {
+            when (params.config.style) {
                 PieChartStyle.PIE -> {
                     drawArc(
                         color = sliceColor,
-                        startAngle = currentAngle + config.sliceSpacingDegrees / 2,
-                        sweepAngle = max(0f, sweepAngle - config.sliceSpacingDegrees),
+                        startAngle = currentAngle + params.config.sliceSpacingDegrees / HALF_DIVIDER,
+                        sweepAngle = max(0f, sweepAngle - params.config.sliceSpacingDegrees),
                         useCenter = true,
                         topLeft =
                             Offset(
                                 drawCenter.x - actualRadius,
                                 drawCenter.y - actualRadius,
                             ),
-                        size = Size(actualRadius * 2, actualRadius * 2),
+                        size = Size(actualRadius * DOUBLE_MULTIPLIER, actualRadius * DOUBLE_MULTIPLIER),
                         alpha = alpha,
                     )
                 }
 
                 PieChartStyle.DONUT -> {
-                    val strokeWidth = actualRadius * (1f - config.donutHoleRatio)
-                    val arcRadius = actualRadius - strokeWidth / 2
+                    val strokeWidth = actualRadius * (1f - params.config.donutHoleRatio)
+                    val arcRadius = actualRadius - strokeWidth / HALF_DIVIDER
 
                     drawArc(
                         color = sliceColor,
-                        startAngle = currentAngle + config.sliceSpacingDegrees / 2,
-                        sweepAngle = max(0f, sweepAngle - config.sliceSpacingDegrees),
+                        startAngle = currentAngle + params.config.sliceSpacingDegrees / HALF_DIVIDER,
+                        sweepAngle = max(0f, sweepAngle - params.config.sliceSpacingDegrees),
                         useCenter = false,
                         topLeft =
                             Offset(
                                 drawCenter.x - arcRadius,
                                 drawCenter.y - arcRadius,
                             ),
-                        size = Size(arcRadius * 2, arcRadius * 2),
+                        size = Size(arcRadius * DOUBLE_MULTIPLIER, arcRadius * DOUBLE_MULTIPLIER),
                         style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
                         alpha = alpha,
                     )
                 }
             }
-            if (config.labelConfig.shouldShowLabels &&
-                percentage >= config.labelConfig.minimumPercentageToShowLabel &&
-                animationProgress > 0.5f
+            if (params.config.labelConfig.shouldShowLabels &&
+                percentage >= params.config.labelConfig.minimumPercentageToShowLabel &&
+                params.animationProgress > LABEL_ANIMATION_THRESHOLD
             ) {
                 drawSliceLabel(
                     slice = slice,
                     percentage = percentage,
                     center = drawCenter,
                     radius = actualRadius,
-                    angle = currentAngle + sweepAngle / 2,
-                    config = config,
-                    textMeasurer = textMeasurer,
+                    angle = currentAngle + sweepAngle / HALF_DIVIDER,
+                    config = params.config,
+                    textMeasurer = params.textMeasurer,
                 )
             }
 
@@ -382,7 +395,7 @@ private fun DrawScope.drawSliceLabel(
     val labelText =
         buildString {
             if (config.labelConfig.shouldShowPercentage) {
-                append("${(percentage * 10).toInt() / 10.0}%")
+                append("${(percentage * PERCENTAGE_PRECISION_MULTIPLIER).toInt() / PERCENTAGE_PRECISION_MULTIPLIER}%")
             }
             if (config.labelConfig.shouldShowValue) {
                 if (isNotEmpty()) append("\n")
@@ -393,17 +406,15 @@ private fun DrawScope.drawSliceLabel(
     if (labelText.isEmpty()) return
 
     val textLayoutResult = textMeasurer.measure(labelText, config.labelConfig.labelTextStyle)
-
-    // Position label in the middle of the slice
     val labelRadius =
         when (config.style) {
-            PieChartStyle.PIE -> radius * 0.65f
-            PieChartStyle.DONUT -> radius * (1f - config.donutHoleRatio / 2)
+            PieChartStyle.PIE -> radius * PIE_LABEL_RADIUS_MULTIPLIER
+            PieChartStyle.DONUT -> radius * (1f - config.donutHoleRatio / DONUT_LABEL_RADIUS_DIVISOR)
         }
 
-    val angleRad = angle * PI / 180.0
-    val labelX = center.x + cos(angleRad).toFloat() * labelRadius - textLayoutResult.size.width / 2
-    val labelY = center.y + sin(angleRad).toFloat() * labelRadius - textLayoutResult.size.height / 2
+    val angleRad = angle * DEGREES_TO_RADIANS
+    val labelX = center.x + cos(angleRad).toFloat() * labelRadius - textLayoutResult.size.width / HALF_DIVIDER
+    val labelY = center.y + sin(angleRad).toFloat() * labelRadius - textLayoutResult.size.height / HALF_DIVIDER
 
     drawText(
         textLayoutResult = textLayoutResult,
@@ -422,12 +433,9 @@ private fun findClickedSlice(
     total: Float,
     config: PieChartConfig,
 ): Int? {
-    // Calculate distance from center
     val dx = touchPosition.x - center.x
     val dy = touchPosition.y - center.y
     val distance = sqrt(dx * dx + dy * dy)
-
-    // Check if within chart bounds
     val innerRadius =
         if (config.style == PieChartStyle.DONUT) {
             radius * config.donutHoleRatio
@@ -435,29 +443,27 @@ private fun findClickedSlice(
             0f
         }
 
-    if (distance < innerRadius || distance > radius) {
+    if (distance !in innerRadius..radius) {
         return null
     }
 
-    // Calculate angle of touch
-    var touchAngle = (atan2(dy.toDouble(), dx.toDouble()) * 180.0 / PI).toFloat()
-    if (touchAngle < 0) touchAngle += 360f
-
-    // Normalize to start angle
+    var touchAngle = (atan2(dy.toDouble(), dx.toDouble()) * RADIANS_TO_DEGREES).toFloat()
+    if (touchAngle < 0) touchAngle += FULL_CIRCLE_DEGREES
     var normalizedAngle = touchAngle - config.startAngleDegrees
-    if (normalizedAngle < 0) normalizedAngle += 360f
-
-    // Find which slice
+    if (normalizedAngle < 0) normalizedAngle += FULL_CIRCLE_DEGREES
     var currentAngle = 0f
-    dataList.forEachIndexed { index, slice ->
-        val sweepAngle = slice.calculateSweepAngle(total)
-        if (normalizedAngle >= currentAngle && normalizedAngle < currentAngle + sweepAngle) {
-            return index
+    var result: Int? = null
+    dataList.fastForEachIndexed { index, slice ->
+        if (result == null) {
+            val sweepAngle = slice.calculateSweepAngle(total)
+            if (normalizedAngle >= currentAngle && normalizedAngle < currentAngle + sweepAngle) {
+                result = index
+            }
+            currentAngle += sweepAngle
         }
-        currentAngle += sweepAngle
     }
 
-    return null
+    return result
 }
 
 /**
@@ -467,20 +473,16 @@ private fun generateSliceColors(
     dataList: List<PieData>,
     color: ChartyColor,
 ): List<Color> {
-    // First, check if slices have custom colors
     val customColors = dataList.mapNotNull { it.color }
     if (customColors.size == dataList.size) {
         return customColors
     }
-
-    // Use ChartyColor configuration
     return when (color) {
         is ChartyColor.Solid -> List(dataList.size) { color.color }
         is ChartyColor.Gradient -> {
             if (color.colors.size >= dataList.size) {
                 color.colors.take(dataList.size)
             } else {
-                // Interpolate or repeat colors
                 List(dataList.size) { index ->
                     color.colors[index % color.colors.size]
                 }

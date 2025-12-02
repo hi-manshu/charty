@@ -1,15 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.bar
 
 import androidx.compose.animation.core.Animatable
@@ -38,6 +26,7 @@ import com.himanshoe.charty.bar.ext.calculateMaxValue
 import com.himanshoe.charty.bar.ext.calculateMinValue
 import com.himanshoe.charty.bar.ext.getValues
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -46,6 +35,27 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+
+private const val DEFAULT_AXIS_STEPS = 6
+private const val AXIS_OFFSET_MULTIPLIER = 20f
+
+/**
+ * Parameters for drawing horizontal bars
+ */
+private data class HorizontalBarDrawParams(
+    val dataList: List<BarData>,
+    val chartContext: ChartContext,
+    val barConfig: BarChartConfig,
+    val baselineX: Float,
+    val axisOffset: Float,
+    val animationProgress: Float,
+    val color: ChartyColor,
+    val isBelowAxisMode: Boolean,
+    val minValue: Float,
+    val maxValue: Float,
+    val onBarClick: ((BarData) -> Unit)?,
+    val onBarBoundCalculated: (Pair<Rect, BarData>) -> Unit,
+)
 
 /**
  * Horizontal Bar Chart - Display data as horizontal bars
@@ -92,30 +102,11 @@ fun HorizontalBarChart(
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
 
-    val (minValue, maxValue) =
-        remember(dataList, barConfig.negativeValuesDrawMode) {
-            val values = dataList.getValues()
-            val calculatedMin = calculateMinValue(values)
-            val calculatedMax = calculateMaxValue(values)
-            val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
-            finalMin to calculatedMax
-        }
-
+    val (minValue, maxValue) = rememberHorizontalValueRange(dataList, barConfig.negativeValuesDrawMode)
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
-    val animationProgress =
-        remember {
-            Animatable(if (barConfig.animation is Animation.Enabled) 0f else 1f)
-        }
 
-    LaunchedEffect(barConfig.animation) {
-        if (barConfig.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = barConfig.animation.duration),
-            )
-        }
-    }
+    val animationProgress = rememberHorizontalAnimation(barConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
     val textMeasurer = rememberTextMeasurer()
@@ -123,97 +114,210 @@ fun HorizontalBarChart(
     ChartScaffold(
         modifier = modifier,
         xLabels = dataList.map { it.label },
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = drawAxisAtZero,
-            ),
+        yAxisConfig = createAxisConfig(minValue, maxValue, drawAxisAtZero),
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         barBounds.clear()
-        val axisOffset = if (scaffoldConfig.showAxis) scaffoldConfig.axisThickness * 20f else 0f
-        val baselineX =
-            if (drawAxisAtZero) {
-                val range = maxValue - minValue
-                val zeroNormalized = (0f - minValue) / range
-                chartContext.left + (zeroNormalized * chartContext.width)
-            } else {
-                chartContext.left + axisOffset
-            }
+        val axisOffset = calculateAxisOffset(scaffoldConfig)
+        val baselineX = calculateBaselineX(drawAxisAtZero, minValue, maxValue, chartContext, axisOffset)
 
-        dataList.fastForEachIndexed { index, bar ->
-            val barHeight = chartContext.height / dataList.size
-            val barY = chartContext.top + (barHeight * index)
-            val barThickness = barHeight * barConfig.barWidthFraction
-            val centeredBarY = barY + (barHeight - barThickness) / 2
-
-            val range = maxValue - minValue
-            val valueNormalized = (bar.value - minValue) / range
-            val barValueX = chartContext.left + axisOffset + (valueNormalized * (chartContext.width - axisOffset))
-            val isNegative = bar.value < 0f
-
-            val barLeft: Float
-            val barWidth: Float
-
-            if (isNegative && isBelowAxisMode) {
-                val fullBarWidth = baselineX - barValueX
-                barWidth = fullBarWidth * animationProgress.value
-                barLeft = barValueX
-            } else {
-                val fullBarWidth = barValueX - baselineX
-                barWidth = fullBarWidth * animationProgress.value
-                barLeft = baselineX
-            }
-            if (onBarClick != null) {
-                barBounds.add(
-                    Rect(
-                        left = barLeft,
-                        top = centeredBarY,
-                        right = barLeft + barWidth,
-                        bottom = centeredBarY + barThickness,
-                    ) to bar,
-                )
-            }
-
-            val barColor = bar.color ?: color
-            val brush = Brush.horizontalGradient(
-                colors = barColor.value,
-                startX = chartContext.left,
-                endX = chartContext.right,
-            )
-            drawRoundedHorizontalBar(
-                brush = brush,
-                x = barLeft,
-                y = centeredBarY,
-                width = barWidth,
-                height = barThickness,
-                isNegative = isNegative,
-                isBelowAxisMode = isBelowAxisMode,
-                cornerRadius = barConfig.cornerRadius.value,
-            )
-        }
-        barConfig.referenceLine?.let { referenceLineConfig ->
-            drawReferenceLine(
+        drawHorizontalBars(
+            HorizontalBarDrawParams(
+                dataList = dataList,
                 chartContext = chartContext,
-                orientation = ChartOrientation.HORIZONTAL,
-                config = referenceLineConfig,
-                textMeasurer = textMeasurer,
+                barConfig = barConfig,
+                baselineX = baselineX,
+                axisOffset = axisOffset,
+                animationProgress = animationProgress.value,
+                color = color,
+                isBelowAxisMode = isBelowAxisMode,
+                minValue = minValue,
+                maxValue = maxValue,
+                onBarClick = onBarClick,
+                onBarBoundCalculated = { barBounds.add(it) },
+            )
+        )
+
+        drawReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
+        drawTooltipIfNeeded(tooltipState, barConfig, textMeasurer, chartContext)
+    }
+}
+
+@Composable
+private fun rememberHorizontalValueRange(
+    dataList: List<BarData>,
+    negativeValuesDrawMode: NegativeValuesDrawMode
+): Pair<Float, Float> {
+    return remember(dataList, negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        val calculatedMin = calculateMinValue(values)
+        val calculatedMax = calculateMaxValue(values)
+        val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+        finalMin to calculatedMax
+    }
+}
+
+@Composable
+private fun rememberHorizontalAnimation(animation: Animation): Animatable<Float, *> {
+    val animationProgress = remember {
+        Animatable(if (animation is Animation.Enabled) 0f else 1f)
+    }
+
+    LaunchedEffect(animation) {
+        if (animation is Animation.Enabled) {
+            animationProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = animation.duration),
+            )
+        }
+    }
+
+    return animationProgress
+}
+
+private fun createAxisConfig(
+    minValue: Float,
+    maxValue: Float,
+    drawAxisAtZero: Boolean
+): AxisConfig {
+    return AxisConfig(
+        minValue = minValue,
+        maxValue = maxValue,
+        steps = DEFAULT_AXIS_STEPS,
+        drawAxisAtZero = drawAxisAtZero,
+    )
+}
+
+private fun calculateAxisOffset(scaffoldConfig: ChartScaffoldConfig): Float {
+    return if (scaffoldConfig.showAxis) {
+        scaffoldConfig.axisThickness * AXIS_OFFSET_MULTIPLIER
+    } else {
+        0f
+    }
+}
+
+private fun calculateBaselineX(
+    drawAxisAtZero: Boolean,
+    minValue: Float,
+    maxValue: Float,
+    chartContext: ChartContext,
+    axisOffset: Float
+): Float {
+    return if (drawAxisAtZero) {
+        val range = maxValue - minValue
+        val zeroNormalized = (0f - minValue) / range
+        chartContext.left + (zeroNormalized * chartContext.width)
+    } else {
+        chartContext.left + axisOffset
+    }
+}
+
+private fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
+    val range = params.maxValue - params.minValue
+
+    params.dataList.fastForEachIndexed { index, bar ->
+        val barHeight = params.chartContext.height / params.dataList.size
+        val barY = params.chartContext.top + (barHeight * index)
+        val barThickness = barHeight * params.barConfig.barWidthFraction
+        val centeredBarY = barY + (barHeight - barThickness) / 2
+
+        val valueNormalized = (bar.value - params.minValue) / range
+        val barValueX = params.chartContext.left + params.axisOffset +
+            (valueNormalized * (params.chartContext.width - params.axisOffset))
+        val isNegative = bar.value < 0f
+
+        val (barLeft, barWidth) = calculateHorizontalBarDimensions(
+            isNegative = isNegative,
+            isBelowAxisMode = params.isBelowAxisMode,
+            baselineX = params.baselineX,
+            barValueX = barValueX,
+            animationProgress = params.animationProgress,
+        )
+
+        if (params.onBarClick != null) {
+            params.onBarBoundCalculated(
+                Rect(
+                    left = barLeft,
+                    top = centeredBarY,
+                    right = barLeft + barWidth,
+                    bottom = centeredBarY + barThickness,
+                ) to bar
             )
         }
 
-        tooltipState?.let { state ->
-            drawTooltip(
-                tooltipState = state,
-                config = barConfig.tooltipConfig,
-                textMeasurer = textMeasurer,
-                chartWidth = chartContext.right,
-                chartTop = chartContext.top,
-                chartBottom = chartContext.bottom,
-            )
-        }
+        val barColor = bar.color ?: params.color
+        val brush = Brush.horizontalGradient(
+            colors = barColor.value,
+            startX = params.chartContext.left,
+            endX = params.chartContext.right,
+        )
+
+        drawRoundedHorizontalBar(
+            brush = brush,
+            x = barLeft,
+            y = centeredBarY,
+            width = barWidth,
+            height = barThickness,
+            isNegative = isNegative,
+            isBelowAxisMode = params.isBelowAxisMode,
+            cornerRadius = params.barConfig.cornerRadius.value,
+        )
+    }
+}
+
+private fun calculateHorizontalBarDimensions(
+    isNegative: Boolean,
+    isBelowAxisMode: Boolean,
+    baselineX: Float,
+    barValueX: Float,
+    animationProgress: Float,
+): Pair<Float, Float> {
+    return if (isNegative && isBelowAxisMode) {
+        val fullBarWidth = baselineX - barValueX
+        val barWidth = fullBarWidth * animationProgress
+        val barLeft = barValueX
+        barLeft to barWidth
+    } else {
+        val fullBarWidth = barValueX - baselineX
+        val barWidth = fullBarWidth * animationProgress
+        val barLeft = baselineX
+        barLeft to barWidth
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawReferenceLineIfNeeded(
+    barConfig: BarChartConfig,
+    chartContext: ChartContext,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer
+) {
+    barConfig.referenceLine?.let { referenceLineConfig ->
+        drawReferenceLine(
+            chartContext = chartContext,
+            orientation = ChartOrientation.HORIZONTAL,
+            config = referenceLineConfig,
+            textMeasurer = textMeasurer,
+        )
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawTooltipIfNeeded(
+    tooltipState: TooltipState?,
+    barConfig: BarChartConfig,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    chartContext: ChartContext
+) {
+    tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = barConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
     }
 }
 

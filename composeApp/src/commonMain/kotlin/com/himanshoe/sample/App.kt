@@ -1103,10 +1103,6 @@ fun App(modifier: Modifier = Modifier) {
                                         BarGroup("D", listOf(30f, 44f)),
                                     )
                                 },
-                                colors =
-                                    ChartyColor.Gradient(
-                                        listOf(Color(0xFFE91E63), Color(0xFF2196F3)),
-                                    ),
                                 onBarClick = { segment ->
                                     selectedSegment = segment
                                     println("Comparison bar clicked: ${segment.barGroup.label} [${segment.barIndex}] = ${segment.barValue}")
@@ -1132,14 +1128,6 @@ fun App(modifier: Modifier = Modifier) {
                                     BarGroup("Q4", listOf(-20f, 55f, -40f)),
                                 )
                             },
-                            colors =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFE91E63),
-                                        Color(0xFF2196F3),
-                                    ),
-                                ),
                             comparisonConfig =
                                 ComparisonBarChartConfig(
                                     negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
@@ -1164,14 +1152,6 @@ fun App(modifier: Modifier = Modifier) {
                                     BarGroup("Q4", listOf(-20f, 55f, -40f)),
                                 )
                             },
-                            colors =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFE91E63),
-                                        Color(0xFF2196F3),
-                                    ),
-                                ),
                             comparisonConfig =
                                 ComparisonBarChartConfig(
                                     negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
