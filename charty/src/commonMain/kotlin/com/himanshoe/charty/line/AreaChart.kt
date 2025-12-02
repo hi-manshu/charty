@@ -31,12 +31,12 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.calculateDistance
+import com.himanshoe.charty.line.ext.calculateMaxValue
+import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createAreaPath
 import com.himanshoe.charty.line.ext.createLineBrush
 import com.himanshoe.charty.line.ext.createLinePath
-import com.himanshoe.charty.line.ext.calculateMaxValue
-import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.ext.getValues
 
