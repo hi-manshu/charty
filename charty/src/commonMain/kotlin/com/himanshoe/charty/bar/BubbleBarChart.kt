@@ -12,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -26,6 +25,7 @@ import com.himanshoe.charty.bar.ext.calculateMinValue
 import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.bar.ext.getValues
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -54,7 +54,7 @@ import kotlin.math.max
  *             BarData("Mar", 120f)
  *         )
  *     },
- *     color = ChartyColor.Solid(Color.Blue),
+ *     color = ChartyColor.Solid(Color(0xFF2196F3)),
  *     bubbleConfig = BubbleBarChartConfig(
  *         barWidthFraction = 0.6f,
  *         bubbleRadius = 8.dp,
@@ -76,7 +76,7 @@ import kotlin.math.max
 fun BubbleBarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(Color.Blue),
+    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     bubbleConfig: BubbleBarChartConfig = BubbleBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,

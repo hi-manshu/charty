@@ -24,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
@@ -32,6 +31,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
@@ -66,13 +66,7 @@ import kotlin.math.sqrt
  *             LineGroup("Thu", listOf(70f, 40f, 55f))
  *         )
  *     },
- *     colors = ChartyColor.Gradient(
- *         listOf(
- *             Color(0xFFE91E63),
- *             Color(0xFF2196F3),
- *             Color(0xFF4CAF50)
- *         )
- *     ),
+ *     colors = ChartyColors.DefaultMultiline,
  *     lineConfig = LineChartConfig(
  *         lineWidth = 3f,
  *         showPoints = true,
@@ -93,14 +87,7 @@ import kotlin.math.sqrt
 fun MultilineChart(
     data: () -> List<LineGroup>,
     modifier: Modifier = Modifier,
-    colors: ChartyColor =
-        ChartyColor.Gradient(
-            listOf(
-                Color(0xFFE91E63),
-                Color(0xFF2196F3),
-                Color(0xFF4CAF50),
-            ),
-        ),
+    colors: ChartyColor = ChartyColors.DefaultMultiline,
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onPointClick: ((MultilinePoint) -> Unit)? = null,

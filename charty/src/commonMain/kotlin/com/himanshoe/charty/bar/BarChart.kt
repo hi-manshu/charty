@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.BarChartConfig
@@ -23,6 +22,7 @@ import com.himanshoe.charty.bar.internal.bar.barchart.drawBars
 import com.himanshoe.charty.bar.internal.bar.barchart.rememberBarAnimationProgress
 import com.himanshoe.charty.bar.internal.bar.barchart.rememberBarValueRange
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -43,7 +43,7 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  *             BarData("Mar", 120f)
  *         )
  *     },
- *     color = ChartyColor.Solid(Color.Blue),
+ *     color = ChartyColor.Solid(ChartyColors.Blue),
  *     barConfig = BarChartConfig(
  *         barWidthFraction = 0.6f,
  *         roundedTopCorners = true,
@@ -65,7 +65,7 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 fun BarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(Color.Blue),
+    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,

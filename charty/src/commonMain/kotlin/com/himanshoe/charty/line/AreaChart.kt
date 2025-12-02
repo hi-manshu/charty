@@ -22,6 +22,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
@@ -40,7 +41,6 @@ import com.himanshoe.charty.line.ext.createLinePath
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.ext.getValues
 
-private const val DEFAULT_COLOR_PRIMARY = 0xFF2196F3
 private const val DEFAULT_FILL_ALPHA = 0.3f
 private const val DEFAULT_AXIS_STEPS = 6
 private const val TAP_RADIUS_MULTIPLIER = 2.5f
@@ -108,8 +108,8 @@ fun AreaChart(
     color: ChartyColor =
         ChartyColor.Gradient(
             listOf(
-                Color(DEFAULT_COLOR_PRIMARY),
-                Color(DEFAULT_COLOR_PRIMARY).copy(alpha = DEFAULT_FILL_ALPHA),
+                ChartyColors.Blue,
+                ChartyColors.BlueAlpha30,
             ),
         ),
     lineConfig: LineChartConfig = LineChartConfig(),

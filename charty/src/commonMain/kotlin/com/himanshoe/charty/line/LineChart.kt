@@ -34,6 +34,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -68,7 +69,7 @@ import kotlin.math.sqrt
  *             LineData("Thu", 70f)
  *         )
  *     },
- *     color = ChartyColor.Solid(Color.Blue),
+ *     color = ChartyColor.Solid(ChartyColors.Blue),
  *     lineConfig = LineChartConfig(
  *         lineWidth = 3f,
  *         showPoints = true,
@@ -93,7 +94,7 @@ import kotlin.math.sqrt
 fun LineChart(
     data: () -> List<LineData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(Color.Blue),
+    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onPointClick: ((LineData) -> Unit)? = null,

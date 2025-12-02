@@ -27,6 +27,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
@@ -38,7 +39,6 @@ import kotlin.math.max
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-private const val DEFAULT_COLOR = 0xFF2196F3
 private const val CHART_SIZE_MULTIPLIER = 0.8f
 private const val PIE_LABEL_RADIUS_MULTIPLIER = 0.65f
 private const val DONUT_LABEL_RADIUS_DIVISOR = 2f
@@ -151,7 +151,7 @@ private data class PieSliceDrawParams(
 fun PieChart(
     data: () -> List<PieData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(Color(DEFAULT_COLOR)),
+    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     config: PieChartConfig = PieChartConfig(),
     onSliceClick: ((PieData, Int) -> Unit)? = null,
     centerContent: @Composable (() -> Unit)? = null,

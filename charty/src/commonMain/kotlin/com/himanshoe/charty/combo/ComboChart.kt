@@ -71,8 +71,8 @@ import kotlin.math.min
  *             ComboChartData("Apr", barValue = 180f, lineValue = 160f)
  *         )
  *     },
- *     barColor = ChartyColor.Solid(Color.Blue),
- *     lineColor = ChartyColor.Solid(Color.Red),
+ *     barColor = ChartyColor.Solid(Color(0xFF2196F3)),
+ *     lineColor = ChartyColor.Solid(Color(0xFFF44336)),
  *     comboConfig = ComboChartConfig(
  *         barWidthFraction = 0.6f,
  *         lineWidth = 3f,
@@ -95,8 +95,8 @@ import kotlin.math.min
 fun ComboChart(
     data: () -> List<ComboChartData>,
     modifier: Modifier = Modifier,
-    barColor: ChartyColor = ChartyColor.Solid(Color.Blue),
-    lineColor: ChartyColor = ChartyColor.Solid(Color.Red),
+    barColor: ChartyColor = ChartyColor.Solid(Color(0xFF2196F3)),
+    lineColor: ChartyColor = ChartyColor.Solid(Color(0xFFF44336)),
     comboConfig: ComboChartConfig = ComboChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onDataClick: ((ComboChartData) -> Unit)? = null,

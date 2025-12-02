@@ -13,12 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -29,8 +31,6 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.PointData
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 private const val TAP_RADIUS_MULTIPLIER = 2.5f
 private const val POINT_RADIUS_MULTIPLIER = 2f
@@ -42,11 +42,6 @@ private const val AXIS_STEPS = 6
 private const val MIN_ANIMATION_PROGRESS = 0f
 private const val MAX_ANIMATION_PROGRESS = 1f
 
-private fun calculateDistance(point1: Offset, point2: Offset): Float {
-    val dx = point1.x - point2.x
-    val dy = point1.y - point2.y
-    return sqrt(dx.pow(2) + dy.pow(2))
-}
 
 private fun createChartModifier(
     modifier: Modifier,
@@ -90,7 +85,7 @@ private fun createChartModifier(
     },
 )
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawPointWithAnimation(
+private fun DrawScope.drawPointWithAnimation(
     point: PointData,
     index: Int,
     dataListSize: Int,
@@ -126,7 +121,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawPointWithAnimat
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipHighlight(
+private fun DrawScope.drawTooltipHighlight(
     tooltipState: TooltipState,
     pointBounds: List<Pair<Offset, PointData>>,
     pointConfig: PointChartConfig,
@@ -182,7 +177,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipHighligh
 fun PointChart(
     data: () -> List<PointData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(Color.Blue),
+    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     pointConfig: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onPointClick: ((PointData) -> Unit)? = null,

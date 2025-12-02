@@ -34,7 +34,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 private const val DEFAULT_AXIS_STEPS = 6
-private const val DEFAULT_COLOR_HEX = 0xFFE91E63
+private const val DEFAULT_COLOR_HEX = 0xFF2196F3
 private const val TAP_RADIUS_MULTIPLIER = 2f
 private const val CIRCLE_HIGHLIGHT_OUTER_PADDING = 3f
 private const val CIRCLE_HIGHLIGHT_INNER_PADDING = 2f

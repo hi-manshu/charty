@@ -2000,7 +2000,7 @@ fun App(modifier: Modifier = Modifier) {
                                         Color(0xFF9C27B0),
                                     ),
                                 ),
-                            pointConfig =
+                            config =
                                 PointChartConfig(
                                     pointRadius = 40f,
                                     animation = Animation.Enabled(duration = 1000),
