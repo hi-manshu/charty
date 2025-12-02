@@ -1,15 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
@@ -25,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
@@ -43,12 +30,39 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
+import com.himanshoe.charty.line.ext.calculateDistance
+import com.himanshoe.charty.line.ext.createAreaBrush
+import com.himanshoe.charty.line.ext.createAreaPath
+import com.himanshoe.charty.line.ext.createLineBrush
+import com.himanshoe.charty.line.ext.createLinePath
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.ext.getValues
-import kotlin.math.pow
-import kotlin.math.sqrt
+
+private const val DEFAULT_COLOR_PRIMARY = 0xFF2196F3
+private const val DEFAULT_FILL_ALPHA = 0.3f
+private const val DEFAULT_AXIS_STEPS = 6
+private const val TAP_RADIUS_MULTIPLIER = 2.5f
+private const val HIGHLIGHT_LINE_ALPHA = 0.1f
+private const val HIGHLIGHT_LINE_WIDTH = 1.5f
+private const val HIGHLIGHT_CIRCLE_OUTER_PADDING = 3f
+private const val HIGHLIGHT_CIRCLE_INNER_PADDING = 2f
+
+/**
+ * Parameters for drawing area chart
+ */
+private data class AreaChartDrawParams(
+    val dataList: List<LineData>,
+    val pointPositions: List<Offset>,
+    val baselineY: Float,
+    val config: LineChartConfig,
+    val color: ChartyColor,
+    val fillAlpha: Float,
+    val animationProgress: Float,
+    val chartContext: com.himanshoe.charty.common.ChartContext,
+    val onBarBoundCalculated: (Pair<Offset, LineData>) -> Unit,
+)
 
 /**
  * Area Chart - Line chart with filled area below the line
@@ -94,254 +108,290 @@ fun AreaChart(
     color: ChartyColor =
         ChartyColor.Gradient(
             listOf(
-                Color(0xFF2196F3),
-                Color(0xFF2196F3).copy(alpha = 0.3f),
+                Color(DEFAULT_COLOR_PRIMARY),
+                Color(DEFAULT_COLOR_PRIMARY).copy(alpha = DEFAULT_FILL_ALPHA),
             ),
         ),
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
-    fillAlpha: Float = 0.3f,
+    fillAlpha: Float = DEFAULT_FILL_ALPHA,
     onPointClick: ((LineData) -> Unit)? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Area chart data cannot be empty" }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
-    val (minValue, maxValue) = remember(dataList, lineConfig.negativeValuesDrawMode) {
-        val values = dataList.getValues()
-        calculateMinValue(values) to calculateMaxValue(values)
-    }
+    val (minValue, maxValue) = rememberAreaValueRange(dataList, lineConfig.negativeValuesDrawMode)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = remember {
-        Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress = rememberAreaAnimation(lineConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
     val textMeasurer = rememberTextMeasurer()
-    LaunchedEffect(lineConfig.animation) {
-        if (lineConfig.animation is Animation.Enabled) {
+
+    val chartModifier = createAreaChartModifier(
+        modifier = modifier,
+        onPointClick = onPointClick,
+        dataList = dataList,
+        lineConfig = lineConfig,
+        pointBounds = pointBounds,
+        onTooltipUpdate = { tooltipState = it }
+    )
+
+    ChartScaffold(
+        modifier = chartModifier,
+        xLabels = dataList.getLabels(),
+        yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
+        config = scaffoldConfig,
+    ) { chartContext ->
+        pointBounds.clear()
+        val pointPositions = calculatePointPositions(dataList, chartContext) { pointBounds.add(it) }
+        val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
+
+        drawAreaChart(
+            params = AreaChartDrawParams(
+                dataList = dataList,
+                pointPositions = pointPositions,
+                baselineY = baselineY,
+                config = lineConfig,
+                color = color,
+                fillAlpha = fillAlpha,
+                animationProgress = animationProgress.value,
+                chartContext = chartContext,
+                onBarBoundCalculated = { if (onPointClick != null) pointBounds.add(it) },
+            )
+        )
+
+        drawTooltipHighlightIfNeeded(tooltipState, lineConfig, pointBounds, chartContext, color)
+        drawTooltipIfNeeded(tooltipState, lineConfig, textMeasurer, chartContext)
+    }
+}
+
+@Composable
+private fun rememberAreaValueRange(
+    dataList: List<LineData>,
+    negativeValuesDrawMode: NegativeValuesDrawMode
+): Pair<Float, Float> {
+    return remember(dataList, negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
+}
+
+@Composable
+private fun rememberAreaAnimation(animation: Animation): Animatable<Float, *> {
+    val animationProgress = remember {
+        Animatable(if (animation is Animation.Enabled) 0f else 1f)
+    }
+
+    LaunchedEffect(animation) {
+        if (animation is Animation.Enabled) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = lineConfig.animation.duration),
+                animationSpec = tween(durationMillis = animation.duration),
             )
         }
     }
 
-    ChartScaffold(
-        modifier = modifier.then(
-            if (onPointClick != null) {
-                Modifier.pointerInput(dataList, lineConfig, onPointClick) {
-                    detectTapGestures { offset ->
-                        val tapRadius = lineConfig.pointRadius * 2.5f
-                        val clickedPoint = pointBounds.minByOrNull { (position, _) ->
-                            val dx = position.x - offset.x
-                            val dy = position.y - offset.y
-                            sqrt(dx.pow(2) + dy.pow(2))
-                        }
-                        clickedPoint?.let { (position, lineData) ->
-                            val dx = position.x - offset.x
-                            val dy = position.y - offset.y
-                            val distance = sqrt(dx.pow(2) + dy.pow(2))
+    return animationProgress
+}
 
-                            if (distance <= tapRadius) {
-                                onPointClick.invoke(lineData)
-                                tooltipState = TooltipState(
-                                    content = lineConfig.tooltipFormatter(lineData),
-                                    x = position.x - lineConfig.pointRadius,
-                                    y = position.y,
-                                    barWidth = lineConfig.pointRadius * 2,
-                                    position = lineConfig.tooltipPosition,
-                                )
-                            } else {
-                                tooltipState = null
-                            }
-                        } ?: run {
-                            tooltipState = null
-                        }
-                    }
-                }
-            } else {
-                Modifier
-            },
-        ),
-        xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = isBelowAxisMode,
-        ),
-        config = scaffoldConfig,
-    ) { chartContext ->
-        pointBounds.clear()
-        val pointPositions =
-            dataList.fastMapIndexed { index, point ->
-                val position = Offset(
-                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                    y = chartContext.convertValueToYPosition(point.value),
-                )
-                if (onPointClick != null) {
-                    pointBounds.add(position to point)
-                }
-
-                position
+@Composable
+private fun createAreaChartModifier(
+    onPointClick: ((LineData) -> Unit)?,
+    dataList: List<LineData>,
+    lineConfig: LineChartConfig,
+    pointBounds: List<Pair<Offset, LineData>>,
+    onTooltipUpdate: (TooltipState?) -> Unit,
+    modifier: Modifier = Modifier,
+): Modifier {
+    return if (onPointClick != null) {
+        modifier.pointerInput(dataList, lineConfig, onPointClick) {
+            detectTapGestures { offset ->
+                handleAreaPointClick(offset, pointBounds, onPointClick, lineConfig, onTooltipUpdate)
             }
+        }
+    } else {
+        modifier
+    }
+}
 
-        val baselineY = if (minValue < 0f && isBelowAxisMode) {
-            chartContext.convertValueToYPosition(0f)
+private fun handleAreaPointClick(
+    offset: Offset,
+    pointBounds: List<Pair<Offset, LineData>>,
+    onPointClick: (LineData) -> Unit,
+    lineConfig: LineChartConfig,
+    onTooltipUpdate: (TooltipState?) -> Unit
+) {
+    val tapRadius = lineConfig.pointRadius * TAP_RADIUS_MULTIPLIER
+    val clickedPoint = pointBounds.minByOrNull { (position, _) ->
+        calculateDistance(position, offset)
+    }
+
+    clickedPoint?.let { (position, lineData) ->
+        val distance = calculateDistance(position, offset)
+
+        if (distance <= tapRadius) {
+            onPointClick.invoke(lineData)
+            onTooltipUpdate(
+                TooltipState(
+                    content = lineConfig.tooltipFormatter(lineData),
+                    x = position.x - lineConfig.pointRadius,
+                    y = position.y,
+                    barWidth = lineConfig.pointRadius * TAP_RADIUS_MULTIPLIER,
+                    position = lineConfig.tooltipPosition,
+                )
+            )
         } else {
-            chartContext.bottom
+            onTooltipUpdate(null)
         }
+    } ?: onTooltipUpdate(null)
+}
 
-        if (pointPositions.isNotEmpty()) {
-            val areaPath = Path().apply {
-                moveTo(pointPositions[0].x, baselineY)
-                lineTo(pointPositions[0].x, pointPositions[0].y)
+private fun createAxisConfig(
+    minValue: Float,
+    maxValue: Float,
+    isBelowAxisMode: Boolean
+): AxisConfig {
+    return AxisConfig(
+        minValue = minValue,
+        maxValue = maxValue,
+        steps = DEFAULT_AXIS_STEPS,
+        drawAxisAtZero = isBelowAxisMode,
+    )
+}
 
-                if (lineConfig.smoothCurve) {
-                    for (i in 0 until pointPositions.size - 1) {
-                        val current = pointPositions[i]
-                        val next = pointPositions[i + 1]
-                        val controlPoint1X = current.x + (next.x - current.x) / 3f
-                        val controlPoint1Y = current.y
-                        val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                        val controlPoint2Y = next.y
+private fun calculatePointPositions(
+    dataList: List<LineData>,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+    onPointCalculated: (Pair<Offset, LineData>) -> Unit
+): List<Offset> {
+    return dataList.fastMapIndexed { index, point ->
+        val position = Offset(
+            x = chartContext.calculateCenteredXPosition(index, dataList.size),
+            y = chartContext.convertValueToYPosition(point.value),
+        )
+        onPointCalculated(position to point)
+        position
+    }
+}
 
-                        cubicTo(
-                            controlPoint1X,
-                            controlPoint1Y,
-                            controlPoint2X,
-                            controlPoint2Y,
-                            next.x,
-                            next.y,
-                        )
-                    }
-                } else {
-                    for (i in 1 until pointPositions.size) {
-                        lineTo(pointPositions[i].x, pointPositions[i].y)
-                    }
-                }
-                lineTo(pointPositions.last().x, baselineY)
-                close()
-            }
-            val areaBrush =
-                when (color) {
-                    is ChartyColor.Solid ->
-                        Brush.verticalGradient(
-                            colors =
-                                listOf(
-                                    color.color.copy(alpha = fillAlpha),
-                                    color.color.copy(alpha = fillAlpha * 0.3f),
-                                ),
-                            startY = chartContext.top,
-                            endY = chartContext.bottom,
-                        )
+private fun calculateBaselineY(
+    minValue: Float,
+    isBelowAxisMode: Boolean,
+    chartContext: com.himanshoe.charty.common.ChartContext
+): Float {
+    return if (minValue < 0f && isBelowAxisMode) {
+        chartContext.convertValueToYPosition(0f)
+    } else {
+        chartContext.bottom
+    }
+}
 
-                    is ChartyColor.Gradient ->
-                        Brush.verticalGradient(
-                            colors = color.colors.map { it.copy(alpha = it.alpha * fillAlpha) },
-                            startY = chartContext.top,
-                            endY = chartContext.bottom,
-                        )
-                }
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(params: AreaChartDrawParams) {
+    if (params.pointPositions.isEmpty()) return
 
-            drawPath(
-                path = areaPath,
-                brush = areaBrush,
-                style = Fill,
-                alpha = animationProgress.value,
-            )
-            val linePath = Path().apply {
-                moveTo(pointPositions[0].x, pointPositions[0].y)
+    // Draw filled area
+    val areaPath = createAreaPath(params.pointPositions, params.baselineY, params.config.smoothCurve)
+    val areaBrush = createAreaBrush(
+        params.color,
+        params.fillAlpha,
+        params.chartContext.top,
+        params.chartContext.bottom
+    )
 
-                if (lineConfig.smoothCurve) {
-                    for (i in 0 until pointPositions.size - 1) {
-                        val current = pointPositions[i]
-                        val next = pointPositions[i + 1]
+    drawPath(
+        path = areaPath,
+        brush = areaBrush,
+        style = Fill,
+        alpha = params.animationProgress,
+    )
 
-                        val controlPoint1X = current.x + (next.x - current.x) / 3f
-                        val controlPoint1Y = current.y
-                        val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                        val controlPoint2Y = next.y
+    // Draw line
+    val linePath = createLinePath(params.pointPositions, params.config.smoothCurve)
+    val lineBrush = createLineBrush(params.color)
 
-                        cubicTo(
-                            controlPoint1X,
-                            controlPoint1Y,
-                            controlPoint2X,
-                            controlPoint2Y,
-                            next.x,
-                            next.y,
-                        )
-                    }
-                } else {
-                    for (i in 1 until pointPositions.size) {
-                        lineTo(pointPositions[i].x, pointPositions[i].y)
-                    }
-                }
-            }
+    drawPath(
+        path = linePath,
+        brush = lineBrush,
+        style = Stroke(
+            width = params.config.lineWidth,
+            cap = params.config.strokeCap,
+        ),
+        alpha = params.animationProgress,
+    )
+    if (params.config.showPoints) {
+        drawAreaPoints(params.pointPositions, lineBrush, params.config, params.animationProgress)
+    }
+}
 
-            val lineBrush =
-                when (color) {
-                    is ChartyColor.Solid -> Brush.linearGradient(listOf(color.color, color.color))
-                    is ChartyColor.Gradient -> Brush.linearGradient(color.colors)
-                }
 
-            drawPath(
-                path = linePath,
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaPoints(
+    pointPositions: List<Offset>,
+    lineBrush: Brush,
+    config: LineChartConfig,
+    animationProgress: Float
+) {
+    pointPositions.fastForEachIndexed { index, position ->
+        val pointProgress = index.toFloat() / (pointPositions.size - 1)
+        if (pointProgress <= animationProgress) {
+            drawCircle(
                 brush = lineBrush,
-                style =
-                    Stroke(
-                        width = lineConfig.lineWidth,
-                        cap = lineConfig.strokeCap,
-                    ),
-                alpha = animationProgress.value,
-            )
-            if (lineConfig.showPoints) {
-                pointPositions.fastForEachIndexed { index, position ->
-                    val pointProgress = index.toFloat() / (pointPositions.size - 1)
-                    if (pointProgress <= animationProgress.value) {
-                        drawCircle(
-                            brush = lineBrush,
-                            radius = lineConfig.pointRadius,
-                            center = position,
-                            alpha = lineConfig.pointAlpha,
-                        )
-                    }
-                }
-            }
-        }
-        tooltipState?.let { state ->
-            val clickedPosition = pointBounds.find { (_, data) ->
-                lineConfig.tooltipFormatter(data) == state.content
-            }?.first
-
-            clickedPosition?.let { position ->
-                drawLine(
-                    color = Color.Black.copy(alpha = 0.1f),
-                    start = Offset(position.x, chartContext.top),
-                    end = Offset(position.x, chartContext.bottom),
-                    strokeWidth = 1.5f,
-                )
-                drawCircle(
-                    color = Color.White,
-                    radius = lineConfig.pointRadius + 3f,
-                    center = position,
-                )
-
-                drawCircle(
-                    brush = Brush.linearGradient(color.value),
-                    radius = lineConfig.pointRadius + 2f,
-                    center = position,
-                )
-            }
-            drawTooltip(
-                tooltipState = state,
-                config = lineConfig.tooltipConfig,
-                textMeasurer = textMeasurer,
-                chartWidth = chartContext.right,
-                chartTop = chartContext.top,
-                chartBottom = chartContext.bottom,
+                radius = config.pointRadius,
+                center = position,
+                alpha = config.pointAlpha,
             )
         }
+    }
+}
+
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipHighlightIfNeeded(
+    tooltipState: TooltipState?,
+    lineConfig: LineChartConfig,
+    pointBounds: List<Pair<Offset, LineData>>,
+    chartContext: com.himanshoe.charty.common.ChartContext,
+    color: ChartyColor
+) {
+    tooltipState?.let { state ->
+        val clickedPosition = pointBounds.find { (_, data) ->
+            lineConfig.tooltipFormatter(data) == state.content
+        }?.first
+
+        clickedPosition?.let { position ->
+            drawLine(
+                color = Color.Black.copy(alpha = HIGHLIGHT_LINE_ALPHA),
+                start = Offset(position.x, chartContext.top),
+                end = Offset(position.x, chartContext.bottom),
+                strokeWidth = HIGHLIGHT_LINE_WIDTH,
+            )
+            drawCircle(
+                color = Color.White,
+                radius = lineConfig.pointRadius + HIGHLIGHT_CIRCLE_OUTER_PADDING,
+                center = position,
+            )
+            drawCircle(
+                brush = Brush.linearGradient(color.value),
+                radius = lineConfig.pointRadius + HIGHLIGHT_CIRCLE_INNER_PADDING,
+                center = position,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipIfNeeded(
+    tooltipState: TooltipState?,
+    lineConfig: LineChartConfig,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    chartContext: com.himanshoe.charty.common.ChartContext
+) {
+    tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = lineConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
     }
 }
