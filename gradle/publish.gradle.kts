@@ -43,6 +43,7 @@ configure<PublishingExtension> {
     repositories {
         maven {
             name = "mavencentral"
+            // Use the standard Maven Central URL - compatible with new portal credentials
             url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
                 username = System.getenv("MAVEN_CENTRAL_USERNAME") ?: project.findProperty("mavenCentralUsername")?.toString()
