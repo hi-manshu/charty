@@ -42,8 +42,17 @@ configure<PublishingExtension> {
 
     repositories {
         maven {
-            name = "mavencentral"
-            // Use the standard Maven Central URL - compatible with new portal credentials
+            name = "central"
+            url = uri("https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC")
+            credentials {
+                username = System.getenv("MAVEN_CENTRAL_USERNAME") ?: project.findProperty("mavenCentralUsername")?.toString()
+                password = System.getenv("MAVEN_CENTRAL_PASSWORD") ?: project.findProperty("mavenCentralPassword")?.toString()
+            }
+        }
+
+        // Fallback to OSSRH for compatibility
+        maven {
+            name = "ossrh"
             url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
                 username = System.getenv("MAVEN_CENTRAL_USERNAME") ?: project.findProperty("mavenCentralUsername")?.toString()

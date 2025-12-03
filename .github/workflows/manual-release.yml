@@ -109,56 +109,33 @@ jobs:
             exit 1
           fi
           echo "✓ Maven Central credentials are configured"
-          echo "✓ Username length: ${#MAVEN_USERNAME} chars"
-          echo "✓ Password length: ${#MAVEN_PASSWORD} chars"
-        env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
 
-      - name: Test Maven Central authentication
-        run: |
-          echo "Testing Maven Central connection..."
-          # Test authentication with the new Maven Central portal
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -u "${MAVEN_CENTRAL_USERNAME}:${MAVEN_CENTRAL_PASSWORD}" \
-            "https://central.sonatype.com/api/v1/publisher/deployments")
-
-          echo "Response code: $HTTP_CODE"
-
-          if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "403" ]; then
-            echo "❌ Authentication failed with Maven Central"
-            echo "Please verify your credentials:"
-            echo "1. Go to https://central.sonatype.com/"
-            echo "2. Login and generate an API token (Account → Generate User Token)"
-            echo "3. Use the token username as MAVEN_CENTRAL_USERNAME"
-            echo "4. Use the token password as MAVEN_CENTRAL_PASSWORD"
-            echo ""
-            echo "Note: The new Maven Central portal uses different credentials than the old Sonatype OSSRH"
-            exit 1
-          elif [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
-            echo "✓ Maven Central authentication successful"
-          else
-            echo "⚠ Unexpected response code: $HTTP_CODE (continuing anyway)"
-          fi
-        env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-
-      - name: Publish with Gradle (Maven Central / custom repo)
+      - name: Publish to Maven Central
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
-          ./gradlew :charty:publish \
+          echo "Publishing to Maven Central..."
+          ./gradlew :charty:publishAllPublicationsToCentralRepository \
             -PmavenCentralUsername="${MAVEN_CENTRAL_USERNAME}" \
             -PmavenCentralPassword="${MAVEN_CENTRAL_PASSWORD}" \
             -Psigning.keyId="${SIGNING_KEY_ID}" \
             -Psigning.password="${SIGNING_PASSWORD}" \
             -Psigning.key="${SIGNING_KEY}" \
             --no-daemon \
-            --stacktrace
+            --stacktrace || {
+              echo "Failed to publish to new Maven Central portal, trying OSSRH..."
+              ./gradlew :charty:publishAllPublicationsToOssrhRepository \
+                -PmavenCentralUsername="${MAVEN_CENTRAL_USERNAME}" \
+                -PmavenCentralPassword="${MAVEN_CENTRAL_PASSWORD}" \
+                -Psigning.keyId="${SIGNING_KEY_ID}" \
+                -Psigning.password="${SIGNING_PASSWORD}" \
+                -Psigning.key="${SIGNING_KEY}" \
+                --no-daemon \
+                --stacktrace
+            }
 
       - name: Persist versionCode for next run
         if: success()

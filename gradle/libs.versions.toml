@@ -12,6 +12,7 @@ dokka = "2.1.0"
 kotlin = "2.2.21"
 kotlinx-coroutines = "1.10.2"
 ktlint = "14.0.1"
+centralPortal = "0.1.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -30,3 +31,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+centralPortal = { id = "com.gradle.plugin-publish", version.ref = "centralPortal" }
