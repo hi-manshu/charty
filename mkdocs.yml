@@ -104,6 +104,7 @@ nav:
       - Advanced Examples: examples/advanced.md
   - API Reference: api-reference.md
   - Contributing: contributing.md
+  - Code of Conduct: CODE_OF_CONDUCT.md
   - License: license.md
 
 extra:
