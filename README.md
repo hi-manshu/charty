@@ -23,7 +23,7 @@ _Made with ❤️ for Android Developers by Himanshu_
 
 Find the full API reference and usage guide here:
 
-👉 **[hi-manshu.github.io/charty](https://hi-manshu.github.io/charty/)**
+👉 **[https://himanshoe.com/docs/charty](https://himanshoe.com/docs/charty)**
 
 ---
 
