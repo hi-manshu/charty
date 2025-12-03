@@ -11,17 +11,16 @@ import com.himanshoe.charty.block.data.BlockData
 import com.himanshoe.charty.block.internal.drawBlockBar
 
 /**
- * BlockBarChart - Horizontal segmented bar with proportional blocks.
+ * A composable function that displays a block bar chart.
  *
- * Renders a pill-shaped bar divided into segments, where each segment's width
- * is proportional to its value. Perfect for showing composition or progress with
- * multiple categories in a compact, visually appealing format.
+ * A block bar chart is a horizontal segmented bar where each segment's width is proportional to its value.
+ * It is ideal for showing the composition or progress of a whole, with each block representing a different category.
  *
- * Each block can have its own color, or colors are automatically assigned from
- * the config's color palette.
+ * @param data A lambda function that returns a list of [BlockData]. Each block's width is determined by its value, and non-positive values are filtered out.
+ * @param modifier The modifier to be applied to the chart.
+ * @param blockBarConfig The configuration for the block bar's appearance, such as colors, spacing, and height, defined by a [BlockBarChartConfig].
  *
- * Usage:
- * ```kotlin
+ * @sample
  * BlockBarChart(
  *     data = {
  *         listOf(
@@ -32,12 +31,6 @@ import com.himanshoe.charty.block.internal.drawBlockBar
  *     },
  *     modifier = Modifier.fillMaxWidth()
  * )
- * ```
- *
- * @param data Lambda returning a list of [BlockData]. Each block's width is proportional
- * to its value. Non-positive values are automatically filtered out.
- * @param blockBarConfig Visual configuration for colors, spacing, radius, and height.
- * @param modifier Modifier to size and position the bar.
  */
 @Composable
 fun BlockBarChart(

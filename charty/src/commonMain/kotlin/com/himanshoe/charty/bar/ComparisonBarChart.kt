@@ -24,14 +24,18 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
- * Comparison Bar Chart - Display multiple bars per category for comparison
+ * A composable function that displays a comparison bar chart.
  *
- * A comparison bar chart displays multiple data series side-by-side for each category.
- * Perfect for comparing sub-categories or multiple metrics within each main category.
- * Formerly known as Grouped Bar Chart.
+ * A comparison bar chart, also known as a grouped bar chart, displays multiple data series side-by-side for each category.
+ * It is ideal for comparing sub-categories or multiple metrics within each main category.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [BarGroup], where each group contains multiple values to be compared.
+ * @param modifier The modifier to be applied to the chart.
+ * @param comparisonConfig The configuration for the comparison bar chart, such as the mode for drawing negative values, defined by a [ComparisonBarChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onBarClick A lambda function to be invoked when a bar segment is clicked, providing the corresponding [ComparisonBarSegment].
+ *
+ * @sample
  * ComparisonBarChart(
  *     data = {
  *         listOf(
@@ -44,13 +48,6 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  *         listOf(Color(0xFFE91E63), Color(0xFF2196F3))
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of bar groups, each containing multiple values. Each BarGroup should specify its own colors via BarGroup.colors property
- * @param modifier Modifier for the chart
- * @param comparisonConfig Configuration for comparison chart behavior (e.g., negative values draw mode)
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param onBarClick Optional callback when a bar segment is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

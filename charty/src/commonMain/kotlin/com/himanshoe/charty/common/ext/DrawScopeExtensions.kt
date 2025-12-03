@@ -95,6 +95,16 @@ private fun DrawScope.drawRotatedText(
     drawContext.transform.rotate(-rotation, pivot)
 }
 
+/**
+ * Draws the axes for a vertical chart, including axis lines, grid lines, and labels.
+ *
+ * @param xLabels A list of strings for the x-axis labels.
+ * @param yAxisConfig The configuration for the y-axis.
+ * @param config The general configuration for the chart scaffold.
+ * @param textMeasurer A [TextMeasurer] for measuring text.
+ * @param labelStyle The [TextStyle] for the labels.
+ * @param leftLabelRotation The rotation for the labels on the left axis.
+ */
 internal fun DrawScope.drawVerticalChartAxes(
     xLabels: List<String>,
     yAxisConfig: AxisConfig,
@@ -205,6 +215,16 @@ private fun calculateVerticalAxisPosition(
         chartBounds.left
     }
 
+/**
+ * Draws the axes for a horizontal chart, including axis lines, grid lines, and labels.
+ *
+ * @param xLabels A list of strings for the x-axis labels.
+ * @param yAxisConfig The configuration for the y-axis.
+ * @param config The general configuration for the chart scaffold.
+ * @param textMeasurer A [TextMeasurer] for measuring text.
+ * @param labelStyle The [TextStyle] for the labels.
+ * @param leftLabelRotation The rotation for the labels on the left axis.
+ */
 internal fun DrawScope.drawHorizontalChartAxes(
     xLabels: List<String>,
     yAxisConfig: AxisConfig,

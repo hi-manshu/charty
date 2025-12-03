@@ -33,14 +33,19 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Combo Chart - Display data as both bars and line in the same chart
+ * A composable function that displays a combo chart, combining a bar chart and a line chart.
  *
- * A combo chart combines bar chart and line chart visualizations, allowing you to
- * compare two related data series with different visual representations. Ideal for
- * showing trends alongside categorical values.
+ * A combo chart is useful for visualizing two different data series on the same chart, allowing for easy comparison of trends and magnitudes.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [ComboChartData], each containing a bar value and a line value.
+ * @param modifier The modifier to be applied to the chart.
+ * @param barColor The color or color scheme for the bars, defined by a [ChartyColor].
+ * @param lineColor The color or color scheme for the line and its points, defined by a [ChartyColor].
+ * @param comboConfig The configuration for the combo chart's appearance and behavior, defined by a [ComboChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onDataClick A lambda function to be invoked when a data point (either a bar or a line point) is clicked, providing the corresponding [ComboChartData].
+ *
+ * @sample
  * ComboChart(
  *     data = {
  *         listOf(
@@ -59,15 +64,6 @@ import kotlin.math.min
  *         animation = Animation.Enabled()
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of combo chart data points to display
- * @param modifier Modifier for the chart
- * @param barColor Color configuration for bars
- * @param lineColor Color configuration for line and points
- * @param comboConfig Configuration for both bar and line appearance and behavior
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param onDataClick Optional callback when a data point is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

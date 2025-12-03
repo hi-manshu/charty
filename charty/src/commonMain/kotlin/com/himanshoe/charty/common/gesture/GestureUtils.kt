@@ -10,11 +10,11 @@ import kotlin.math.sqrt
  */
 
 /**
- * Calculate Euclidean distance between two points
+ * Calculates the Euclidean distance between two points.
  *
- * @param point1 First point
- * @param point2 Second point
- * @return The distance between the two points
+ * @param point1 The first point.
+ * @param point2 The second point.
+ * @return The distance between the two points.
  */
 fun calculateDistance(point1: Offset, point2: Offset): Float {
     val dx = point1.x - point2.x
@@ -23,11 +23,12 @@ fun calculateDistance(point1: Offset, point2: Offset): Float {
 }
 
 /**
- * Find the clicked item from a list of bounds
+ * Finds the data associated with a clicked item from a list of bounds.
  *
- * @param offset The tap offset position
- * @param bounds List of pairs containing bounds and associated data
- * @return The data associated with the clicked bounds, or null if no bounds contain the offset
+ * @param T The type of the data associated with each bound.
+ * @param offset The position of the tap.
+ * @param bounds A list of pairs, where each pair contains the [Rect] bounds and its associated data.
+ * @return The data associated with the clicked bounds, or `null` if no bounds contain the tap offset.
  */
 fun <T> findClickedItem(
     offset: Offset,
@@ -37,11 +38,12 @@ fun <T> findClickedItem(
 }
 
 /**
- * Find the clicked item with its bounds from a list of bounds
+ * Finds the clicked item along with its bounds from a list of bounds.
  *
- * @param offset The tap offset position
- * @param bounds List of pairs containing bounds and associated data
- * @return The pair of bounds and data, or null if no bounds contain the offset
+ * @param T The type of the data associated with each bound.
+ * @param offset The position of the tap.
+ * @param bounds A list of pairs, where each pair contains the [Rect] bounds and its associated data.
+ * @return A [Pair] containing the bounds and data of the clicked item, or `null` if no bounds contain the tap offset.
  */
 fun <T> findClickedItemWithBounds(
     offset: Offset,
@@ -51,12 +53,13 @@ fun <T> findClickedItemWithBounds(
 }
 
 /**
- * Find the nearest point within a given radius
+ * Finds the nearest point to a given offset within a specified radius.
  *
- * @param offset The tap offset position
- * @param pointBounds List of pairs containing point positions and associated data
- * @param tapRadius The maximum radius to consider for a tap
- * @return The pair of position and data if a point is within the tap radius, null otherwise
+ * @param T The type of the data associated with each point.
+ * @param offset The position of the tap.
+ * @param pointBounds A list of pairs, where each pair contains the [Offset] position of a point and its associated data.
+ * @param tapRadius The maximum radius around a point to be considered a tap.
+ * @return A [Pair] containing the position and data of the nearest point if it's within the tap radius, otherwise `null`.
  */
 fun <T> findNearestPoint(
     offset: Offset,

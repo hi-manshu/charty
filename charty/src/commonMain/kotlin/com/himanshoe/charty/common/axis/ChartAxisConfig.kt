@@ -3,8 +3,11 @@ package com.himanshoe.charty.common.axis
 import kotlin.math.ceil
 
 /**
- * Basic configuration for chart axes.
- * Holds the labels that appear along the X and Y axis.
+ * A data class that holds the basic configuration for chart axes, including the labels for the x and y axes.
+ *
+ * @property xAxisLabels A list of strings representing the labels for the x-axis.
+ * @property yAxisLabels A list of strings representing the labels for the y-axis. It must contain at least two entries.
+ * @property ySteps The number of steps or intervals on the y-axis, derived from the size of [yAxisLabels].
  */
 data class ChartAxisConfig(
     val xAxisLabels: List<String>,
@@ -17,11 +20,16 @@ data class ChartAxisConfig(
     val ySteps: Int get() = yAxisLabels.size - 1
 
     /**
-     * Companion object providing factory methods for creating ChartAxisConfig instances
+     * A companion object that provides factory methods for creating [ChartAxisConfig] instances.
      */
     companion object {
         /**
-         * Helper factory that builds evenly spaced Y labels for numeric data.
+         * A helper factory function that creates evenly spaced y-axis labels for numeric data.
+         *
+         * @param xAxisLabels A list of strings for the x-axis labels.
+         * @param maxValue The maximum value in the dataset, used to determine the range of the y-axis.
+         * @param stepSize The desired interval between y-axis labels.
+         * @return A [ChartAxisConfig] instance with automatically generated y-axis labels.
          */
         fun fromNumericRange(
             xAxisLabels: List<String>,

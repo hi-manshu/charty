@@ -63,12 +63,12 @@ private const val MIN_STAGGER_DIVISOR = 0.01f
 private const val CLICK_TOLERANCE_MULTIPLIER = 2f
 
 /**
- * Multiple Radar Chart that displays overlapping datasets with optional legend.
+ * A composable function that displays a multiple radar chart, which can show overlapping datasets with an optional legend.
  *
- * @param dataSets Lambda providing datasets to render
- * @param modifier Modifier for the composable root
- * @param config Visual and behavioral configuration
- * @param onDataSetClick Optional callback when a dataset entry is clicked
+ * @param dataSets A lambda function that provides the datasets to be rendered.
+ * @param modifier The modifier to be applied to the composable root.
+ * @param config The visual and behavioral configuration for the chart, defined by a [MultipleRadarChartConfig].
+ * @param onDataSetClick An optional callback that is invoked when a dataset entry is clicked.
  */
 @Composable
 fun MultipleRadarChart(

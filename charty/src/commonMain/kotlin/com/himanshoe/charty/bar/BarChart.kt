@@ -24,13 +24,19 @@ import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
- * Bar Chart - Display data as vertical bars
+ * A composable function that displays a bar chart.
  *
- * A bar chart presents categorical data with rectangular bars. The height of each bar
- * is proportional to the value it represents. Ideal for comparing discrete categories.
+ * A bar chart is a graphical representation of data that uses rectangular bars to show comparisons between categories.
+ * This composable allows for customization of the bar chart's appearance and behavior.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
+ * @param modifier The modifier to be applied to the chart.
+ * @param color The color or color scheme for the bars, defined by a [ChartyColor].
+ * @param barConfig The configuration for the bars, such as width, corner radius, and animation, defined by a [BarChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onBarClick A lambda function to be invoked when a bar is clicked, providing the corresponding [BarData].
+ *
+ * @sample
  * BarChart(
  *     data = {
  *         listOf(
@@ -47,14 +53,6 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  *         animation = Animation.Enabled()
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of bar data to display
- * @param modifier Modifier for the chart
- * @param color Color configuration - Solid for uniform bars, Gradient for vertical gradient effect
- * @param barConfig Configuration for bar appearance
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels (includes leftLabelRotation)
- * @param onBarClick Optional callback when a bar is clicked
  */
 @Composable
 fun BarChart(

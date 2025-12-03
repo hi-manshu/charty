@@ -13,8 +13,16 @@ import com.himanshoe.charty.common.ext.drawVerticalChartAxes
 
 
 /**
- * Draws axis lines, grid lines, and labels.
- * Handles both vertical and horizontal orientations.
+ * An internal composable function responsible for drawing the axis lines, grid lines, and labels for a chart.
+ *
+ * This function handles both vertical and horizontal chart orientations, delegating the drawing logic
+ * to the appropriate extension function based on the specified [orientation].
+ *
+ * @param xLabels A list of strings for the x-axis labels.
+ * @param yAxisConfig The configuration for the y-axis.
+ * @param config The general configuration for the chart scaffold.
+ * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
+ * @param leftLabelRotation The rotation for the labels on the left axis.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

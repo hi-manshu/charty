@@ -9,8 +9,17 @@ private const val CENTER_DIVISOR = 2f
 private const val ZERO_RANGE = 0f
 
 /**
- * Context object passed to chart drawing lambdas.
- * Provides all necessary positioning and conversion functions.
+ * Provides a context for drawing within a chart, encapsulating the dimensions and value range.
+ * This class offers utility functions to convert data values into pixel coordinates and calculate positions for chart elements.
+ *
+ * @property left The starting x-coordinate of the drawing area.
+ * @property top The starting y-coordinate of the drawing area.
+ * @property right The ending x-coordinate of the drawing area.
+ * @property bottom The ending y-coordinate of the drawing area.
+ * @property width The total width of the drawing area.
+ * @property height The total height of the drawing area.
+ * @property minValue The minimum value in the dataset, corresponding to the bottom of the chart.
+ * @property maxValue The maximum value in the dataset, corresponding to the top of the chart.
  */
 data class ChartContext(
     val left: Float,
@@ -23,10 +32,10 @@ data class ChartContext(
     val maxValue: Float,
 ) {
     /**
-     * Converts a data value to its corresponding Y-axis pixel coordinate
+     * Converts a data value to its corresponding y-coordinate on the canvas.
      *
-     * @param value The data value to convert
-     * @return The Y coordinate in pixels (top to bottom)
+     * @param value The data value to be converted.
+     * @return The y-coordinate on the canvas.
      */
     fun convertValueToYPosition(value: Float): Float {
         val range = maxValue - minValue
@@ -36,13 +45,12 @@ data class ChartContext(
     }
 
     /**
-     * Calculates the left X position for a bar at the given index
-     * Centers the bar within its allocated space
+     * Calculates the x-coordinate for the left edge of a bar at a given index.
      *
-     * @param index The index of the bar (0-based)
-     * @param totalBars Total number of bars in the chart
-     * @param barWidthFraction Fraction of available space the bar should occupy (0.0 to 1.0)
-     * @return The X coordinate for the bar's left edge
+     * @param index The index of the bar.
+     * @param totalBars The total number of bars in the chart.
+     * @param barWidthFraction The fraction of the available space that the bar should occupy.
+     * @return The x-coordinate for the left edge of the bar.
      */
     fun calculateBarLeftPosition(
         index: Int,
@@ -55,11 +63,11 @@ data class ChartContext(
     }
 
     /**
-     * Calculates the width for bars in the chart
+     * Calculates the width of a bar in the chart.
      *
-     * @param totalBars Total number of bars
-     * @param widthFraction Fraction of available space each bar should occupy (0.0 to 1.0)
-     * @return The width in pixels
+     * @param totalBars The total number of bars in the chart.
+     * @param widthFraction The fraction of the available space that each bar should occupy.
+     * @return The width of the bar in pixels.
      */
     fun calculateBarWidth(
         totalBars: Int,
@@ -67,12 +75,12 @@ data class ChartContext(
     ): Float = (width / totalBars) * widthFraction
 
     /**
-     * Calculates the centered X position for an item at the given index
-     * Useful for points, labels, and other centered elements
+     * Calculates the centered x-coordinate for an item at a given index.
+     * This is useful for positioning points, labels, or other elements that need to be centered.
      *
-     * @param index The index of the item (0-based)
-     * @param totalItems Total number of items
-     * @return The centered X coordinate
+     * @param index The index of the item.
+     * @param totalItems The total number of items.
+     * @return The centered x-coordinate for the item.
      */
     fun calculateCenteredXPosition(
         index: Int,
@@ -80,9 +88,9 @@ data class ChartContext(
     ): Float = left + (width * (index + CENTER_OFFSET) / totalItems)
 
     /**
-     * Converts ChartyColor to a vertical gradient Brush
+     * Converts a [ChartyColor] into a vertical gradient [Brush].
      *
-     * @return Brush for drawing with gradient support
+     * @return A [Brush] that can be used for drawing gradients.
      */
     fun ChartyColor.toVerticalGradientBrush(): Brush =
         Brush.verticalGradient(

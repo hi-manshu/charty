@@ -6,17 +6,19 @@ import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.axis.LabelRotation
 
 /**
- * Configuration for chart scaffold styling.
+ * A data class that holds the configuration for the styling of a chart's scaffold.
  *
- * @param showAxis Whether to show axis lines
- * @param showGrid Whether to show grid lines
- * @param showLabels Whether to show axis labels
- * @param axisColor Color of the axis lines
- * @param gridColor Color of the grid lines
- * @param axisThickness Thickness of axis lines
- * @param gridThickness Thickness of grid lines
- * @param labelTextStyle TextStyle for axis labels - allows full customization of text appearance
- * @param leftLabelRotation Rotation for left-side labels. Default is LabelRotation.Straight. Use LabelRotation.Angle45Negative for -45-degree rotation.
+ * The scaffold includes elements like axis lines, grid lines, and labels.
+ *
+ * @property showAxis Determines whether the axis lines should be displayed.
+ * @property showGrid Determines whether the grid lines should be displayed.
+ * @property showLabels Determines whether the axis labels should be displayed.
+ * @property axisColor The color of the axis lines.
+ * @property leftLabelRotation The rotation for the labels on the left axis. Defaults to [LabelRotation.Straight].
+ * @property gridColor The color of the grid lines.
+ * @property axisThickness The thickness of the axis lines.
+ * @property gridThickness The thickness of the grid lines.
+ * @property labelTextStyle The [TextStyle] for the axis labels, allowing for full customization of their appearance.
  */
 data class ChartScaffoldConfig(
     val showAxis: Boolean = true,

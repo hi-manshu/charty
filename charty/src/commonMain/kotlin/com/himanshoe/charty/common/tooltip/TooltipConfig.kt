@@ -11,19 +11,19 @@ import androidx.compose.ui.unit.sp
 private val DEFAULT_COLOR = Color(0xFF2D2D2D)
 
 /**
- * Configuration for tooltip appearance and positioning
+ * A data class that holds the configuration for the appearance and positioning of a tooltip.
  *
- * @param shape The shape of the tooltip background
- * @param backgroundColor Background color of the tooltip
- * @param borderColor Color of the tooltip border (null for no border)
- * @param borderWidth Width of the tooltip border
- * @param textStyle Style for the tooltip text
- * @param padding Padding inside the tooltip
- * @param elevation Shadow elevation for the tooltip
- * @param offsetY Vertical offset from the bar top (positive = below bar, negative = above bar)
- * @param minDistanceFromEdge Minimum distance from chart edges before repositioning
- * @param showArrow Whether to show an arrow pointing to the bar
- * @param arrowSize Size of the arrow if shown
+ * @property shape The shape of the tooltip's background.
+ * @property backgroundColor The background color of the tooltip.
+ * @property borderColor The color of the tooltip's border. If `null`, no border is drawn.
+ * @property borderWidth The width of the tooltip's border.
+ * @property textStyle The [TextStyle] for the tooltip's text content.
+ * @property padding The padding inside the tooltip, defined by [TooltipPadding].
+ * @property elevation The shadow elevation of the tooltip.
+ * @property offsetY The vertical offset from the top of the bar (positive values move it down, negative values move it up).
+ * @property minDistanceFromEdge The minimum distance the tooltip should maintain from the edges of the chart before being repositioned.
+ * @property showArrow Determines whether to show an arrow pointing to the bar.
+ * @property arrowSize The size of the arrow, if shown.
  */
 data class TooltipConfig(
     val shape: Shape = RoundedCornerShape(8.dp),
@@ -43,7 +43,10 @@ data class TooltipConfig(
 )
 
 /**
- * Padding configuration for tooltip content
+ * A data class that defines the padding for a tooltip's content.
+ *
+ * @property horizontal The horizontal padding.
+ * @property vertical The vertical padding.
  */
 data class TooltipPadding(
     val horizontal: Dp = 12.dp,
@@ -51,27 +54,27 @@ data class TooltipPadding(
 )
 
 /**
- * Position where the tooltip should be displayed relative to the bar
+ * An enum that specifies the desired position of a tooltip relative to its associated bar or point.
  */
 enum class TooltipPosition {
-    /** Above the bar */
+    /** The tooltip should be displayed above the bar/point. */
     ABOVE,
 
-    /** Below the bar */
+    /** The tooltip should be displayed below the bar/point. */
     BELOW,
 
-    /** Automatically position based on available space */
+    /** The tooltip's position should be automatically determined based on the available space. */
     AUTO,
 }
 
 /**
- * Data class representing the content and position of a tooltip
+ * A data class that represents the state of a tooltip, including its content and position.
  *
- * @param content The text content to display in the tooltip
- * @param x X coordinate of the bar center
- * @param y Y coordinate of the bar top
- * @param barWidth Width of the bar
- * @param position Preferred position of the tooltip
+ * @property content The text content to be displayed in the tooltip.
+ * @property x The x-coordinate of the bar's center.
+ * @property y The y-coordinate of the bar's top.
+ * @property barWidth The width of the bar.
+ * @property position The preferred position of the tooltip, defined by [TooltipPosition].
  */
 data class TooltipState(
     val content: String,

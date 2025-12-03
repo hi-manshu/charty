@@ -32,11 +32,12 @@ private fun referenceValueWithinRange(
 }
 
 /**
- * Draw a reference line for cartesian charts (bar/line/point/combo) that use [ChartContext].
+ * Draws a reference line for Cartesian charts (e.g., bar, line, point, combo) that use a [ChartContext].
  *
- * @param orientation Orientation of the chart (VERTICAL or HORIZONTAL)
- * @param config Configuration of the reference line
- * @param textMeasurer TextMeasurer for laying out the label text
+ * @param chartContext The context of the chart, providing dimensions and value range.
+ * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
+ * @param config The configuration for the reference line.
+ * @param textMeasurer A [TextMeasurer] used for measuring the label text.
  */
 fun DrawScope.drawReferenceLine(
     chartContext: ChartContext,

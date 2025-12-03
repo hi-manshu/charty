@@ -33,14 +33,21 @@ import com.himanshoe.charty.line.internal.stackedarea.drawStackedAreaSeries
 import com.himanshoe.charty.line.internal.stackedarea.stackedAreaChartClickHandler
 
 /**
- * Stacked Area Chart - Display multiple series as stacked filled areas
+ * A composable function that displays a stacked area chart.
  *
- * A stacked area chart displays multiple data series as filled areas stacked on top of each other.
- * Each area shows the cumulative total, making it ideal for visualizing part-to-whole relationships
- * and showing how the composition changes over time. Starts smoothly from the axis intersection (0,0).
+ * A stacked area chart shows multiple data series as filled areas stacked on top of each other.
+ * It is ideal for visualizing part-to-whole relationships and how the composition of a total changes over time.
+ * The chart starts smoothly from the (0,0) axis intersection point.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [LineGroup], where each group contains values for all series at a specific x-position.
+ * @param modifier The modifier to be applied to the chart.
+ * @param colors The color or color scheme for the stacked areas. A gradient is recommended to distinguish between the areas.
+ * @param lineConfig The configuration for the lines' appearance and behavior, defined by a [LineChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param fillAlpha The alpha transparency for the filled areas, ranging from 0.0f to 1.0f.
+ * @param onAreaClick A lambda function to be invoked when an area is clicked, providing the corresponding [StackedAreaPoint].
+ *
+ * @sample
  * StackedAreaChart(
  *     data = {
  *         listOf(
@@ -63,16 +70,6 @@ import com.himanshoe.charty.line.internal.stackedarea.stackedAreaChartClickHandl
  *     ),
  *     fillAlpha = 0.7f
  * )
- * ```
- *
- * @param data Lambda returning list of line groups, each containing values for all series at that X position
- * @param data Lambda returning list of line groups, each containing values for all series at that X position
- * @param modifier Modifier for the chart
- * @param colors Color configuration - Gradient recommended for distinguishing stacked areas
- * @param lineConfig Configuration for line appearance and behavior
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param fillAlpha Alpha transparency for the filled areas (0.0f - 1.0f)
- * @param onAreaClick Optional callback when an area is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

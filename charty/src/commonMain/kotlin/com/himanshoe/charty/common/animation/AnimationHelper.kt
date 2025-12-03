@@ -13,19 +13,19 @@ import com.himanshoe.charty.common.config.Animation
  */
 
 /**
- * Creates and manages animation progress for charts.
- * Automatically handles the animation lifecycle based on the Animation configuration.
+ * Creates and manages the animation progress for a chart.
  *
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param initialValue Starting value. If null, uses 0f for enabled animations and targetValue for disabled
- * @param targetValue Target value for the animation (default 1f)
- * @return Animatable that tracks animation progress from initialValue to targetValue
+ * This composable function automatically handles the animation lifecycle based on the provided [Animation] configuration.
+ * It returns an [Animatable] that tracks the animation progress, which can be used to drive animations in the chart's drawing code.
  *
- * Example usage:
- * ```kotlin
+ * @param animation The configuration for the animation, which can be either [Animation.Enabled] or [Animation.Disabled].
+ * @param initialValue The starting value for the animation. If `null`, it defaults to `0f` for enabled animations and `targetValue` for disabled animations.
+ * @param targetValue The target value for the animation, which defaults to `1f`.
+ * @return An [Animatable] that tracks the animation progress from `initialValue` to `targetValue`.
+ *
+ * @sample
  * val animationProgress = rememberChartAnimation(config.animation)
- * // Use animationProgress.value in drawing code
- * ```
+ * // Use animationProgress.value in drawing code to animate chart elements.
  */
 @Composable
 fun rememberChartAnimation(
@@ -51,12 +51,14 @@ fun rememberChartAnimation(
 }
 
 /**
- * Creates an animation progress Animatable without automatic triggering.
- * Useful when you need more control over when the animation starts.
+ * Creates an [Animatable] for tracking animation progress without automatically starting the animation.
  *
- * @param animation Animation configuration
- * @param initialValue Starting value. If null, uses 0f for enabled animations and 1f for disabled
- * @return Animatable instance
+ * This function is useful when you need more control over when the animation begins.
+ * It provides an [Animatable] instance that can be manually triggered.
+ *
+ * @param animation The configuration for the animation, which can be either [Animation.Enabled] or [Animation.Disabled].
+ * @param initialValue The starting value for the animation. If `null`, it defaults to `0f` for enabled animations and `1f` for disabled animations.
+ * @return An [Animatable] instance that can be used to control the animation state.
  */
 @Composable
 fun rememberChartAnimationState(

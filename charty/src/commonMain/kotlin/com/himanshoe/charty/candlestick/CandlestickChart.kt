@@ -22,35 +22,27 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
 /**
- * Candlestick Chart - Display financial data as candlesticks
+ * A composable function that displays a candlestick chart.
  *
- * A candlestick chart is commonly used in financial markets to show the open, high, low,
- * and close (OHLC) values for each time period. Each candlestick consists of a body
- * (representing the range between open and close) and wicks/shadows (showing the high
- * and low extremes).
+ * A candlestick chart is a financial chart used to describe price movements of a security, derivative, or currency.
+ * Each candlestick displays the open, high, low, and close (OHLC) prices for a specific time period.
  *
- * - **Bullish candles** (close > open): Typically shown in green/blue, indicating price increase
- * - **Bearish candles** (close < open): Typically shown in red/pink, indicating price decrease
+ * - **Bullish candles** (close >= open) indicate a price increase and are typically colored green or blue.
+ * - **Bearish candles** (close < open) indicate a price decrease and are typically colored red or pink.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [CandleData] to be displayed in the chart.
+ * @param modifier The modifier to be applied to the chart.
+ * @param bullishColor The color for bullish candles, where the closing price is greater than or equal to the opening price.
+ * @param bearishColor The color for bearish candles, where the closing price is less than the opening price.
+ * @param candlestickConfig The configuration for the candlestick's appearance, such as width and animation, defined by a [CandlestickChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ *
+ * @sample
  * CandlestickChart(
  *     data = {
  *         listOf(
- *             CandleData(
- *                 label = "09:00",
- *                 open = 100f,
- *                 high = 110f,
- *                 low = 95f,
- *                 close = 105f
- *             ),
- *             CandleData(
- *                 label = "10:00",
- *                 open = 105f,
- *                 high = 115f,
- *                 low = 100f,
- *                 close = 112f
- *             )
+ *             CandleData(label = "09:00", open = 100f, high = 110f, low = 95f, close = 105f),
+ *             CandleData(label = "10:00", open = 105f, high = 115f, low = 100f, close = 112f)
  *         )
  *     },
  *     bullishColor = ChartyColor.Solid(Color(0xFF4CAF50)), // Green for up
@@ -62,14 +54,6 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
  *         animation = Animation.Enabled(duration = 800)
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of candle data to display
- * @param modifier Modifier for the chart
- * @param bullishColor Color for bullish candles (close >= open)
- * @param bearishColor Color for bearish candles (close < open)
- * @param candlestickConfig Configuration for candlestick appearance
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  */
 @Composable
 fun CandlestickChart(

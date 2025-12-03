@@ -29,14 +29,19 @@ import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
- * Bubble Bar Chart - Display data as stacked bubbles in vertical columns
+ * A composable function that displays a bubble bar chart.
  *
- * A bubble bar chart presents categorical data with circles/bubbles stacked vertically.
- * The number and size of bubbles is proportional to the value they represent.
- * Ideal for creating visually appealing comparisons between discrete categories.
+ * A bubble bar chart represents data as stacked bubbles in vertical columns.
+ * The number and size of the bubbles are proportional to the value they represent, offering a visually distinct way to compare categorical data.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
+ * @param modifier The modifier to be applied to the chart.
+ * @param color The color or color scheme for the bubbles, defined by a [ChartyColor].
+ * @param bubbleConfig The configuration for the bubbles, such as radius, spacing, and animation, defined by a [BubbleBarChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onBarClick A lambda function to be invoked when a bar (a column of bubbles) is clicked, providing the corresponding [BarData].
+ *
+ * @sample
  * BubbleBarChart(
  *     data = {
  *         listOf(
@@ -53,14 +58,6 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  *         animation = Animation.Enabled()
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of bar data to display
- * @param modifier Modifier for the chart
- * @param color Color configuration - Solid for uniform bubbles, Gradient for gradient effect
- * @param bubbleConfig Configuration for bubble appearance
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels (includes leftLabelRotation)
- * @param onBarClick Optional callback when a bar is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

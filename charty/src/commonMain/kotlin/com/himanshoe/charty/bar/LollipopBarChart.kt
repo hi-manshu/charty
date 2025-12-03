@@ -25,21 +25,33 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 private const val DEFAULT_COLOR_HEX = 0xFF2196F3
 
 /**
- * Lollipop Bar Chart - vertical line with a circular head for each value.
+ * A composable function that displays a lollipop bar chart.
  *
- * This chart is similar to a traditional bar chart but uses a thin "stem" and a
- * configurable circle at the value position, making it visually lighter for
- * category comparisons.
+ * A lollipop bar chart is a variation of a traditional bar chart that uses a vertical line (stem) and a circular head to represent each value.
+ * This design provides a visually lighter and more modern way to compare categories.
  *
- * Configuration options allow customizing stem thickness, circle radius and circle
- * color, along with standard bar width fraction and animation.
+ * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
+ * @param modifier The modifier to be applied to the chart.
+ * @param colors The color or color scheme for the stems and circles, defined by a [ChartyColor].
+ * @param config The configuration for the lollipop chart's appearance, such as stem thickness and circle radius, defined by a [LollipopBarChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onBarClick A lambda function to be invoked when a lollipop is clicked, providing the corresponding [BarData].
  *
- * @param data Lambda returning list of bar data to display
- * @param modifier Modifier for the chart
- * @param colors Color configuration for stems and circles
- * @param config Configuration for lollipop chart appearance
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param onBarClick Optional callback when a lollipop is clicked
+ * @sample
+ * LollipopBarChart(
+ *     data = {
+ *         listOf(
+ *             BarData("Category A", 100f),
+ *             BarData("Category B", 150f),
+ *             BarData("Category C", 120f)
+ *         )
+ *     },
+ *     colors = ChartyColor.Solid(Color(0xFF2196F3)),
+ *     config = LollipopBarChartConfig(
+ *         stemThickness = 4.dp,
+ *         circleRadius = 8.dp
+ *     )
+ * )
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

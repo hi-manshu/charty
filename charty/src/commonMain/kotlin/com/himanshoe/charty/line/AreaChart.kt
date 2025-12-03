@@ -55,14 +55,20 @@ private data class AreaChartDrawParams(
 )
 
 /**
- * Area Chart - Line chart with filled area below the line
+ * A composable function that displays an area chart.
  *
- * An area chart is similar to a line chart but the area between the line and the axis
- * is filled with color/gradient. Useful for showing cumulative trends and emphasizing
- * the magnitude of change over time.
+ * An area chart is a type of line chart where the area between the line and the axis is filled with color or a gradient.
+ * It is useful for showing cumulative trends and emphasizing the magnitude of change over time.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [LineData] points to be displayed.
+ * @param modifier The modifier to be applied to the chart.
+ * @param color The color or color scheme for the filled area. A gradient is recommended for a fade effect.
+ * @param lineConfig The configuration for the line and its points, defined by a [LineChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param fillAlpha The alpha transparency for the filled area, ranging from 0.0f to 1.0f.
+ * @param onPointClick A lambda function to be invoked when a point on the line is clicked, providing the corresponding [LineData].
+ *
+ * @sample
  * AreaChart(
  *     data = {
  *         listOf(
@@ -80,15 +86,6 @@ private data class AreaChartDrawParams(
  *         showPoints = true
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of line data points to display
- * @param modifier Modifier for the chart
- * @param color Color configuration for area fill (gradient recommended for fade effect)
- * @param lineConfig Configuration for line and points appearance
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param fillAlpha Alpha transparency for the filled area (0.0f - 1.0f)
- * @param onPointClick Optional callback when a point is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

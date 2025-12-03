@@ -19,15 +19,16 @@ private const val BOTTOM_PADDING_WITH_LABELS = 50f
 private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
 
 /**
- * ChartScaffold - Provides a scaffold for charts with axis and labels.
+ * A composable that provides a basic structure for creating charts.
+ * It includes support for axes, labels, and a content area where the chart data can be drawn.
  *
- * @param modifier Modifier for the chart
- * @param xLabels Labels for the X-axis
- * @param yAxisConfig Configuration for Y-axis values and range
- * @param config Scaffold configuration for styling
- * @param orientation Chart orientation
- * @param leftLabelRotation Rotation for left-side labels
- * @param content Drawing lambda that receives ChartContext
+ * @param modifier The modifier to be applied to the chart scaffold.
+ * @param xLabels A list of labels for the x-axis.
+ * @param yAxisConfig The configuration for the y-axis, including min and max values.
+ * @param config The general configuration for the chart scaffold, such as whether to show labels.
+ * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
+ * @param leftLabelRotation The rotation for the labels on the left axis.
+ * @param content A lambda function that provides a [DrawScope] and [ChartContext] for drawing the chart content.
  */
 @Composable
 fun ChartScaffold(

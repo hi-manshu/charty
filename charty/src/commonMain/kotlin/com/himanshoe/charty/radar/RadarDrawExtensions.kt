@@ -15,7 +15,12 @@ private const val FULL_CIRCLE_DEGREES = 360f
 private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
 
 /**
- * Draw a circular grid line at the specified radius
+ * Draws a circular grid line at a specified radius.
+ *
+ * @param center The center of the grid.
+ * @param radius The radius of the circular grid line.
+ * @param gridLineWidth The width of the grid line.
+ * @param gridLineColor The color of the grid line.
  */
 internal fun DrawScope.drawCircularGridLine(
     center: Offset,
@@ -32,7 +37,14 @@ internal fun DrawScope.drawCircularGridLine(
 }
 
 /**
- * Draw a polygonal grid line at the specified radius
+ * Draws a polygonal grid line at a specified radius.
+ *
+ * @param center The center of the grid.
+ * @param radius The radius of the polygonal grid line.
+ * @param numberOfAxes The number of axes in the radar chart.
+ * @param gridLineWidth The width of the grid line.
+ * @param gridLineColor The color of the grid line.
+ * @param startAngle The starting angle for drawing the polygon.
  */
 internal fun DrawScope.drawPolygonalGridLine(
     center: Offset,
@@ -76,7 +88,15 @@ private fun createPolygonPath(
 }
 
 /**
- * Draw a single grid level based on the grid style
+ * Draws a single grid level based on the specified grid style.
+ *
+ * @param center The center of the grid.
+ * @param radius The radius of the grid level.
+ * @param numberOfAxes The number of axes in the radar chart.
+ * @param gridStyle The style of the grid, either [RadarGridStyle.CIRCULAR] or [RadarGridStyle.POLYGON].
+ * @param gridLineWidth The width of the grid line.
+ * @param gridLineColor The color of the grid line.
+ * @param startAngle The starting angle for drawing the grid.
  */
 internal fun DrawScope.drawGridLevel(
     center: Offset,

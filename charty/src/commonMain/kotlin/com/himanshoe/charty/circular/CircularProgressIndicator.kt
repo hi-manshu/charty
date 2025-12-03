@@ -31,52 +31,25 @@ import com.himanshoe.charty.circular.internal.rememberAnimatedProgress
 import com.himanshoe.charty.circular.internal.ringClickHandler
 
 /**
- * CircularProgressIndicator - Display multiple concentric progress rings (like Apple Activity Rings)
+ * A composable function that displays a circular progress indicator with multiple concentric rings.
  *
- * A highly configurable circular progress indicator that supports:
- * - Multiple concentric rings with independent progress
- * - Customizable colors for each ring (filled and background)
- * - Shadow effects for depth and visual appeal
- * - Configurable gaps between rings
- * - Smooth animations
- * - Click interactions
- * - Round or square stroke caps
+ * This indicator is highly configurable and can be used to show progress for multiple data points simultaneously, similar to Apple's Activity Rings.
+ * It supports customization of colors, shadows, gaps, stroke caps, and animations.
  *
- * Performance Features:
- * - Efficient canvas rendering
- * - Optimized shadow drawing
- * - Smart recomposition scoping
+ * @param rings A lambda function that returns a list of [CircularRingData], each representing a progress ring.
+ * @param modifier The modifier to be applied to the indicator.
+ * @param config The configuration for the circular progress indicator's appearance and behavior, defined by a [CircularProgressConfig].
+ * @param onRingClick A lambda function to be invoked when a ring is clicked, providing the corresponding [CircularRingData] and its index.
+ * @param centerContent A composable lambda that allows for placing content in the center of the rings.
  *
- * Usage:
- * ```kotlin
- * // Basic three-ring indicator (like Apple Activity Rings)
+ * @sample
+ * // Basic three-ring indicator
  * CircularProgressIndicator(
  *     rings = {
  *         listOf(
- *             CircularRingData(
- *                 label = "Move",
- *                 progress = 450f,
- *                 maxValue = 600f,
- *                 color = Color(0xFFFF3B58),
- *                 backgroundColor = Color(0x33FF3B58),
- *                 strokeWidth = 24f
- *             ),
- *             CircularRingData(
- *                 label = "Exercise",
- *                 progress = 25f,
- *                 maxValue = 30f,
- *                 color = Color(0xFFACFF3D),
- *                 backgroundColor = Color(0x33ACFF3D),
- *                 strokeWidth = 24f
- *             ),
- *             CircularRingData(
- *                 label = "Stand",
- *                 progress = 10f,
- *                 maxValue = 12f,
- *                 color = Color(0xFF34D5FF),
- *                 backgroundColor = Color(0x3334D5FF),
- *                 strokeWidth = 24f
- *             )
+ *             CircularRingData(label = "Move", progress = 450f, maxValue = 600f, color = Color(0xFFFF3B58)),
+ *             CircularRingData(label = "Exercise", progress = 25f, maxValue = 30f, color = Color(0xFFACFF3D)),
+ *             CircularRingData(label = "Stand", progress = 10f, maxValue = 12f, color = Color(0xFF34D5FF))
  *         )
  *     },
  *     modifier = Modifier.size(300.dp)
@@ -97,21 +70,14 @@ import com.himanshoe.charty.circular.internal.ringClickHandler
  *         println("Clicked: ${ring.label} - ${ring.calculatePercentage()}%")
  *     }
  * )
- * ```
- *
- * @param rings Lambda returning list of ring data (from outermost to innermost)
- * @param modifier Modifier for the indicator
- * @param config Configuration for appearance and behavior
- * @param onRingClick Callback invoked when a ring is clicked (receives CircularRingData and index)
- * @param centerContent Optional composable content for the center of the rings
  */
 @Composable
 fun CircularProgressIndicator(
     rings: () -> List<CircularRingData>,
     modifier: Modifier = Modifier,
     config: CircularProgressConfig = CircularProgressConfig(),
-    onRingClick: ((CircularRingData, Int) -> Unit)? = null,
-    centerContent: @Composable (BoxScope.() -> Unit)? = null,
+    onRingClick: ((ring: CircularRingData, index: Int) -> Unit)? = null,
+    centerContent: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     val ringsList = remember(rings) { rings() }
     val animatedProgress = rememberAnimatedProgress(ringsList, config.animation)

@@ -30,14 +30,19 @@ import com.himanshoe.charty.line.internal.multiline.drawLineSeries
 import com.himanshoe.charty.line.internal.multiline.multilineChartClickHandler
 
 /**
- * Multiline Chart - Display multiple line series on the same chart
+ * A composable function that displays a multiline chart.
  *
- * A multiline chart displays multiple data series as separate lines on the same chart.
- * Perfect for comparing trends of multiple metrics or categories over time.
- * Each line starts smoothly from the axis intersection point (0,0).
+ * A multiline chart shows multiple data series as separate lines on the same chart, making it ideal for comparing trends over time.
+ * Each line starts smoothly from the (0,0) axis intersection point.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [LineGroup], where each group contains values for all series at a specific x-position.
+ * @param modifier The modifier to be applied to the chart.
+ * @param colors The color or color scheme for the lines. A gradient is recommended to distinguish between multiple lines.
+ * @param lineConfig The configuration for the lines' appearance and behavior, defined by a [LineChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onPointClick A lambda function to be invoked when a point on any line is clicked, providing the corresponding [MultilinePoint].
+ *
+ * @sample
  * MultilineChart(
  *     data = {
  *         listOf(
@@ -55,14 +60,6 @@ import com.himanshoe.charty.line.internal.multiline.multilineChartClickHandler
  *         smoothCurve = true
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of line groups, each containing values for all series at that X position
- * @param modifier Modifier for the chart
- * @param colors Color configuration - Gradient recommended for distinguishing multiple lines
- * @param lineConfig Configuration for line appearance and behavior
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param onPointClick Optional callback when a point is clicked
  */
 @Composable
 fun MultilineChart(

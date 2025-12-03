@@ -3,18 +3,19 @@ package com.himanshoe.charty.color
 import androidx.compose.ui.graphics.Color
 
 /**
- * Default color constants for Charty library.
- * These colors are used as defaults across all chart components.
+ * An object that provides a set of default color constants for the Charty library.
  *
- * Usage:
- * ```kotlin
- * // Using default solid color
+ * These colors are used as defaults across various chart components, ensuring a consistent look and feel.
+ * The object includes primary colors, default solid and gradient configurations, and several color palettes.
+ *
+ * @sample
+ * // Using a default solid color
  * BarChart(
  *     data = { myData },
  *     color = ChartyColor.Solid(ChartyColors.Blue)
  * )
  *
- * // Using default gradient
+ * // Using a default gradient
  * StackedBarChart(
  *     data = { myData },
  *     colors = ChartyColors.DefaultGradient
@@ -25,68 +26,67 @@ import androidx.compose.ui.graphics.Color
  *     data = { myData },
  *     colors = ChartyColors.ModernPalette
  * )
- * ```
  */
 object ChartyColors {
 
     // ==================== Primary Colors ====================
 
     /**
-     * Primary Blue - Default primary color for most charts
+     * The primary blue color, often used as the default for most charts.
      * Hex: #2196F3 (Material Blue 500)
      */
     val Blue = Color(0xFF2196F3)
 
     /**
-     * Primary Green - Success and positive values
+     * A primary green color, typically used to represent success or positive values.
      * Hex: #4CAF50 (Material Green 500)
      */
     val Green = Color(0xFF4CAF50)
 
     /**
-     * Primary Orange - Warnings and highlights
+     * A primary orange color, often used for warnings or to highlight important data.
      * Hex: #FF9800 (Material Orange 500)
      */
     val Orange = Color(0xFFFF9800)
 
     /**
-     * Primary Red - Errors and negative values
+     * A primary red color, commonly used to indicate errors or negative values.
      * Hex: #F44336 (Material Red 500)
      */
     val Red = Color(0xFFF44336)
 
     /**
-     * Primary Purple - Alternative accent color
+     * A primary purple color, serving as an alternative accent color.
      * Hex: #9C27B0 (Material Purple 500)
      */
     val Purple = Color(0xFF9C27B0)
 
     /**
-     * Primary Pink - Vibrant accent color
+     * A vibrant pink color, used as an accent.
      * Hex: #E91E63 (Material Pink 500)
      */
     val Pink = Color(0xFFE91E63)
 
     /**
-     * Primary Cyan - Cool accent color
+     * A cool cyan color, used as an accent.
      * Hex: #00BCD4 (Material Cyan 500)
      */
     val Cyan = Color(0xFF00BCD4)
 
     /**
-     * Primary Teal - Nature and balance
+     * A teal color, often associated with nature and balance.
      * Hex: #009688 (Material Teal 500)
      */
     val Teal = Color(0xFF009688)
 
     /**
-     * Primary Indigo - Deep blue accent
+     * A deep indigo color, used as a blue accent.
      * Hex: #3F51B5 (Material Indigo 500)
      */
     val Indigo = Color(0xFF3F51B5)
 
     /**
-     * Primary Amber - Warm accent color
+     * A warm amber color, used as an accent.
      * Hex: #FFC107 (Material Amber 500)
      */
     val Amber = Color(0xFFFFC107)
@@ -94,7 +94,7 @@ object ChartyColors {
     // ==================== Default Configurations ====================
 
     /**
-     * Default solid color - Used when no color is specified
+     * The default solid color, used when no specific color is provided. It defaults to [Blue].
      */
     val DefaultSolid = ChartyColor.Solid(Blue)
 

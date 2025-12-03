@@ -9,12 +9,13 @@ import kotlin.math.floor
  */
 
 /**
- * Calculate appropriate max value with nice rounding
- * Rounds up to the nearest multiple of stepSize
+ * Calculates an appropriate maximum value with "nice" rounding, suitable for a chart axis.
  *
- * @param values List of values to find max from
- * @param stepSize Step size for rounding (default 10)
- * @return Rounded max value
+ * This function rounds the maximum value in the list up to the nearest multiple of [stepSize].
+ *
+ * @param values The list of values from which to find the maximum.
+ * @param stepSize The step size for rounding.
+ * @return The rounded maximum value.
  */
 fun calculateMaxValue(
     values: List<Float>,
@@ -25,12 +26,13 @@ fun calculateMaxValue(
 }
 
 /**
- * Calculate appropriate min value with nice rounding
- * Rounds down to the nearest multiple of stepSize
+ * Calculates an appropriate minimum value with "nice" rounding, suitable for a chart axis.
  *
- * @param values List of values to find min from
- * @param stepSize Step size for rounding (default 10)
- * @return Rounded min value
+ * This function rounds the minimum value in the list down to the nearest multiple of [stepSize].
+ *
+ * @param values The list of values from which to find the minimum.
+ * @param stepSize The step size for rounding.
+ * @return The rounded minimum value.
  */
 fun calculateMinValue(
     values: List<Float>,
@@ -41,12 +43,13 @@ fun calculateMinValue(
 }
 
 /**
- * Calculate min and max with percentage-based padding
- * Used for charts like candlestick where padding is preferred over step-based rounding
+ * Calculates the minimum and maximum values with percentage-based padding.
  *
- * @param values List of values to calculate range from
- * @param paddingMultiplier Padding as a fraction (e.g., 0.05 for 5% padding)
- * @return Pair of (min, max) with padding applied
+ * This is useful for charts like candlestick charts where padding is preferred over step-based rounding.
+ *
+ * @param values The list of values from which to calculate the range.
+ * @param paddingMultiplier The padding as a fraction (e.g., 0.05 for 5% padding).
+ * @return A [Pair] containing the minimum and maximum values with padding applied.
  */
 fun calculateMinMaxWithPadding(
     values: List<Float>,
@@ -58,11 +61,11 @@ fun calculateMinMaxWithPadding(
 }
 
 /**
- * Calculate min and max values from a list with step-based rounding
+ * Calculates the minimum and maximum values from a list with step-based rounding.
  *
- * @param values List of values
- * @param stepSize Step size for rounding
- * @return Pair of (min, max) with nice rounding
+ * @param values The list of values.
+ * @param stepSize The step size for rounding.
+ * @return A [Pair] containing the minimum and maximum values with "nice" rounding.
  */
 fun calculateMinMaxValue(
     values: List<Float>,

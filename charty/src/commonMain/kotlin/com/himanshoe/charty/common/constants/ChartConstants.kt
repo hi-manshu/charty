@@ -1,79 +1,72 @@
 package com.himanshoe.charty.common.constants
 
 /**
- * Common constants used across multiple chart types.
- * Centralizing these values improves maintainability and consistency.
+ * An object that holds common constants used across multiple chart types in the Charty library.
+ *
+ * Centralizing these values improves maintainability and ensures consistency throughout the library.
  */
 object ChartConstants {
 
-    // ===== Gesture & Touch Constants =====
-
     /**
-     * Multiplier for tap radius relative to item radius
-     * Used to make tap targets larger than visual elements for better UX
+     * The multiplier for the tap radius relative to an item's radius.
+     * This is used to make tap targets larger than the visual elements, improving user experience.
      */
     const val DEFAULT_TAP_RADIUS_MULTIPLIER = 2.5f
 
     /**
-     * Multiplier for highlight radius relative to item radius
+     * The multiplier for the highlight radius relative to an item's radius.
      */
     const val DEFAULT_HIGHLIGHT_RADIUS_MULTIPLIER = 2f
 
-    // ===== Visual Constants =====
-
     /**
-     * Default alpha value for guideline/reference lines
+     * The default alpha value for guideline or reference lines.
      */
     const val DEFAULT_GUIDELINE_ALPHA = 0.1f
 
     /**
-     * Default stroke width for guidelines
+     * The default stroke width for guidelines.
      */
     const val DEFAULT_GUIDELINE_WIDTH = 1.5f
 
     /**
-     * Outer offset for highlight circle decoration
+     * The outer offset for a highlight circle decoration.
      */
     const val DEFAULT_HIGHLIGHT_OUTER_OFFSET = 3f
 
     /**
-     * Inner offset for highlight circle decoration
+     * The inner offset for a highlight circle decoration.
      */
     const val DEFAULT_HIGHLIGHT_INNER_OFFSET = 2f
 
-    // ===== Animation Constants =====
-
     /**
-     * Minimum animation progress value (start)
+     * The minimum progress value for an animation, representing the start point.
      */
     const val MIN_ANIMATION_PROGRESS = 0f
 
     /**
-     * Maximum animation progress value (end)
+     * The maximum progress value for an animation, representing the end point.
      */
     const val MAX_ANIMATION_PROGRESS = 1f
 
-    // ===== Axis Constants =====
-
     /**
-     * Default number of steps/ticks on Y-axis
+     * The default number of steps or ticks on the y-axis.
      */
     const val DEFAULT_AXIS_STEPS = 6
 
     /**
-     * Default step size for value rounding
+     * The default step size used for rounding values.
      */
     const val DEFAULT_STEP_SIZE = 10
 
     // ===== Layout Constants =====
 
     /**
-     * Common divisor for center calculations
+     * A common divisor used for center calculations.
      */
     const val CENTER_DIVISOR = 2f
 
     /**
-     * Minimum edge margin in pixels
+     * The minimum margin at the edges in pixels.
      */
     const val MIN_EDGE_MARGIN = 8f
 }

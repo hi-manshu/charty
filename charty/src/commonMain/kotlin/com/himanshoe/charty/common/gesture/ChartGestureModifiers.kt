@@ -13,13 +13,16 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  */
 
 /**
- * Add tap gesture detection for rectangular bounds (bars, segments, etc.)
+ * A modifier extension that adds tap gesture detection for charts with rectangular bounds, such as bar charts.
  *
- * @param dataList The list of data items (for recomposition key)
- * @param bounds List of pairs containing bounds and associated data
- * @param onItemClick Callback when an item is clicked
- * @param onTooltipStateChange Callback to update tooltip state
- * @param createTooltipContent Function to create tooltip content from data and bounds
+ * @param T The type of the data associated with each bound.
+ * @param D The type of the items in the data list.
+ * @param dataList The list of data items, used as a recomposition key.
+ * @param bounds A list of pairs, where each pair contains the [Rect] bounds and its associated data.
+ * @param onItemClick A lambda function to be invoked when an item is clicked.
+ * @param onTooltipStateChange A lambda function to update the tooltip state.
+ * @param createTooltipContent A function that creates a [TooltipState] from the given data and bounds.
+ * @return A [Modifier] that handles tap gestures.
  */
 fun <T, D> Modifier.rectangularChartClickHandler(
     dataList: List<D>,
@@ -47,14 +50,17 @@ fun <T, D> Modifier.rectangularChartClickHandler(
 }
 
 /**
- * Add tap gesture detection for point-based charts (line, scatter, etc.)
+ * A modifier extension that adds tap gesture detection for point-based charts, such as line or scatter charts.
  *
- * @param dataList The list of data items (for recomposition key)
- * @param pointBounds List of pairs containing point positions and associated data
- * @param tapRadius The maximum radius to consider for a tap
- * @param onPointClick Callback when a point is clicked
- * @param onTooltipStateChange Callback to update tooltip state
- * @param createTooltipContent Function to create tooltip content from data and position
+ * @param T The type of the data associated with each point.
+ * @param D The type of the items in the data list.
+ * @param dataList The list of data items, used as a recomposition key.
+ * @param pointBounds A list of pairs, where each pair contains the [Offset] position of a point and its associated data.
+ * @param tapRadius The maximum radius around a point to be considered a tap.
+ * @param onPointClick A lambda function to be invoked when a point is clicked.
+ * @param onTooltipStateChange A lambda function to update the tooltip state.
+ * @param createTooltipContent A function that creates a [TooltipState] from the given data and position.
+ * @return A [Modifier] that handles tap gestures.
  */
 fun <T, D> Modifier.pointChartClickHandler(
     dataList: List<D>,
@@ -79,11 +85,12 @@ fun <T, D> Modifier.pointChartClickHandler(
 }
 
 /**
- * Helper to create a standard tooltip state for rectangular bounds
+ * A helper function to create a standard [TooltipState] for items with rectangular bounds.
  *
- * @param content The tooltip content text
- * @param rect The bounds of the clicked item
- * @param position The preferred tooltip position
+ * @param content The text content to be displayed in the tooltip.
+ * @param rect The [Rect] bounds of the clicked item.
+ * @param position The preferred position of the tooltip, defined by [TooltipPosition].
+ * @return A [TooltipState] instance configured for the given parameters.
  */
 fun createRectangularTooltipState(
     content: String,

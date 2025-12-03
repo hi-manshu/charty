@@ -155,14 +155,16 @@ private fun DrawScope.drawTooltipHighlight(
 }
 
 /**
- * Point Chart - Display data as individual points with optional click interactions.
+ * A composable function that displays a point chart, also known as a scatter plot.
  *
- * @param data Lambda returning list of point data to display
- * @param modifier Modifier for the chart
- * @param color Color configuration for points
- * @param pointConfig Configuration for point appearance and behavior
- * @param scaffoldConfig Chart styling configuration
- * @param onPointClick Optional callback when a point is clicked
+ * A point chart displays data as a collection of individual points, which can be useful for showing the relationship between two variables.
+ *
+ * @param data A lambda function that returns a list of [PointData] to be displayed.
+ * @param modifier The modifier to be applied to the chart.
+ * @param color The color or color scheme for the points, defined by a [ChartyColor].
+ * @param pointConfig The configuration for the points' appearance and behavior, defined by a [PointChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onPointClick A lambda function to be invoked when a point is clicked, providing the corresponding [PointData].
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

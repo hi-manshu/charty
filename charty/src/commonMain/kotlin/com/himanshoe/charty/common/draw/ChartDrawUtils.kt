@@ -20,12 +20,12 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
  */
 
 /**
- * Draw a reference line if the configuration is not null
+ * Draws a reference line on the chart if a [ReferenceLineConfig] is provided.
  *
- * @param referenceLineConfig The reference line configuration (null to skip drawing)
- * @param chartContext The chart context with dimensions
- * @param orientation The chart orientation
- * @param textMeasurer Text measurer for labels
+ * @param referenceLineConfig The configuration for the reference line. If `null`, no line is drawn.
+ * @param chartContext The context of the chart, providing dimensions and value range.
+ * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
+ * @param textMeasurer A [TextMeasurer] used for measuring the label text.
  */
 fun DrawScope.drawReferenceLineIfNeeded(
     referenceLineConfig: ReferenceLineConfig?,
@@ -44,12 +44,12 @@ fun DrawScope.drawReferenceLineIfNeeded(
 }
 
 /**
- * Draw a tooltip if the state is not null
+ * Draws a tooltip on the chart if a [TooltipState] is provided.
  *
- * @param tooltipState The tooltip state (null to skip drawing)
- * @param tooltipConfig The tooltip configuration
- * @param textMeasurer Text measurer for tooltip text
- * @param chartContext The chart context with dimensions
+ * @param tooltipState The state of the tooltip. If `null`, no tooltip is drawn.
+ * @param tooltipConfig The configuration for the tooltip's appearance.
+ * @param textMeasurer A [TextMeasurer] used for measuring the tooltip text.
+ * @param chartContext The context of the chart, providing dimensions.
  */
 fun DrawScope.drawTooltipIfNeeded(
     tooltipState: TooltipState?,
@@ -70,13 +70,13 @@ fun DrawScope.drawTooltipIfNeeded(
 }
 
 /**
- * Draw a highlighted point (typically for tooltips) with a white outer circle and colored inner circle
+ * Draws a highlighted point, typically used for tooltips, with a white outer circle and a colored inner circle.
  *
- * @param center The center position of the point
- * @param pointRadius The base radius of the point
- * @param colorBrush The brush for the inner circle
- * @param outerRadiusAddition Additional radius for the outer white circle (default 3f)
- * @param innerRadiusAddition Additional radius for the inner colored circle (default 2f)
+ * @param center The center position of the point.
+ * @param pointRadius The base radius of the point.
+ * @param colorBrush The [Brush] used for the inner circle.
+ * @param outerRadiusAddition The additional radius for the outer white circle.
+ * @param innerRadiusAddition The additional radius for the inner colored circle.
  */
 fun DrawScope.drawHighlightedPoint(
     center: Offset,

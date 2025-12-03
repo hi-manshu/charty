@@ -31,13 +31,19 @@ import com.himanshoe.charty.line.internal.line.drawStraightLineSegments
 import com.himanshoe.charty.line.internal.line.lineChartClickHandler
 
 /**
- * Line Chart - Connect data points with lines
+ * A composable function that displays a line chart.
  *
- * A line chart displays information as a series of data points connected by straight line segments.
- * It is useful for showing trends over time or continuous data.
+ * A line chart represents information as a series of data points connected by straight line segments.
+ * It is particularly useful for visualizing trends over time or continuous data.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [LineData] points to be displayed.
+ * @param modifier The modifier to be applied to the chart.
+ * @param color The color or color scheme for the line and its points, defined by a [ChartyColor].
+ * @param lineConfig The configuration for the line's appearance and behavior, such as line width and point visibility, defined by a [LineChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param onPointClick A lambda function to be invoked when a point on the line is clicked, providing the corresponding [LineData].
+ *
+ * @sample
  * LineChart(
  *     data = {
  *         listOf(
@@ -58,14 +64,6 @@ import com.himanshoe.charty.line.internal.line.lineChartClickHandler
  *         println("Clicked: ${lineData.label}")
  *     }
  * )
- * ```
- *
- * @param data Lambda returning list of line data points to display
- * @param modifier Modifier for the chart
- * @param color Color configuration for line and points
- * @param lineConfig Configuration for line appearance and behavior
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param onPointClick Optional callback when a point is clicked
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

@@ -1,18 +1,20 @@
 package com.himanshoe.charty.common.config
 
 /**
- * Sealed interface for animation configuration
+ * A sealed interface that defines the animation configuration for a chart.
+ *
+ * This interface allows for enabling or disabling animations, as well as customizing the animation duration.
  */
 sealed interface Animation {
     /**
-     * No animation - chart appears instantly
+     * Represents a disabled animation state, where the chart appears instantly without any transition.
      */
     data object Disabled : Animation
 
     /**
-     * Animated chart with configurable duration
+     * Represents an enabled animation state with a configurable duration.
      *
-     * @param duration Animation duration in milliseconds
+     * @param duration The duration of the animation in milliseconds. Must be a positive value.
      */
     data class Enabled(
         val duration: Int = 800,
@@ -23,21 +25,21 @@ sealed interface Animation {
     }
 
     /**
-     * Companion object providing common animation presets
+     * A companion object that provides common animation presets.
      */
     companion object {
         /**
-         * Default animation with 800ms duration
+         * The default animation, with a duration of 800 milliseconds.
          */
         val Default = Enabled()
 
         /**
-         * Fast animation with 400ms duration
+         * A fast animation, with a duration of 400 milliseconds.
          */
         val Fast = Enabled(duration = 400)
 
         /**
-         * Slow animation with 1200ms duration
+         * A slow animation, with a duration of 1200 milliseconds.
          */
         val Slow = Enabled(duration = 1200)
     }

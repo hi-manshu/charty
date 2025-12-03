@@ -16,14 +16,21 @@ import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.BubbleData
 
 /**
- * Bubble Chart - Display data as circles with variable sizes
+ * A composable function that displays a bubble chart.
  *
- * A bubble chart is a variation of a scatter plot where each point is represented by
- * a circle (bubble) whose size represents a third dimension of data. Useful for
- * visualizing three variables at once: X position, Y position, and size.
+ * A bubble chart is a variation of a scatter plot where each point is represented by a circle (bubble),
+ * and the size of the bubble represents a third dimension of data. This is useful for visualizing three variables at once:
+ * x-position, y-position, and size.
  *
- * Usage:
- * ```kotlin
+ * @param data A lambda function that returns a list of [BubbleData] to be displayed.
+ * @param modifier The modifier to be applied to the chart.
+ * @param color The color or color scheme for the bubbles, defined by a [ChartyColor].
+ * @param config The configuration for the bubbles' appearance, where `pointRadius` is the maximum bubble size, defined by a [PointChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param minBubbleRadius The minimum radius for a bubble in pixels.
+ * @param onBubbleClick A lambda function to be invoked when a bubble is clicked, providing the corresponding [BubbleData].
+ *
+ * @sample
  * BubbleChart(
  *     data = {
  *         listOf(
@@ -39,15 +46,6 @@ import com.himanshoe.charty.point.data.BubbleData
  *         pointRadius = 30f // Maximum bubble radius
  *     )
  * )
- * ```
- *
- * @param data Lambda returning list of bubble data to display
- * @param modifier Modifier for the chart
- * @param color Color configuration - Solid for uniform bubbles, Gradient for multi-color bubbles
- * @param config Configuration for bubble appearance (pointRadius is the max bubble size)
- * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
- * @param minBubbleRadius Minimum bubble radius in pixels
- * @param onBubbleClick Callback when a bubble is clicked
  */
 @Composable
 fun BubbleChart(

@@ -16,7 +16,13 @@ import kotlin.math.sqrt
 internal const val DEFAULT_NORMALIZED_SIZE = 0.5f
 
 /**
- * Data class to hold bubble size information
+ * A data class that holds information about the size of bubbles in a bubble chart.
+ *
+ * @property minValue The minimum y-value in the dataset.
+ * @property maxValue The maximum y-value in the dataset.
+ * @property minSize The minimum size value in the dataset.
+ * @property maxSize The maximum size value in the dataset.
+ * @property sizeRange The range of sizes (maxSize - minSize).
  */
 internal data class BubbleSizeInfo(
     val minValue: Float,
@@ -27,7 +33,11 @@ internal data class BubbleSizeInfo(
 )
 
 /**
- * Data class to hold bubble bounds for click detection
+ * A data class that holds the bounds of a bubble for click detection.
+ *
+ * @property center The center coordinates of the bubble.
+ * @property radius The radius of the bubble.
+ * @property data The [BubbleData] associated with the bubble.
  */
 internal data class BubbleBounds(
     val center: Offset,
@@ -36,7 +46,10 @@ internal data class BubbleBounds(
 )
 
 /**
- * Calculate bubble size information from data list
+ * Calculates the [BubbleSizeInfo] from a list of [BubbleData].
+ *
+ * @param dataList The list of [BubbleData].
+ * @return A [BubbleSizeInfo] instance containing the calculated size information.
  */
 internal fun calculateBubbleSizeInfo(dataList: List<BubbleData>): BubbleSizeInfo {
     val yValues = dataList.map { it.yValue }
@@ -53,7 +66,14 @@ internal fun calculateBubbleSizeInfo(dataList: List<BubbleData>): BubbleSizeInfo
 }
 
 /**
- * Calculate the radius for a bubble based on its size
+ * Calculates the radius for a bubble based on its size.
+ *
+ * @param bubbleSize The size of the bubble.
+ * @param minSize The minimum size in the dataset.
+ * @param sizeRange The range of sizes in the dataset.
+ * @param minBubbleRadius The minimum allowed radius for a bubble.
+ * @param maxBubbleRadius The maximum allowed radius for a bubble.
+ * @return The calculated radius for the bubble.
  */
 internal fun calculateBubbleRadius(
     bubbleSize: Float,
@@ -72,7 +92,12 @@ internal fun calculateBubbleRadius(
 }
 
 /**
- * Create click modifier for bubble chart
+ * Creates a click modifier for a bubble chart.
+ *
+ * @param dataList The list of [BubbleData].
+ * @param bubbleBounds The list of [BubbleBounds] for click detection.
+ * @param onBubbleClick A lambda function to be invoked when a bubble is clicked.
+ * @return A [Modifier] that handles tap gestures for the bubble chart.
  */
 internal fun createBubbleClickModifier(
     dataList: List<BubbleData>,

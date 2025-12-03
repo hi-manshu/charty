@@ -3,13 +3,13 @@ package com.himanshoe.charty.common.axis
 import kotlin.math.round
 
 /**
- * Configuration for chart axis.
+ * A data class that holds the configuration for a chart axis.
  *
- * @param minValue Minimum value on the axis
- * @param maxValue Maximum value on the axis
- * @param steps Number of steps/divisions on the axis
- * @param label Label for the axis (e.g., "Sales", "Revenue")
- * @param drawAxisAtZero When true and data spans zero, the X axis is drawn at zero (centered). When false, the X axis is always drawn at the bottom.
+ * @property minValue The minimum value to be displayed on the axis.
+ * @property maxValue The maximum value to be displayed on the axis.
+ * @property steps The number of steps or divisions to be shown on the axis.
+ * @property label A descriptive label for the axis (e.g., "Sales", "Revenue").
+ * @property drawAxisAtZero If `true` and the data spans across zero, the x-axis will be drawn at the zero-line (centered). If `false`, the x-axis will always be at the bottom.
  */
 data class AxisConfig(
     val minValue: Float = 0f,
@@ -26,9 +26,13 @@ private const val MODULO_CHECK_ZERO = 1
 private const val ZERO_VALUE = 0f
 
 /**
- * Formats a float value for display on axis labels.
- * - Shows integers without decimal point
- * - Shows floats with max 2 decimal places, trimming trailing zeros
+ * Formats a float value into a string for display on an axis label.
+ *
+ * This function ensures that integer values are shown without a decimal point,
+ * while float values are displayed with a maximum of two decimal places, with trailing zeros trimmed.
+ *
+ * @param value The float value to be formatted.
+ * @return A formatted string representation of the value.
  */
 internal fun formatAxisLabel(value: Float): String =
     if (value % MODULO_CHECK_ZERO == ZERO_VALUE) {
