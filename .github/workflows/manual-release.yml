@@ -98,6 +98,19 @@ jobs:
           # Clean up sensitive files
           rm -f $HOME/secring.gpg $HOME/private-key.asc
 
+      - name: Validate Maven Central credentials
+        run: |
+          if [ -z "${{ secrets.MAVEN_CENTRAL_USERNAME }}" ]; then
+            echo "Error: MAVEN_CENTRAL_USERNAME secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.MAVEN_CENTRAL_PASSWORD }}" ]; then
+            echo "Error: MAVEN_CENTRAL_PASSWORD secret is not set"
+            exit 1
+          fi
+          echo "Maven Central credentials are configured"
+          echo "Username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}"
+
       - name: Publish with Gradle (Maven Central / custom repo)
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -105,7 +118,12 @@ jobs:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
-          ./gradlew :charty:publish
+          ./gradlew :charty:publish \
+            -PmavenCentralUsername="${MAVEN_CENTRAL_USERNAME}" \
+            -PmavenCentralPassword="${MAVEN_CENTRAL_PASSWORD}" \
+            -Psigning.keyId="${SIGNING_KEY_ID}" \
+            -Psigning.password="${SIGNING_PASSWORD}" \
+            -Psigning.key="${SIGNING_KEY}"
 
       - name: Persist versionCode for next run
         if: success()
