@@ -1,13 +1,9 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.WaterfallChartConfig
@@ -21,7 +17,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.tooltip.drawTooltip
 
 /**
@@ -33,7 +29,6 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param onBarClick Optional callback when a bar is clicked
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun WaterfallChart(
     data: () -> List<BarData>,
@@ -51,14 +46,21 @@ fun WaterfallChart(
     }
 
     val animationProgress = rememberChartAnimation(config.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
+    val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
-    ChartScaffold(
-        modifier = modifier.then(
-            createWaterfallClickModifier(items, config, barBounds, onBarClick) { tooltipState = it },
+    val chartModifier = modifier.then(
+        createWaterfallClickModifier(
+            items = items,
+            config = config,
+            barBounds = tooltipManager.bounds,
+            onBarClick = onBarClick,
+            onTooltipUpdate = tooltipManager::updateTooltip,
         ),
+    )
+
+    ChartScaffold(
+        modifier = chartModifier,
         xLabels = items.map { it.label },
         yAxisConfig = AxisConfig(
             minValue = minValue,
@@ -68,7 +70,7 @@ fun WaterfallChart(
         ),
         config = scaffoldConfig,
     ) { chartContext ->
-        barBounds.clear()
+        tooltipManager.clearBounds()
 
         items.fastForEachIndexed { index, bar ->
             val barParams = calculateWaterfallBarParams(
@@ -82,7 +84,7 @@ fun WaterfallChart(
             )
 
             if (onBarClick != null) {
-                barBounds.add(barParams.bounds to bar)
+                tooltipManager.bounds.add(barParams.bounds to bar)
             }
 
             drawWaterfallBar(
@@ -95,17 +97,15 @@ fun WaterfallChart(
             )
         }
 
-        tooltipState?.let { state ->
+        tooltipManager.tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
                 config = config.tooltipConfig,
-                textMeasurer = textMeasurer,
                 chartWidth = chartContext.right,
                 chartTop = chartContext.top,
+                textMeasurer = textMeasurer,
                 chartBottom = chartContext.bottom,
             )
         }
     }
 }
-
-

@@ -1,10 +1,7 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -24,7 +21,7 @@ import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonTooltipIfN
 import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonChartValues
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
  * Comparison Bar Chart - Display multiple bars per category for comparison
@@ -69,8 +66,7 @@ fun ComparisonBarChart(
 
     val (minValue, maxValue) = rememberComparisonChartValues(dataList)
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val barBounds = remember { mutableListOf<Pair<Rect, ComparisonBarSegment>>() }
+    val tooltipManager = rememberTooltipManager<Rect, ComparisonBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartModifier = createComparisonChartModifier(
@@ -78,8 +74,8 @@ fun ComparisonBarChart(
         onBarClick = onBarClick,
         dataList = dataList,
         comparisonConfig = comparisonConfig,
-        barBounds = barBounds,
-        onTooltipUpdate = { tooltipState = it },
+        barBounds = tooltipManager.bounds,
+        onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
     ChartScaffold(
@@ -88,7 +84,7 @@ fun ComparisonBarChart(
         yAxisConfig = createComparisonAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
     ) { chartContext ->
-        barBounds.clear()
+        tooltipManager.clearBounds()
         val baselineY = calculateComparisonBaselineY(minValue, isBelowAxisMode, chartContext)
 
         drawComparisonBars(
@@ -98,12 +94,11 @@ fun ComparisonBarChart(
                 comparisonConfig = comparisonConfig,
                 baselineY = baselineY,
                 onBarClick = onBarClick,
-                barBounds = barBounds,
+                barBounds = tooltipManager.bounds,
             ),
         )
 
         drawComparisonReferenceLineIfNeeded(comparisonConfig, chartContext, textMeasurer)
-        drawComparisonTooltipIfNeeded(tooltipState, comparisonConfig, textMeasurer, chartContext)
+        drawComparisonTooltipIfNeeded(tooltipManager.tooltipState, comparisonConfig, textMeasurer, chartContext)
     }
 }
-

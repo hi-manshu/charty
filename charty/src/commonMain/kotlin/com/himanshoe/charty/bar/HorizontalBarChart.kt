@@ -1,10 +1,7 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -26,7 +23,7 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
  * Horizontal Bar Chart - Display data as horizontal bars
@@ -78,8 +75,7 @@ fun HorizontalBarChart(
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
 
     val animationProgress = rememberHorizontalAnimation(barConfig.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
+    val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
@@ -89,7 +85,7 @@ fun HorizontalBarChart(
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
-        barBounds.clear()
+        tooltipManager.clearBounds()
         val axisOffset = calculateHorizontalAxisOffset(scaffoldConfig)
         val baselineX = calculateHorizontalBaselineX(drawAxisAtZero, minValue, maxValue, chartContext, axisOffset)
 
@@ -106,12 +102,11 @@ fun HorizontalBarChart(
                 minValue = minValue,
                 maxValue = maxValue,
                 onBarClick = onBarClick,
-                onBarBoundCalculated = { barBounds.add(it) },
+                onBarBoundCalculated = { bounds -> tooltipManager.bounds.add(bounds) },
             ),
         )
 
         drawHorizontalReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
-        drawHorizontalTooltipIfNeeded(tooltipState, barConfig, textMeasurer, chartContext)
+        drawHorizontalTooltipIfNeeded(tooltipManager.tooltipState, barConfig, textMeasurer, chartContext)
     }
 }
-

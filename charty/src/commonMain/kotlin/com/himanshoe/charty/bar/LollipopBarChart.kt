@@ -1,10 +1,7 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -23,7 +20,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 private const val DEFAULT_COLOR_HEX = 0xFF2196F3
 
@@ -59,8 +56,7 @@ fun LollipopBarChart(
 
     val (minValue, maxValue) = rememberLollipopValueRange(dataList)
     val animationProgress = rememberLollipopAnimation(config.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val lollipopBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
+    val tooltipManager = rememberTooltipManager<Offset, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartModifier = createLollipopChartModifier(
@@ -68,8 +64,8 @@ fun LollipopBarChart(
         onBarClick = onBarClick,
         dataList = dataList,
         config = config,
-        lollipopBounds = lollipopBounds,
-        onTooltipUpdate = { tooltipState = it },
+        lollipopBounds = tooltipManager.bounds,
+        onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
     ChartScaffold(
@@ -78,7 +74,7 @@ fun LollipopBarChart(
         yAxisConfig = createAxisConfig(minValue, maxValue),
         config = scaffoldConfig,
     ) { chartContext ->
-        lollipopBounds.clear()
+        tooltipManager.clearBounds()
 
         drawLollipops(
             dataList = dataList,
@@ -87,11 +83,10 @@ fun LollipopBarChart(
             animationProgress = animationProgress.value,
             colors = colors,
             onBarClick = onBarClick,
-            lollipopBounds = lollipopBounds,
+            lollipopBounds = tooltipManager.bounds,
         )
 
-        drawTooltipHighlightIfNeeded(tooltipState, config, chartContext)
-        drawTooltipIfNeeded(tooltipState, config, textMeasurer, chartContext)
+        drawTooltipHighlightIfNeeded(tooltipManager.tooltipState, config, chartContext)
+        drawTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
     }
 }
-
