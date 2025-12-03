@@ -201,21 +201,3 @@ jobs:
           - Check if GPG key is properly formatted (should be base64 encoded)
           EOF
 
-        run: |
-          VERSION_NAME="${{ github.event.inputs.versionName }}"
-
-          TAG_NAME="v$VERSION_NAME"
-
-          echo "Creating tag $TAG_NAME"
-          git tag -a "$TAG_NAME" -m "Charty v$VERSION_NAME"
-          git push origin "$TAG_NAME"
-
-      - name: Create GitHub Release
-        if: success()
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.event.inputs.versionName }}
-          name: Charty v${{ github.event.inputs.versionName }}
-          body_path: release-summary.txt
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
