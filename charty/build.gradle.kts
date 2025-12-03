@@ -7,7 +7,12 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.dokka)
+    `maven-publish`
+    signing
 }
+
+group = System.getenv("GROUP") ?: project.findProperty("GROUP")?.toString() ?: "com.himanshoe"
+version = System.getenv("VERSION_NAME") ?: project.findProperty("VERSION_NAME")?.toString() ?: "1.0.0"
 
 composeCompiler {
     metricsDestination.set(project.layout.buildDirectory.dir("compose_metrics"))
@@ -92,3 +97,7 @@ tasks.dokkaHtml.configure {
         }
     }
 }
+
+// Apply publishing configuration
+apply(from = "${rootProject.projectDir}/gradle/publish.gradle.kts")
+

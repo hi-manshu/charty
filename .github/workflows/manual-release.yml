@@ -77,12 +77,32 @@ jobs:
           echo "POM_DEVELOPER_NAME=Himanshu Singh" >> $GITHUB_ENV
           echo "POM_DEVELOPER_URL=https://github.com/hi-manshu" >> $GITHUB_ENV
 
+      - name: Import GPG key
+        run: |
+          # Decode the base64-encoded GPG key and save to file
+          echo "${{ secrets.GPG_KEY_CONTENTS }}" | base64 -d > $HOME/secring.gpg
+
+          # Import the GPG key
+          gpg --batch --import $HOME/secring.gpg
+
+          # Export the key in ASCII armored format for in-memory signing
+          GPG_KEY_ID="${{ secrets.SIGNING_KEY_ID }}"
+          gpg --batch --pinentry-mode loopback --passphrase "${{ secrets.SIGNING_PASSWORD }}" \
+            --export-secret-keys --armor "$GPG_KEY_ID" > $HOME/private-key.asc
+
+          # Set the signing key as an environment variable (will be used in next step)
+          echo "SIGNING_KEY<<EOF" >> $GITHUB_ENV
+          cat $HOME/private-key.asc >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          # Clean up sensitive files
+          rm -f $HOME/secring.gpg $HOME/private-key.asc
+
       - name: Publish with Gradle (Maven Central / custom repo)
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           ./gradlew :charty:publish
