@@ -37,7 +37,6 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
  * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
  * @param onBarClick A lambda function to be invoked when a lollipop is clicked, providing the corresponding [BarData].
  *
- * @sample
  * LollipopBarChart(
  *     data = {
  *         listOf(

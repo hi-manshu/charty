@@ -45,7 +45,6 @@ import kotlin.math.min
  * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
  * @param onDataClick A lambda function to be invoked when a data point (either a bar or a line point) is clicked, providing the corresponding [ComboChartData].
  *
- * @sample
  * ComboChart(
  *     data = {
  *         listOf(

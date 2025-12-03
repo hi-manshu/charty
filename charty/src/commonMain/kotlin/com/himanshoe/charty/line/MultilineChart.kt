@@ -42,7 +42,6 @@ import com.himanshoe.charty.line.internal.multiline.multilineChartClickHandler
  * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
  * @param onPointClick A lambda function to be invoked when a point on any line is clicked, providing the corresponding [MultilinePoint].
  *
- * @sample
  * MultilineChart(
  *     data = {
  *         listOf(

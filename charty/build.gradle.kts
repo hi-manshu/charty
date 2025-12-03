@@ -80,17 +80,13 @@ android {
     }
 }
 
-// Dokka v2 configuration for the charty multiplatform library
-
 tasks.dokkaHtml.configure {
     outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
     moduleName.set("charty")
 
     dokkaSourceSets.configureEach {
-        // Only document main source sets; Dokka picks KMP platforms automatically.
         when (name) {
             "commonMain" -> {
-                displayName.set("Common")
                 sourceRoots.from(file("src/commonMain/kotlin"))
             }
         }

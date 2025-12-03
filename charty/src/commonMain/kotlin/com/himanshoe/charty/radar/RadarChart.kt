@@ -38,7 +38,6 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  * @param modifier The modifier to be applied to the chart.
  * @param config The configuration for the radar chart's appearance, defined by a [RadarChartConfig].
  *
- * @sample
  * RadarChart(
  *     data = {
  *         listOf(

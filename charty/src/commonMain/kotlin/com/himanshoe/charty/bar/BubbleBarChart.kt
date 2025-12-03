@@ -41,7 +41,6 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
  * @param onBarClick A lambda function to be invoked when a bar (a column of bubbles) is clicked, providing the corresponding [BarData].
  *
- * @sample
  * BubbleBarChart(
  *     data = {
  *         listOf(

@@ -23,7 +23,6 @@ import com.himanshoe.charty.common.config.Animation
  * @param targetValue The target value for the animation, which defaults to `1f`.
  * @return An [Animatable] that tracks the animation progress from `initialValue` to `targetValue`.
  *
- * @sample
  * val animationProgress = rememberChartAnimation(config.animation)
  * // Use animationProgress.value in drawing code to animate chart elements.
  */

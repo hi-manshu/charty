@@ -37,7 +37,6 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
  * @param candlestickConfig The configuration for the candlestick's appearance, such as width and animation, defined by a [CandlestickChartConfig].
  * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
  *
- * @sample
  * CandlestickChart(
  *     data = {
  *         listOf(

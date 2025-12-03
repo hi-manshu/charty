@@ -30,7 +30,6 @@ import com.himanshoe.charty.point.data.BubbleData
  * @param minBubbleRadius The minimum radius for a bubble in pixels.
  * @param onBubbleClick A lambda function to be invoked when a bubble is clicked, providing the corresponding [BubbleData].
  *
- * @sample
  * BubbleChart(
  *     data = {
  *         listOf(

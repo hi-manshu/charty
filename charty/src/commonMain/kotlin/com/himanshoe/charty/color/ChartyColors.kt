@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Color
  * These colors are used as defaults across various chart components, ensuring a consistent look and feel.
  * The object includes primary colors, default solid and gradient configurations, and several color palettes.
  *
- * @sample
  * // Using a default solid color
  * BarChart(
  *     data = { myData },

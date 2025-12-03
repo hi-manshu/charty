@@ -20,7 +20,6 @@ import com.himanshoe.charty.block.internal.drawBlockBar
  * @param modifier The modifier to be applied to the chart.
  * @param blockBarConfig The configuration for the block bar's appearance, such as colors, spacing, and height, defined by a [BlockBarChartConfig].
  *
- * @sample
  * BlockBarChart(
  *     data = {
  *         listOf(

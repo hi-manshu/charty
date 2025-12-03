@@ -47,7 +47,6 @@ import com.himanshoe.charty.line.internal.stackedarea.stackedAreaChartClickHandl
  * @param fillAlpha The alpha transparency for the filled areas, ranging from 0.0f to 1.0f.
  * @param onAreaClick A lambda function to be invoked when an area is clicked, providing the corresponding [StackedAreaPoint].
  *
- * @sample
  * StackedAreaChart(
  *     data = {
  *         listOf(

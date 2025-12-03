@@ -36,7 +36,6 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
  * @param onBarClick A lambda function to be invoked when a bar is clicked, providing the corresponding [BarData].
  *
- * @sample
  * BarChart(
  *     data = {
  *         listOf(

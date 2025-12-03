@@ -68,7 +68,6 @@ private data class AreaChartDrawParams(
  * @param fillAlpha The alpha transparency for the filled area, ranging from 0.0f to 1.0f.
  * @param onPointClick A lambda function to be invoked when a point on the line is clicked, providing the corresponding [LineData].
  *
- * @sample
  * AreaChart(
  *     data = {
  *         listOf(

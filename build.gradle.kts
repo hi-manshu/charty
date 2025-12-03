@@ -123,9 +123,9 @@ tasks.register("openComposeReports") {
     }
 }
 
-// Aggregate Dokka task to generate HTML docs for the charty module
+// Aggregate Dokka task to generate HTML docs for the charty module using Dokka v2
 tasks.register("dokkaHtmlAll") {
     group = "documentation"
-    description = "Generate Dokka HTML documentation for all library modules"
-    dependsOn(":charty:dokkaHtml")
+    description = "Generate Dokka v2 HTML documentation for all library modules"
+    dependsOn(":charty:dokkaGeneratePublicationHtml")
 }

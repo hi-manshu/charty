@@ -42,7 +42,6 @@ import com.himanshoe.charty.circular.internal.ringClickHandler
  * @param onRingClick A lambda function to be invoked when a ring is clicked, providing the corresponding [CircularRingData] and its index.
  * @param centerContent A composable lambda that allows for placing content in the center of the rings.
  *
- * @sample
  * // Basic three-ring indicator
  * CircularProgressIndicator(
  *     rings = {
