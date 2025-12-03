@@ -2,15 +2,41 @@ name: Build and Publish Docs
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  # Dokka-based documentation generation has been disabled because Dokka was removed from the project.
-  # If you add another documentation generator later, wire it up here.
-  skip:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Skip docs
-        run: echo "Docs generation is currently disabled."
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Build and deploy MkDocs to GitHub Pages
+        run: |
+          mkdocs gh-deploy --force

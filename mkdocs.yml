@@ -1,0 +1,119 @@
+site_name: Charty Documentation
+site_description: Elementary Chart library for Compose with KMP support
+site_author: Himanshu Singh
+site_url: https://hi-manshu.github.io/charty/
+
+repo_name: hi-manshu/charty
+repo_url: https://github.com/hi-manshu/charty
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - tags
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quick-start.md
+      - Configuration: getting-started/configuration.md
+  - Charts:
+      - Overview: charts/overview.md
+      - Bar Charts:
+          - Bar Chart: charts/bar/bar-chart.md
+          - Horizontal Bar Chart: charts/bar/horizontal-bar-chart.md
+          - Stacked Bar Chart: charts/bar/stacked-bar-chart.md
+          - Comparison Bar Chart: charts/bar/comparison-bar-chart.md
+          - Lollipop Bar Chart: charts/bar/lollipop-bar-chart.md
+          - Waterfall Chart: charts/bar/waterfall-chart.md
+          - Wavy Chart: charts/bar/wavy-chart.md
+          - Bubble Bar Chart: charts/bar/bubble-bar-chart.md
+          - Mosaic Bar Chart: charts/bar/mosaic-bar-chart.md
+          - Span Chart: charts/bar/span-chart.md
+      - Line Charts:
+          - Line Chart: charts/line/line-chart.md
+          - Area Chart: charts/line/area-chart.md
+          - Multiline Chart: charts/line/multiline-chart.md
+          - Stacked Area Chart: charts/line/stacked-area-chart.md
+      - Point Charts:
+          - Point Chart: charts/point/point-chart.md
+          - Bubble Chart: charts/point/bubble-chart.md
+      - Pie Chart: charts/pie/pie-chart.md
+      - Radar Charts:
+          - Radar Chart: charts/radar/radar-chart.md
+          - Multiple Radar Chart: charts/radar/multiple-radar-chart.md
+      - Candlestick Chart: charts/candlestick/candlestick-chart.md
+      - Combo Chart: charts/combo/combo-chart.md
+      - Block Bar: charts/block/block-bar.md
+      - Circular Progress: charts/circular/circular-progress.md
+  - Examples:
+      - Basic Usage: examples/basic-usage.md
+      - Customization: examples/customization.md
+      - Advanced Examples: examples/advanced.md
+  - API Reference: api-reference.md
+  - Contributing: contributing.md
+  - License: license.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/hi-manshu/charty
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/hi_man_shoe
+  version:
+    provider: mike
+
+copyright: Copyright &copy; 2025 Himanshu Singh
+
