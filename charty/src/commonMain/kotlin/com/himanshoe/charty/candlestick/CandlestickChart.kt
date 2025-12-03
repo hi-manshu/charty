@@ -1,15 +1,3 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.candlestick
 
 import androidx.compose.animation.core.Animatable
@@ -18,18 +6,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
 import com.himanshoe.charty.candlestick.data.CandleData
 import com.himanshoe.charty.candlestick.ext.calculateMaxValue
 import com.himanshoe.charty.candlestick.ext.calculateMinValue
 import com.himanshoe.charty.candlestick.ext.getLabels
+import com.himanshoe.charty.candlestick.internal.CandlestickChartConstants
+import com.himanshoe.charty.candlestick.internal.CandlestickDrawParams
+import com.himanshoe.charty.candlestick.internal.calculateOptimizedLabels
+import com.himanshoe.charty.candlestick.internal.drawCandlestick
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -90,8 +78,8 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 fun CandlestickChart(
     data: () -> List<CandleData>,
     modifier: Modifier = Modifier,
-    bullishColor: ChartyColor = ChartyColor.Solid(Color(0xFF4CAF50)),
-    bearishColor: ChartyColor = ChartyColor.Solid(Color(0xFFF44336)),
+    bullishColor: ChartyColor = ChartyColor.Solid(Color(CandlestickChartConstants.DEFAULT_BULLISH_COLOR)),
+    bearishColor: ChartyColor = ChartyColor.Solid(Color(CandlestickChartConstants.DEFAULT_BEARISH_COLOR)),
     candlestickConfig: CandlestickChartConfig = CandlestickChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
 ) {
@@ -101,18 +89,7 @@ fun CandlestickChart(
         calculateMinValue(dataList) to calculateMaxValue(dataList)
     }
     val xLabels = remember(dataList) {
-        val allLabels = dataList.getLabels()
-        if (allLabels.size > 10) {
-            val indices =
-                (0 until 5).map { i ->
-                    (i * (allLabels.size - 1)) / 4
-                }
-            allLabels.mapIndexed { index, label ->
-                if (index in indices) label else ""
-            }
-        } else {
-            allLabels
-        }
+        calculateOptimizedLabels(dataList.getLabels())
     }
 
     val animationProgress = remember {
@@ -165,7 +142,7 @@ fun CandlestickChart(
             val actualBodyHeight = maxOf(bodyHeight, candlestickConfig.minCandleBodyHeight)
             val actualBodyTop =
                 if (bodyHeight < candlestickConfig.minCandleBodyHeight) {
-                    (openY + closeY - candlestickConfig.minCandleBodyHeight) / 2
+                    (openY + closeY - candlestickConfig.minCandleBodyHeight) / CandlestickChartConstants.TWO
                 } else {
                     bodyTop
                 }
@@ -180,71 +157,20 @@ fun CandlestickChart(
 
             // Draw the candlestick
             drawCandlestick(
-                brush = Brush.verticalGradient(candleColor),
-                centerX = candleX + candleWidth / 2,
-                bodyTop = animatedBodyTop,
-                bodyHeight = animatedBodyHeight,
-                bodyWidth = candleWidth,
-                highY = animatedHighY,
-                lowY = animatedLowY,
-                wickWidth = candleWidth * candlestickConfig.wickWidthFraction,
-                showWicks = candlestickConfig.showWicks,
-                cornerRadius = candlestickConfig.cornerRadius.value,
+                CandlestickDrawParams(
+                    brush = Brush.verticalGradient(candleColor),
+                    centerX = candleX + candleWidth / CandlestickChartConstants.TWO,
+                    bodyTop = animatedBodyTop,
+                    bodyHeight = animatedBodyHeight,
+                    bodyWidth = candleWidth,
+                    highY = animatedHighY,
+                    lowY = animatedLowY,
+                    wickWidth = candleWidth * candlestickConfig.wickWidthFraction,
+                    showWicks = candlestickConfig.showWicks,
+                    cornerRadius = candlestickConfig.cornerRadius.value,
+                ),
             )
         }
     }
 }
 
-/**
- * Helper function to draw a single candlestick with optional rounded corners
- */
-private fun DrawScope.drawCandlestick(
-    brush: Brush,
-    centerX: Float,
-    bodyTop: Float,
-    bodyHeight: Float,
-    bodyWidth: Float,
-    highY: Float,
-    lowY: Float,
-    wickWidth: Float,
-    showWicks: Boolean,
-    cornerRadius: Float,
-) {
-    val bodyLeft = centerX - bodyWidth / 2
-    val bodyBottom = bodyTop + bodyHeight
-
-    if (showWicks) {
-        if (highY < bodyTop) {
-            drawLine(
-                brush = brush,
-                start = Offset(centerX, highY),
-                end = Offset(centerX, bodyTop),
-                strokeWidth = wickWidth,
-            )
-        }
-
-        if (lowY > bodyBottom) {
-            drawLine(
-                brush = brush,
-                start = Offset(centerX, bodyBottom),
-                end = Offset(centerX, lowY),
-                strokeWidth = wickWidth,
-            )
-        }
-    }
-
-    if (cornerRadius > 0f) {
-        drawRoundRect(
-            brush = brush,
-            topLeft = Offset(bodyLeft, bodyTop),
-            size = Size(bodyWidth, bodyHeight),
-            cornerRadius = CornerRadius(cornerRadius, cornerRadius),
-        )
-    } else {
-        drawRect(
-            brush = brush,
-            topLeft = Offset(bodyLeft, bodyTop),
-            size = Size(bodyWidth, bodyHeight),
-        )
-    }
-}

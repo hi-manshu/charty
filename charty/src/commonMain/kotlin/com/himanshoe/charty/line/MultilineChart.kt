@@ -1,20 +1,7 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,13 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
@@ -45,8 +26,8 @@ import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getAllValues
 import com.himanshoe.charty.line.ext.getLabels
-import kotlin.math.pow
-import kotlin.math.sqrt
+import com.himanshoe.charty.line.internal.multiline.drawLineSeries
+import com.himanshoe.charty.line.internal.multiline.multilineChartClickHandler
 
 /**
  * Multiline Chart - Display multiple line series on the same chart
@@ -127,38 +108,13 @@ fun MultilineChart(
     ChartScaffold(
         modifier = modifier.then(
             if (onPointClick != null) {
-                Modifier.pointerInput(dataList, lineConfig, onPointClick) {
-                    detectTapGestures { offset ->
-                        // Find closest point within tap radius
-                        val tapRadius = lineConfig.pointRadius * 2.5f
-                        val clickedPoint = pointBounds.minByOrNull { (position, _) ->
-                            val dx = position.x - offset.x
-                            val dy = position.y - offset.y
-                            sqrt(dx.pow(2) + dy.pow(2))
-                        }
-
-                        clickedPoint?.let { (position, point) ->
-                            val dx = position.x - offset.x
-                            val dy = position.y - offset.y
-                            val distance = sqrt(dx.pow(2) + dy.pow(2))
-
-                            if (distance <= tapRadius) {
-                                onPointClick.invoke(point)
-                                tooltipState = TooltipState(
-                                    content = "${point.lineGroup.label} Line ${point.seriesIndex + 1}: ${point.value}",
-                                    x = position.x - lineConfig.pointRadius,
-                                    y = position.y,
-                                    barWidth = lineConfig.pointRadius * 2,
-                                    position = lineConfig.tooltipPosition,
-                                )
-                            } else {
-                                tooltipState = null
-                            }
-                        } ?: run {
-                            tooltipState = null
-                        }
-                    }
-                }
+                Modifier.multilineChartClickHandler(
+                    dataList = dataList,
+                    lineConfig = lineConfig,
+                    pointBounds = pointBounds,
+                    onPointClick = onPointClick,
+                    onTooltipStateChange = { tooltipState = it },
+                )
             } else {
                 Modifier
             },
@@ -175,92 +131,19 @@ fun MultilineChart(
     ) { chartContext ->
         pointBounds.clear()
         val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
+
         for (seriesIndex in 0 until seriesCount) {
-            val pointPositions = dataList.fastMapIndexed { index, group ->
-                val value = group.values.getOrNull(seriesIndex) ?: 0f
-                Offset(
-                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                    y = chartContext.convertValueToYPosition(value),
-                )
-            }
-            if (pointPositions.isNotEmpty()) {
-                val path = Path()
-                val startX = chartContext.left
-                val startY = chartContext.bottom
-                val firstPoint = pointPositions[0]
-                if (lineConfig.smoothCurve) {
-                    val control1X = startX + (firstPoint.x - startX) / 3f
-                    val control2X = startX + 2 * (firstPoint.x - startX) / 3f
-                    val control2Y = firstPoint.y
-                    path.moveTo(startX, startY)
-                    path.cubicTo(control1X, startY, control2X, control2Y, firstPoint.x, firstPoint.y)
-                    for (i in 0 until pointPositions.size - 1) {
-                        val current = pointPositions[i]
-                        val next = pointPositions[i + 1]
-                        val controlPoint1X = current.x + (next.x - current.x) / 3f
-                        val controlPoint1Y = current.y
-                        val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                        val controlPoint2Y = next.y
-                        path.cubicTo(
-                            controlPoint1X,
-                            controlPoint1Y,
-                            controlPoint2X,
-                            controlPoint2Y,
-                            next.x,
-                            next.y,
-                        )
-                    }
-                } else {
-                    path.moveTo(startX, startY)
-                    path.lineTo(firstPoint.x, firstPoint.y)
-                    for (i in 1 until pointPositions.size) {
-                        path.lineTo(pointPositions[i].x, pointPositions[i].y)
-                    }
-                }
-                drawPath(
-                    path = path,
-                    brush = Brush.verticalGradient(colorList),
-                    style = Stroke(
-                        width = lineConfig.lineWidth,
-                        cap = lineConfig.strokeCap,
-                    ),
-                    alpha = animationProgress.value,
-                )
-            }
-            if (lineConfig.showPoints) {
-                pointPositions.fastForEachIndexed { index, position ->
-                    val pointProgress = if (lineConfig.animation is Animation.Enabled) {
-                        ((index + 1).toFloat() / pointPositions.size).coerceAtMost(animationProgress.value * 1.2f)
-                    } else {
-                        1f
-                    }
-
-                    if (pointProgress > 0f) {
-                        if (onPointClick != null) {
-                            val group = dataList[index]
-                            val value = group.values.getOrNull(seriesIndex) ?: 0f
-                            pointBounds.add(
-                                position to MultilinePoint(
-                                    lineGroup = group,
-                                    seriesIndex = seriesIndex,
-                                    dataIndex = index,
-                                    value = value,
-                                ),
-                            )
-                        }
-
-                        drawCircle(
-                            brush = Brush.verticalGradient(colorList),
-                            radius = lineConfig.pointRadius,
-                            center = position,
-                            alpha = (pointProgress.coerceIn(0f, 1f) * lineConfig.pointAlpha),
-                        )
-                    }
-                }
-            }
+            drawLineSeries(
+                seriesIndex = seriesIndex,
+                dataList = dataList,
+                chartContext = chartContext,
+                lineConfig = lineConfig,
+                colorList = colorList,
+                animationProgress = animationProgress.value,
+                pointBounds = if (onPointClick != null) pointBounds else null,
+            )
         }
 
-        // Draw tooltip
         tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,

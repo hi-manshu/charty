@@ -1,20 +1,7 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,15 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
@@ -42,15 +22,18 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.ext.getValues
-import kotlin.math.pow
-import kotlin.math.sqrt
+import com.himanshoe.charty.line.internal.line.calculatePointPositions
+import com.himanshoe.charty.line.internal.line.drawAnimatedPoints
+import com.himanshoe.charty.line.internal.line.drawLineChartTooltip
+import com.himanshoe.charty.line.internal.line.drawSmoothLine
+import com.himanshoe.charty.line.internal.line.drawStraightLineSegments
+import com.himanshoe.charty.line.internal.line.lineChartClickHandler
 
 /**
  * Line Chart - Connect data points with lines
@@ -123,35 +106,13 @@ fun LineChart(
     ChartScaffold(
         modifier = modifier.then(
             if (onPointClick != null) {
-                Modifier.pointerInput(dataList, lineConfig, onPointClick) {
-                    detectTapGestures { offset ->
-                        val tapRadius = lineConfig.pointRadius * 2.5f
-                        val clickedPoint = pointBounds.minByOrNull { (position, _) ->
-                            val dx = position.x - offset.x
-                            val dy = position.y - offset.y
-                            sqrt(dx.pow(2) + dy.pow(2))
-                        }
-                        clickedPoint?.let { (position, lineData) ->
-                            val dx = position.x - offset.x
-                            val dy = position.y - offset.y
-                            val distance = sqrt(dx.pow(2) + dy.pow(2))
-                            if (distance <= tapRadius) {
-                                onPointClick.invoke(lineData)
-                                tooltipState = TooltipState(
-                                    content = lineConfig.tooltipFormatter(lineData),
-                                    x = position.x - lineConfig.pointRadius,
-                                    y = position.y,
-                                    barWidth = lineConfig.pointRadius * 2,
-                                    position = lineConfig.tooltipPosition,
-                                )
-                            } else {
-                                tooltipState = null
-                            }
-                        } ?: run {
-                            tooltipState = null
-                        }
-                    }
-                }
+                Modifier.lineChartClickHandler(
+                    dataList = dataList,
+                    lineConfig = lineConfig,
+                    pointBounds = pointBounds,
+                    onPointClick = onPointClick,
+                    onTooltipStateChange = { tooltipState = it },
+                )
             } else {
                 Modifier
             },
@@ -168,94 +129,38 @@ fun LineChart(
     ) { chartContext ->
         pointBounds.clear()
 
-        val pointPositions =
-            dataList.fastMapIndexed { index, point ->
-                val position = Offset(
-                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                    y = chartContext.convertValueToYPosition(point.value),
-                )
-                if (onPointClick != null) {
-                    pointBounds.add(position to point)
-                }
-                position
+        val pointPositions = chartContext.calculatePointPositions(dataList)
+        if (onPointClick != null) {
+            pointPositions.forEachIndexed { index, position ->
+                pointBounds.add(position to dataList[index])
             }
+        }
 
         if (lineConfig.smoothCurve) {
-            val path = Path()
-
-            if (pointPositions.isNotEmpty()) {
-                path.moveTo(pointPositions[0].x, pointPositions[0].y)
-                for (i in 0 until pointPositions.size - 1) {
-                    val current = pointPositions[i]
-                    val next = pointPositions[i + 1]
-                    val controlPoint1X = current.x + (next.x - current.x) / 3f
-                    val controlPoint1Y = current.y
-                    val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                    val controlPoint2Y = next.y
-                    path.cubicTo(
-                        controlPoint1X,
-                        controlPoint1Y,
-                        controlPoint2X,
-                        controlPoint2Y,
-                        next.x,
-                        next.y,
-                    )
-                }
-
-                drawPath(
-                    path = path,
-                    brush = Brush.linearGradient(color.value),
-                    style =
-                        Stroke(
-                            width = lineConfig.lineWidth,
-                            cap = lineConfig.strokeCap,
-                        ),
-                    alpha = animationProgress.value,
-                )
-            }
+            drawSmoothLine(
+                pointPositions = pointPositions,
+                color = color,
+                lineConfig = lineConfig,
+                animationProgress = animationProgress.value,
+            )
         } else {
-            val segmentsToDraw = ((pointPositions.size - 1) * animationProgress.value).toInt()
-            val segmentProgress = ((pointPositions.size - 1) * animationProgress.value) - segmentsToDraw
-            for (i in 0 until segmentsToDraw) {
-                drawLine(
-                    brush = Brush.linearGradient(color.value),
-                    start = pointPositions[i],
-                    end = pointPositions[i + 1],
-                    strokeWidth = lineConfig.lineWidth,
-                    cap = lineConfig.strokeCap,
-                )
-            }
-            if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
-                val start = pointPositions[segmentsToDraw]
-                val end = pointPositions[segmentsToDraw + 1]
-                val partialEnd =
-                    Offset(
-                        x = start.x + (end.x - start.x) * segmentProgress,
-                        y = start.y + (end.y - start.y) * segmentProgress,
-                    )
-                drawLine(
-                    brush = Brush.linearGradient(color.value),
-                    start = start,
-                    end = partialEnd,
-                    strokeWidth = lineConfig.lineWidth,
-                    cap = lineConfig.strokeCap,
-                )
-            }
+            drawStraightLineSegments(
+                pointPositions = pointPositions,
+                color = color,
+                lineConfig = lineConfig,
+                animationProgress = animationProgress.value,
+            )
         }
+
         if (lineConfig.showPoints) {
-            pointPositions.fastForEachIndexed { index, position ->
-                // Only draw points up to animation progress
-                val pointProgress = index.toFloat() / (pointPositions.size - 1)
-                if (pointProgress <= animationProgress.value) {
-                    drawCircle(
-                        brush = Brush.linearGradient(color.value),
-                        radius = lineConfig.pointRadius,
-                        center = position,
-                        alpha = lineConfig.pointAlpha,
-                    )
-                }
-            }
+            drawAnimatedPoints(
+                pointPositions = pointPositions,
+                color = color,
+                lineConfig = lineConfig,
+                animationProgress = animationProgress.value,
+            )
         }
+
         lineConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -264,35 +169,15 @@ fun LineChart(
                 textMeasurer = textMeasurer,
             )
         }
+
         tooltipState?.let { state ->
-            val clickedPosition = pointBounds.find { (_, data) ->
-                lineConfig.tooltipFormatter(data) == state.content
-            }?.first
-            clickedPosition?.let { position ->
-                drawLine(
-                    color = Color.Black.copy(alpha = 0.1f),
-                    start = Offset(position.x, chartContext.top),
-                    end = Offset(position.x, chartContext.bottom),
-                    strokeWidth = 1.5f,
-                )
-                drawCircle(
-                    color = Color.White,
-                    radius = lineConfig.pointRadius + 3f,
-                    center = position,
-                )
-                drawCircle(
-                    brush = Brush.linearGradient(color.value),
-                    radius = lineConfig.pointRadius + 2f,
-                    center = position,
-                )
-            }
-            drawTooltip(
+            drawLineChartTooltip(
                 tooltipState = state,
-                config = lineConfig.tooltipConfig,
+                pointBounds = pointBounds,
+                color = color,
+                lineConfig = lineConfig,
+                chartContext = chartContext,
                 textMeasurer = textMeasurer,
-                chartWidth = chartContext.right,
-                chartTop = chartContext.top,
-                chartBottom = chartContext.bottom,
             )
         }
     }

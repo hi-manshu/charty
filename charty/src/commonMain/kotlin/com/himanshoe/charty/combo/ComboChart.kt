@@ -1,20 +1,7 @@
-@file:Suppress(
-    "LongMethod",
-    "LongParameterList",
-    "FunctionNaming",
-    "CyclomaticComplexMethod",
-    "WildcardImport",
-    "MagicNumber",
-    "MaxLineLength",
-    "ReturnCount",
-    "UnusedImports",
-)
-
 package com.himanshoe.charty.combo
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,26 +9,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.ext.getAllValues
 import com.himanshoe.charty.combo.ext.getLabels
+import com.himanshoe.charty.combo.internal.ComboChartConstants
+import com.himanshoe.charty.combo.internal.calculateLinePointPositions
+import com.himanshoe.charty.combo.internal.comboChartClickHandler
+import com.himanshoe.charty.combo.internal.drawComboBars
+import com.himanshoe.charty.combo.internal.drawComboLine
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -95,8 +77,8 @@ import kotlin.math.min
 fun ComboChart(
     data: () -> List<ComboChartData>,
     modifier: Modifier = Modifier,
-    barColor: ChartyColor = ChartyColor.Solid(Color(0xFF2196F3)),
-    lineColor: ChartyColor = ChartyColor.Solid(Color(0xFFF44336)),
+    barColor: ChartyColor = ChartyColor.Solid(Color(ComboChartConstants.DEFAULT_BAR_COLOR)),
+    lineColor: ChartyColor = ChartyColor.Solid(Color(ComboChartConstants.DEFAULT_LINE_COLOR)),
     comboConfig: ComboChartConfig = ComboChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onDataClick: ((ComboChartData) -> Unit)? = null,
@@ -139,26 +121,13 @@ fun ComboChart(
     ChartScaffold(
         modifier = modifier.then(
             if (onDataClick != null) {
-                Modifier.pointerInput(dataList, comboConfig, onDataClick) {
-                    detectTapGestures { offset ->
-                        val clickedData = dataBounds.find { (rect, _) ->
-                            rect.contains(offset)
-                        }
-
-                        clickedData?.let { (rect, comboData) ->
-                            onDataClick.invoke(comboData)
-                            tooltipState = TooltipState(
-                                content = comboConfig.tooltipFormatter(comboData),
-                                x = rect.left,
-                                y = rect.top,
-                                barWidth = rect.width,
-                                position = comboConfig.tooltipPosition,
-                            )
-                        } ?: run {
-                            tooltipState = null
-                        }
-                    }
-                }
+                Modifier.comboChartClickHandler(
+                    dataList = dataList,
+                    comboConfig = comboConfig,
+                    dataBounds = dataBounds,
+                    onDataClick = onDataClick,
+                    onTooltipStateChange = { tooltipState = it },
+                )
             } else {
                 Modifier
             },
@@ -179,156 +148,28 @@ fun ComboChart(
         } else {
             chartContext.bottom
         }
-        dataList.fastForEachIndexed { index, comboData ->
-            val barX =
-                chartContext.calculateBarLeftPosition(
-                    index,
-                    dataList.size,
-                    comboConfig.barWidthFraction,
-                )
-            val barWidth =
-                chartContext.calculateBarWidth(
-                    dataList.size,
-                    comboConfig.barWidthFraction,
-                )
-            val barValueY = chartContext.convertValueToYPosition(comboData.barValue)
-            val isNegative = comboData.barValue < 0f
 
-            val barTop: Float
-            val barHeight: Float
+        drawComboBars(
+            dataList = dataList,
+            chartContext = chartContext,
+            comboConfig = comboConfig,
+            barColor = barColor,
+            baselineY = baselineY,
+            animationProgress = animationProgress.value,
+            isBelowAxisMode = isBelowAxisMode,
+            dataBounds = if (onDataClick != null) dataBounds else null,
+        )
 
-            if (isNegative) {
-                barTop = baselineY
-                val fullBarHeight = barValueY - baselineY
-                barHeight = fullBarHeight * animationProgress.value
-            } else {
-                val fullBarHeight = baselineY - barValueY
-                val animatedBarHeight = fullBarHeight * animationProgress.value
-                barTop = baselineY - animatedBarHeight
-                barHeight = animatedBarHeight
-            }
+        val pointPositions = chartContext.calculateLinePointPositions(dataList)
 
-            if (onDataClick != null && barHeight > 0) {
-                dataBounds.add(
-                    Rect(
-                        left = barX,
-                        top = barTop,
-                        right = barX + barWidth,
-                        bottom = barTop + barHeight,
-                    ) to comboData,
-                )
-            }
-
-            val brush = with(chartContext) { barColor.toVerticalGradientBrush() }
-            drawRoundedBar(
-                brush = brush,
-                x = barX,
-                y = barTop,
-                width = barWidth,
-                height = barHeight,
-                isNegative = isNegative,
-                isBelowAxisMode = isBelowAxisMode,
-                cornerRadius = comboConfig.barCornerRadius.value,
-            )
-        }
-
-        val pointPositions =
-            dataList.fastMapIndexed { index, comboData ->
-                Offset(
-                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                    y = chartContext.convertValueToYPosition(comboData.lineValue),
-                )
-            }
-
-        if (comboConfig.smoothCurve) {
-            val path = Path()
-
-            if (pointPositions.isNotEmpty()) {
-                path.moveTo(pointPositions[0].x, pointPositions[0].y)
-
-                for (i in 0 until pointPositions.size - 1) {
-                    val current = pointPositions[i]
-                    val next = pointPositions[i + 1]
-
-                    val controlPoint1X = current.x + (next.x - current.x) / 3f
-                    val controlPoint1Y = current.y
-                    val controlPoint2X = current.x + 2 * (next.x - current.x) / 3f
-                    val controlPoint2Y = next.y
-
-                    path.cubicTo(
-                        controlPoint1X,
-                        controlPoint1Y,
-                        controlPoint2X,
-                        controlPoint2Y,
-                        next.x,
-                        next.y,
-                    )
-                }
-
-                drawPath(
-                    path = path,
-                    brush = Brush.linearGradient(lineColor.value),
-                    style =
-                        Stroke(
-                            width = comboConfig.lineWidth,
-                            cap = comboConfig.strokeCap,
-                        ),
-                    alpha = animationProgress.value,
-                )
-            }
-        } else {
-            val segmentsToDraw = ((pointPositions.size - 1) * animationProgress.value).toInt()
-            val segmentProgress = ((pointPositions.size - 1) * animationProgress.value) - segmentsToDraw
-            for (i in 0 until segmentsToDraw) {
-                drawLine(
-                    brush = Brush.linearGradient(lineColor.value),
-                    start = pointPositions[i],
-                    end = pointPositions[i + 1],
-                    strokeWidth = comboConfig.lineWidth,
-                    cap = comboConfig.strokeCap,
-                )
-            }
-            if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
-                val start = pointPositions[segmentsToDraw]
-                val end = pointPositions[segmentsToDraw + 1]
-                val partialEnd = Offset(
-                    x = start.x + (end.x - start.x) * segmentProgress,
-                    y = start.y + (end.y - start.y) * segmentProgress,
-                )
-                drawLine(
-                    brush = Brush.linearGradient(lineColor.value),
-                    start = start,
-                    end = partialEnd,
-                    strokeWidth = comboConfig.lineWidth,
-                    cap = comboConfig.strokeCap,
-                )
-            }
-        }
-        if (comboConfig.showPoints) {
-            pointPositions.fastForEachIndexed { index, position ->
-                val pointProgress = index.toFloat() / (pointPositions.size - 1)
-                if (pointProgress <= animationProgress.value) {
-                    if (onDataClick != null) {
-                        val hitRadius = comboConfig.pointRadius * 2f
-                        dataBounds.add(
-                            Rect(
-                                left = position.x - hitRadius,
-                                top = position.y - hitRadius,
-                                right = position.x + hitRadius,
-                                bottom = position.y + hitRadius,
-                            ) to dataList[index],
-                        )
-                    }
-
-                    drawCircle(
-                        brush = Brush.linearGradient(lineColor.value),
-                        radius = comboConfig.pointRadius,
-                        center = position,
-                        alpha = comboConfig.pointAlpha,
-                    )
-                }
-            }
-        }
+        drawComboLine(
+            pointPositions = pointPositions,
+            lineColor = lineColor,
+            comboConfig = comboConfig,
+            animationProgress = animationProgress.value,
+            dataList = dataList,
+            dataBounds = if (onDataClick != null) dataBounds else null,
+        )
         comboConfig.referenceLine?.let { referenceLineConfig ->
             drawReferenceLine(
                 chartContext = chartContext,
@@ -350,48 +191,3 @@ fun ComboChart(
     }
 }
 
-/**
- * Helper function to draw a bar with rounded corners based on bar position
- */
-private fun DrawScope.drawRoundedBar(
-    brush: Brush,
-    x: Float,
-    y: Float,
-    width: Float,
-    height: Float,
-    isNegative: Boolean,
-    isBelowAxisMode: Boolean,
-    cornerRadius: Float,
-) {
-    val path =
-        Path().apply {
-            if (isNegative && isBelowAxisMode) {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius.Zero,
-                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    ),
-                )
-            } else {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    ),
-                )
-            }
-        }
-    drawPath(path, brush)
-}

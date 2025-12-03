@@ -49,7 +49,6 @@ enum class PieChartStyle {
  * @property shouldShowPercentage Whether to display percentage values
  * @property shouldShowValue Whether to display actual numeric values
  * @property minimumPercentageToShowLabel Minimum percentage threshold to display a label
- * @property labelTextSize Deprecated - use labelTextStyle instead
  * @property shouldShowLabelsOutside Whether to show labels outside the chart
  * @property labelTextStyle TextStyle for customizing label appearance
  */
@@ -58,8 +57,6 @@ data class LabelConfig(
     val shouldShowPercentage: Boolean = true,
     val shouldShowValue: Boolean = false,
     val minimumPercentageToShowLabel: Float = MIN_PERCENTAGE_THRESHOLD,
-    @Deprecated("Use labelTextStyle instead for more control")
-    val labelTextSize: Float = DEFAULT_LABEL_SIZE_SP,
     val shouldShowLabelsOutside: Boolean = false,
     val labelTextStyle: TextStyle = TextStyle(
         fontSize = DEFAULT_LABEL_SIZE_SP.sp,
@@ -70,10 +67,6 @@ data class LabelConfig(
     init {
         require(minimumPercentageToShowLabel in MIN_PERCENTAGE..MAX_PERCENTAGE) {
             "minimumPercentageToShowLabel must be between $MIN_PERCENTAGE and $MAX_PERCENTAGE"
-        }
-        @Suppress("DEPRECATION")
-        require(labelTextSize > MIN_PERCENTAGE) {
-            "labelTextSize must be positive"
         }
     }
 }
