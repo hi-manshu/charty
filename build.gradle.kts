@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.mavenPublish) apply false
 }
 
 subprojects {

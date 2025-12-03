@@ -1,24 +1,18 @@
-name: Manual Release
+name: Manual Publish to Maven Central
 
 on:
   workflow_dispatch:
     inputs:
       versionName:
-        description: "Version name for this release (for example: 2.1.0-beta03.4)"
+        description: 'Version name for this release (e.g., 2.1.0 or 2.1.0-beta01)'
         required: true
-      versionCode:
-        description: "Optional explicit version code. If empty and autoIncrementVersionCode is true, the workflow will compute the next version code."
-        required: false
-      autoIncrementVersionCode:
-        description: "If true and versionCode is not provided, compute versionCode as the previous code + 1."
-        required: false
-        type: boolean
-        default: true
+        type: string
 
 jobs:
   publish:
-    name: Publish charty artifact
-    runs-on: ubuntu-latest
+    name: Publish to Maven Central
+    runs-on: macos-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -26,179 +20,187 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
 
-      - name: Determine versionCode
-        id: version
+      - name: Validate inputs
         run: |
-          INPUT_CODE="${{ github.event.inputs.versionCode }}"
-          AUTO_INC="${{ github.event.inputs.autoIncrementVersionCode }}"
-
-          if [ -n "$INPUT_CODE" ]; then
-            NEXT_CODE="$INPUT_CODE"
-          elif [ "$AUTO_INC" = "true" ]; then
-            # Read last version code from a file if it exists, otherwise start at 1
-            if [ -f .github/version-code.txt ]; then
-              LAST_CODE=$(cat .github/version-code.txt)
-              NEXT_CODE=$((LAST_CODE + 1))
-            else
-              NEXT_CODE=1
-            fi
-          else
-            echo "versionCode is required when autoIncrementVersionCode is false" >&2
+          VERSION="${{ github.event.inputs.versionName }}"
+          if [ -z "$VERSION" ]; then
+            echo "❌ Version name is required"
             exit 1
           fi
 
-          echo "versionCode=$NEXT_CODE" >> $GITHUB_OUTPUT
+          # Validate version format (basic semver check)
+          if ! echo "$VERSION" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$' > /dev/null; then
+            echo "⚠️ Warning: Version '$VERSION' doesn't follow semantic versioning format (X.Y.Z or X.Y.Z-qualifier)"
+          fi
 
-      - name: Configure environment for charty module
-        run: |
-          echo "POM_ARTIFACT_ID=charty" >> $GITHUB_ENV
-          echo "POM_NAME=charty" >> $GITHUB_ENV
-          echo "POM_DESCRIPTION=An Elementary Compose Multiplatform Chart library." >> $GITHUB_ENV
-          echo "POM_PACKAGING=aar" >> $GITHUB_ENV
-          echo "POM_INCEPTION_YEAR=2025" >> $GITHUB_ENV
-          echo "GROUP=com.himanshoe" >> $GITHUB_ENV
-          echo "VERSION_NAME=${{ github.event.inputs.versionName }}" >> $GITHUB_ENV
-          echo "VERSION_CODE=${{ steps.version.outputs.versionCode }}" >> $GITHUB_ENV
-          echo "POM_URL=https://github.com/hi-manshu" >> $GITHUB_ENV
-          echo "POM_LICENCE_NAME=The Apache Software License, Version 2.0" >> $GITHUB_ENV
-          echo "POM_LICENCE_URL=http://www.apache.org/licenses/LICENSE-2.0.txt" >> $GITHUB_ENV
-          echo "POM_LICENCE_DIST=repo" >> $GITHUB_ENV
-          echo "POM_SCM_URL=https://github.com/hi-manshu" >> $GITHUB_ENV
-          echo "POM_DEVELOPER_ID=hi-manshu" >> $GITHUB_ENV
-          echo "POM_DEVELOPER_NAME=Himanshu Singh" >> $GITHUB_ENV
-          echo "POM_DEVELOPER_URL=https://github.com/hi-manshu" >> $GITHUB_ENV
-
-      - name: Import GPG key
-        run: |
-          # Decode the base64-encoded GPG key and save to file
-          echo "${{ secrets.GPG_KEY_CONTENTS }}" | base64 -d > $HOME/secring.gpg
-
-          # Import the GPG key
-          gpg --batch --import $HOME/secring.gpg
-
-          # Export the key in ASCII armored format for in-memory signing
-          GPG_KEY_ID="${{ secrets.SIGNING_KEY_ID }}"
-          gpg --batch --pinentry-mode loopback --passphrase "${{ secrets.SIGNING_PASSWORD }}" \
-            --export-secret-keys --armor "$GPG_KEY_ID" > $HOME/private-key.asc
-
-          # Set the signing key as an environment variable (will be used in next step)
-          echo "SIGNING_KEY<<EOF" >> $GITHUB_ENV
-          cat $HOME/private-key.asc >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-          # Clean up sensitive files
-          rm -f $HOME/secring.gpg $HOME/private-key.asc
+          echo "✅ Publishing version: $VERSION"
 
       - name: Validate Maven Central credentials
-        run: |
-          if [ -z "${{ secrets.MAVEN_CENTRAL_USERNAME }}" ]; then
-            echo "Error: MAVEN_CENTRAL_USERNAME secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.MAVEN_CENTRAL_PASSWORD }}" ]; then
-            echo "Error: MAVEN_CENTRAL_PASSWORD secret is not set"
-            exit 1
-          fi
-          echo "✓ Maven Central credentials are configured"
-
-      - name: Publish to Maven Central
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        run: |
+          if [ -z "$MAVEN_CENTRAL_USERNAME" ]; then
+            echo "❌ Error: MAVEN_CENTRAL_USERNAME secret is not set"
+            exit 1
+          fi
+          if [ -z "$MAVEN_CENTRAL_PASSWORD" ]; then
+            echo "❌ Error: MAVEN_CENTRAL_PASSWORD secret is not set"
+            exit 1
+          fi
+          echo "✅ Maven Central credentials are configured"
+
+      - name: Validate signing configuration
+        env:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
-          echo "Publishing to Maven Central..."
-          ./gradlew :charty:publishAllPublicationsToCentralRepository \
-            -PmavenCentralUsername="${MAVEN_CENTRAL_USERNAME}" \
-            -PmavenCentralPassword="${MAVEN_CENTRAL_PASSWORD}" \
-            -Psigning.keyId="${SIGNING_KEY_ID}" \
-            -Psigning.password="${SIGNING_PASSWORD}" \
-            -Psigning.key="${SIGNING_KEY}" \
-            --no-daemon \
-            --stacktrace || {
-              echo "Failed to publish to new Maven Central portal, trying OSSRH..."
-              ./gradlew :charty:publishAllPublicationsToOssrhRepository \
-                -PmavenCentralUsername="${MAVEN_CENTRAL_USERNAME}" \
-                -PmavenCentralPassword="${MAVEN_CENTRAL_PASSWORD}" \
-                -Psigning.keyId="${SIGNING_KEY_ID}" \
-                -Psigning.password="${SIGNING_PASSWORD}" \
-                -Psigning.key="${SIGNING_KEY}" \
-                --no-daemon \
-                --stacktrace
-            }
+          if [ -z "$SIGNING_KEY_ID" ]; then
+            echo "❌ Error: SIGNING_KEY_ID secret is not set"
+            exit 1
+          fi
+          if [ -z "$SIGNING_PASSWORD" ]; then
+            echo "❌ Error: SIGNING_PASSWORD secret is not set"
+            exit 1
+          fi
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "❌ Error: SIGNING_KEY secret is not set"
+            exit 1
+          fi
+          echo "✅ Signing configuration is valid"
 
-      - name: Persist versionCode for next run
+      - name: Publish to Maven Central
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          VERSION_NAME: ${{ github.event.inputs.versionName }}
+        run: |
+          echo "📦 Publishing Charty $VERSION_NAME to Maven Central..."
+          ./gradlew :charty:publishAndReleaseToMavenCentral \
+            --no-configuration-cache \
+            --stacktrace
+
+      - name: Create Git tag
         if: success()
         run: |
-          mkdir -p .github
-          echo "${{ steps.version.outputs.versionCode }}" > .github/version-code.txt
+          VERSION="${{ github.event.inputs.versionName }}"
+          TAG="v$VERSION"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/version-code.txt || true
-          git commit -m "chore: update version code to ${{ steps.version.outputs.versionCode }}" || true
-          git push || true
 
-      - name: Build release summary
+          # Create annotated tag
+          git tag -a "$TAG" -m "Release version $VERSION"
+          git push origin "$TAG"
+
+          echo "✅ Created and pushed tag: $TAG"
+
+      - name: Generate release notes
         if: success()
-        id: summary
+        id: release_notes
         run: |
-          VERSION_NAME="${{ github.event.inputs.versionName }}"
-          VERSION_CODE="${{ steps.version.outputs.versionCode }}"
+          VERSION="${{ github.event.inputs.versionName }}"
 
-          echo "Collecting latest changes..."
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
-          # Get the last 10 commit subjects
-          git log -10 --pretty=format:'%s' > .recent_commits.txt
-
-          FEATURES=$(grep -iE 'feat|feature' .recent_commits.txt || true)
-          FIXES=$(grep -iE 'fix|bug' .recent_commits.txt || true)
-          CHORES=$(grep -iE 'chore|refactor|docs' .recent_commits.txt || true)
-
-          echo "Release Summary:" > release-summary.txt
-          echo "Charty v$VERSION_NAME (code: $VERSION_CODE)" >> release-summary.txt
-          echo "" >> release-summary.txt
-          echo "This release includes:" >> release-summary.txt
-
-          if [ -n "$FEATURES" ]; then
-            echo "" >> release-summary.txt
-            echo "New features:" >> release-summary.txt
-            echo "$FEATURES" | sed 's/^/- /' >> release-summary.txt
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" -20)
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)")
           fi
 
-          if [ -n "$FIXES" ]; then
-            echo "" >> release-summary.txt
-            echo "Bug fixes and improvements:" >> release-summary.txt
-            echo "$FIXES" | sed 's/^/- /' >> release-summary.txt
-          fi
+          # Create release notes
+          cat > release-notes.md << EOF
+          ## Charty v$VERSION
 
-          if [ -n "$CHORES" ]; then
-            echo "" >> release-summary.txt
-            echo "Internal changes and maintenance:" >> release-summary.txt
-            echo "$CHORES" | sed 's/^/- /' >> release-summary.txt
-          fi
+          ### 📦 Maven Coordinates
+          \`\`\`kotlin
+          implementation("com.himanshoe:charty:$VERSION")
+          \`\`\`
 
-          if [ ! -s release-summary.txt ]; then
-            echo "This release contains internal updates and maintenance changes." >> release-summary.txt
-          fi
+          ### 📝 Changes
+          $COMMITS
 
-          echo "" >> release-summary.txt
-          echo "Full recent history:" >> release-summary.txt
-          git log -10 --pretty=format:'- %s (%h)' >> release-summary.txt
+          ### 🔗 Links
+          - [Maven Central Repository](https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION)
+          - [GitHub Repository](https://github.com/hi-manshu/charty)
 
-          cat release-summary.txt
+          ---
+          Published on $(date '+%Y-%m-%d %H:%M:%S UTC')
+          EOF
 
-      - name: Create and push Git tag
+          cat release-notes.md
+
+      - name: Create GitHub Release
         if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.versionName }}
+          name: Release v${{ github.event.inputs.versionName }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ contains(github.event.inputs.versionName, '-alpha') || contains(github.event.inputs.versionName, '-beta') || contains(github.event.inputs.versionName, '-rc') }}
+
+      - name: Job Summary
+        if: success()
+        run: |
+          VERSION="${{ github.event.inputs.versionName }}"
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## ✅ Successfully Published Charty v$VERSION
+
+          ### 📦 Maven Central
+          The library has been published to Maven Central and will be available shortly at:
+          https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION
+
+          ### 🏷️ Git Tag
+          Created and pushed tag: \`v$VERSION\`
+
+          ### 📱 Usage
+          Add to your project:
+          \`\`\`kotlin
+          implementation("com.himanshoe:charty:$VERSION")
+          \`\`\`
+
+          ### ⏱️ Availability
+          The artifacts will be available on Maven Central within 10-30 minutes.
+          EOF
+
+      - name: Failure Summary
+        if: failure()
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## ❌ Publishing Failed
+
+          The publication process failed. Please check the logs above for details.
+
+          ### Common Issues:
+          1. **Credentials**: Verify MAVEN_CENTRAL_USERNAME and MAVEN_CENTRAL_PASSWORD secrets
+          2. **Signing**: Check SIGNING_KEY_ID, SIGNING_PASSWORD, and SIGNING_KEY secrets
+          3. **Version**: Ensure the version doesn't already exist on Maven Central
+          4. **Build**: Check if the project builds successfully locally
+
+          ### Troubleshooting:
+          - Run \`./gradlew :charty:publishToMavenLocal\` locally to test the build
+          - Verify your credentials at https://central.sonatype.com/
+          - Check if GPG key is properly formatted (should be base64 encoded)
+          EOF
+
         run: |
           VERSION_NAME="${{ github.event.inputs.versionName }}"
 

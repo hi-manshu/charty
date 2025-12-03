@@ -7,8 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.dokka)
-    `maven-publish`
-    signing
+    alias(libs.plugins.mavenPublish)
 }
 
 group = System.getenv("GROUP") ?: project.findProperty("GROUP")?.toString() ?: "com.himanshoe"
@@ -98,6 +97,40 @@ tasks.dokkaHtml.configure {
     }
 }
 
-// Apply publishing configuration
-apply(from = "${rootProject.projectDir}/gradle/publish.gradle.kts")
+// Configure Maven publishing using Vanniktech plugin
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    signAllPublications()
+
+
+    pom {
+        name.set("Charty")
+        description.set("An Elementary Compose Multiplatform Chart library")
+        inceptionYear.set("2025")
+        url.set("https://github.com/hi-manshu/charty")
+
+        licenses {
+            license {
+                name.set("The Apache Software License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("repo")
+            }
+        }
+
+        developers {
+            developer {
+                id.set("hi-manshu")
+                name.set("Himanshu Singh")
+                url.set("https://github.com/hi-manshu")
+            }
+        }
+
+        scm {
+            url.set("https://github.com/hi-manshu/charty")
+            connection.set("scm:git:git://github.com/hi-manshu/charty.git")
+            developerConnection.set("scm:git:ssh://git@github.com/hi-manshu/charty.git")
+        }
+    }
+}
+
 
