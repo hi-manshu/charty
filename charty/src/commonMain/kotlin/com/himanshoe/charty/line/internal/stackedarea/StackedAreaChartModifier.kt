@@ -2,7 +2,6 @@ package com.himanshoe.charty.line.internal.stackedarea
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Path
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
