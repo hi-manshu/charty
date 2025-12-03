@@ -32,7 +32,7 @@ internal fun createBubbleChartModifier(
                 barWidth = rect.width,
                 position = bubbleConfig.tooltipPosition,
             )
-        }
+        },
     )
 }
 

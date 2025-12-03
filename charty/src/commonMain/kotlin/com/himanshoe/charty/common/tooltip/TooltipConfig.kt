@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private val DEFAULT_COLOR = Color(0xFF2D2D2D)
+
 /**
  * Configuration for tooltip appearance and positioning
  *
@@ -55,8 +56,10 @@ data class TooltipPadding(
 enum class TooltipPosition {
     /** Above the bar */
     ABOVE,
+
     /** Below the bar */
     BELOW,
+
     /** Automatically position based on available space */
     AUTO,
 }

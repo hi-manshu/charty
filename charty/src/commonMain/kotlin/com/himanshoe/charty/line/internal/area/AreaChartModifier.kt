@@ -35,7 +35,7 @@ internal fun createAreaChartModifier(
                     tooltipPosition = lineConfig.tooltipPosition,
                     pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
                 )
-            }
+            },
         )
     } else {
         modifier

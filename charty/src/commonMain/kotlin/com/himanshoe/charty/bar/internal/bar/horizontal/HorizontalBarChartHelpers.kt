@@ -7,7 +7,7 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 internal fun createHorizontalAxisConfig(
     minValue: Float,
     maxValue: Float,
-    drawAxisAtZero: Boolean
+    drawAxisAtZero: Boolean,
 ): AxisConfig {
     return AxisConfig(
         minValue = minValue,
@@ -30,7 +30,7 @@ internal fun calculateHorizontalBaselineX(
     minValue: Float,
     maxValue: Float,
     chartContext: ChartContext,
-    axisOffset: Float
+    axisOffset: Float,
 ): Float {
     return if (drawAxisAtZero) {
         val range = maxValue - minValue

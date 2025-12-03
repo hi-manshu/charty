@@ -45,7 +45,7 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
                     top = centeredBarY,
                     right = barLeft + barWidth,
                     bottom = centeredBarY + barThickness,
-                ) to bar
+                ) to bar,
             )
         }
 
@@ -73,7 +73,7 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
 internal fun DrawScope.drawHorizontalReferenceLineIfNeeded(
     barConfig: BarChartConfig,
     chartContext: ChartContext,
-    textMeasurer: TextMeasurer
+    textMeasurer: TextMeasurer,
 ) {
     barConfig.referenceLine?.let { referenceLineConfig ->
         drawReferenceLine(
@@ -90,7 +90,7 @@ internal fun DrawScope.drawHorizontalTooltipIfNeeded(
     tooltipState: TooltipState?,
     barConfig: BarChartConfig,
     textMeasurer: TextMeasurer,
-    chartContext: ChartContext
+    chartContext: ChartContext,
 ) {
     tooltipState?.let { state ->
         drawTooltip(

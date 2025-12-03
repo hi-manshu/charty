@@ -1,9 +1,9 @@
 package com.himanshoe.charty.line.internal.area
 
-import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.ChartContext
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.util.fastMapIndexed
+import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.line.data.LineData
 
 internal const val DEFAULT_AXIS_STEPS = 6
@@ -15,7 +15,7 @@ internal const val TAP_RADIUS_MULTIPLIER = 2.5f
 internal fun createAxisConfig(
     minValue: Float,
     maxValue: Float,
-    isBelowAxisMode: Boolean
+    isBelowAxisMode: Boolean,
 ): AxisConfig {
     return AxisConfig(
         minValue = minValue,
@@ -31,7 +31,7 @@ internal fun createAxisConfig(
 internal fun calculatePointPositions(
     dataList: List<LineData>,
     chartContext: ChartContext,
-    onPointCalculated: (Pair<Offset, LineData>) -> Unit
+    onPointCalculated: (Pair<Offset, LineData>) -> Unit,
 ): List<Offset> {
     return dataList.fastMapIndexed { index, point ->
         val position = Offset(
@@ -49,7 +49,7 @@ internal fun calculatePointPositions(
 internal fun calculateBaselineY(
     minValue: Float,
     isBelowAxisMode: Boolean,
-    chartContext: ChartContext
+    chartContext: ChartContext,
 ): Float {
     return if (minValue < 0f && isBelowAxisMode) {
         chartContext.convertValueToYPosition(0f)

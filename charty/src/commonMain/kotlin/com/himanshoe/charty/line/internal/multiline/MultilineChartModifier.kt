@@ -28,14 +28,16 @@ internal fun Modifier.multilineChartClickHandler(
         createTooltipContent = { point, position ->
             createPointTooltipState(
                 content = point.lineGroup.label +
-                    " Line ${point.seriesIndex +
-                        MultilineChartConstants.SERIES_INDEX_OFFSET}: ${point.value}",
+                    " Line ${
+                        point.seriesIndex +
+                            MultilineChartConstants.SERIES_INDEX_OFFSET
+                    }: ${point.value}",
                 position = position,
                 pointRadius = lineConfig.pointRadius,
                 tooltipPosition = lineConfig.tooltipPosition,
                 pointRadiusMultiplier = MultilineChartConstants.POINT_RADIUS_MULTIPLIER,
             )
-        }
+        },
     )
 }
 

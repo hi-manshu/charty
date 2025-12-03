@@ -260,7 +260,7 @@ private fun PieChartContent(
                     selectedSliceIndex = params.selectedSliceIndex,
                     selectedScale = params.selectedScale,
                     textMeasurer = textMeasurer,
-                )
+                ),
             )
         }
         if (params.config.style == PieChartStyle.DONUT && params.centerContent != null) {

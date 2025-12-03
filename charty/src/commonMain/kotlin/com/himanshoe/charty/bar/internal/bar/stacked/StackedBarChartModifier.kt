@@ -14,7 +14,7 @@ internal fun createStackedBarChartModifier(
     stackedConfig: StackedBarChartConfig,
     onSegmentClick: ((StackedBarSegment) -> Unit)?,
     segmentBounds: List<Pair<Rect, StackedBarSegment>>,
-    onTooltipStateChange: (TooltipState?) -> Unit
+    onTooltipStateChange: (TooltipState?) -> Unit,
 ): Modifier {
     return Modifier.rectangularChartClickHandler(
         dataList = dataList,
@@ -27,7 +27,7 @@ internal fun createStackedBarChartModifier(
                 rect = rect,
                 position = stackedConfig.tooltipPosition,
             )
-        }
+        },
     )
 }
 

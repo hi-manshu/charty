@@ -23,11 +23,11 @@ internal fun DrawScope.drawStackedBars(params: StackedBarDrawParams) {
         val barX = params.chartContext.calculateBarLeftPosition(
             groupIndex,
             params.dataList.size,
-            params.stackedConfig.barWidthFraction
+            params.stackedConfig.barWidthFraction,
         )
         val barWidth = params.chartContext.calculateBarWidth(
             params.dataList.size,
-            params.stackedConfig.barWidthFraction
+            params.stackedConfig.barWidthFraction,
         )
         var cumulativeValue = 0f
 
@@ -133,7 +133,7 @@ private fun DrawScope.drawStackedSegment(
 internal fun DrawScope.drawStackedReferenceLineIfNeeded(
     stackedConfig: StackedBarChartConfig,
     chartContext: ChartContext,
-    textMeasurer: TextMeasurer
+    textMeasurer: TextMeasurer,
 ) {
     drawReferenceLineIfNeeded(
         referenceLineConfig = stackedConfig.referenceLine,
@@ -148,7 +148,7 @@ internal fun DrawScope.drawStackedTooltipIfNeeded(
     tooltipState: TooltipState?,
     stackedConfig: StackedBarChartConfig,
     textMeasurer: TextMeasurer,
-    chartContext: ChartContext
+    chartContext: ChartContext,
 ) {
     drawTooltipIfNeeded(
         tooltipState = tooltipState,

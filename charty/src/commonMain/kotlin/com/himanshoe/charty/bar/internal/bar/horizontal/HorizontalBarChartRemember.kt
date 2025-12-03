@@ -14,7 +14,7 @@ import com.himanshoe.charty.common.util.calculateMinValue
 @Composable
 internal fun rememberHorizontalValueRange(
     dataList: List<BarData>,
-    negativeValuesDrawMode: NegativeValuesDrawMode
+    negativeValuesDrawMode: NegativeValuesDrawMode,
 ): Pair<Float, Float> {
     return remember(dataList, negativeValuesDrawMode) {
         val values = dataList.getValues()

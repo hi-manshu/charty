@@ -35,7 +35,7 @@ internal fun DrawScope.drawSpans(params: SpanDrawParams) {
                     top = centeredBarY,
                     right = startX + animatedSpanWidth,
                     bottom = centeredBarY + barThickness,
-                ) to span
+                ) to span,
             )
         }
 

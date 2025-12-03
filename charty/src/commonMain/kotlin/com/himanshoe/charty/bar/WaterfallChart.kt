@@ -1,8 +1,6 @@
 package com.himanshoe.charty.bar
 
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,7 +20,6 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
@@ -60,7 +57,7 @@ fun WaterfallChart(
 
     ChartScaffold(
         modifier = modifier.then(
-            createWaterfallClickModifier(items, config, barBounds, onBarClick) { tooltipState = it }
+            createWaterfallClickModifier(items, config, barBounds, onBarClick) { tooltipState = it },
         ),
         xLabels = items.map { it.label },
         yAxisConfig = AxisConfig(

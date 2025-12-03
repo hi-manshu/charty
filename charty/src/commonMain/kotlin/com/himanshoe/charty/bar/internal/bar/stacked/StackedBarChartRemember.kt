@@ -10,7 +10,7 @@ import com.himanshoe.charty.color.ChartyColor
 @Composable
 internal fun rememberStackedMaxTotal(
     dataList: List<BarGroup>,
-    colors: ChartyColor
+    colors: ChartyColor,
 ): Pair<Float, List<Color>> {
     return remember(dataList, colors) {
         val totals = dataList.fastMap { group -> group.values.sum() }

@@ -102,14 +102,14 @@ object ChartyColors {
      * Default gradient - Used for stacked and multi-value charts
      */
     val DefaultGradient = ChartyColor.Gradient(
-        listOf(Blue, Green, Orange)
+        listOf(Blue, Green, Orange),
     )
 
     /**
      * Default multiline colors - Used for multiline and comparison charts
      */
     val DefaultMultiline = ChartyColor.Gradient(
-        listOf(Pink, Blue, Green)
+        listOf(Pink, Blue, Green),
     )
 
     // ==================== Pre-defined Color Palettes ====================
@@ -118,35 +118,35 @@ object ChartyColors {
      * Modern palette - Contemporary and vibrant colors
      */
     val ModernPalette = ChartyColor.Gradient(
-        listOf(Blue, Cyan, Purple, Pink, Orange)
+        listOf(Blue, Cyan, Purple, Pink, Orange),
     )
 
     /**
      * Warm palette - Warm and energetic colors
      */
     val WarmPalette = ChartyColor.Gradient(
-        listOf(Red, Orange, Amber, Pink)
+        listOf(Red, Orange, Amber, Pink),
     )
 
     /**
      * Cool palette - Cool and calming colors
      */
     val CoolPalette = ChartyColor.Gradient(
-        listOf(Blue, Cyan, Teal, Indigo)
+        listOf(Blue, Cyan, Teal, Indigo),
     )
 
     /**
      * Nature palette - Natural and organic colors
      */
     val NaturePalette = ChartyColor.Gradient(
-        listOf(Green, Teal, Cyan, Blue)
+        listOf(Green, Teal, Cyan, Blue),
     )
 
     /**
      * Vibrant palette - High contrast and energetic colors
      */
     val VibrantPalette = ChartyColor.Gradient(
-        listOf(Red, Orange, Amber, Green, Cyan, Blue, Purple, Pink)
+        listOf(Red, Orange, Amber, Green, Cyan, Blue, Purple, Pink),
     )
 
     /**
@@ -159,7 +159,7 @@ object ChartyColors {
             Color(0xFFFFCCBC), // Light Orange
             Color(0xFFF8BBD0), // Light Pink
             Color(0xFFE1BEE7), // Light Purple
-        )
+        ),
     )
 
     /**
@@ -172,7 +172,7 @@ object ChartyColors {
             Color(0xFFF57C00), // Dark Orange
             Color(0xFFC2185B), // Dark Pink
             Color(0xFF7B1FA2), // Dark Purple
-        )
+        ),
     )
 
     /**
@@ -185,7 +185,7 @@ object ChartyColors {
             Color(0xFF2196F3), // Blue 500
             Color(0xFF42A5F5), // Blue 400
             Color(0xFF90CAF9), // Blue 200
-        )
+        ),
     )
 
     /**
@@ -197,14 +197,14 @@ object ChartyColors {
             Color(0xFF43A047), // Growth Green
             Color(0xFFFB8C00), // Warning Orange
             Color(0xFF424242), // Professional Grey
-        )
+        ),
     )
 
     /**
      * Gradient palette for financial data - Red to Green
      */
     val FinancialGradient = ChartyColor.Gradient(
-        listOf(Red, Orange, Amber, Green)
+        listOf(Red, Orange, Amber, Green),
     )
 
     // ==================== Utility Colors ====================

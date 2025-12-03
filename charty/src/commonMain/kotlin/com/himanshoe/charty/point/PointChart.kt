@@ -70,7 +70,7 @@ private fun createChartModifier(
                     tooltipPosition = pointConfig.tooltipPosition,
                     pointRadiusMultiplier = POINT_RADIUS_MULTIPLIER,
                 )
-            }
+            },
         )
     } else {
         modifier
@@ -187,7 +187,7 @@ fun PointChart(
     val animationProgress = rememberChartAnimation(
         animation = pointConfig.animation,
         initialValue = null,
-        targetValue = MAX_ANIMATION_PROGRESS
+        targetValue = MAX_ANIMATION_PROGRESS,
     )
 
     val tooltipManager = rememberTooltipManager<Offset, PointData>()

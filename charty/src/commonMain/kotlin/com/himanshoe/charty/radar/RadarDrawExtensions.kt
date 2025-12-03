@@ -91,6 +91,7 @@ internal fun DrawScope.drawGridLevel(
         RadarGridStyle.CIRCULAR -> {
             drawCircularGridLine(center, radius, gridLineWidth, gridLineColor)
         }
+
         RadarGridStyle.POLYGON -> {
             drawPolygonalGridLine(center, radius, numberOfAxes, gridLineWidth, gridLineColor, startAngle)
         }

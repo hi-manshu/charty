@@ -491,7 +491,7 @@ private fun rememberRadarAnimation(animation: Animation): Animatable<Float, *> {
     return rememberChartAnimation(
         animation = animation,
         initialValue = if (animation is Animation.Enabled) DEFAULT_ANIMATION_START else DEFAULT_ANIMATION_END,
-        targetValue = DEFAULT_ANIMATION_END
+        targetValue = DEFAULT_ANIMATION_END,
     )
 }
 

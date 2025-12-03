@@ -113,8 +113,8 @@ fun StackedAreaChart(
 
     val minValue = 0f
     val animationProgress = remember {
-            Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-        }
+        Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
+    }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val areaSegmentBounds = remember {
         mutableListOf<Triple<Rect, androidx.compose.ui.graphics.Path, StackedAreaPoint>>()

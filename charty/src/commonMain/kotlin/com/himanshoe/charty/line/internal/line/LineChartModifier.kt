@@ -32,7 +32,7 @@ internal fun Modifier.lineChartClickHandler(
                 tooltipPosition = lineConfig.tooltipPosition,
                 pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
             )
-        }
+        },
     )
 }
 

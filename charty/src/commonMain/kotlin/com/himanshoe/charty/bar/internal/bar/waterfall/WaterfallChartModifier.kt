@@ -29,7 +29,7 @@ internal fun createWaterfallClickModifier(
                 rect = rect,
                 position = config.tooltipPosition,
             )
-        }
+        },
     )
 }
 

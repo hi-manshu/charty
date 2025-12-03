@@ -35,7 +35,7 @@ internal fun Modifier.stackedAreaChartClickHandler(
                 barWidth = rect.width,
                 position = lineConfig.tooltipPosition,
             )
-        }
+        },
     )
 }
 

@@ -8,8 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.MosiacBarChartConfig
-import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.config.MosiacBarSegment
+import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.mosiac.createMosiacAxisConfig
 import com.himanshoe.charty.bar.internal.bar.mosiac.createMosiacChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosiac.drawMosiacBars
@@ -54,7 +54,7 @@ fun MosiacBarChart(
         groups = groups,
         config = config,
         segmentBounds = segmentBounds,
-        onTooltipUpdate = { tooltipState = it }
+        onTooltipUpdate = { tooltipState = it },
     )
 
     ChartScaffold(

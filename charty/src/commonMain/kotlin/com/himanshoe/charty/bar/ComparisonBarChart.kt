@@ -99,7 +99,7 @@ fun ComparisonBarChart(
                 baselineY = baselineY,
                 onBarClick = onBarClick,
                 barBounds = barBounds,
-            )
+            ),
         )
 
         drawComparisonReferenceLineIfNeeded(comparisonConfig, chartContext, textMeasurer)

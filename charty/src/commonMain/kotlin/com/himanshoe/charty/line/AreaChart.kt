@@ -24,8 +24,6 @@ import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
-import com.himanshoe.charty.common.util.calculateMaxValue
-import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.createAreaBrush
@@ -125,7 +123,7 @@ fun AreaChart(
         dataList = dataList,
         lineConfig = lineConfig,
         pointBounds = tooltipManager.bounds,
-        onTooltipUpdate = tooltipManager::updateTooltip
+        onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
     ChartScaffold(
@@ -149,7 +147,7 @@ fun AreaChart(
                 animationProgress = animationProgress.value,
                 chartContext = chartContext,
                 onBarBoundCalculated = { if (onPointClick != null) tooltipManager.bounds.add(it) },
-            )
+            ),
         )
 
         drawTooltipHighlightIfNeeded(
@@ -157,13 +155,13 @@ fun AreaChart(
             lineConfig = lineConfig,
             pointBounds = tooltipManager.bounds,
             chartContext = chartContext,
-            color = color
+            color = color,
         )
         drawTooltipIfNeeded(
             tooltipState = tooltipManager.tooltipState,
             lineConfig = lineConfig,
             textMeasurer = textMeasurer,
-            chartContext = chartContext
+            chartContext = chartContext,
         )
     }
 }
@@ -171,7 +169,7 @@ fun AreaChart(
 @Composable
 private fun rememberAreaValueRange(
     dataList: List<LineData>,
-    negativeValuesDrawMode: NegativeValuesDrawMode
+    negativeValuesDrawMode: NegativeValuesDrawMode,
 ): Pair<Float, Float> {
     return remember(dataList, negativeValuesDrawMode) {
         val values = dataList.getValues()
@@ -185,7 +183,7 @@ private fun rememberAreaValueRange(
 private fun createAxisConfig(
     minValue: Float,
     maxValue: Float,
-    isBelowAxisMode: Boolean
+    isBelowAxisMode: Boolean,
 ): AxisConfig {
     return AxisConfig(
         minValue = minValue,
@@ -198,7 +196,7 @@ private fun createAxisConfig(
 private fun calculatePointPositions(
     dataList: List<LineData>,
     chartContext: com.himanshoe.charty.common.ChartContext,
-    onPointCalculated: (Pair<Offset, LineData>) -> Unit
+    onPointCalculated: (Pair<Offset, LineData>) -> Unit,
 ): List<Offset> {
     return dataList.fastMapIndexed { index, point ->
         val position = Offset(
@@ -213,7 +211,7 @@ private fun calculatePointPositions(
 private fun calculateBaselineY(
     minValue: Float,
     isBelowAxisMode: Boolean,
-    chartContext: com.himanshoe.charty.common.ChartContext
+    chartContext: com.himanshoe.charty.common.ChartContext,
 ): Float {
     return if (minValue < 0f && isBelowAxisMode) {
         chartContext.convertValueToYPosition(0f)
@@ -231,7 +229,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(param
         params.color,
         params.fillAlpha,
         params.chartContext.top,
-        params.chartContext.bottom
+        params.chartContext.bottom,
     )
 
     drawPath(
@@ -264,7 +262,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaPoints(
     pointPositions: List<Offset>,
     lineBrush: Brush,
     config: LineChartConfig,
-    animationProgress: Float
+    animationProgress: Float,
 ) {
     pointPositions.fastForEachIndexed { index, position ->
         val pointProgress = index.toFloat() / (pointPositions.size - 1)
@@ -284,7 +282,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipHighligh
     lineConfig: LineChartConfig,
     pointBounds: List<Pair<Offset, LineData>>,
     chartContext: com.himanshoe.charty.common.ChartContext,
-    color: ChartyColor
+    color: ChartyColor,
 ) {
     tooltipState?.let { state ->
         val clickedPosition = pointBounds.find { (_, data) ->
@@ -317,7 +315,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipIfNeeded
     tooltipState: TooltipState?,
     lineConfig: LineChartConfig,
     textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    chartContext: com.himanshoe.charty.common.ChartContext
+    chartContext: com.himanshoe.charty.common.ChartContext,
 ) {
     tooltipState?.let { state ->
         drawTooltip(

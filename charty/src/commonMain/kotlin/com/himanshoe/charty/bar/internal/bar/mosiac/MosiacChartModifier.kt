@@ -32,7 +32,7 @@ internal fun createMosiacChartModifier(
                 barWidth = rect.width,
                 position = config.tooltipPosition,
             )
-        }
+        },
     )
 }
 

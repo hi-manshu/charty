@@ -90,6 +90,7 @@ internal fun createAreaBrush(
                 startY = chartTop,
                 endY = chartBottom,
             )
+
         is ChartyColor.Gradient ->
             Brush.verticalGradient(
                 colors = color.colors.map { it.copy(alpha = it.alpha * fillAlpha) },

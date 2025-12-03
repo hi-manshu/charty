@@ -24,11 +24,11 @@ internal fun DrawScope.drawBubbleBars(
         val barX = params.chartContext.calculateBarLeftPosition(
             index,
             params.dataList.size,
-            params.bubbleConfig.barWidthFraction
+            params.bubbleConfig.barWidthFraction,
         )
         val barWidth = params.chartContext.calculateBarWidth(
             params.dataList.size,
-            params.bubbleConfig.barWidthFraction
+            params.bubbleConfig.barWidthFraction,
         )
         val barValueY = params.chartContext.convertValueToYPosition(bar.value)
 

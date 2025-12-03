@@ -12,7 +12,7 @@ import com.himanshoe.charty.line.data.LineData
 @Composable
 internal fun rememberAreaValueRange(
     dataList: List<LineData>,
-    negativeValuesDrawMode: NegativeValuesDrawMode
+    negativeValuesDrawMode: NegativeValuesDrawMode,
 ): Pair<Float, Float> {
     return remember(dataList, negativeValuesDrawMode) {
         val values = dataList.getValues()

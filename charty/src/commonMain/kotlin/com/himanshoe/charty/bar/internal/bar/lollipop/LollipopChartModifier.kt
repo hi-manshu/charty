@@ -36,7 +36,7 @@ internal fun createLollipopChartModifier(
                     tooltipPosition = config.tooltipPosition,
                     pointRadiusMultiplier = TAP_RADIUS_MULTIPLIER,
                 )
-            }
+            },
         )
     } else {
         modifier

@@ -115,7 +115,7 @@ fun SpanChart(
                 colors = colors,
                 onSpanClick = onSpanClick,
                 onSpanBoundCalculated = { tooltipManager.bounds.add(it) },
-            )
+            ),
         )
 
         drawTooltipIfNeeded(

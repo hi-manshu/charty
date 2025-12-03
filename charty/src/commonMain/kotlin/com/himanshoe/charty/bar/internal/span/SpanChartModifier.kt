@@ -28,7 +28,7 @@ internal fun createSpanChartModifier(
                 barWidth = rect.width,
                 position = barConfig.tooltipPosition,
             )
-        }
+        },
     )
 }
 

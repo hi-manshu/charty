@@ -31,7 +31,7 @@ fun calculateDistance(point1: Offset, point2: Offset): Float {
  */
 fun <T> findClickedItem(
     offset: Offset,
-    bounds: List<Pair<Rect, T>>
+    bounds: List<Pair<Rect, T>>,
 ): T? {
     return bounds.find { (rect, _) -> rect.contains(offset) }?.second
 }
@@ -45,7 +45,7 @@ fun <T> findClickedItem(
  */
 fun <T> findClickedItemWithBounds(
     offset: Offset,
-    bounds: List<Pair<Rect, T>>
+    bounds: List<Pair<Rect, T>>,
 ): Pair<Rect, T>? {
     return bounds.find { (rect, _) -> rect.contains(offset) }
 }
@@ -61,7 +61,7 @@ fun <T> findClickedItemWithBounds(
 fun <T> findNearestPoint(
     offset: Offset,
     pointBounds: List<Pair<Offset, T>>,
-    tapRadius: Float
+    tapRadius: Float,
 ): Pair<Offset, T>? {
     val nearestPoint = pointBounds.minByOrNull { pair ->
         calculateDistance(pair.first, offset)

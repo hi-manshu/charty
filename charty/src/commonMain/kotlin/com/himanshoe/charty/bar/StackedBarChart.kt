@@ -80,8 +80,8 @@ fun StackedBarChart(
                 stackedConfig = stackedConfig,
                 onSegmentClick = onSegmentClick,
                 segmentBounds = tooltipManager.bounds,
-                onTooltipStateChange = tooltipManager::updateTooltip
-            )
+                onTooltipStateChange = tooltipManager::updateTooltip,
+            ),
         ),
         xLabels = dataList.map { it.label },
         yAxisConfig =
@@ -103,7 +103,7 @@ fun StackedBarChart(
                 animationProgress = animationProgress.value,
                 onSegmentClick = onSegmentClick,
                 segmentBounds = tooltipManager.bounds,
-            )
+            ),
         )
 
         drawStackedReferenceLineIfNeeded(stackedConfig, chartContext, textMeasurer)

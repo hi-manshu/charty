@@ -127,6 +127,7 @@ private fun calculateVerticalLabelY(
     ReferenceLineLabelPosition.START -> chartContext.bottom - textHeight
     ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
         chartContext.top + (chartContext.height - textHeight) / CENTER_DIVISOR
+
     ReferenceLineLabelPosition.END -> chartContext.top
 }
 
@@ -138,6 +139,7 @@ private fun calculateVerticalLabelX(
 ): Float = when (labelPosition) {
     ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
         x - textWidth - labelOffset
+
     ReferenceLineLabelPosition.BELOW -> x + labelOffset
     ReferenceLineLabelPosition.CENTER -> x - textWidth / CENTER_DIVISOR
 }

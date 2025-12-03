@@ -18,13 +18,13 @@ internal fun DrawScope.drawStackedAreaSeries(params: StackedAreaSeriesParams) {
         createSmoothAreaPath(
             cumulativePositions = params.cumulativePositions,
             startX = params.startX,
-            baselineY = params.baselineY
+            baselineY = params.baselineY,
         )
     } else {
         createStraightAreaPath(
             cumulativePositions = params.cumulativePositions,
             startX = params.startX,
-            baselineY = params.baselineY
+            baselineY = params.baselineY,
         )
     }
 
@@ -38,13 +38,13 @@ internal fun DrawScope.drawStackedAreaSeries(params: StackedAreaSeriesParams) {
         createSmoothLinePath(
             cumulativePositions = params.cumulativePositions,
             startX = params.startX,
-            baselineY = params.baselineY
+            baselineY = params.baselineY,
         )
     } else {
         createStraightLinePath(
             cumulativePositions = params.cumulativePositions,
             startX = params.startX,
-            baselineY = params.baselineY
+            baselineY = params.baselineY,
         )
     }
 

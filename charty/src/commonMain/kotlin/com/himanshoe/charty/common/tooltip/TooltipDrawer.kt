@@ -40,6 +40,7 @@ private fun calculateTooltipX(
         centeredX < minEdgeDistance -> minEdgeDistance
         centeredX + tooltipWidth > chartWidth - minEdgeDistance ->
             chartWidth - tooltipWidth - minEdgeDistance
+
         else -> centeredX
     }
 }
@@ -61,6 +62,7 @@ private fun determineTooltipPosition(
             TooltipPosition.BELOW
         }
     }
+
     TooltipPosition.BELOW -> {
         if (tooltipBelowY + tooltipHeight <= chartBottom - minEdgeDistance) {
             TooltipPosition.BELOW
@@ -68,6 +70,7 @@ private fun determineTooltipPosition(
             TooltipPosition.ABOVE
         }
     }
+
     TooltipPosition.AUTO -> {
         when {
             tooltipAboveY >= chartTop + minEdgeDistance -> TooltipPosition.ABOVE

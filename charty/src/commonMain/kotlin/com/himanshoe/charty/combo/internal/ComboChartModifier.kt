@@ -29,7 +29,7 @@ internal fun Modifier.comboChartClickHandler(
                 rect = rect,
                 position = comboConfig.tooltipPosition,
             )
-        }
+        },
     )
 }
 

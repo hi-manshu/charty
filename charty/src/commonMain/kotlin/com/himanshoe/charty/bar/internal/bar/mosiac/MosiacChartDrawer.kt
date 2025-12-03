@@ -79,7 +79,7 @@ private fun DrawScope.drawMosiacBarSegments(
                     segmentIndex = segmentIndex,
                     segmentValue = value,
                     segmentPercentage = fraction * MAX_PERCENTAGE,
-                )
+                ),
             )
         }
 

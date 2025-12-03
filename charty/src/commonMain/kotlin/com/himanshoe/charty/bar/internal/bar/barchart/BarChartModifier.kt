@@ -30,7 +30,7 @@ internal fun createBarChartModifier(
                 rect = rect,
                 position = barConfig.tooltipPosition,
             )
-        }
+        },
     )
 }
 

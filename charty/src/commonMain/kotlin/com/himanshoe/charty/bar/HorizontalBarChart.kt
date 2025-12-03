@@ -107,7 +107,7 @@ fun HorizontalBarChart(
                 maxValue = maxValue,
                 onBarClick = onBarClick,
                 onBarBoundCalculated = { barBounds.add(it) },
-            )
+            ),
         )
 
         drawHorizontalReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
