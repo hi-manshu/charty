@@ -1,0 +1,117 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: "Version name for this release (for example: 2.1.0-beta03.4)"
+        required: true
+      versionCode:
+        description: "Optional explicit version code. If empty and autoIncrementVersionCode is true, the workflow will compute the next version code."
+        required: false
+      autoIncrementVersionCode:
+        description: "If true and versionCode is not provided, compute versionCode as the previous code + 1."
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    name: Publish charty artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Determine versionCode
+        id: version
+        run: |
+          INPUT_CODE="${{ github.event.inputs.versionCode }}"
+          AUTO_INC="${{ github.event.inputs.autoIncrementVersionCode }}"
+
+          if [ -n "$INPUT_CODE" ]; then
+            NEXT_CODE="$INPUT_CODE"
+          elif [ "$AUTO_INC" = "true" ]; then
+            # Read last version code from a file if it exists, otherwise start at 1
+            if [ -f .github/version-code.txt ]; then
+              LAST_CODE=$(cat .github/version-code.txt)
+              NEXT_CODE=$((LAST_CODE + 1))
+            else
+              NEXT_CODE=1
+            fi
+          else
+            echo "versionCode is required when autoIncrementVersionCode is false" >&2
+            exit 1
+          fi
+
+          echo "versionCode=$NEXT_CODE" >> $GITHUB_OUTPUT
+
+      - name: Configure environment for charty module
+        run: |
+          echo "POM_ARTIFACT_ID=charty" >> $GITHUB_ENV
+          echo "POM_NAME=charty" >> $GITHUB_ENV
+          echo "POM_DESCRIPTION=An Elementary Compose Multiplatform Chart library." >> $GITHUB_ENV
+          echo "POM_PACKAGING=aar" >> $GITHUB_ENV
+          echo "POM_INCEPTION_YEAR=2025" >> $GITHUB_ENV
+          echo "GROUP=com.himanshoe" >> $GITHUB_ENV
+          echo "VERSION_NAME=${{ github.event.inputs.versionName }}" >> $GITHUB_ENV
+          echo "VERSION_CODE=${{ steps.version.outputs.versionCode }}" >> $GITHUB_ENV
+          echo "POM_URL=https://github.com/hi-manshu" >> $GITHUB_ENV
+          echo "POM_LICENCE_NAME=The Apache Software License, Version 2.0" >> $GITHUB_ENV
+          echo "POM_LICENCE_URL=http://www.apache.org/licenses/LICENSE-2.0.txt" >> $GITHUB_ENV
+          echo "POM_LICENCE_DIST=repo" >> $GITHUB_ENV
+          echo "POM_SCM_URL=https://github.com/hi-manshu" >> $GITHUB_ENV
+          echo "POM_DEVELOPER_ID=hi-manshu" >> $GITHUB_ENV
+          echo "POM_DEVELOPER_NAME=Himanshu Singh" >> $GITHUB_ENV
+          echo "POM_DEVELOPER_URL=https://github.com/hi-manshu" >> $GITHUB_ENV
+
+      - name: Publish with Gradle (Maven Central / custom repo)
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          ./gradlew :charty:publish
+
+      - name: Persist versionCode for next run
+        if: success()
+        run: |
+          mkdir -p .github
+          echo "${{ steps.version.outputs.versionCode }}" > .github/version-code.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/version-code.txt || true
+          git commit -m "chore: update version code to ${{ steps.version.outputs.versionCode }}" || true
+          git push || true
+
+      - name: Build release summary (for Telegram)
+        if: success()
+        id: summary
+        run: |
+          VERSION_NAME="${{ github.event.inputs.versionName }}"
+          VERSION_CODE="${{ steps.version.outputs.versionCode }}"
+
+          echo "Collecting latest changes..."
+          CHANGES=$(git log -5 --pretty=format:'- %s (%h)')
+
+          echo "Release Summary:" > release-summary.txt
+          echo "charty Release $VERSION_NAME (code: $VERSION_CODE)" >> release-summary.txt
+          echo "" >> release-summary.txt
+          echo "Recent changes:" >> release-summary.txt
+          echo "$CHANGES" >> release-summary.txt
+
+          echo "text<<EOF" >> $GITHUB_OUTPUT
+          cat release-summary.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
