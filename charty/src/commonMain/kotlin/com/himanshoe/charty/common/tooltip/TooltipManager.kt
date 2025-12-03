@@ -10,9 +10,10 @@ import androidx.compose.runtime.setValue
  * Manager for tooltip state and bounds tracking.
  * Provides a centralized way to manage tooltip display and data point bounds.
  *
+ * @param B The type of bounds (e.g., Offset for points, Rect for bars)
  * @param T The type of data associated with each tracked item (e.g., PointData, BarData, LineData)
  */
-class TooltipManager<T> {
+class TooltipManager<B, T> {
     /**
      * Current tooltip state, or null if no tooltip is displayed
      */
@@ -21,9 +22,14 @@ class TooltipManager<T> {
 
     /**
      * List of bounds and their associated data
-     * The first element can be Offset (for points) or Rect (for bars)
      */
-    val bounds = mutableListOf<Pair<Any, T>>()
+    val bounds = mutableListOf<Pair<B, T>>()
+
+    /**
+     * Returns bounds as a read-only List for better type compatibility
+     */
+    val boundsAsList: List<Pair<B, T>>
+        get() = bounds
 
     /**
      * Update the tooltip state
@@ -56,11 +62,12 @@ class TooltipManager<T> {
 /**
  * Creates and remembers a TooltipManager instance
  *
+ * @param B The type of bounds (e.g., Offset for points, Rect for bars)
  * @param T The type of data associated with each tracked item
  * @return A remembered TooltipManager instance
  */
 @Composable
-fun <T> rememberTooltipManager(): TooltipManager<T> {
+fun <B, T> rememberTooltipManager(): TooltipManager<B, T> {
     return remember { TooltipManager() }
 }
 

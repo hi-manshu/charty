@@ -1,12 +1,9 @@
 package com.himanshoe.charty.radar
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -19,7 +16,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.config.RadarGridStyle
 import com.himanshoe.charty.radar.data.RadarDataSet
@@ -85,20 +82,7 @@ fun RadarChart(
         "All datasets must have the same number of axes"
     }
 
-    val animationProgress =
-        remember {
-            Animatable(if (config.animation is Animation.Enabled) 0f else 1f)
-        }
-
-    LaunchedEffect(config.animation) {
-        if (config.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = config.animation.duration),
-            )
-        }
-    }
-
+    val animationProgress = rememberChartAnimation(config.animation)
     val textMeasurer = rememberTextMeasurer()
     val axisLabels = remember(dataSets) { dataSets.first().axes.map { it.label } }
 
@@ -107,8 +91,6 @@ fun RadarChart(
             val centerX = size.width / 2f
             val centerY = size.height / 2f
             val maxRadius = min(centerX, centerY) * (1f - config.paddingFraction)
-
-            // Draw grid
             if (config.gridConfig.showGridLines) {
                 drawRadarGrid(
                     center = Offset(centerX, centerY),

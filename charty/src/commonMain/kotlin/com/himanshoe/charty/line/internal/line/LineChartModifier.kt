@@ -1,11 +1,9 @@
 package com.himanshoe.charty.line.internal.line
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.pointerInput
 import com.himanshoe.charty.common.gesture.createPointTooltipState
-import com.himanshoe.charty.common.gesture.findNearestPoint
+import com.himanshoe.charty.common.gesture.pointChartClickHandler
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
@@ -20,30 +18,21 @@ internal fun Modifier.lineChartClickHandler(
     onPointClick: (LineData) -> Unit,
     onTooltipStateChange: (TooltipState?) -> Unit,
 ): Modifier {
-    return this.pointerInput(dataList, lineConfig, onPointClick) {
-        detectTapGestures { offset ->
-            val tapRadius = lineConfig.pointRadius * LineChartConstants.TAP_RADIUS_MULTIPLIER
-            val nearestPoint = findNearestPoint(
-                offset = offset,
-                pointBounds = pointBounds,
-                tapRadius = tapRadius,
+    return this.pointChartClickHandler(
+        dataList = dataList,
+        pointBounds = pointBounds,
+        tapRadius = lineConfig.pointRadius * LineChartConstants.TAP_RADIUS_MULTIPLIER,
+        onPointClick = onPointClick,
+        onTooltipStateChange = onTooltipStateChange,
+        createTooltipContent = { lineData, position ->
+            createPointTooltipState(
+                content = lineConfig.tooltipFormatter(lineData),
+                position = position,
+                pointRadius = lineConfig.pointRadius,
+                tooltipPosition = lineConfig.tooltipPosition,
+                pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
             )
-
-            nearestPoint?.let { (position, lineData) ->
-                onPointClick.invoke(lineData)
-                onTooltipStateChange(
-                    createPointTooltipState(
-                        content = lineConfig.tooltipFormatter(lineData),
-                        position = position,
-                        pointRadius = lineConfig.pointRadius,
-                        tooltipPosition = lineConfig.tooltipPosition,
-                        pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
-                    ),
-                )
-            } ?: run {
-                onTooltipStateChange(null)
-            }
         }
-    }
+    )
 }
 

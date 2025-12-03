@@ -1,10 +1,7 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -27,7 +24,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
  * Span Chart - Display ranges/spans horizontally across categories
@@ -84,8 +81,7 @@ fun SpanChart(
 
     val (minValue, maxValue) = rememberSpanValueRange(dataList, colors)
     val animationProgress = rememberChartAnimation(barConfig.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val spanBounds = remember { mutableListOf<Pair<Rect, SpanData>>() }
+    val tooltipManager = rememberTooltipManager<Rect, SpanData>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartModifier = createSpanChartModifier(
@@ -93,8 +89,8 @@ fun SpanChart(
         onSpanClick = onSpanClick,
         dataList = dataList,
         barConfig = barConfig,
-        spanBounds = spanBounds,
-        onTooltipUpdate = { tooltipState = it }
+        spanBounds = tooltipManager.bounds,
+        onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
     ChartScaffold(
@@ -104,7 +100,7 @@ fun SpanChart(
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
-        spanBounds.clear()
+        tooltipManager.clearBounds()
         val axisOffset = calculateAxisOffset(scaffoldConfig)
 
         drawSpans(
@@ -118,12 +114,12 @@ fun SpanChart(
                 animationProgress = animationProgress.value,
                 colors = colors,
                 onSpanClick = onSpanClick,
-                onSpanBoundCalculated = { spanBounds.add(it) },
+                onSpanBoundCalculated = { tooltipManager.bounds.add(it) },
             )
         )
 
         drawTooltipIfNeeded(
-            tooltipState = tooltipState,
+            tooltipState = tooltipManager.tooltipState,
             tooltipConfig = barConfig.tooltipConfig,
             textMeasurer = textMeasurer,
             chartContext = chartContext,

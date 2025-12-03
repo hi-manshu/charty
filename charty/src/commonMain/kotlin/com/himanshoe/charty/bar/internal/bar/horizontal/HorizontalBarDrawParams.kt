@@ -1,8 +1,8 @@
 package com.himanshoe.charty.bar.internal.bar.horizontal
 
 import androidx.compose.ui.geometry.Rect
-import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 

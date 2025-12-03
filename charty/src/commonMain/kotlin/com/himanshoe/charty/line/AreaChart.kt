@@ -1,18 +1,13 @@
 package com.himanshoe.charty.line
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -26,19 +21,21 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
-import com.himanshoe.charty.common.gesture.calculateDistance
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.util.calculateMaxValue
+import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createAreaPath
 import com.himanshoe.charty.line.ext.createLineBrush
 import com.himanshoe.charty.line.ext.createLinePath
+import com.himanshoe.charty.line.internal.area.createAreaChartModifier
 
 private const val DEFAULT_FILL_ALPHA = 0.3f
 private const val DEFAULT_AXIS_STEPS = 6
-private const val TAP_RADIUS_MULTIPLIER = 2.5f
 private const val HIGHLIGHT_LINE_ALPHA = 0.1f
 private const val HIGHLIGHT_LINE_WIDTH = 1.5f
 private const val HIGHLIGHT_CIRCLE_OUTER_PADDING = 3f
@@ -119,8 +116,7 @@ fun AreaChart(
     val (minValue, maxValue) = rememberAreaValueRange(dataList, lineConfig.negativeValuesDrawMode)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(lineConfig.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
+    val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartModifier = createAreaChartModifier(
@@ -128,8 +124,8 @@ fun AreaChart(
         onPointClick = onPointClick,
         dataList = dataList,
         lineConfig = lineConfig,
-        pointBounds = pointBounds,
-        onTooltipUpdate = { tooltipState = it }
+        pointBounds = tooltipManager.bounds,
+        onTooltipUpdate = tooltipManager::updateTooltip
     )
 
     ChartScaffold(
@@ -138,8 +134,8 @@ fun AreaChart(
         yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
     ) { chartContext ->
-        pointBounds.clear()
-        val pointPositions = calculatePointPositions(dataList, chartContext) { pointBounds.add(it) }
+        tooltipManager.clearBounds()
+        val pointPositions = calculatePointPositions(dataList, chartContext) { tooltipManager.bounds.add(it) }
         val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
 
         drawAreaChart(
@@ -152,12 +148,23 @@ fun AreaChart(
                 fillAlpha = fillAlpha,
                 animationProgress = animationProgress.value,
                 chartContext = chartContext,
-                onBarBoundCalculated = { if (onPointClick != null) pointBounds.add(it) },
+                onBarBoundCalculated = { if (onPointClick != null) tooltipManager.bounds.add(it) },
             )
         )
 
-        drawTooltipHighlightIfNeeded(tooltipState, lineConfig, pointBounds, chartContext, color)
-        drawTooltipIfNeeded(tooltipState, lineConfig, textMeasurer, chartContext)
+        drawTooltipHighlightIfNeeded(
+            tooltipState = tooltipManager.tooltipState,
+            lineConfig = lineConfig,
+            pointBounds = tooltipManager.bounds,
+            chartContext = chartContext,
+            color = color
+        )
+        drawTooltipIfNeeded(
+            tooltipState = tooltipManager.tooltipState,
+            lineConfig = lineConfig,
+            textMeasurer = textMeasurer,
+            chartContext = chartContext
+        )
     }
 }
 
@@ -174,57 +181,6 @@ private fun rememberAreaValueRange(
     }
 }
 
-@Composable
-private fun createAreaChartModifier(
-    onPointClick: ((LineData) -> Unit)?,
-    dataList: List<LineData>,
-    lineConfig: LineChartConfig,
-    pointBounds: List<Pair<Offset, LineData>>,
-    onTooltipUpdate: (TooltipState?) -> Unit,
-    modifier: Modifier = Modifier,
-): Modifier {
-    return if (onPointClick != null) {
-        modifier.pointerInput(dataList, lineConfig, onPointClick) {
-            detectTapGestures { offset ->
-                handleAreaPointClick(offset, pointBounds, onPointClick, lineConfig, onTooltipUpdate)
-            }
-        }
-    } else {
-        modifier
-    }
-}
-
-private fun handleAreaPointClick(
-    offset: Offset,
-    pointBounds: List<Pair<Offset, LineData>>,
-    onPointClick: (LineData) -> Unit,
-    lineConfig: LineChartConfig,
-    onTooltipUpdate: (TooltipState?) -> Unit
-) {
-    val tapRadius = lineConfig.pointRadius * TAP_RADIUS_MULTIPLIER
-    val clickedPoint = pointBounds.minByOrNull { (position, _) ->
-        calculateDistance(position, offset)
-    }
-
-    clickedPoint?.let { (position, lineData) ->
-        val distance = calculateDistance(position, offset)
-
-        if (distance <= tapRadius) {
-            onPointClick.invoke(lineData)
-            onTooltipUpdate(
-                TooltipState(
-                    content = lineConfig.tooltipFormatter(lineData),
-                    x = position.x - lineConfig.pointRadius,
-                    y = position.y,
-                    barWidth = lineConfig.pointRadius * TAP_RADIUS_MULTIPLIER,
-                    position = lineConfig.tooltipPosition,
-                )
-            )
-        } else {
-            onTooltipUpdate(null)
-        }
-    } ?: onTooltipUpdate(null)
-}
 
 private fun createAxisConfig(
     minValue: Float,

@@ -1,9 +1,6 @@
 package com.himanshoe.charty.combo
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,8 +23,8 @@ import com.himanshoe.charty.combo.internal.drawComboBars
 import com.himanshoe.charty.combo.internal.drawComboLine
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -102,20 +99,10 @@ fun ComboChart(
         }
 
     val isBelowAxisMode = comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = remember {
-        Animatable(if (comboConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress = rememberChartAnimation(comboConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
     val textMeasurer = rememberTextMeasurer()
-    LaunchedEffect(comboConfig.animation) {
-        if (comboConfig.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = comboConfig.animation.duration),
-            )
-        }
-    }
 
 
     ChartScaffold(

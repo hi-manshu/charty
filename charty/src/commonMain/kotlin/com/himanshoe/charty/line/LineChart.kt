@@ -1,14 +1,12 @@
 package com.himanshoe.charty.line
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
@@ -20,7 +18,7 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawReferenceLine
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -88,8 +86,7 @@ fun LineChart(
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(lineConfig.animation)
 
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
+    val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
     ChartScaffold(
         modifier = modifier.then(
@@ -97,9 +94,9 @@ fun LineChart(
                 Modifier.lineChartClickHandler(
                     dataList = dataList,
                     lineConfig = lineConfig,
-                    pointBounds = pointBounds,
+                    pointBounds = tooltipManager.bounds,
                     onPointClick = onPointClick,
-                    onTooltipStateChange = { tooltipState = it },
+                    onTooltipStateChange = tooltipManager::updateTooltip,
                 )
             } else {
                 Modifier
@@ -115,12 +112,12 @@ fun LineChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
-        pointBounds.clear()
+        tooltipManager.clearBounds()
 
         val pointPositions = chartContext.calculatePointPositions(dataList)
         if (onPointClick != null) {
-            pointPositions.forEachIndexed { index, position ->
-                pointBounds.add(position to dataList[index])
+            pointPositions.fastForEachIndexed { index, position ->
+                tooltipManager.bounds.add(position to dataList[index])
             }
         }
 
@@ -158,10 +155,10 @@ fun LineChart(
             )
         }
 
-        tooltipState?.let { state ->
+        tooltipManager.tooltipState?.let { state ->
             drawLineChartTooltip(
                 tooltipState = state,
-                pointBounds = pointBounds,
+                pointBounds = tooltipManager.bounds,
                 color = color,
                 lineConfig = lineConfig,
                 chartContext = chartContext,

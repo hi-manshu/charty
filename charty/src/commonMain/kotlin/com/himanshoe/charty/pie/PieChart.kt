@@ -1,7 +1,6 @@
 package com.himanshoe.charty.pie
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -28,7 +27,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
-import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.data.PieData
@@ -164,16 +163,7 @@ fun PieChart(
         remember(dataList, color) {
             generateSliceColors(dataList, color)
         }
-    val animationProgress = remember { Animatable(if (config.animation is Animation.Enabled) 0f else 1f) }
-    LaunchedEffect(config.animation, dataList) {
-        if (config.animation is Animation.Enabled) {
-            animationProgress.snapTo(0f)
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = config.animation.duration, easing = FastOutSlowInEasing),
-            )
-        }
-    }
+    val animationProgress = rememberChartAnimation(config.animation)
     var selectedSliceIndex by remember { mutableStateOf<Int?>(null) }
     val selectedScale = remember { Animatable(1f) }
     LaunchedEffect(selectedSliceIndex) {

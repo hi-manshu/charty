@@ -1,13 +1,9 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -25,7 +21,7 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
  * Bar Chart - Display data as vertical bars
@@ -60,7 +56,6 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels (includes leftLabelRotation)
  * @param onBarClick Optional callback when a bar is clicked
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun BarChart(
     data: () -> List<BarData>,
@@ -76,8 +71,7 @@ fun BarChart(
     val (minValue, maxValue) = rememberBarValueRange(dataList, barConfig.negativeValuesDrawMode)
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberBarAnimationProgress(barConfig.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
+    val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartModifier = createBarChartModifier(
@@ -85,8 +79,8 @@ fun BarChart(
         onBarClick = onBarClick,
         dataList = dataList,
         barConfig = barConfig,
-        barBounds = barBounds,
-        onTooltipUpdate = { tooltipState = it },
+        barBounds = tooltipManager.bounds,
+        onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
     ChartScaffold(
@@ -96,7 +90,7 @@ fun BarChart(
         config = scaffoldConfig,
         leftLabelRotation = scaffoldConfig.leftLabelRotation,
     ) { chartContext ->
-        barBounds.clear()
+        tooltipManager.clearBounds()
         val baselineY = calculateBarBaselineY(minValue, isBelowAxisMode, chartContext)
 
         drawBars(
@@ -107,10 +101,10 @@ fun BarChart(
             animationProgress = animationProgress.value,
             color = color,
             onBarClick = onBarClick,
-            barBounds = barBounds,
+            barBounds = tooltipManager.bounds,
         )
 
         drawBarReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
-        drawBarTooltipIfNeeded(tooltipState, barConfig, textMeasurer, chartContext)
+        drawBarTooltipIfNeeded(tooltipManager.tooltipState, barConfig, textMeasurer, chartContext)
     }
 }

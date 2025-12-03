@@ -1,10 +1,7 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -24,7 +21,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
  * Stacked Bar Chart - Display data as stacked vertical bars showing composition
@@ -73,8 +70,7 @@ fun StackedBarChart(
 
     val (maxTotal, colorList) = rememberStackedMaxTotal(dataList, colors)
     val animationProgress = rememberChartAnimation(stackedConfig.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val segmentBounds = remember { mutableListOf<Pair<Rect, StackedBarSegment>>() }
+    val tooltipManager = rememberTooltipManager<Rect, StackedBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
     ChartScaffold(
@@ -83,8 +79,8 @@ fun StackedBarChart(
                 dataList = dataList,
                 stackedConfig = stackedConfig,
                 onSegmentClick = onSegmentClick,
-                segmentBounds = segmentBounds,
-                onTooltipStateChange = { tooltipState = it }
+                segmentBounds = tooltipManager.bounds,
+                onTooltipStateChange = tooltipManager::updateTooltip
             )
         ),
         xLabels = dataList.map { it.label },
@@ -96,7 +92,7 @@ fun StackedBarChart(
             ),
         config = scaffoldConfig,
     ) { chartContext ->
-        segmentBounds.clear()
+        tooltipManager.clearBounds()
 
         drawStackedBars(
             StackedBarDrawParams(
@@ -106,11 +102,11 @@ fun StackedBarChart(
                 colorList = colorList,
                 animationProgress = animationProgress.value,
                 onSegmentClick = onSegmentClick,
-                segmentBounds = segmentBounds,
+                segmentBounds = tooltipManager.bounds,
             )
         )
 
         drawStackedReferenceLineIfNeeded(stackedConfig, chartContext, textMeasurer)
-        drawStackedTooltipIfNeeded(tooltipState, stackedConfig, textMeasurer, chartContext)
+        drawStackedTooltipIfNeeded(tooltipManager.tooltipState, stackedConfig, textMeasurer, chartContext)
     }
 }

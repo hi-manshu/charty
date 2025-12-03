@@ -1,17 +1,12 @@
 package com.himanshoe.charty.point
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -27,9 +22,11 @@ import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawReferenceLine
-import com.himanshoe.charty.common.gesture.calculateDistance
+import com.himanshoe.charty.common.gesture.createPointTooltipState
+import com.himanshoe.charty.common.gesture.pointChartClickHandler
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.point.config.PointChartConfig
@@ -47,6 +44,9 @@ private const val MIN_ANIMATION_PROGRESS = ChartConstants.MIN_ANIMATION_PROGRESS
 private const val MAX_ANIMATION_PROGRESS = ChartConstants.MAX_ANIMATION_PROGRESS
 
 
+/**
+ * Creates a modifier with click handling for point chart.
+ */
 private fun createChartModifier(
     modifier: Modifier,
     dataList: List<PointData>,
@@ -54,40 +54,28 @@ private fun createChartModifier(
     pointBounds: List<Pair<Offset, PointData>>,
     onPointClick: ((PointData) -> Unit)?,
     onTooltipUpdate: (TooltipState?) -> Unit,
-): Modifier = modifier.then(
-    if (onPointClick != null) {
-        Modifier.pointerInput(dataList, pointConfig, onPointClick) {
-            detectTapGestures { offset ->
-                val tapRadius = pointConfig.pointRadius * TAP_RADIUS_MULTIPLIER
-                val clickedPoint = pointBounds.minByOrNull { (position, _) ->
-                    calculateDistance(position, offset)
-                }
-
-                clickedPoint?.let { (position, pointData) ->
-                    val distance = calculateDistance(position, offset)
-                    if (distance <= tapRadius) {
-                        onPointClick.invoke(pointData)
-                        onTooltipUpdate(
-                            TooltipState(
-                                content = pointConfig.tooltipFormatter(pointData),
-                                x = position.x - pointConfig.pointRadius,
-                                y = position.y,
-                                barWidth = pointConfig.pointRadius * POINT_RADIUS_MULTIPLIER,
-                                position = pointConfig.tooltipPosition,
-                            ),
-                        )
-                    } else {
-                        onTooltipUpdate(null)
-                    }
-                } ?: run {
-                    onTooltipUpdate(null)
-                }
+): Modifier {
+    return if (onPointClick != null) {
+        modifier.pointChartClickHandler(
+            dataList = dataList,
+            pointBounds = pointBounds,
+            tapRadius = pointConfig.pointRadius * TAP_RADIUS_MULTIPLIER,
+            onPointClick = onPointClick,
+            onTooltipStateChange = onTooltipUpdate,
+            createTooltipContent = { pointData, position ->
+                createPointTooltipState(
+                    content = pointConfig.tooltipFormatter(pointData),
+                    position = position,
+                    pointRadius = pointConfig.pointRadius,
+                    tooltipPosition = pointConfig.tooltipPosition,
+                    pointRadiusMultiplier = POINT_RADIUS_MULTIPLIER,
+                )
             }
-        }
+        )
     } else {
-        Modifier
-    },
-)
+        modifier
+    }
+}
 
 private fun DrawScope.drawPointWithAnimation(
     point: PointData,
@@ -202,8 +190,7 @@ fun PointChart(
         targetValue = MAX_ANIMATION_PROGRESS
     )
 
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val pointBounds = remember { mutableListOf<Pair<Offset, PointData>>() }
+    val tooltipManager = rememberTooltipManager<Offset, PointData>()
     val textMeasurer = rememberTextMeasurer()
 
 
@@ -212,9 +199,9 @@ fun PointChart(
             modifier = modifier,
             dataList = dataList,
             pointConfig = pointConfig,
-            pointBounds = pointBounds,
+            pointBounds = tooltipManager.bounds,
             onPointClick = onPointClick,
-            onTooltipUpdate = { tooltipState = it },
+            onTooltipUpdate = tooltipManager::updateTooltip,
         ),
         xLabels = dataList.getLabels(),
         yAxisConfig = AxisConfig(
@@ -225,7 +212,7 @@ fun PointChart(
         ),
         config = scaffoldConfig,
     ) { chartContext ->
-        pointBounds.clear()
+        tooltipManager.clearBounds()
 
         dataList.fastForEachIndexed { index, point ->
             drawPointWithAnimation(
@@ -236,7 +223,7 @@ fun PointChart(
                 chartContext = chartContext,
                 pointConfig = pointConfig,
                 color = color,
-                pointBounds = pointBounds,
+                pointBounds = tooltipManager.bounds,
                 addToBounds = onPointClick != null,
             )
         }
@@ -250,10 +237,10 @@ fun PointChart(
             )
         }
 
-        tooltipState?.let { state ->
+        tooltipManager.tooltipState?.let { state ->
             drawTooltipHighlight(
                 tooltipState = state,
-                pointBounds = pointBounds,
+                pointBounds = tooltipManager.bounds,
                 pointConfig = pointConfig,
                 color = color,
                 chartContext = chartContext,

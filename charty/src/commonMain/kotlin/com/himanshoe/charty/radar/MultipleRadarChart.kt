@@ -1,7 +1,6 @@
 package com.himanshoe.charty.radar
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -17,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.radar.config.LegendPosition
 import com.himanshoe.charty.radar.config.MultipleRadarChartConfig
@@ -489,22 +488,11 @@ private fun RadarChartContent(
  */
 @Composable
 private fun rememberRadarAnimation(animation: Animation): Animatable<Float, *> {
-    val animationProgress = remember {
-        Animatable(
-            if (animation is Animation.Enabled) DEFAULT_ANIMATION_START else DEFAULT_ANIMATION_END,
-        )
-    }
-
-    LaunchedEffect(animation) {
-        if (animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = DEFAULT_ANIMATION_END,
-                animationSpec = tween(durationMillis = animation.duration),
-            )
-        }
-    }
-
-    return animationProgress
+    return rememberChartAnimation(
+        animation = animation,
+        initialValue = if (animation is Animation.Enabled) DEFAULT_ANIMATION_START else DEFAULT_ANIMATION_END,
+        targetValue = DEFAULT_ANIMATION_END
+    )
 }
 
 /**
