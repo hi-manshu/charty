@@ -16,9 +16,9 @@ import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
-import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 
 internal fun DrawScope.drawComparisonBars(params: ComparisonBarDrawParams) {
     params.dataList.fastForEachIndexed { groupIndex, group ->
@@ -160,14 +160,12 @@ internal fun DrawScope.drawComparisonReferenceLineIfNeeded(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
 ) {
-    comparisonConfig.referenceLine?.let { referenceLineConfig ->
-        drawReferenceLine(
-            chartContext = chartContext,
-            orientation = ChartOrientation.VERTICAL,
-            config = referenceLineConfig,
-            textMeasurer = textMeasurer,
-        )
-    }
+    drawReferenceLineIfNeeded(
+        referenceLineConfig = comparisonConfig.referenceLine,
+        chartContext = chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = textMeasurer,
+    )
 }
 
 @OptIn(ExperimentalTextApi::class)
@@ -177,15 +175,11 @@ internal fun DrawScope.drawComparisonTooltipIfNeeded(
     textMeasurer: TextMeasurer,
     chartContext: ChartContext,
 ) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = comparisonConfig.tooltipConfig,
-            textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
-        )
-    }
+    drawTooltipIfNeeded(
+        tooltipState = tooltipState,
+        tooltipConfig = comparisonConfig.tooltipConfig,
+        textMeasurer = textMeasurer,
+        chartContext = chartContext,
+    )
 }
 

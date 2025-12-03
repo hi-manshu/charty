@@ -14,9 +14,9 @@ import com.himanshoe.charty.bar.config.StackedBarSegment
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
-import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 
 internal fun DrawScope.drawStackedBars(params: StackedBarDrawParams) {
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
@@ -135,14 +135,12 @@ internal fun DrawScope.drawStackedReferenceLineIfNeeded(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer
 ) {
-    stackedConfig.referenceLine?.let { referenceLineConfig ->
-        drawReferenceLine(
-            chartContext = chartContext,
-            orientation = ChartOrientation.VERTICAL,
-            config = referenceLineConfig,
-            textMeasurer = textMeasurer,
-        )
-    }
+    drawReferenceLineIfNeeded(
+        referenceLineConfig = stackedConfig.referenceLine,
+        chartContext = chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = textMeasurer,
+    )
 }
 
 @OptIn(ExperimentalTextApi::class)
@@ -152,15 +150,11 @@ internal fun DrawScope.drawStackedTooltipIfNeeded(
     textMeasurer: TextMeasurer,
     chartContext: ChartContext
 ) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = stackedConfig.tooltipConfig,
-            textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
-        )
-    }
+    drawTooltipIfNeeded(
+        tooltipState = tooltipState,
+        tooltipConfig = stackedConfig.tooltipConfig,
+        textMeasurer = textMeasurer,
+        chartContext = chartContext,
+    )
 }
 

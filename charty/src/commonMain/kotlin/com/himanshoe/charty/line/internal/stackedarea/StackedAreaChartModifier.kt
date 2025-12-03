@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.util.fastMap
+import com.himanshoe.charty.common.gesture.findClickedItemWithBounds
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
@@ -22,11 +24,10 @@ internal fun Modifier.stackedAreaChartClickHandler(
 ): Modifier {
     return this.pointerInput(dataList, lineConfig, onAreaClick) {
         detectTapGestures { offset ->
-            val clickedSegment = areaSegmentBounds.find { (bounds, _, _) ->
-                bounds.contains(offset)
-            }
+            val bounds = areaSegmentBounds.fastMap { (rect, _, point) -> rect to point }
+            val clickedSegment = findClickedItemWithBounds(offset, bounds)
 
-            clickedSegment?.let { (bounds, _, areaPoint) ->
+            clickedSegment?.let { (bounds, areaPoint) ->
                 onAreaClick.invoke(areaPoint)
                 onTooltipStateChange(
                     TooltipState(
@@ -43,4 +44,6 @@ internal fun Modifier.stackedAreaChartClickHandler(
         }
     }
 }
+
+
 

@@ -7,6 +7,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.common.gesture.createRectangularTooltipState
+import com.himanshoe.charty.common.gesture.findClickedItemWithBounds
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 internal fun createStackedBarChartModifier(
@@ -19,18 +21,14 @@ internal fun createStackedBarChartModifier(
     return if (onSegmentClick != null) {
         Modifier.pointerInput(dataList, stackedConfig, onSegmentClick) {
             detectTapGestures { offset ->
-                val clickedSegment = segmentBounds.find { (rect, _) ->
-                    rect.contains(offset)
-                }
+                val clickedSegment = findClickedItemWithBounds(offset, segmentBounds)
 
                 clickedSegment?.let { (rect, segment) ->
                     onSegmentClick.invoke(segment)
                     onTooltipStateChange(
-                        TooltipState(
+                        createRectangularTooltipState(
                             content = stackedConfig.tooltipFormatter(segment),
-                            x = rect.left,
-                            y = rect.top,
-                            barWidth = rect.width,
+                            rect = rect,
                             position = stackedConfig.tooltipPosition,
                         )
                     )

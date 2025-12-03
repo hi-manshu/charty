@@ -6,6 +6,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
+import com.himanshoe.charty.common.gesture.createRectangularTooltipState
+import com.himanshoe.charty.common.gesture.findClickedItemWithBounds
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
@@ -20,18 +22,13 @@ internal fun Modifier.comboChartClickHandler(
 ): Modifier {
     return this.pointerInput(dataList, comboConfig, onDataClick) {
         detectTapGestures { offset ->
-            val clickedData = dataBounds.find { (rect, _) ->
-                rect.contains(offset)
-            }
-
+            val clickedData = findClickedItemWithBounds(offset, dataBounds)
             clickedData?.let { (rect, comboData) ->
                 onDataClick.invoke(comboData)
                 onTooltipStateChange(
-                    TooltipState(
+                    createRectangularTooltipState(
                         content = comboConfig.tooltipFormatter(comboData),
-                        x = rect.left,
-                        y = rect.top,
-                        barWidth = rect.width,
+                        rect = rect,
                         position = comboConfig.tooltipPosition,
                     ),
                 )

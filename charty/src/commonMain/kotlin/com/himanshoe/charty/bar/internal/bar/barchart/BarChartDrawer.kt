@@ -15,9 +15,9 @@ import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
-import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 
 /**
  * Draw the bars on the chart
@@ -81,14 +81,12 @@ internal fun DrawScope.drawBarReferenceLineIfNeeded(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
 ) {
-    barConfig.referenceLine?.let { referenceLineConfig ->
-        drawReferenceLine(
-            chartContext = chartContext,
-            orientation = ChartOrientation.VERTICAL,
-            config = referenceLineConfig,
-            textMeasurer = textMeasurer,
-        )
-    }
+    drawReferenceLineIfNeeded(
+        referenceLineConfig = barConfig.referenceLine,
+        chartContext = chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = textMeasurer,
+    )
 }
 
 /**
@@ -101,16 +99,12 @@ internal fun DrawScope.drawBarTooltipIfNeeded(
     textMeasurer: TextMeasurer,
     chartContext: ChartContext,
 ) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = barConfig.tooltipConfig,
-            textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
-        )
-    }
+    drawTooltipIfNeeded(
+        tooltipState = tooltipState,
+        tooltipConfig = barConfig.tooltipConfig,
+        textMeasurer = textMeasurer,
+        chartContext = chartContext,
+    )
 }
 
 /**

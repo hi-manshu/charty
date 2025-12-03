@@ -6,6 +6,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
 import com.himanshoe.charty.bar.config.WaterfallChartConfig
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.common.gesture.createRectangularTooltipState
+import com.himanshoe.charty.common.gesture.findClickedItemWithBounds
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
@@ -21,18 +23,13 @@ internal fun createWaterfallClickModifier(
     return if (onBarClick != null) {
         Modifier.pointerInput(items, config, onBarClick) {
             detectTapGestures { offset ->
-                val clickedBar = barBounds.find { (rect, _) ->
-                    rect.contains(offset)
-                }
-
+                val clickedBar = findClickedItemWithBounds(offset, barBounds)
                 clickedBar?.let { (rect, barData) ->
                     onBarClick.invoke(barData)
                     onTooltipUpdate(
-                        TooltipState(
+                        createRectangularTooltipState(
                             content = config.tooltipFormatter(barData),
-                            x = rect.left,
-                            y = rect.top,
-                            barWidth = rect.width,
+                            rect = rect,
                             position = config.tooltipPosition,
                         )
                     )

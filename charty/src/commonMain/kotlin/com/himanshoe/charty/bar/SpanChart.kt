@@ -20,13 +20,13 @@ import com.himanshoe.charty.bar.internal.span.calculateAxisOffset
 import com.himanshoe.charty.bar.internal.span.createAxisConfig
 import com.himanshoe.charty.bar.internal.span.createSpanChartModifier
 import com.himanshoe.charty.bar.internal.span.drawSpans
-import com.himanshoe.charty.bar.internal.span.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.span.rememberSpanAnimation
 import com.himanshoe.charty.bar.internal.span.rememberSpanValueRange
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
@@ -122,7 +122,12 @@ fun SpanChart(
             )
         )
 
-        drawTooltipIfNeeded(tooltipState, barConfig, textMeasurer, chartContext)
+        drawTooltipIfNeeded(
+            tooltipState = tooltipState,
+            tooltipConfig = barConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartContext = chartContext,
+        )
     }
 }
 

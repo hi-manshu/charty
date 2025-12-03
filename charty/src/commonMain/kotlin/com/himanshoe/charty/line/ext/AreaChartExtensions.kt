@@ -4,21 +4,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import com.himanshoe.charty.color.ChartyColor
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 private const val DEFAULT_FILL_ALPHA = 0.3f
 private const val CONTROL_POINT_DIVISOR = 3f
 private const val CONTROL_POINT_MULTIPLIER = 2f
 
-/**
- * Calculate distance between two points
- */
-internal fun calculateDistance(point1: Offset, point2: Offset): Float {
-    val dx = point1.x - point2.x
-    val dy = point1.y - point2.y
-    return sqrt(dx.pow(2) + dy.pow(2))
-}
 
 /**
  * Create area path with optional smooth curve

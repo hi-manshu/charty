@@ -6,11 +6,7 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.util.fastForEachIndexed
-import com.himanshoe.charty.common.ChartContext
-import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 
 internal fun DrawScope.drawSpans(params: SpanDrawParams) {
     val range = params.maxValue - params.minValue
@@ -60,24 +56,6 @@ internal fun DrawScope.drawSpans(params: SpanDrawParams) {
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
-internal fun DrawScope.drawTooltipIfNeeded(
-    tooltipState: TooltipState?,
-    barConfig: com.himanshoe.charty.bar.config.BarChartConfig,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    chartContext: ChartContext
-) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = barConfig.tooltipConfig,
-            textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
-        )
-    }
-}
 
 /**
  * Helper function to draw a span (horizontal bar) with fully rounded corners

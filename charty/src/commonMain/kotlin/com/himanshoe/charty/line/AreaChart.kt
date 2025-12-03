@@ -27,11 +27,11 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.gesture.calculateDistance
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
-import com.himanshoe.charty.line.ext.calculateDistance
 import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.createAreaBrush

@@ -4,6 +4,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import com.himanshoe.charty.common.gesture.calculateDistance
 import com.himanshoe.charty.point.data.BubbleData
 import kotlin.math.sqrt
 
@@ -31,15 +32,6 @@ internal data class BubbleBounds(
     val radius: Float,
     val data: BubbleData,
 )
-
-/**
- * Calculate the Euclidean distance between two points
- */
-internal fun calculateDistance(point1: Offset, point2: Offset): Float {
-    val dx = point1.x - point2.x
-    val dy = point1.y - point2.y
-    return sqrt(dx * dx + dy * dy)
-}
 
 /**
  * Calculate bubble size information from data list
