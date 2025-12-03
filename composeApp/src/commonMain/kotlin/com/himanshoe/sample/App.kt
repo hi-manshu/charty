@@ -111,6 +111,9 @@ import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
 import com.himanshoe.charty.bar.WavyChart
+import com.himanshoe.charty.block.BlockBarChart
+import com.himanshoe.charty.block.config.BlockBarChartConfig
+import com.himanshoe.charty.block.data.BlockData
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -128,7 +131,86 @@ fun App(modifier: Modifier = Modifier) {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-                // Wavy Chart demo at position 0
+                // BlockBarChart demo at position 0
+                item {
+                    ChartCard(
+                        title = "Block Bar Chart",
+                        description = "Horizontal segmented pill-shaped bar showing proportional composition.",
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            // Example 1: Basic 3-block bar
+                            Text(
+                                text = "Product Categories",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            BlockBarChart(
+                                data = {
+                                    listOf(
+                                        BlockData(1f, ChartyColor.Solid(Color(0xFFFF6B81))), // Pink
+                                        BlockData(2f, ChartyColor.Solid(Color(0xFFFFE066))), // Yellow
+                                        BlockData(5f, ChartyColor.Solid(Color(0xFF5BE37D))), // Green
+                                    )
+                                },
+                                blockBarConfig = BlockBarChartConfig(
+                                    gapBetweenBlocks = 4.dp,
+                                    barHeight = 16.dp,
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Example 2: Larger bar with 4 segments
+                            Text(
+                                text = "Team Productivity",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            BlockBarChart(
+                                data = {
+                                    listOf(
+                                        BlockData(25f, ChartyColor.Solid(Color(0xFF2196F3))),
+                                        BlockData(40f, ChartyColor.Solid(Color(0xFF4CAF50))),
+                                        BlockData(15f, ChartyColor.Solid(Color(0xFFFF9800))),
+                                        BlockData(20f, ChartyColor.Solid(Color(0xFFE91E63))),
+                                    )
+                                },
+                                blockBarConfig = BlockBarChartConfig(
+                                    gapBetweenBlocks = 6.dp,
+                                    barHeight = 24.dp,
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Example 3: Progress bar style
+                            Text(
+                                text = "Project Completion",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            BlockBarChart(
+                                data = {
+                                    listOf(
+                                        BlockData(70f, ChartyColor.Solid(Color(0xFF00C853))),
+                                        BlockData(30f, ChartyColor.Solid(Color(0xFFBDBDBD))),
+                                    )
+                                },
+                                blockBarConfig = BlockBarChartConfig(
+                                    gapBetweenBlocks = 2.dp,
+                                    barHeight = 12.dp,
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
+
+                // Wavy Chart demo at position 1
                 item {
                     ChartCard(
                         title = "Wavy Chart",
