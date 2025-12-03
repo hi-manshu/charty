@@ -1,13 +1,11 @@
 package com.himanshoe.charty.combo.internal
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.input.pointer.pointerInput
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.gesture.createRectangularTooltipState
-import com.himanshoe.charty.common.gesture.findClickedItemWithBounds
+import com.himanshoe.charty.common.gesture.rectangularChartClickHandler
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
@@ -20,22 +18,18 @@ internal fun Modifier.comboChartClickHandler(
     onDataClick: (ComboChartData) -> Unit,
     onTooltipStateChange: (TooltipState?) -> Unit,
 ): Modifier {
-    return this.pointerInput(dataList, comboConfig, onDataClick) {
-        detectTapGestures { offset ->
-            val clickedData = findClickedItemWithBounds(offset, dataBounds)
-            clickedData?.let { (rect, comboData) ->
-                onDataClick.invoke(comboData)
-                onTooltipStateChange(
-                    createRectangularTooltipState(
-                        content = comboConfig.tooltipFormatter(comboData),
-                        rect = rect,
-                        position = comboConfig.tooltipPosition,
-                    ),
-                )
-            } ?: run {
-                onTooltipStateChange(null)
-            }
+    return this.rectangularChartClickHandler(
+        dataList = dataList,
+        bounds = dataBounds,
+        onItemClick = onDataClick,
+        onTooltipStateChange = onTooltipStateChange,
+        createTooltipContent = { comboData, rect ->
+            createRectangularTooltipState(
+                content = comboConfig.tooltipFormatter(comboData),
+                rect = rect,
+                position = comboConfig.tooltipPosition,
+            )
         }
-    }
+    )
 }
 

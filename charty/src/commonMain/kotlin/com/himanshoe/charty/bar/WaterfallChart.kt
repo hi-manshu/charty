@@ -58,15 +58,6 @@ fun WaterfallChart(
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
     val textMeasurer = rememberTextMeasurer()
 
-    LaunchedEffect(config.animation) {
-        if (config.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = config.animation.duration),
-            )
-        }
-    }
-
     ChartScaffold(
         modifier = modifier.then(
             createWaterfallClickModifier(items, config, barBounds, onBarClick) { tooltipState = it }
