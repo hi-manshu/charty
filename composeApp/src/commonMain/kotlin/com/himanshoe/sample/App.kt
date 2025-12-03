@@ -110,6 +110,7 @@ import com.himanshoe.charty.radar.config.RadarGridStyle
 import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
+import com.himanshoe.charty.bar.WavyChart
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -127,6 +128,31 @@ fun App(modifier: Modifier = Modifier) {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
+                // Wavy Chart demo at position 0
+                item {
+                    ChartCard(
+                        title = "Wavy Chart",
+                        description = "Animated sine-wave bars supporting positive and negative values.",
+                    ) {
+                        WavyChart(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(240.dp),
+                            data = {
+                                listOf(
+                                    BarData("Mon", 10f),
+                                    BarData("Tue", -6f),
+                                    BarData("Wed", 14f),
+                                    BarData("Thu", -12f),
+                                    BarData("Fri", 8f),
+                                )
+                            },
+                            scaffoldConfig = ChartScaffoldConfig(),
+                        )
+                    }
+                }
+
                 // Bubble Bar Chart - NEW EXAMPLE AT POSITION 0
                 item {
                     var selectedBar by remember { mutableStateOf<BarData?>(null) }

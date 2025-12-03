@@ -123,4 +123,3 @@ tasks.register("openComposeReports") {
         }
     }
 }
-

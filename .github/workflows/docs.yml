@@ -1,0 +1,16 @@
+name: Build and Publish Docs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # Dokka-based documentation generation has been disabled because Dokka was removed from the project.
+  # If you add another documentation generator later, wire it up here.
+  skip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip docs
+        run: echo "Docs generation is currently disabled."

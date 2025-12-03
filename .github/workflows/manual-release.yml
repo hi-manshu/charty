@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -96,7 +98,7 @@ jobs:
           git commit -m "chore: update version code to ${{ steps.version.outputs.versionCode }}" || true
           git push || true
 
-      - name: Build release summary (for Telegram)
+      - name: Build release summary
         if: success()
         id: summary
         run: |
@@ -104,14 +106,64 @@ jobs:
           VERSION_CODE="${{ steps.version.outputs.versionCode }}"
 
           echo "Collecting latest changes..."
-          CHANGES=$(git log -5 --pretty=format:'- %s (%h)')
+
+          # Get the last 10 commit subjects
+          git log -10 --pretty=format:'%s' > .recent_commits.txt
+
+          FEATURES=$(grep -iE 'feat|feature' .recent_commits.txt || true)
+          FIXES=$(grep -iE 'fix|bug' .recent_commits.txt || true)
+          CHORES=$(grep -iE 'chore|refactor|docs' .recent_commits.txt || true)
 
           echo "Release Summary:" > release-summary.txt
-          echo "charty Release $VERSION_NAME (code: $VERSION_CODE)" >> release-summary.txt
+          echo "Charty v$VERSION_NAME (code: $VERSION_CODE)" >> release-summary.txt
           echo "" >> release-summary.txt
-          echo "Recent changes:" >> release-summary.txt
-          echo "$CHANGES" >> release-summary.txt
+          echo "This release includes:" >> release-summary.txt
 
-          echo "text<<EOF" >> $GITHUB_OUTPUT
-          cat release-summary.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          if [ -n "$FEATURES" ]; then
+            echo "" >> release-summary.txt
+            echo "New features:" >> release-summary.txt
+            echo "$FEATURES" | sed 's/^/- /' >> release-summary.txt
+          fi
+
+          if [ -n "$FIXES" ]; then
+            echo "" >> release-summary.txt
+            echo "Bug fixes and improvements:" >> release-summary.txt
+            echo "$FIXES" | sed 's/^/- /' >> release-summary.txt
+          fi
+
+          if [ -n "$CHORES" ]; then
+            echo "" >> release-summary.txt
+            echo "Internal changes and maintenance:" >> release-summary.txt
+            echo "$CHORES" | sed 's/^/- /' >> release-summary.txt
+          fi
+
+          if [ ! -s release-summary.txt ]; then
+            echo "This release contains internal updates and maintenance changes." >> release-summary.txt
+          fi
+
+          echo "" >> release-summary.txt
+          echo "Full recent history:" >> release-summary.txt
+          git log -10 --pretty=format:'- %s (%h)' >> release-summary.txt
+
+          cat release-summary.txt
+
+      - name: Create and push Git tag
+        if: success()
+        run: |
+          VERSION_NAME="${{ github.event.inputs.versionName }}"
+
+          TAG_NAME="v$VERSION_NAME"
+
+          echo "Creating tag $TAG_NAME"
+          git tag -a "$TAG_NAME" -m "Charty v$VERSION_NAME"
+          git push origin "$TAG_NAME"
+
+      - name: Create GitHub Release
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.versionName }}
+          name: Charty v${{ github.event.inputs.versionName }}
+          body_path: release-summary.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
