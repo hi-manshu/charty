@@ -52,6 +52,9 @@ fun BlockBarChart(
             .fillMaxWidth()
             .height(blockBarConfig.barHeight),
     ) {
-        drawBlockBar(blocks = blocks, config = blockBarConfig)
+        drawBlockBar(
+            blocks = blocks,
+            config = blockBarConfig,
+        )
     }
 }
