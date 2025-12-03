@@ -19,8 +19,8 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallRange
 import com.himanshoe.charty.bar.internal.bar.waterfall.createWaterfallClickModifier
 import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallBar
 import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
-import com.himanshoe.charty.bar.internal.bar.waterfall.rememberWaterfallAnimationProgress
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -53,7 +53,7 @@ fun WaterfallChart(
         calculateWaterfallRange(cumulativeValues)
     }
 
-    val animationProgress = rememberWaterfallAnimationProgress(config)
+    val animationProgress = rememberChartAnimation(config.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
     val textMeasurer = rememberTextMeasurer()

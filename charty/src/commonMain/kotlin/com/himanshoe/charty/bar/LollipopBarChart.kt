@@ -1,10 +1,7 @@
 package com.himanshoe.charty.bar
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,16 +17,16 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
-import com.himanshoe.charty.bar.ext.calculateMaxValue
-import com.himanshoe.charty.bar.ext.getLabels
-import com.himanshoe.charty.bar.ext.getValues
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.util.calculateMaxValue
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -119,21 +116,10 @@ private fun rememberLollipopValueRange(dataList: List<BarData>): Pair<Float, Flo
 }
 
 @Composable
-private fun rememberLollipopAnimation(animation: Animation): Animatable<Float, *> {
-    val animationProgress = remember {
-        Animatable(if (animation is Animation.Enabled) 0f else 1f)
-    }
-
-    LaunchedEffect(animation) {
-        if (animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = animation.duration),
-            )
-        }
-    }
-
-    return animationProgress
+private fun rememberLollipopAnimation(
+    animation: com.himanshoe.charty.common.config.Animation
+): androidx.compose.animation.core.Animatable<Float, *> {
+    return rememberChartAnimation(animation)
 }
 
 @Composable

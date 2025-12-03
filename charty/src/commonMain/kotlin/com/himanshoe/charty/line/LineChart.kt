@@ -1,9 +1,6 @@
 package com.himanshoe.charty.line
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,17 +14,17 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.util.calculateMaxValue
+import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
-import com.himanshoe.charty.line.ext.calculateMaxValue
-import com.himanshoe.charty.line.ext.calculateMinValue
-import com.himanshoe.charty.line.ext.getLabels
-import com.himanshoe.charty.line.ext.getValues
 import com.himanshoe.charty.line.internal.line.calculatePointPositions
 import com.himanshoe.charty.line.internal.line.drawAnimatedPoints
 import com.himanshoe.charty.line.internal.line.drawLineChartTooltip
@@ -89,19 +86,10 @@ fun LineChart(
         calculateMinValue(values) to calculateMaxValue(values)
     }
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = remember {
-        Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-    }
+    val animationProgress = rememberChartAnimation(lineConfig.animation)
+
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
-    LaunchedEffect(lineConfig.animation) {
-        if (lineConfig.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = lineConfig.animation.duration),
-            )
-        }
-    }
     val textMeasurer = rememberTextMeasurer()
     ChartScaffold(
         modifier = modifier.then(

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.common.config.Animation
 
@@ -17,7 +18,7 @@ internal fun rememberAnimatedProgress(
     ringsList: List<CircularRingData>,
     animation: Animation,
 ): List<Float> {
-    return ringsList.map { ring ->
+    return ringsList.fastMap { ring ->
         val targetProgress = ring.progress.coerceIn(0f, ring.maxValue)
         when (animation) {
             is Animation.Disabled -> targetProgress

@@ -24,6 +24,7 @@ import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonTooltipIfN
 import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonChartValues
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**

@@ -1,10 +1,7 @@
 package com.himanshoe.charty.line
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,22 +21,20 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.gesture.calculateDistance
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
-import com.himanshoe.charty.line.ext.calculateMaxValue
-import com.himanshoe.charty.line.ext.calculateMinValue
 import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createAreaPath
 import com.himanshoe.charty.line.ext.createLineBrush
 import com.himanshoe.charty.line.ext.createLinePath
-import com.himanshoe.charty.line.ext.getLabels
-import com.himanshoe.charty.line.ext.getValues
 
 private const val DEFAULT_FILL_ALPHA = 0.3f
 private const val DEFAULT_AXIS_STEPS = 6
@@ -123,7 +118,7 @@ fun AreaChart(
 
     val (minValue, maxValue) = rememberAreaValueRange(dataList, lineConfig.negativeValuesDrawMode)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = rememberAreaAnimation(lineConfig.animation)
+    val animationProgress = rememberChartAnimation(lineConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val pointBounds = remember { mutableListOf<Pair<Offset, LineData>>() }
     val textMeasurer = rememberTextMeasurer()
@@ -173,26 +168,10 @@ private fun rememberAreaValueRange(
 ): Pair<Float, Float> {
     return remember(dataList, negativeValuesDrawMode) {
         val values = dataList.getValues()
-        calculateMinValue(values) to calculateMaxValue(values)
+        val minValue = com.himanshoe.charty.common.util.calculateMinValue(values)
+        val maxValue = com.himanshoe.charty.common.util.calculateMaxValue(values)
+        minValue to maxValue
     }
-}
-
-@Composable
-private fun rememberAreaAnimation(animation: Animation): Animatable<Float, *> {
-    val animationProgress = remember {
-        Animatable(if (animation is Animation.Enabled) 0f else 1f)
-    }
-
-    LaunchedEffect(animation) {
-        if (animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = animation.duration),
-            )
-        }
-    }
-
-    return animationProgress
 }
 
 @Composable

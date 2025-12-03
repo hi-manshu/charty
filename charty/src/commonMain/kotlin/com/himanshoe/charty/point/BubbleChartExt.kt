@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import com.himanshoe.charty.common.gesture.calculateDistance
+import com.himanshoe.charty.common.util.calculateMaxValue
+import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.point.data.BubbleData
 import kotlin.math.sqrt
 

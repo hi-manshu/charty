@@ -1,10 +1,7 @@
 package com.himanshoe.charty.point
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,25 +20,31 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.constants.ChartConstants
+import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.gesture.calculateDistance
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.util.calculateMaxValue
+import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.PointData
 
-private const val TAP_RADIUS_MULTIPLIER = 2.5f
-private const val POINT_RADIUS_MULTIPLIER = 2f
-private const val HIGHLIGHT_CIRCLE_OUTER_OFFSET = 3f
-private const val HIGHLIGHT_CIRCLE_INNER_OFFSET = 2f
-private const val GUIDELINE_WIDTH = 1.5f
-private const val GUIDELINE_ALPHA = 0.1f
-private const val AXIS_STEPS = 6
-private const val MIN_ANIMATION_PROGRESS = 0f
-private const val MAX_ANIMATION_PROGRESS = 1f
+// Use constants from ChartConstants for consistency across charts
+private const val TAP_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_TAP_RADIUS_MULTIPLIER
+private const val POINT_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_HIGHLIGHT_RADIUS_MULTIPLIER
+private const val HIGHLIGHT_CIRCLE_OUTER_OFFSET = ChartConstants.DEFAULT_HIGHLIGHT_OUTER_OFFSET
+private const val HIGHLIGHT_CIRCLE_INNER_OFFSET = ChartConstants.DEFAULT_HIGHLIGHT_INNER_OFFSET
+private const val GUIDELINE_WIDTH = ChartConstants.DEFAULT_GUIDELINE_WIDTH
+private const val GUIDELINE_ALPHA = ChartConstants.DEFAULT_GUIDELINE_ALPHA
+private const val AXIS_STEPS = ChartConstants.DEFAULT_AXIS_STEPS
+private const val MIN_ANIMATION_PROGRESS = ChartConstants.MIN_ANIMATION_PROGRESS
+private const val MAX_ANIMATION_PROGRESS = ChartConstants.MAX_ANIMATION_PROGRESS
 
 
 private fun createChartModifier(
@@ -192,21 +195,17 @@ fun PointChart(
     }
 
     val isBelowAxisMode = pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = remember {
-        Animatable(if (pointConfig.animation is Animation.Enabled) MIN_ANIMATION_PROGRESS else MAX_ANIMATION_PROGRESS)
-    }
+
+    val animationProgress = rememberChartAnimation(
+        animation = pointConfig.animation,
+        initialValue = null,
+        targetValue = MAX_ANIMATION_PROGRESS
+    )
+
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val pointBounds = remember { mutableListOf<Pair<Offset, PointData>>() }
     val textMeasurer = rememberTextMeasurer()
 
-    LaunchedEffect(pointConfig.animation) {
-        if (pointConfig.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = MAX_ANIMATION_PROGRESS,
-                animationSpec = tween(durationMillis = pointConfig.animation.duration),
-            )
-        }
-    }
 
     ChartScaffold(
         modifier = createChartModifier(

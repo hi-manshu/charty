@@ -1,9 +1,6 @@
 package com.himanshoe.charty.candlestick
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -20,8 +17,8 @@ import com.himanshoe.charty.candlestick.internal.calculateOptimizedLabels
 import com.himanshoe.charty.candlestick.internal.drawCandlestick
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
 /**
@@ -92,17 +89,7 @@ fun CandlestickChart(
         calculateOptimizedLabels(dataList.getLabels())
     }
 
-    val animationProgress = remember {
-        Animatable(if (candlestickConfig.animation is Animation.Enabled) 0f else 1f)
-    }
-    LaunchedEffect(candlestickConfig.animation) {
-        if (candlestickConfig.animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = candlestickConfig.animation.duration),
-            )
-        }
-    }
+    val animationProgress = rememberChartAnimation(candlestickConfig.animation)
 
     ChartScaffold(
         modifier = modifier,

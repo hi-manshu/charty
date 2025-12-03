@@ -17,11 +17,11 @@ import com.himanshoe.charty.bar.internal.bar.stacked.createStackedBarChartModifi
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedBars
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedTooltipIfNeeded
-import com.himanshoe.charty.bar.internal.bar.stacked.rememberStackedAnimation
 import com.himanshoe.charty.bar.internal.bar.stacked.rememberStackedMaxTotal
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -72,7 +72,7 @@ fun StackedBarChart(
     require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
     val (maxTotal, colorList) = rememberStackedMaxTotal(dataList, colors)
-    val animationProgress = rememberStackedAnimation(stackedConfig.animation)
+    val animationProgress = rememberChartAnimation(stackedConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val segmentBounds = remember { mutableListOf<Pair<Rect, StackedBarSegment>>() }
     val textMeasurer = rememberTextMeasurer()

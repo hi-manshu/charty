@@ -21,10 +21,10 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
-import com.himanshoe.charty.line.ext.calculateMaxValue
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.internal.stackedarea.StackedAreaChartConstants
 import com.himanshoe.charty.line.internal.stackedarea.StackedAreaSeriesParams

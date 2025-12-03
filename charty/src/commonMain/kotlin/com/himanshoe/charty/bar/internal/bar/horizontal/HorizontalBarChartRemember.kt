@@ -1,16 +1,15 @@
 package com.himanshoe.charty.bar.internal.bar.horizontal
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
-import com.himanshoe.charty.bar.ext.calculateMaxValue
-import com.himanshoe.charty.bar.ext.calculateMinValue
-import com.himanshoe.charty.bar.ext.getValues
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.util.calculateMaxValue
+import com.himanshoe.charty.common.util.calculateMinValue
 
 @Composable
 internal fun rememberHorizontalValueRange(
@@ -28,19 +27,6 @@ internal fun rememberHorizontalValueRange(
 
 @Composable
 internal fun rememberHorizontalAnimation(animation: Animation): Animatable<Float, *> {
-    val animationProgress = remember {
-        Animatable(if (animation is Animation.Enabled) 0f else 1f)
-    }
-
-    LaunchedEffect(animation) {
-        if (animation is Animation.Enabled) {
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = animation.duration),
-            )
-        }
-    }
-
-    return animationProgress
+    return rememberChartAnimation(animation)
 }
 

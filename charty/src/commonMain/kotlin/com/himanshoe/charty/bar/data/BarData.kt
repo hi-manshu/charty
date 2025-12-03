@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar.data
 
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.data.ChartDataPoint
 
 /**
  * Data class representing a single bar in a bar chart
@@ -10,7 +11,7 @@ import com.himanshoe.charty.color.ChartyColor
  * @param color Optional color for this specific bar. If null, uses the chart's default color scheme
  */
 data class BarData(
-    val label: String,
-    val value: Float,
+    override val label: String,
+    override val value: Float,
     val color: ChartyColor? = null,
-)
+) : ChartDataPoint

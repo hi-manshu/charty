@@ -12,7 +12,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
-import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.bar.internal.bar.barchart.calculateBarBaselineY
 import com.himanshoe.charty.bar.internal.bar.barchart.createBarAxisConfig
 import com.himanshoe.charty.bar.internal.bar.barchart.createBarChartModifier
@@ -25,6 +24,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
