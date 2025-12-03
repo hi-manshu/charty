@@ -11,7 +11,7 @@ plugins {
 }
 
 group = System.getenv("GROUP") ?: project.findProperty("GROUP")?.toString() ?: "com.himanshoe"
-version = System.getenv("VERSION_NAME") ?: project.findProperty("VERSION_NAME")?.toString() ?: "1.0.0"
+version = System.getenv("VERSION_NAME") ?: project.findProperty("VERSION_NAME")?.toString()
 
 composeCompiler {
     metricsDestination.set(project.layout.buildDirectory.dir("compose_metrics"))
