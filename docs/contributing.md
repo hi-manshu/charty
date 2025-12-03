@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Charty! This document provides gu
 
 ## Code of Conduct
 
-Please read and follow our [Code of Conduct](../CODE_OF_CONDUCT.md).
+Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
