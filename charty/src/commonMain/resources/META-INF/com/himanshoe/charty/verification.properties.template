@@ -1,0 +1,4 @@
+#This is the verification token for the com.himanshoe:charty SDK.
+#Template file - actual token will be generated at build time
+token=${MAVEN_CENTRAL_VERIFICATION_TOKEN}
+

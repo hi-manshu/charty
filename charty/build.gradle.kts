@@ -1,3 +1,4 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -97,9 +98,37 @@ tasks.dokkaHtml.configure {
     }
 }
 
-// Configure Maven publishing using Vanniktech plugin
+// Task to generate verification.properties from template with environment variable
+val generateVerificationFile by tasks.registering {
+    val templateFile = file("src/commonMain/resources/META-INF/com/himanshoe/charty/verification.properties.template")
+    val outputFile = file("src/commonMain/resources/META-INF/com/himanshoe/charty/verification.properties")
+    val verificationToken = System.getenv("MAVEN_CENTRAL_VERIFICATION_TOKEN") ?: ""
+
+    inputs.file(templateFile)
+    inputs.property("verificationToken", verificationToken)
+    outputs.file(outputFile)
+
+    doLast {
+        if (verificationToken.isEmpty()) {
+            logger.warn("MAVEN_CENTRAL_VERIFICATION_TOKEN not set. Skipping verification file generation.")
+            if (outputFile.exists()) {
+                logger.info("Using existing verification.properties file.")
+            }
+        } else {
+            outputFile.parentFile.mkdirs()
+            val content = templateFile.readText().replace("\${MAVEN_CENTRAL_VERIFICATION_TOKEN}", verificationToken)
+            outputFile.writeText(content)
+            logger.lifecycle("✅ Generated verification.properties with token from environment variable")
+        }
+    }
+}
+
+tasks.withType<ProcessResources> {
+    dependsOn(generateVerificationFile)
+}
+
 mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
 

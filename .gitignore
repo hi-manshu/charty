@@ -47,3 +47,6 @@ DerivedData/
 # Logs
 *.log
 
+# Maven Central verification file (generated at build time)
+**/src/**/resources/META-INF/com/himanshoe/charty/verification.properties
+
