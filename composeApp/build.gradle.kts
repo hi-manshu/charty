@@ -60,6 +60,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(project(":charty"))
+//            implementation("com.himanshoe:charty:3.0.0-rc01")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

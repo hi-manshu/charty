@@ -34,11 +34,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.BarChart
@@ -114,16 +116,14 @@ import com.himanshoe.charty.bar.WavyChart
 import com.himanshoe.charty.block.BlockBarChart
 import com.himanshoe.charty.block.config.BlockBarChartConfig
 import com.himanshoe.charty.block.data.BlockData
+import com.himanshoe.charty.radar.RadarChart
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
 fun App(modifier: Modifier = Modifier) {
     MaterialTheme {
         Column(
-            modifier =
-                modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
+            modifier = modifier.fillMaxSize(),
         ) {
             // Scrollable content
             LazyColumn(
@@ -131,13 +131,183 @@ fun App(modifier: Modifier = Modifier) {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-                // BlockBarChart demo at position 0
+                // RadarChart demo at position 0
+                item {
+                    ChartCard(
+                        title = "Radar Chart",
+                        description = "Multi-dimensional data visualization showing attributes on radiating axes.",
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            // Example 1: Player Stats - Polygon Grid
+                            Text(
+                                text = "Player Performance",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                RadarChart(
+                                    data = {
+                                        listOf(
+                                            RadarDataSet(
+                                                label = "Player A",
+                                                axes = listOf(
+                                                    RadarAxisData("Speed", 85f),
+                                                    RadarAxisData("Strength", 70f),
+                                                    RadarAxisData("Defense", 90f),
+                                                    RadarAxisData("Agility", 75f),
+                                                    RadarAxisData("Stamina", 80f),
+                                                ),
+                                                color = ChartyColor.Solid(Color(0xFF2196F3)),
+                                                fillAlpha = 0.4f,
+                                            ),
+                                        )
+                                    },
+                                    modifier = Modifier.size(280.dp),
+                                    config = RadarChartConfig(
+                                        dataLineWidth = 3f,
+                                        showDataPoints = true,
+                                        dataPointRadius = 6f,
+                                        labelConfig = RadarLabelConfig(
+                                            showLabels = true,
+                                            labelDistanceMultiplier = 1.25f,
+                                        ),
+                                        gridConfig = RadarGridConfig(
+                                            gridStyle = RadarGridStyle.POLYGON,
+                                            numberOfGridLevels = 5,
+                                            showGridLines = true,
+                                            showAxisLines = true,
+                                        ),
+                                    ),
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Example 2: Skills Assessment - Circular Grid
+                            Text(
+                                text = "Skills Assessment",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                RadarChart(
+                                    data = {
+                                        listOf(
+                                            RadarDataSet(
+                                                label = "Technical Skills",
+                                                axes = listOf(
+                                                    RadarAxisData("Programming", 95f),
+                                                    RadarAxisData("Design", 75f),
+                                                    RadarAxisData("Communication", 80f),
+                                                    RadarAxisData("Leadership", 70f),
+                                                    RadarAxisData("Testing", 85f),
+                                                    RadarAxisData("Documentation", 78f),
+                                                ),
+                                                color = ChartyColor.Solid(Color(0xFF4CAF50)),
+                                                fillAlpha = 0.35f,
+                                            ),
+                                        )
+                                    },
+                                    modifier = Modifier.size(280.dp),
+                                    config = RadarChartConfig(
+                                        dataLineWidth = 2.5f,
+                                        showDataPoints = true,
+                                        dataPointRadius = 5f,
+                                        labelConfig = RadarLabelConfig(
+                                            showLabels = true,
+                                            labelDistanceMultiplier = 1.2f,
+                                        ),
+                                        gridConfig = RadarGridConfig(
+                                            gridStyle = RadarGridStyle.CIRCULAR,
+                                            numberOfGridLevels = 4,
+                                            showGridLines = true,
+                                            showAxisLines = true,
+                                        ),
+                                    ),
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Example 3: Product Features - Polygon Grid with More Axes
+                            Text(
+                                text = "Product Features",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(280.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                RadarChart(
+                                    data = {
+                                        listOf(
+                                            RadarDataSet(
+                                                label = "Product X",
+                                                axes = listOf(
+                                                    RadarAxisData("Price", 60f),
+                                                    RadarAxisData("Quality", 95f),
+                                                    RadarAxisData("Features", 80f),
+                                                    RadarAxisData("Support", 85f),
+                                                    RadarAxisData("Reliability", 90f),
+                                                    RadarAxisData("Design", 75f),
+                                                    RadarAxisData("Performance", 88f),
+                                                    RadarAxisData("Usability", 82f),
+                                                ),
+                                                color = ChartyColor.Solid(Color(0xFFE91E63)),
+                                                fillAlpha = 0.3f,
+                                            ),
+                                        )
+                                    },
+                                    modifier = Modifier.size(270.dp),
+                                    config = RadarChartConfig(
+                                        dataLineWidth = 2f,
+                                        showDataPoints = true,
+                                        dataPointRadius = 4f,
+                                        labelConfig = RadarLabelConfig(
+                                            showLabels = true,
+                                            labelDistanceMultiplier = 1.18f,
+                                        ),
+                                        gridConfig = RadarGridConfig(
+                                            gridStyle = RadarGridStyle.POLYGON,
+                                            numberOfGridLevels = 5,
+                                            showGridLines = true,
+                                            showAxisLines = true,
+                                        ),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // BlockBarChart demo at position 1
                 item {
                     ChartCard(
                         title = "Block Bar Chart",
                         description = "Horizontal segmented pill-shaped bar showing proportional composition.",
                     ) {
                         Column(
+                            modifier = Modifier.fillMaxSize().padding(32.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
                             // Example 1: Basic 3-block bar
@@ -217,10 +387,7 @@ fun App(modifier: Modifier = Modifier) {
                         description = "Animated sine-wave bars supporting positive and negative values.",
                     ) {
                         WavyChart(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(240.dp),
+                            modifier = Modifier.fillMaxWidth().height(240.dp),
                             data = {
                                 listOf(
                                     BarData("Mon", 10f),
@@ -243,24 +410,22 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected bar info in a card above the chart
                         selectedBar?.let { bar ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${bar.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                     Text(
                                         text = "Sales: $${bar.value.toInt()}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                 }
                             }
@@ -271,9 +436,7 @@ fun App(modifier: Modifier = Modifier) {
                             description = "Data visualized as stacked bubbles. Click on any column to see details.",
                         ) {
                             BubbleBarChart(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(320.dp),
+                                modifier = Modifier.fillMaxWidth().height(320.dp),
                                 data = {
                                     listOf(
                                         BarData("100", 50f),
@@ -291,8 +454,8 @@ fun App(modifier: Modifier = Modifier) {
                                     listOf(
                                         Color(0xFFFFA64D),
                                         Color(0xFFEF7B45),
-                                        Color(0xFFD64C66)
-                                    )
+                                        Color(0xFFD64C66),
+                                    ),
                                 ),
                                 bubbleConfig = BubbleBarChartConfig(
                                     barWidthFraction = 0.6f,
@@ -305,18 +468,18 @@ fun App(modifier: Modifier = Modifier) {
                                         textStyle = TextStyle(
                                             color = Color.White,
                                             fontSize = 14.sp,
-                                            fontWeight = FontWeight.Medium
+                                            fontWeight = FontWeight.Medium,
                                         ),
                                         shape = RoundedCornerShape(8.dp),
                                         padding = TooltipPadding(
                                             horizontal = 16.dp,
-                                            vertical = 10.dp
+                                            vertical = 10.dp,
                                         ),
                                         elevation = 8.dp,
                                         showArrow = true,
-                                        arrowSize = 10.dp
+                                        arrowSize = 10.dp,
                                     ),
-                                    tooltipPosition = TooltipPosition.AUTO
+                                    tooltipPosition = TooltipPosition.AUTO,
                                 ),
                                 scaffoldConfig = ChartScaffoldConfig(leftLabelRotation = LabelRotation.Angle45Negative),
                                 onBarClick = { barData ->
@@ -336,24 +499,22 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected bar info in a card above the chart
                         selectedBar?.let { bar ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${bar.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                     Text(
                                         text = "Sales: $${bar.value.toInt()}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                 }
                             }
@@ -364,9 +525,7 @@ fun App(modifier: Modifier = Modifier) {
                             description = "Click on any bar to see tooltip with details. Tooltip auto-positions above/below based on available space.",
                         ) {
                             BarChart(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(320.dp),
+                                modifier = Modifier.fillMaxWidth().height(320.dp),
                                 data = {
                                     listOf(
                                         BarData("Jan", 12500f),
@@ -380,8 +539,8 @@ fun App(modifier: Modifier = Modifier) {
                                 color = ChartyColor.Gradient(
                                     listOf(
                                         Color(0xFF2196F3),
-                                        Color(0xFF1976D2)
-                                    )
+                                        Color(0xFF1976D2),
+                                    ),
                                 ),
                                 barConfig = BarChartConfig(
                                     barWidthFraction = 0.7f,
@@ -393,18 +552,18 @@ fun App(modifier: Modifier = Modifier) {
                                         textStyle = TextStyle(
                                             color = Color.White,
                                             fontSize = 14.sp,
-                                            fontWeight = FontWeight.Medium
+                                            fontWeight = FontWeight.Medium,
                                         ),
                                         shape = RoundedCornerShape(8.dp),
                                         padding = TooltipPadding(
                                             horizontal = 16.dp,
-                                            vertical = 10.dp
+                                            vertical = 10.dp,
                                         ),
                                         elevation = 8.dp,
                                         showArrow = true,
-                                        arrowSize = 10.dp
+                                        arrowSize = 10.dp,
                                     ),
-                                    tooltipPosition = TooltipPosition.AUTO
+                                    tooltipPosition = TooltipPosition.AUTO,
                                 ),
                                 scaffoldConfig = ChartScaffoldConfig(leftLabelRotation = LabelRotation.Angle45Negative),
                                 onBarClick = { barData ->
@@ -423,24 +582,22 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected bar info
                         selectedBar?.let { bar ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${bar.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                     Text(
                                         text = "Cumulative Value: ${bar.value}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                 }
                             }
@@ -451,10 +608,7 @@ fun App(modifier: Modifier = Modifier) {
                             description = "Click on bars to see cumulative gains/losses with tooltip",
                         ) {
                             WaterfallChart(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(280.dp),
+                                modifier = Modifier.fillMaxWidth().height(280.dp),
                                 data = {
                                     listOf(
                                         BarData("A", 10f, ChartyColor.Solid(Color(0xFFD64C66))),
@@ -463,11 +617,10 @@ fun App(modifier: Modifier = Modifier) {
                                         BarData("D", 32f, ChartyColor.Solid(Color(0xFFD64C66))),
                                     )
                                 },
-                                config =
-                                    WaterfallChartConfig(
-                                        barWidthFraction = 0.6f,
-                                        cornerRadius = CornerRadius.Medium,
-                                    ),
+                                config = WaterfallChartConfig(
+                                    barWidthFraction = 0.6f,
+                                    cornerRadius = CornerRadius.Medium,
+                                ),
                                 onBarClick = { barData ->
                                     selectedBar = barData
                                     println("Waterfall bar clicked: ${barData.label} = ${barData.value}")
@@ -482,10 +635,7 @@ fun App(modifier: Modifier = Modifier) {
                         description = "100% stacked bar chart where each bar shows proportional composition",
                     ) {
                         MosiacBarChart(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(280.dp),
+                            modifier = Modifier.fillMaxWidth().height(280.dp),
                             data = {
                                 listOf(
                                     BarGroup(
@@ -526,10 +676,9 @@ fun App(modifier: Modifier = Modifier) {
                                     ),
                                 )
                             },
-                            config =
-                                MosiacBarChartConfig(
-                                    barWidthFraction = 0.9f,
-                                ),
+                            config = MosiacBarChartConfig(
+                                barWidthFraction = 0.9f,
+                            ),
                         )
                     }
                 }
@@ -540,24 +689,22 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected lollipop info
                         selectedLollipop?.let { bar ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${bar.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                     Text(
                                         text = "Value: ${bar.value.toInt()}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                 }
                             }
@@ -568,10 +715,7 @@ fun App(modifier: Modifier = Modifier) {
                             description = "Click on lollipops to see values with tooltip",
                         ) {
                             LollipopBarChart(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(280.dp),
+                                modifier = Modifier.fillMaxWidth().height(280.dp),
                                 data = {
                                     listOf(
                                         BarData("A", 210f),
@@ -582,13 +726,12 @@ fun App(modifier: Modifier = Modifier) {
                                     )
                                 },
                                 colors = ChartyColor.Solid(Color(0xFFE91E63)),
-                                config =
-                                    LollipopBarChartConfig(
-                                        barWidthFraction = 0.25f,
-                                        stemThickness = 8f,
-                                        circleRadius = 16f,
-                                        circleColor = ChartyColor.Solid(Color.Yellow),
-                                    ),
+                                config = LollipopBarChartConfig(
+                                    barWidthFraction = 0.25f,
+                                    stemThickness = 8f,
+                                    circleRadius = 16f,
+                                    circleColor = ChartyColor.Solid(Color.Yellow),
+                                ),
                                 onBarClick = { barData ->
                                     selectedLollipop = barData
                                     println("Lollipop clicked: ${barData.label} = ${barData.value}")
@@ -758,15 +901,14 @@ fun App(modifier: Modifier = Modifier) {
                             },
                             bullishColor = ChartyColor.Solid(Color(0xFFFFC107)), // Yellow/Gold for bullish
                             bearishColor = ChartyColor.Solid(Color(0xFFE91E63)), // Pink for bearish
-                            candlestickConfig =
-                                CandlestickChartConfig(
-                                    candleWidthFraction = 0.7f,
-                                    wickWidthFraction = 0.15f,
-                                    showWicks = true,
-                                    minCandleBodyHeight = 2f,
-                                    cornerRadius = CornerRadius.ExtraLarge,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            candlestickConfig = CandlestickChartConfig(
+                                candleWidthFraction = 0.7f,
+                                wickWidthFraction = 0.15f,
+                                showWicks = true,
+                                minCandleBodyHeight = 2f,
+                                cornerRadius = CornerRadius.ExtraLarge,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                         )
                     }
                 }
@@ -777,29 +919,27 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected data info
                         selectedComboData?.let { data ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${data.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                     Text(
                                         text = "Bar Value: ${data.barValue.toInt()}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                     Text(
                                         text = "Line Value: ${data.lineValue.toInt()}",
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                 }
                             }
@@ -823,24 +963,22 @@ fun App(modifier: Modifier = Modifier) {
                                 },
                                 barColor = ChartyColor.Solid(Color(0xFF2196F3)),
                                 lineColor = ChartyColor.Solid(Color(0xFFFF5722)),
-                                comboConfig =
-                                    ComboChartConfig(
-                                        barWidthFraction = 0.6f,
-                                        lineWidth = 3f,
-                                        showPoints = true,
-                                        pointRadius = 6f,
-                                        smoothCurve = false,
-                                        animation = Animation.Enabled(duration = 1200),
-                                        referenceLine =
-                                            ReferenceLineConfig(
-                                                value = 150f,
-                                                color = Color(0xFF4CAF50),
-                                                strokeWidth = 2f,
-                                                strokeStyle = ReferenceLineStrokeStyle.DASHED,
-                                                label = "Target 150",
-                                                labelPosition = ReferenceLineLabelPosition.END,
-                                            ),
+                                comboConfig = ComboChartConfig(
+                                    barWidthFraction = 0.6f,
+                                    lineWidth = 3f,
+                                    showPoints = true,
+                                    pointRadius = 6f,
+                                    smoothCurve = false,
+                                    animation = Animation.Enabled(duration = 1200),
+                                    referenceLine = ReferenceLineConfig(
+                                        value = 150f,
+                                        color = Color(0xFF4CAF50),
+                                        strokeWidth = 2f,
+                                        strokeStyle = ReferenceLineStrokeStyle.DASHED,
+                                        label = "Target 150",
+                                        labelPosition = ReferenceLineLabelPosition.END,
                                     ),
+                                ),
                                 onDataClick = { comboData ->
                                     selectedComboData = comboData
                                     println("Combo chart clicked: ${comboData.label} - Bar: ${comboData.barValue}, Line: ${comboData.lineValue}")
@@ -869,12 +1007,11 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color.Gray), // Fallback color (not used since each bar has its own)
-                            barConfig =
-                                BarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    cornerRadius = CornerRadius.Medium,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Medium,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                         )
                     }
                 }
@@ -887,39 +1024,34 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected ring info
                         selectedRing?.let { (ring, index) ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${ring.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                     Text(
                                         text = "Progress: ${ring.progress.toInt()} / ${ring.maxValue.toInt()}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                     Text(
                                         text = "Percentage: ${((ring.progress / ring.maxValue) * 100).toInt()}%",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                 }
                             }
                         }
 
                         Box(
-                            modifier =
-                                Modifier
-                                    .size(300.dp)
-                                    .background(Color.Black),
+                            modifier = Modifier.size(300.dp).background(Color.Black),
                             contentAlignment = Alignment.Center,
                         ) {
                             CircularProgressIndicator(
@@ -948,20 +1080,16 @@ fun App(modifier: Modifier = Modifier) {
                                         ),
                                     )
                                 },
-                                modifier =
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(16.dp),
-                                config =
-                                    CircularProgressConfig(
-                                        centerHoleRatio = 0.4f,
-                                        gapBetweenRings = 12f,
-                                        startAngleDegrees = -90f,
-                                        strokeCap = StrokeCap.Round,
-                                        showCenterText = false,
-                                        animation = Animation.Enabled(duration = 1500),
-                                        interactionEnabled = true,
-                                    ),
+                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                config = CircularProgressConfig(
+                                    centerHoleRatio = 0.4f,
+                                    gapBetweenRings = 12f,
+                                    startAngleDegrees = -90f,
+                                    strokeCap = StrokeCap.Round,
+                                    showCenterText = false,
+                                    animation = Animation.Enabled(duration = 1500),
+                                    interactionEnabled = true,
+                                ),
                                 onRingClick = { ring, index ->
                                     selectedRing = ring to index
                                     println("Ring clicked: ${ring.label} (Ring $index) - ${((ring.progress / ring.maxValue) * 100).toInt()}%")
@@ -987,24 +1115,22 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected bar info
                         selectedBar?.let { bar ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Department: ${bar.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                     Text(
                                         text = "Score: ${bar.value.toInt()}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                 }
                             }
@@ -1026,12 +1152,11 @@ fun App(modifier: Modifier = Modifier) {
                                     )
                                 },
                                 color = ChartyColor.Solid(Color(0xFF9C27B0)),
-                                barConfig =
-                                    BarChartConfig(
-                                        barWidthFraction = 0.7f,
-                                        cornerRadius = CornerRadius.Large,
-                                        animation = Animation.Enabled(duration = 1000),
-                                    ),
+                                barConfig = BarChartConfig(
+                                    barWidthFraction = 0.7f,
+                                    cornerRadius = CornerRadius.Large,
+                                    animation = Animation.Enabled(duration = 1000),
+                                ),
                                 onBarClick = { barData ->
                                     selectedBar = barData
                                     println("Horizontal bar clicked: ${barData.label} = ${barData.value}")
@@ -1058,22 +1183,20 @@ fun App(modifier: Modifier = Modifier) {
                                     SpanData("Category 5", startValue = 8f, endValue = 22f),
                                 )
                             },
-                            colors =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF2196F3),
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFFF9800),
-                                        Color(0xFFE91E63),
-                                        Color(0xFF9C27B0),
-                                    ),
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFFE91E63),
+                                    Color(0xFF9C27B0),
                                 ),
-                            barConfig =
-                                BarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    cornerRadius = CornerRadius.Medium,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            ),
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Medium,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                         )
                     }
                 }
@@ -1095,12 +1218,11 @@ fun App(modifier: Modifier = Modifier) {
                                     BarData("May", 55f),
                                 )
                             },
-                            barConfig =
-                                BarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    cornerRadius = CornerRadius.Large,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Large,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                             color = ChartyColor.Solid(Color(0xFF2196F3)),
                         )
                     }
@@ -1124,13 +1246,12 @@ fun App(modifier: Modifier = Modifier) {
                                     BarData("Jun", 35f),
                                 )
                             },
-                            barConfig =
-                                BarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    cornerRadius = CornerRadius.Large,
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Large,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                             color = ChartyColor.Solid(Color(0xFF2196F3)),
                         )
                     }
@@ -1154,13 +1275,12 @@ fun App(modifier: Modifier = Modifier) {
                                     BarData("Jun", 35f),
                                 )
                             },
-                            barConfig =
-                                BarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    cornerRadius = CornerRadius.Large,
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            barConfig = BarChartConfig(
+                                barWidthFraction = 0.7f,
+                                cornerRadius = CornerRadius.Large,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                             color = ChartyColor.Solid(Color(0xFF4CAF50)),
                         )
                     }
@@ -1168,30 +1288,32 @@ fun App(modifier: Modifier = Modifier) {
 
                 // Comparison Bar Chart (formerly Grouped)
                 item {
-                    var selectedSegment by remember { mutableStateOf<com.himanshoe.charty.bar.config.ComparisonBarSegment?>(null) }
+                    var selectedSegment by remember {
+                        mutableStateOf<com.himanshoe.charty.bar.config.ComparisonBarSegment?>(
+                            null,
+                        )
+                    }
 
                     Column {
                         // Show selected segment info
                         selectedSegment?.let { segment ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Category: ${segment.barGroup.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                     Text(
                                         text = "Bar ${segment.barIndex + 1}: ${segment.barValue.toInt()}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                 }
                             }
@@ -1205,10 +1327,102 @@ fun App(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        BarGroup("A", listOf(17f, 25f)),
-                                        BarGroup("B", listOf(15f, 16f)),
-                                        BarGroup("C", listOf(44f, 48f)),
-                                        BarGroup("D", listOf(30f, 44f)),
+                                        BarGroup(
+                                            "Q1",
+                                            listOf(20f, 30f, 15f),
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        BarGroup(
+                                            "Q2",
+                                            listOf(25f, 35f, 20f),
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        BarGroup(
+                                            "Q3",
+                                            listOf(30f, 25f, 25f),
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        BarGroup(
+                                            "Q4",
+                                            listOf(28f, 40f, 18f),
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
                                     )
                                 },
                                 onBarClick = { segment ->
@@ -1230,16 +1444,107 @@ fun App(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup("Q1", listOf(45f, -30f, 20f)),
-                                    BarGroup("Q2", listOf(-25f, 40f, -15f)),
-                                    BarGroup("Q3", listOf(60f, -45f, 35f)),
-                                    BarGroup("Q4", listOf(-20f, 55f, -40f)),
+                                    BarGroup(
+                                        "Q1",
+                                        listOf(20f, 30f, 15f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        "Q2",
+                                        listOf(25f, 35f, 20f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        "Q3",
+                                        listOf(30f, 25f, 25f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        "Q4",
+                                        listOf(28f, 40f, 18f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
                                 )
                             },
-                            comparisonConfig =
-                                ComparisonBarChartConfig(
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
-                                ),
+                            comparisonConfig = ComparisonBarChartConfig(
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+                            ),
                         )
                     }
                 }
@@ -1254,16 +1559,107 @@ fun App(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup("Q1", listOf(45f, -30f, 20f)),
-                                    BarGroup("Q2", listOf(-25f, 40f, -15f)),
-                                    BarGroup("Q3", listOf(60f, -45f, 35f)),
-                                    BarGroup("Q4", listOf(-20f, 55f, -40f)),
+                                    BarGroup(
+                                        "Q1",
+                                        listOf(20f, 30f, 15f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        "Q2",
+                                        listOf(25f, 35f, 20f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        "Q3",
+                                        listOf(30f, 25f, 25f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        "Q4",
+                                        listOf(28f, 40f, 18f),
+                                        listOf(
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF1976D2),
+                                                    Color(0xFF64B5F6),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFF388E3C),
+                                                    Color(0xFF81C784),
+                                                ),
+                                            ),
+                                            ChartyColor.Gradient(
+                                                listOf(
+                                                    Color(0xFFE64A19),
+                                                    Color(0xFFFF8A65),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
                                 )
                             },
-                            comparisonConfig =
-                                ComparisonBarChartConfig(
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
-                                ),
+                            comparisonConfig = ComparisonBarChartConfig(
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+                            ),
                         )
                     }
                 }
@@ -1288,10 +1684,9 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF4CAF50)),
-                            pointConfig =
-                                PointChartConfig(
-                                    pointRadius = 8f,
-                                ),
+                            pointConfig = PointChartConfig(
+                                pointRadius = 8f,
+                            ),
                         )
                     }
                 }
@@ -1316,13 +1711,12 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFFFF9800)),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 3f,
-                                    strokeCap = StrokeCap.Round,
-                                    showPoints = true,
-                                    pointRadius = 6f,
-                                ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                strokeCap = StrokeCap.Round,
+                                showPoints = true,
+                                pointRadius = 6f,
+                            ),
                         )
                     }
                 }
@@ -1347,11 +1741,10 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF4CAF50)),
-                            pointConfig =
-                                PointChartConfig(
-                                    pointRadius = 8f,
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
-                                ),
+                            pointConfig = PointChartConfig(
+                                pointRadius = 8f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+                            ),
                         )
                     }
                 }
@@ -1376,11 +1769,10 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFFE91E63)),
-                            pointConfig =
-                                PointChartConfig(
-                                    pointRadius = 8f,
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
-                                ),
+                            pointConfig = PointChartConfig(
+                                pointRadius = 8f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+                            ),
                         )
                     }
                 }
@@ -1405,14 +1797,13 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFFFF9800)),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 3f,
-                                    strokeCap = StrokeCap.Round,
-                                    showPoints = true,
-                                    pointRadius = 6f,
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
-                                ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                strokeCap = StrokeCap.Round,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+                            ),
                         )
                     }
                 }
@@ -1437,14 +1828,13 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF00BCD4)),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 3f,
-                                    strokeCap = StrokeCap.Round,
-                                    showPoints = true,
-                                    pointRadius = 6f,
-                                    negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
-                                ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                strokeCap = StrokeCap.Round,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+                            ),
                         )
                     }
                 }
@@ -1465,10 +1855,9 @@ fun App(modifier: Modifier = Modifier) {
                                     BarData("Q4", 48f),
                                 )
                             },
-                            color =
-                                ChartyColor.Gradient(
-                                    listOf(Color(0xFF9C27B0), Color(0xFFE91E63)),
-                                ),
+                            color = ChartyColor.Gradient(
+                                listOf(Color(0xFF9C27B0), Color(0xFFE91E63)),
+                            ),
                         )
                     }
                 }
@@ -1490,20 +1879,18 @@ fun App(modifier: Modifier = Modifier) {
                                     PointData("E", 35f),
                                 )
                             },
-                            color =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFFE91E63),
-                                        Color(0xFF2196F3),
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFFF9800),
-                                        Color(0xFF9C27B0),
-                                    ),
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFF9C27B0),
                                 ),
-                            pointConfig =
-                                PointChartConfig(
-                                    pointRadius = 10f,
-                                ),
+                            ),
+                            pointConfig = PointChartConfig(
+                                pointRadius = 10f,
+                            ),
                         )
                     }
                 }
@@ -1528,12 +1915,11 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF00BCD4)),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 4f,
-                                    smoothCurve = true,
-                                    showPoints = false,
-                                ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 4f,
+                                smoothCurve = true,
+                                showPoints = false,
+                            ),
                         )
                     }
                 }
@@ -1554,20 +1940,18 @@ fun App(modifier: Modifier = Modifier) {
                                     BarGroup("Q4", listOf(28f, 40f, 18f)),
                                 )
                             },
-                            colors =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF2196F3),
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFFF9800),
-                                    ),
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
                                 ),
-                            stackedConfig =
-                                StackedBarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    topCornerRadius = CornerRadius.Medium,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            ),
+                            stackedConfig = StackedBarChartConfig(
+                                barWidthFraction = 0.7f,
+                                topCornerRadius = CornerRadius.Medium,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                         )
                     }
                 }
@@ -1681,12 +2065,11 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             colors = ChartyColor.Solid(Color.Gray), // Fallback (not used)
-                            stackedConfig =
-                                StackedBarChartConfig(
-                                    barWidthFraction = 0.7f,
-                                    topCornerRadius = CornerRadius.Medium,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            stackedConfig = StackedBarChartConfig(
+                                barWidthFraction = 0.7f,
+                                topCornerRadius = CornerRadius.Medium,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                         )
                     }
                 }
@@ -1710,21 +2093,19 @@ fun App(modifier: Modifier = Modifier) {
                                     LineData("Jul", 65f),
                                 )
                             },
-                            color =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF2196F3),
-                                        Color(0xFF2196F3).copy(alpha = 0.2f),
-                                    ),
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF2196F3).copy(alpha = 0.2f),
                                 ),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 3f,
-                                    showPoints = true,
-                                    pointRadius = 6f,
-                                    smoothCurve = true,
-                                    animation = Animation.Enabled(duration = 1200),
-                                ),
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                showPoints = true,
+                                pointRadius = 6f,
+                                smoothCurve = true,
+                                animation = Animation.Enabled(duration = 1200),
+                            ),
                             fillAlpha = 0.4f,
                         )
                     }
@@ -1749,20 +2130,18 @@ fun App(modifier: Modifier = Modifier) {
                                     LineData("Sun", 35f),
                                 )
                             },
-                            color =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF4CAF50),
-                                        Color(0xFF4CAF50).copy(alpha = 0.1f),
-                                    ),
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF4CAF50),
+                                    Color(0xFF4CAF50).copy(alpha = 0.1f),
                                 ),
-                            lineConfig =
-                                LineChartConfig(
-                                    lineWidth = 3f,
-                                    showPoints = false,
-                                    smoothCurve = true,
-                                    animation = Animation.Enabled(duration = 1200),
-                                ),
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                showPoints = false,
+                                smoothCurve = true,
+                                animation = Animation.Enabled(duration = 1200),
+                            ),
                             fillAlpha = 0.5f,
                         )
                     }
@@ -1776,29 +2155,27 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected point info
                         selectedPoint?.let { point ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${point.lineGroup.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                     Text(
                                         text = "Line Series ${point.seriesIndex + 1}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                     Text(
                                         text = "Value: ${point.value}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                 }
                             }
@@ -1820,22 +2197,20 @@ fun App(modifier: Modifier = Modifier) {
                                         LineGroup("Sat", listOf(40f, 50f, 35f)),
                                     )
                                 },
-                                colors =
-                                    ChartyColor.Gradient(
-                                        listOf(
-                                            Color(0xFFE91E63),
-                                            Color(0xFF2196F3),
-                                            Color(0xFF4CAF50),
-                                        ),
+                                colors = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFFE91E63),
+                                        Color(0xFF2196F3),
+                                        Color(0xFF4CAF50),
                                     ),
-                                lineConfig =
-                                    LineChartConfig(
-                                        lineWidth = 3f,
-                                        smoothCurve = true,
-                                        showPoints = true,
-                                        pointRadius = 6f,
-                                        animation = Animation.Enabled(duration = 1200),
-                                    ),
+                                ),
+                                lineConfig = LineChartConfig(
+                                    lineWidth = 3f,
+                                    smoothCurve = true,
+                                    showPoints = true,
+                                    pointRadius = 6f,
+                                    animation = Animation.Enabled(duration = 1200),
+                                ),
                                 onPointClick = { point ->
                                     selectedPoint = point
                                     println("Multiline point clicked: ${point.lineGroup.label} Line ${point.seriesIndex + 1} = ${point.value}")
@@ -1853,29 +2228,27 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected point info
                         selectedPoint?.let { point ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${point.lineGroup.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                     Text(
                                         text = "Line Series ${point.seriesIndex + 1}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                     Text(
                                         text = "Value: ${point.value}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     )
                                 }
                             }
@@ -1897,21 +2270,19 @@ fun App(modifier: Modifier = Modifier) {
                                         LineGroup("Jun", listOf(55f, 70f)),
                                     )
                                 },
-                                colors =
-                                    ChartyColor.Gradient(
-                                        listOf(
-                                            Color(0xFFFF9800),
-                                            Color(0xFF9C27B0),
-                                        ),
+                                colors = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFFFF9800),
+                                        Color(0xFF9C27B0),
                                     ),
-                                lineConfig =
-                                    LineChartConfig(
-                                        lineWidth = 3f,
-                                        smoothCurve = false,
-                                        showPoints = true,
-                                        pointRadius = 7f,
-                                        animation = Animation.Enabled(duration = 1200),
-                                    ),
+                                ),
+                                lineConfig = LineChartConfig(
+                                    lineWidth = 3f,
+                                    smoothCurve = false,
+                                    showPoints = true,
+                                    pointRadius = 7f,
+                                    animation = Animation.Enabled(duration = 1200),
+                                ),
                                 onPointClick = { point ->
                                     selectedPoint = point
                                     println("Multiline point clicked: ${point.lineGroup.label} Line ${point.seriesIndex + 1} = ${point.value}")
@@ -1929,34 +2300,32 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected area point info
                         selectedAreaPoint?.let { point ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${point.lineGroup.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                     Text(
                                         text = "Area Series ${point.seriesIndex + 1}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                     Text(
                                         text = "Value: ${point.value}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                     Text(
                                         text = "Cumulative Total: ${point.cumulativeValue}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     )
                                 }
                             }
@@ -1978,20 +2347,18 @@ fun App(modifier: Modifier = Modifier) {
                                         LineGroup("Sat", listOf(40f, 25f, 15f)),
                                     )
                                 },
-                                colors =
-                                    ChartyColor.Gradient(
-                                        listOf(
-                                            Color(0xFF2196F3),
-                                            Color(0xFF4CAF50),
-                                            Color(0xFFFF9800),
-                                        ),
+                                colors = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFF2196F3),
+                                        Color(0xFF4CAF50),
+                                        Color(0xFFFF9800),
                                     ),
-                                lineConfig =
-                                    LineChartConfig(
-                                        lineWidth = 2f,
-                                        smoothCurve = true,
-                                        animation = Animation.Enabled(duration = 1200),
-                                    ),
+                                ),
+                                lineConfig = LineChartConfig(
+                                    lineWidth = 2f,
+                                    smoothCurve = true,
+                                    animation = Animation.Enabled(duration = 1200),
+                                ),
                                 fillAlpha = 0.7f,
                                 onAreaClick = { point ->
                                     selectedAreaPoint = point
@@ -2010,34 +2377,32 @@ fun App(modifier: Modifier = Modifier) {
                         // Show selected area point info
                         selectedAreaPoint?.let { point ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer
-                                )
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                ),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Selected: ${point.lineGroup.label}",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
                                     )
                                     Text(
                                         text = "Area Series ${point.seriesIndex + 1}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
                                     )
                                     Text(
                                         text = "Segment Value: ${point.value}",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
                                     )
                                     Text(
                                         text = "Total: ${point.cumulativeValue}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
                                     )
                                 }
                             }
@@ -2057,20 +2422,18 @@ fun App(modifier: Modifier = Modifier) {
                                         LineGroup("Q4", listOf(45f, 40f, 28f)),
                                     )
                                 },
-                                colors =
-                                    ChartyColor.Gradient(
-                                        listOf(
-                                            Color(0xFFE91E63),
-                                            Color(0xFF9C27B0),
-                                            Color(0xFF00BCD4),
-                                        ),
+                                colors = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFFE91E63),
+                                        Color(0xFF9C27B0),
+                                        Color(0xFF00BCD4),
                                     ),
-                                lineConfig =
-                                    LineChartConfig(
-                                        lineWidth = 2f,
-                                        smoothCurve = false,
-                                        animation = Animation.Enabled(duration = 1200),
-                                    ),
+                                ),
+                                lineConfig = LineChartConfig(
+                                    lineWidth = 2f,
+                                    smoothCurve = false,
+                                    animation = Animation.Enabled(duration = 1200),
+                                ),
                                 fillAlpha = 0.8f,
                                 onAreaClick = { point ->
                                     selectedAreaPoint = point
@@ -2098,21 +2461,19 @@ fun App(modifier: Modifier = Modifier) {
                                     BubbleData("Product E", yValue = 55f, size = 180f),
                                 )
                             },
-                            color =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFFE91E63),
-                                        Color(0xFF2196F3),
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFFF9800),
-                                        Color(0xFF9C27B0),
-                                    ),
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFF9C27B0),
                                 ),
-                            config =
-                                PointChartConfig(
-                                    pointRadius = 40f,
-                                    animation = Animation.Enabled(duration = 1000),
-                                ),
+                            ),
+                            config = PointChartConfig(
+                                pointRadius = 40f,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
                             minBubbleRadius = 15f,
                         )
                     }
@@ -2146,31 +2507,27 @@ fun App(modifier: Modifier = Modifier) {
                                         PieData("Product D", 10f),
                                     )
                                 },
-                                color =
-                                    ChartyColor.Gradient(
-                                        listOf(
-                                            Color(0xFF2196F3),
-                                            Color(0xFF4CAF50),
-                                            Color(0xFFFF9800),
-                                            Color(0xFFE91E63),
-                                        ),
+                                color = ChartyColor.Gradient(
+                                    listOf(
+                                        Color(0xFF2196F3),
+                                        Color(0xFF4CAF50),
+                                        Color(0xFFFF9800),
+                                        Color(0xFFE91E63),
                                     ),
-                                config =
-                                    PieChartConfig(
-                                        style = PieChartStyle.PIE,
-                                        labelConfig =
-                                            LabelConfig(
-                                                shouldShowLabels = true,
-                                                shouldShowPercentage = true,
-                                                minimumPercentageToShowLabel = 5f,
-                                            ),
-                                        interactionConfig =
-                                            InteractionConfig(
-                                                selectedScaleMultiplier = 1.15f,
-                                                selectedSlicePullOutDistance = 12f,
-                                            ),
-                                        animation = Animation.Enabled(duration = 1000),
+                                ),
+                                config = PieChartConfig(
+                                    style = PieChartStyle.PIE,
+                                    labelConfig = LabelConfig(
+                                        shouldShowLabels = true,
+                                        shouldShowPercentage = true,
+                                        minimumPercentageToShowLabel = 5f,
                                     ),
+                                    interactionConfig = InteractionConfig(
+                                        selectedScaleMultiplier = 1.15f,
+                                        selectedSlicePullOutDistance = 12f,
+                                    ),
+                                    animation = Animation.Enabled(duration = 1000),
+                                ),
                                 onSliceClick = { slice, _ ->
                                     clickedSlice = "${slice.label}: ${slice.value}"
                                 },
@@ -2198,34 +2555,30 @@ fun App(modifier: Modifier = Modifier) {
                                     PieData("Operations", 40f),
                                 )
                             },
-                            color =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF00BCD4),
-                                        Color(0xFF9C27B0),
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFFF9800),
-                                        Color(0xFFE91E63),
-                                    ),
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF00BCD4),
+                                    Color(0xFF9C27B0),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFFE91E63),
                                 ),
-                            config =
-                                PieChartConfig(
-                                    style = PieChartStyle.DONUT,
-                                    donutHoleRatio = 0.65f,
-                                    startAngleDegrees = -90f,
-                                    labelConfig =
-                                        LabelConfig(
-                                            shouldShowLabels = false,
-                                        ),
-                                    interactionConfig =
-                                        InteractionConfig(
-                                            selectedScaleMultiplier = 1.1f,
-                                            selectedSlicePullOutDistance = 10f,
-                                            unselectedSliceOpacity = 0.5f,
-                                        ),
-                                    animation = Animation.Enabled(duration = 1200),
-                                    sliceSpacingDegrees = 2f,
+                            ),
+                            config = PieChartConfig(
+                                style = PieChartStyle.DONUT,
+                                donutHoleRatio = 0.65f,
+                                startAngleDegrees = -90f,
+                                labelConfig = LabelConfig(
+                                    shouldShowLabels = false,
                                 ),
+                                interactionConfig = InteractionConfig(
+                                    selectedScaleMultiplier = 1.1f,
+                                    selectedSlicePullOutDistance = 10f,
+                                    unselectedSliceOpacity = 0.5f,
+                                ),
+                                animation = Animation.Enabled(duration = 1200),
+                                sliceSpacingDegrees = 2f,
+                            ),
                             onSliceClick = { slice, _ ->
                                 selectedCategory = slice.label
                             },
@@ -2267,36 +2620,32 @@ fun App(modifier: Modifier = Modifier) {
                                     PieData("Others", 50f),
                                 )
                             },
-                            color =
-                                ChartyColor.Gradient(
-                                    listOf(
-                                        Color(0xFF3F51B5),
-                                        Color(0xFF2196F3),
-                                        Color(0xFF00BCD4),
-                                        Color(0xFF4CAF50),
-                                        Color(0xFFFFEB3B),
-                                        Color(0xFFFF5722),
-                                    ),
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF3F51B5),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF00BCD4),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFFEB3B),
+                                    Color(0xFFFF5722),
                                 ),
-                            config =
-                                PieChartConfig(
-                                    style = PieChartStyle.DONUT,
-                                    donutHoleRatio = 0.5f,
-                                    labelConfig =
-                                        LabelConfig(
-                                            shouldShowLabels = true,
-                                            shouldShowPercentage = true,
-                                            minimumPercentageToShowLabel = 8f,
-                                        ),
-                                    interactionConfig =
-                                        InteractionConfig(
-                                            selectedScaleMultiplier = 1.08f,
-                                            selectedSlicePullOutDistance = 8f,
-                                        ),
-                                    animation = Animation.Enabled(duration = 800),
-                                    sliceSpacingDegrees = 3f,
-                                    shouldShowCenterText = true,
+                            ),
+                            config = PieChartConfig(
+                                style = PieChartStyle.DONUT,
+                                donutHoleRatio = 0.5f,
+                                labelConfig = LabelConfig(
+                                    shouldShowLabels = true,
+                                    shouldShowPercentage = true,
+                                    minimumPercentageToShowLabel = 8f,
                                 ),
+                                interactionConfig = InteractionConfig(
+                                    selectedScaleMultiplier = 1.08f,
+                                    selectedSlicePullOutDistance = 8f,
+                                ),
+                                animation = Animation.Enabled(duration = 800),
+                                sliceSpacingDegrees = 3f,
+                                shouldShowCenterText = true,
+                            ),
                             onSliceClick = { slice, index ->
                                 println("Clicked ${slice.label} at index $index")
                             },
@@ -2316,73 +2665,66 @@ fun App(modifier: Modifier = Modifier) {
                                 listOf(
                                     RadarDataSet(
                                         label = "Player 1",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Speed", 85f),
-                                                RadarAxisData("Power", 75f),
-                                                RadarAxisData("Defense", 90f),
-                                                RadarAxisData("Skill", 80f),
-                                                RadarAxisData("Stamina", 70f),
-                                                RadarAxisData("Accuracy", 88f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Speed", 85f),
+                                            RadarAxisData("Power", 75f),
+                                            RadarAxisData("Defense", 90f),
+                                            RadarAxisData("Skill", 80f),
+                                            RadarAxisData("Stamina", 70f),
+                                            RadarAxisData("Accuracy", 88f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFF00BCD4)),
                                         fillAlpha = 0.3f,
                                     ),
                                     RadarDataSet(
                                         label = "Player 2",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Speed", 70f),
-                                                RadarAxisData("Power", 90f),
-                                                RadarAxisData("Defense", 75f),
-                                                RadarAxisData("Skill", 85f),
-                                                RadarAxisData("Stamina", 88f),
-                                                RadarAxisData("Accuracy", 72f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Speed", 70f),
+                                            RadarAxisData("Power", 90f),
+                                            RadarAxisData("Defense", 75f),
+                                            RadarAxisData("Skill", 85f),
+                                            RadarAxisData("Stamina", 88f),
+                                            RadarAxisData("Accuracy", 72f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFFE91E63)),
                                         fillAlpha = 0.3f,
                                     ),
                                     RadarDataSet(
                                         label = "Player 3",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Speed", 92f),
-                                                RadarAxisData("Power", 65f),
-                                                RadarAxisData("Defense", 70f),
-                                                RadarAxisData("Skill", 95f),
-                                                RadarAxisData("Stamina", 80f),
-                                                RadarAxisData("Accuracy", 90f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Speed", 92f),
+                                            RadarAxisData("Power", 65f),
+                                            RadarAxisData("Defense", 70f),
+                                            RadarAxisData("Skill", 95f),
+                                            RadarAxisData("Stamina", 80f),
+                                            RadarAxisData("Accuracy", 90f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFF4CAF50)),
                                         fillAlpha = 0.3f,
                                     ),
                                 )
                             },
-                            config =
-                                MultipleRadarChartConfig(
-                                    showLegend = true,
-                                    legendPosition = LegendPosition.TOP_RIGHT,
-                                    radarConfig =
-                                        RadarChartConfig(
-                                            gridConfig =
-                                                RadarGridConfig(
-                                                    gridStyle = RadarGridStyle.POLYGON,
-                                                    numberOfGridLevels = 5,
-                                                    gridLineColor =  ChartyColor.Solid(Color(0xFF455A64)),
-                                                    axisLineColor =  ChartyColor.Solid(Color(0xFF607D8B)),
-                                                ),
-                                            labelConfig =
-                                                RadarLabelConfig(
-                                                    showLabels = false,
-                                                ),
-                                            animation = Animation.Enabled(duration = 1000),
-                                            showDataPoints = true,
-                                            dataPointRadius = 5f,
-                                        ),
-                                    staggerAnimation = true,
-                                    staggerDelay = 0.2f,
-                                    showPointInnerCircle = true,
+                            config = MultipleRadarChartConfig(
+                                showLegend = true,
+                                legendPosition = LegendPosition.TOP_RIGHT,
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.POLYGON,
+                                        numberOfGridLevels = 5,
+                                        gridLineColor = ChartyColor.Solid(Color(0xFF455A64)),
+                                        axisLineColor = ChartyColor.Solid(Color(0xFF607D8B)),
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = false,
+                                    ),
+                                    animation = Animation.Enabled(duration = 1000),
+                                    showDataPoints = true,
+                                    dataPointRadius = 5f,
                                 ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.2f,
+                                showPointInnerCircle = true,
+                            ),
                             onDataSetClick = { label, index ->
                                 println("Clicked dataset: $label at index $index")
                             },
@@ -2402,61 +2744,55 @@ fun App(modifier: Modifier = Modifier) {
                                 listOf(
                                     RadarDataSet(
                                         label = "Product A",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Price", 70f),
-                                                RadarAxisData("Quality", 90f),
-                                                RadarAxisData("Durability", 85f),
-                                                RadarAxisData("Design", 95f),
-                                                RadarAxisData("Features", 80f),
-                                                RadarAxisData("Support", 75f),
-                                                RadarAxisData("Warranty", 88f),
-                                                RadarAxisData("Value", 82f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Price", 70f),
+                                            RadarAxisData("Quality", 90f),
+                                            RadarAxisData("Durability", 85f),
+                                            RadarAxisData("Design", 95f),
+                                            RadarAxisData("Features", 80f),
+                                            RadarAxisData("Support", 75f),
+                                            RadarAxisData("Warranty", 88f),
+                                            RadarAxisData("Value", 82f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFF9C27B0)),
                                         fillAlpha = 0.25f,
                                     ),
                                     RadarDataSet(
                                         label = "Product B",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Price", 95f),
-                                                RadarAxisData("Quality", 75f),
-                                                RadarAxisData("Durability", 70f),
-                                                RadarAxisData("Design", 80f),
-                                                RadarAxisData("Features", 90f),
-                                                RadarAxisData("Support", 85f),
-                                                RadarAxisData("Warranty", 65f),
-                                                RadarAxisData("Value", 88f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Price", 95f),
+                                            RadarAxisData("Quality", 75f),
+                                            RadarAxisData("Durability", 70f),
+                                            RadarAxisData("Design", 80f),
+                                            RadarAxisData("Features", 90f),
+                                            RadarAxisData("Support", 85f),
+                                            RadarAxisData("Warranty", 65f),
+                                            RadarAxisData("Value", 88f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFFFF9800)),
                                         fillAlpha = 0.25f,
                                     ),
                                 )
                             },
-                            config =
-                                MultipleRadarChartConfig(
-                                    radarConfig =
-                                        RadarChartConfig(
-                                            gridConfig =
-                                                RadarGridConfig(
-                                                    gridStyle = RadarGridStyle.CIRCULAR,
-                                                    numberOfGridLevels = 4,
-                                                    gridLineColor =  ChartyColor.Solid(Color(0xFF455A64)),
-                                                    axisLineColor =  ChartyColor.Solid(Color(0xFF607D8B)),
-                                                ),
-                                            labelConfig =
-                                                RadarLabelConfig(
-                                                    showLabels = false,
-                                                ),
-                                            animation = Animation.Enabled(duration = 1200),
-                                            showDataPoints = true,
-                                            dataPointRadius = 6f,
-                                        ),
-                                    staggerAnimation = true,
-                                    staggerDelay = 0.15f,
-                                    showPointInnerCircle = true,
+                            config = MultipleRadarChartConfig(
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.CIRCULAR,
+                                        numberOfGridLevels = 4,
+                                        gridLineColor = ChartyColor.Solid(Color(0xFF455A64)),
+                                        axisLineColor = ChartyColor.Solid(Color(0xFF607D8B)),
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = false,
+                                    ),
+                                    animation = Animation.Enabled(duration = 1200),
+                                    showDataPoints = true,
+                                    dataPointRadius = 6f,
                                 ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.15f,
+                                showPointInnerCircle = true,
+                            ),
                         )
                     }
                 }
@@ -2473,72 +2809,65 @@ fun App(modifier: Modifier = Modifier) {
                                 listOf(
                                     RadarDataSet(
                                         label = "Frontend",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("React", 95f),
-                                                RadarAxisData("Vue", 80f),
-                                                RadarAxisData("Angular", 70f),
-                                                RadarAxisData("Svelte", 85f),
-                                                RadarAxisData("Mobile", 75f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("React", 95f),
+                                            RadarAxisData("Vue", 80f),
+                                            RadarAxisData("Angular", 70f),
+                                            RadarAxisData("Svelte", 85f),
+                                            RadarAxisData("Mobile", 75f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFF2196F3)),
                                         fillAlpha = 0.35f,
                                     ),
                                     RadarDataSet(
                                         label = "Backend",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("React", 60f),
-                                                RadarAxisData("Vue", 55f),
-                                                RadarAxisData("Angular", 50f),
-                                                RadarAxisData("Svelte", 45f),
-                                                RadarAxisData("Mobile", 40f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("React", 60f),
+                                            RadarAxisData("Vue", 55f),
+                                            RadarAxisData("Angular", 50f),
+                                            RadarAxisData("Svelte", 45f),
+                                            RadarAxisData("Mobile", 40f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFFFF5722)),
                                         fillAlpha = 0.35f,
                                     ),
                                     RadarDataSet(
                                         label = "Full Stack",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("React", 88f),
-                                                RadarAxisData("Vue", 75f),
-                                                RadarAxisData("Angular", 70f),
-                                                RadarAxisData("Svelte", 65f),
-                                                RadarAxisData("Mobile", 82f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("React", 88f),
+                                            RadarAxisData("Vue", 75f),
+                                            RadarAxisData("Angular", 70f),
+                                            RadarAxisData("Svelte", 65f),
+                                            RadarAxisData("Mobile", 82f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFF00C853)),
                                         fillAlpha = 0.35f,
                                     ),
                                 )
                             },
-                            config =
-                                MultipleRadarChartConfig(
-                                    radarConfig =
-                                        RadarChartConfig(
-                                            gridConfig =
-                                                RadarGridConfig(
-                                                    gridStyle = RadarGridStyle.POLYGON,
-                                                    numberOfGridLevels = 5,
-                                                    gridLineWidth = 1.5f,
-                                                    gridLineColor =  ChartyColor.Solid(Color(0xFF455A64)),
-                                                    axisLineColor =  ChartyColor.Solid(Color(0xFF607D8B)),
-                                                ),
-                                            labelConfig =
-                                                RadarLabelConfig(
-                                                    showLabels = false,
-                                                ),
-                                            animation = Animation.Enabled(duration = 1500),
-                                            showDataPoints = true,
-                                            dataPointRadius = 7f,
-                                            dataLineWidth = 2.5f,
-                                        ),
-                                    staggerAnimation = true,
-                                    staggerDelay = 0.25f,
-                                    showPointInnerCircle = false,
-                                    datasetLineWidth = 3f,
-                                    datasetPointRadius = 8f,
+                            config = MultipleRadarChartConfig(
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.POLYGON,
+                                        numberOfGridLevels = 5,
+                                        gridLineWidth = 1.5f,
+                                        gridLineColor = ChartyColor.Solid(Color(0xFF455A64)),
+                                        axisLineColor = ChartyColor.Solid(Color(0xFF607D8B)),
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = false,
+                                    ),
+                                    animation = Animation.Enabled(duration = 1500),
+                                    showDataPoints = true,
+                                    dataPointRadius = 7f,
+                                    dataLineWidth = 2.5f,
                                 ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.25f,
+                                showPointInnerCircle = false,
+                                datasetLineWidth = 3f,
+                                datasetPointRadius = 8f,
+                            ),
                         )
                     }
                 }
@@ -2555,90 +2884,82 @@ fun App(modifier: Modifier = Modifier) {
                                 listOf(
                                     RadarDataSet(
                                         label = "Q1 2024",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Sales", 75f),
-                                                RadarAxisData("Growth", 68f),
-                                                RadarAxisData("Profit", 82f),
-                                                RadarAxisData("Customer Sat", 90f),
-                                                RadarAxisData("Market Share", 70f),
-                                                RadarAxisData("Innovation", 85f),
-                                                RadarAxisData("Efficiency", 78f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 75f),
+                                            RadarAxisData("Growth", 68f),
+                                            RadarAxisData("Profit", 82f),
+                                            RadarAxisData("Customer Sat", 90f),
+                                            RadarAxisData("Market Share", 70f),
+                                            RadarAxisData("Innovation", 85f),
+                                            RadarAxisData("Efficiency", 78f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFFFF6B6B)),
                                         fillAlpha = 0.28f,
                                     ),
                                     RadarDataSet(
                                         label = "Q2 2024",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Sales", 82f),
-                                                RadarAxisData("Growth", 75f),
-                                                RadarAxisData("Profit", 88f),
-                                                RadarAxisData("Customer Sat", 92f),
-                                                RadarAxisData("Market Share", 78f),
-                                                RadarAxisData("Innovation", 80f),
-                                                RadarAxisData("Efficiency", 85f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 82f),
+                                            RadarAxisData("Growth", 75f),
+                                            RadarAxisData("Profit", 88f),
+                                            RadarAxisData("Customer Sat", 92f),
+                                            RadarAxisData("Market Share", 78f),
+                                            RadarAxisData("Innovation", 80f),
+                                            RadarAxisData("Efficiency", 85f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFF4ECDC4)),
                                         fillAlpha = 0.28f,
                                     ),
                                     RadarDataSet(
                                         label = "Q3 2024",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Sales", 88f),
-                                                RadarAxisData("Growth", 85f),
-                                                RadarAxisData("Profit", 90f),
-                                                RadarAxisData("Customer Sat", 95f),
-                                                RadarAxisData("Market Share", 85f),
-                                                RadarAxisData("Innovation", 88f),
-                                                RadarAxisData("Efficiency", 92f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 88f),
+                                            RadarAxisData("Growth", 85f),
+                                            RadarAxisData("Profit", 90f),
+                                            RadarAxisData("Customer Sat", 95f),
+                                            RadarAxisData("Market Share", 85f),
+                                            RadarAxisData("Innovation", 88f),
+                                            RadarAxisData("Efficiency", 92f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFF95E1D3)),
                                         fillAlpha = 0.28f,
                                     ),
                                     RadarDataSet(
                                         label = "Q4 2024 (Projected)",
-                                        axes =
-                                            listOf(
-                                                RadarAxisData("Sales", 92f),
-                                                RadarAxisData("Growth", 90f),
-                                                RadarAxisData("Profit", 93f),
-                                                RadarAxisData("Customer Sat", 97f),
-                                                RadarAxisData("Market Share", 88f),
-                                                RadarAxisData("Innovation", 92f),
-                                                RadarAxisData("Efficiency", 95f),
-                                            ),
+                                        axes = listOf(
+                                            RadarAxisData("Sales", 92f),
+                                            RadarAxisData("Growth", 90f),
+                                            RadarAxisData("Profit", 93f),
+                                            RadarAxisData("Customer Sat", 97f),
+                                            RadarAxisData("Market Share", 88f),
+                                            RadarAxisData("Innovation", 92f),
+                                            RadarAxisData("Efficiency", 95f),
+                                        ),
                                         color = ChartyColor.Solid(Color(0xFFF38181)),
                                         fillAlpha = 0.28f,
                                     ),
                                 )
                             },
-                            config =
-                                MultipleRadarChartConfig(
-                                    showLegend = true,
-                                    radarConfig =
-                                        RadarChartConfig(
-                                            gridConfig =
-                                                RadarGridConfig(
-                                                    gridStyle = RadarGridStyle.CIRCULAR,
-                                                    numberOfGridLevels = 5,
-                                                    gridLineColor = ChartyColor.Solid(Color(0xFF546E7A).copy(alpha = 0.35f)),
-                                                    axisLineColor = ChartyColor.Solid(Color(0xFF78909C).copy(alpha = 0.45f)),
-                                                ),
-                                            labelConfig =
-                                                RadarLabelConfig(
-                                                    showLabels = true,
-                                                ),
-                                            animation = Animation.Enabled(duration = 1800),
-                                            showDataPoints = true,
-                                            dataPointRadius = 4f,
-                                        ),
-                                    staggerAnimation = true,
-                                    staggerDelay = 0.1f,
-                                    showPointInnerCircle = true,
+                            config = MultipleRadarChartConfig(
+                                showLegend = true,
+                                radarConfig = RadarChartConfig(
+                                    gridConfig = RadarGridConfig(
+                                        gridStyle = RadarGridStyle.CIRCULAR,
+                                        numberOfGridLevels = 5,
+                                        gridLineColor = ChartyColor.Solid(Color(0xFF546E7A).copy(alpha = 0.35f)),
+                                        axisLineColor = ChartyColor.Solid(Color(0xFF78909C).copy(alpha = 0.45f)),
+                                    ),
+                                    labelConfig = RadarLabelConfig(
+                                        showLabels = true,
+                                    ),
+                                    animation = Animation.Enabled(duration = 1800),
+                                    showDataPoints = true,
+                                    dataPointRadius = 4f,
                                 ),
+                                staggerAnimation = true,
+                                staggerDelay = 0.1f,
+                                showPointInnerCircle = true,
+                            ),
                         )
                     }
                 }
@@ -2647,10 +2968,9 @@ fun App(modifier: Modifier = Modifier) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -2663,11 +2983,7 @@ fun App(modifier: Modifier = Modifier) {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text =
-                                    "All charts built using the same ChartContext helpers:\n" +
-                                        "• valueToY() - Value to pixel conversion\n" +
-                                        "• getBarX() - Bar positioning\n" +
-                                        "• getGroupCenterX() - Centered positioning",
+                                text = "All charts built using the same ChartContext helpers:\n" + "• valueToY() - Value to pixel conversion\n" + "• getBarX() - Bar positioning\n" + "• getGroupCenterX() - Centered positioning",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
@@ -2686,25 +3002,28 @@ fun ChartCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(12.dp),
+    Column(
+        modifier = modifier.fillMaxWidth()
+            .background(Color(0xFFEDE6E2)),
     ) {
         Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+            Modifier
+                .background(Color(0xFFEDE6E2))
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp)),
         ) {
             Text(
                 text = title,
+                modifier = Modifier.fillMaxWidth().background(Color(0xff4C2849)).padding(16.dp),
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color.White,
+                textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = description,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
