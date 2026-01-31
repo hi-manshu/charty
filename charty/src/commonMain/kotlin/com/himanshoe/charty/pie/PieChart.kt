@@ -439,8 +439,10 @@ private fun findClickedSlice(
 
     var touchAngle = (atan2(dy.toDouble(), dx.toDouble()) * RADIANS_TO_DEGREES).toFloat()
     if (touchAngle < 0) touchAngle += FULL_CIRCLE_DEGREES
+    touchAngle = touchAngle % 360
     var normalizedAngle = touchAngle - config.startAngleDegrees
     if (normalizedAngle < 0) normalizedAngle += FULL_CIRCLE_DEGREES
+    normalizedAngle = normalizedAngle % 360
     var currentAngle = 0f
     var result: Int? = null
     dataList.fastForEachIndexed { index, slice ->
