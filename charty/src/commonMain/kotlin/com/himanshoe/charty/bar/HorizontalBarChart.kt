@@ -28,16 +28,22 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 /**
  * A composable function that displays a horizontal bar chart.
  *
- * A horizontal bar chart presents categorical data with horizontal rectangular bars, where the length of each bar is proportional to the value it represents.
- * This type of chart is particularly useful for comparing categories with long labels or when there are many categories to display.
+ * A horizontal bar chart presents categorical data with horizontal rectangular bars, where the
+ * length of each bar is proportional to the value it represents. This type of chart is particularly
+ * useful for comparing categories with long labels or when there are many categories to display.
  *
  * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
  * @param color The color or color scheme for the bars, defined by a [ChartyColor].
- * @param barConfig The configuration for the bars, such as width and corner radius, defined by a [BarChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param onBarClick A lambda function to be invoked when a bar is clicked, providing the corresponding [BarData].
+ * @param barConfig The configuration for the bars, such as width and corner radius, defined by a
+ *   [BarChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels,
+ *   defined by a [ChartScaffoldConfig].
+ * @param onBarClick A lambda function invoked when a bar is clicked, providing the corresponding
+ *   [BarData].
  *
+ * Example usage:
+ * ```kotlin
  * HorizontalBarChart(
  *     data = {
  *         listOf(
@@ -52,6 +58,7 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  *         cornerRadius = CornerRadius.Large
  *     )
  * )
+ * ```
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

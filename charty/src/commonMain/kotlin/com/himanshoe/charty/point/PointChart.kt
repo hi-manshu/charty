@@ -157,14 +157,43 @@ private fun DrawScope.drawTooltipHighlight(
 /**
  * A composable function that displays a point chart, also known as a scatter plot.
  *
- * A point chart displays data as a collection of individual points, which can be useful for showing the relationship between two variables.
+ * A point chart displays data as a collection of individual points positioned on a shared axis.
+ * It is useful for showing distribution, outliers, or the relationship between ordered categories
+ * and numeric values.
  *
  * @param data A lambda function that returns a list of [PointData] to be displayed.
  * @param modifier The modifier to be applied to the chart.
  * @param color The color or color scheme for the points, defined by a [ChartyColor].
- * @param pointConfig The configuration for the points' appearance and behavior, defined by a [PointChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param onPointClick A lambda function to be invoked when a point is clicked, providing the corresponding [PointData].
+ * @param pointConfig The configuration for the points' appearance and behavior (radius, alpha,
+ *   animation, tooltip formatter), defined by a [PointChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels,
+ *   defined by a [ChartScaffoldConfig].
+ * @param onPointClick A lambda function invoked when a point is clicked, providing the
+ *   corresponding [PointData].
+ *
+ * Example usage:
+ * ```kotlin
+ * PointChart(
+ *     data = {
+ *         listOf(
+ *             PointData("Mon", 30f),
+ *             PointData("Tue", 55f),
+ *             PointData("Wed", 42f),
+ *             PointData("Thu", 70f),
+ *             PointData("Fri", 38f)
+ *         )
+ *     },
+ *     color = ChartyColor.Solid(ChartyColors.Blue),
+ *     pointConfig = PointChartConfig(
+ *         pointRadius = 10f,
+ *         pointAlpha = 0.8f,
+ *         animation = Animation.Enabled()
+ *     ),
+ *     onPointClick = { pointData ->
+ *         println("Clicked: ${pointData.label} = ${pointData.value}")
+ *     }
+ * )
+ * ```
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

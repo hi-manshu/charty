@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.Exec
+
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidLibrary) apply false
@@ -104,17 +106,19 @@ tasks.register("openComposeReports") {
 
         if (chartyReports.exists()) {
             println("Opening: ${chartyReports.absolutePath}")
-            project.exec {
-                commandLine("open", chartyReports.absolutePath)
-                isIgnoreExitValue = true
+            try {
+                Runtime.getRuntime().exec(arrayOf("open", chartyReports.absolutePath))
+            } catch (e: Exception) {
+                println("Could not open directory: ${e.message}")
             }
         }
 
         if (composeAppReports.exists()) {
             println("Opening: ${composeAppReports.absolutePath}")
-            project.exec {
-                commandLine("open", composeAppReports.absolutePath)
-                isIgnoreExitValue = true
+            try {
+                Runtime.getRuntime().exec(arrayOf("open", composeAppReports.absolutePath))
+            } catch (e: Exception) {
+                println("Could not open directory: ${e.message}")
             }
         }
 

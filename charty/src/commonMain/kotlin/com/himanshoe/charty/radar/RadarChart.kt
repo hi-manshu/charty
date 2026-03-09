@@ -31,13 +31,21 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
 /**
  * A composable function that displays a radar chart, also known as a spider or web chart.
  *
- * A radar chart is a graphical method of displaying multivariate data in the form of a two-dimensional chart of three or more quantitative variables represented on axes starting from the same point.
- * It is useful for comparing multiple variables, showing performance profiles, or displaying capabilities across different dimensions.
+ * A radar chart is a graphical method of displaying multivariate data in the form of a
+ * two-dimensional chart of three or more quantitative variables represented on axes starting from
+ * the same point. It is useful for comparing multiple variables, showing performance profiles, or
+ * displaying capabilities across different dimensions.
  *
- * @param data A lambda function that returns a list of [RadarDataSet] to be displayed.
+ * All datasets must contain the same number of axes. The first dataset's axis labels are used
+ * as the chart labels for all datasets.
+ *
+ * @param data A lambda function that returns a list of [RadarDataSet] to be displayed. All sets
+ *   must have the same number of axes.
  * @param modifier The modifier to be applied to the chart.
  * @param config The configuration for the radar chart's appearance, defined by a [RadarChartConfig].
  *
+ * Example usage:
+ * ```kotlin
  * RadarChart(
  *     data = {
  *         listOf(
@@ -63,6 +71,7 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  *         labelConfig = RadarLabelConfig(showLabels = true)
  *     )
  * )
+ * ```
  */
 @Composable
 fun RadarChart(

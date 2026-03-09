@@ -59,3 +59,9 @@ limitations under the License.
 ## 🌟 Support
 
 If you like this library, consider giving it a ⭐ on [GitHub](https://github.com/hi-manshu/charty) — it helps a lot!
+
+## ☕ Sponsor
+
+If Charty saves you time, consider buying me a coffee!
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/himanshoe)

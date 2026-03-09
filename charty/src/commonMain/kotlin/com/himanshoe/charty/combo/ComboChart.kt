@@ -35,16 +35,24 @@ import kotlin.math.min
 /**
  * A composable function that displays a combo chart, combining a bar chart and a line chart.
  *
- * A combo chart is useful for visualizing two different data series on the same chart, allowing for easy comparison of trends and magnitudes.
+ * A combo chart is useful for visualizing two different data series on the same chart, allowing for
+ * easy comparison of trends and magnitudes. Both the bar values and line values share a unified
+ * y-axis, so the data ranges should be comparable.
  *
- * @param data A lambda function that returns a list of [ComboChartData], each containing a bar value and a line value.
+ * @param data A lambda function that returns a list of [ComboChartData], each containing a bar
+ *   value and a line value.
  * @param modifier The modifier to be applied to the chart.
  * @param barColor The color or color scheme for the bars, defined by a [ChartyColor].
  * @param lineColor The color or color scheme for the line and its points, defined by a [ChartyColor].
- * @param comboConfig The configuration for the combo chart's appearance and behavior, defined by a [ComboChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param onDataClick A lambda function to be invoked when a data point (either a bar or a line point) is clicked, providing the corresponding [ComboChartData].
+ * @param comboConfig The configuration for the combo chart's appearance and behavior, defined by a
+ *   [ComboChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels,
+ *   defined by a [ChartScaffoldConfig].
+ * @param onDataClick A lambda function invoked when a data point (bar or line point) is clicked,
+ *   providing the corresponding [ComboChartData].
  *
+ * Example usage:
+ * ```kotlin
  * ComboChart(
  *     data = {
  *         listOf(
@@ -63,6 +71,7 @@ import kotlin.math.min
  *         animation = Animation.Enabled()
  *     )
  * )
+ * ```
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

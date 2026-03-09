@@ -39,10 +39,15 @@ import com.himanshoe.charty.line.internal.line.lineChartClickHandler
  * @param data A lambda function that returns a list of [LineData] points to be displayed.
  * @param modifier The modifier to be applied to the chart.
  * @param color The color or color scheme for the line and its points, defined by a [ChartyColor].
- * @param lineConfig The configuration for the line's appearance and behavior, such as line width and point visibility, defined by a [LineChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param onPointClick A lambda function to be invoked when a point on the line is clicked, providing the corresponding [LineData].
+ * @param lineConfig The configuration for the line's appearance and behavior, such as line width and
+ *   point visibility, defined by a [LineChartConfig].
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels,
+ *   defined by a [ChartScaffoldConfig].
+ * @param onPointClick A lambda function invoked when a point on the line is clicked, providing
+ *   the corresponding [LineData].
  *
+ * Example usage:
+ * ```kotlin
  * LineChart(
  *     data = {
  *         listOf(
@@ -63,6 +68,7 @@ import com.himanshoe.charty.line.internal.line.lineChartClickHandler
  *         println("Clicked: ${lineData.label}")
  *     }
  * )
+ * ```
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable

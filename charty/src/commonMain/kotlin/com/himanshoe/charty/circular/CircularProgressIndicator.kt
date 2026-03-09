@@ -33,15 +33,23 @@ import com.himanshoe.charty.circular.internal.ringClickHandler
 /**
  * A composable function that displays a circular progress indicator with multiple concentric rings.
  *
- * This indicator is highly configurable and can be used to show progress for multiple data points simultaneously, similar to Apple's Activity Rings.
- * It supports customization of colors, shadows, gaps, stroke caps, and animations.
+ * This indicator is highly configurable and can be used to show progress for multiple data points
+ * simultaneously, similar to Apple's Activity Rings. It supports customization of colors, shadows,
+ * gaps, stroke caps, and animations. Rings are rendered from outermost (first item) to innermost
+ * (last item).
  *
- * @param rings A lambda function that returns a list of [CircularRingData], each representing a progress ring.
+ * @param rings A lambda function that returns a list of [CircularRingData], each representing a
+ *   progress ring. The first item becomes the outermost ring.
  * @param modifier The modifier to be applied to the indicator.
- * @param config The configuration for the circular progress indicator's appearance and behavior, defined by a [CircularProgressConfig].
- * @param onRingClick A lambda function to be invoked when a ring is clicked, providing the corresponding [CircularRingData] and its index.
- * @param centerContent A composable lambda that allows for placing content in the center of the rings.
+ * @param config The configuration for the circular progress indicator's appearance and behavior,
+ *   defined by a [CircularProgressConfig].
+ * @param onRingClick A lambda function invoked when a ring is clicked, providing the corresponding
+ *   [CircularRingData] and its index.
+ * @param centerContent An optional composable lambda for placing custom content in the center of
+ *   the rings. When provided, overrides [CircularProgressConfig.showCenterText].
  *
+ * Example usage:
+ * ```kotlin
  * // Basic three-ring indicator
  * CircularProgressIndicator(
  *     rings = {
@@ -69,6 +77,7 @@ import com.himanshoe.charty.circular.internal.ringClickHandler
  *         println("Clicked: ${ring.label} - ${ring.calculatePercentage()}%")
  *     }
  * )
+ * ```
  */
 @Composable
 fun CircularProgressIndicator(

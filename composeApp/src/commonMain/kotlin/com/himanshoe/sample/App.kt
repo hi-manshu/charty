@@ -51,14 +51,20 @@ import com.himanshoe.charty.bar.LollipopBarChart
 import com.himanshoe.charty.bar.MosiacBarChart
 import com.himanshoe.charty.bar.SpanChart
 import com.himanshoe.charty.bar.StackedBarChart
+import com.himanshoe.charty.bar.GroupedHorizontalBarChart
+import com.himanshoe.charty.bar.NormalizedHorizontalBarChart
+import com.himanshoe.charty.bar.StackedHorizontalBarChart
 import com.himanshoe.charty.bar.WaterfallChart
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.BubbleBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.config.MosiacBarChartConfig
+import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.bar.config.NormalizedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
+import com.himanshoe.charty.bar.config.StackedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.WaterfallChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
@@ -70,6 +76,7 @@ import com.himanshoe.charty.circular.CircularProgressIndicator
 import com.himanshoe.charty.circular.config.CircularProgressConfig
 import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.combo.ComboChart
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
@@ -117,6 +124,11 @@ import com.himanshoe.charty.block.BlockBarChart
 import com.himanshoe.charty.block.config.BlockBarChartConfig
 import com.himanshoe.charty.block.data.BlockData
 import com.himanshoe.charty.radar.RadarChart
+import com.himanshoe.charty.calendar.CalendarHeatmapChart
+import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
+import com.himanshoe.charty.calendar.config.CellShape
+import com.himanshoe.charty.calendar.config.WeekStartDay
+import com.himanshoe.charty.calendar.data.CalendarData
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -2074,6 +2086,228 @@ fun App(modifier: Modifier = Modifier) {
                     }
                 }
 
+                // Stacked Horizontal Bar Chart
+                item {
+                    ChartCard(
+                        title = "Stacked Horizontal Bar Chart",
+                        description = "Part-to-whole composition displayed as horizontal stacked bars — great for category labels that need more space.",
+                    ) {
+                        StackedHorizontalBarChart(
+                            modifier = Modifier.fillMaxWidth().height(280.dp),
+                            data = {
+                                listOf(
+                                    BarGroup("Engineering", listOf(40f, 25f, 15f)),
+                                    BarGroup("Marketing", listOf(20f, 35f, 30f)),
+                                    BarGroup("Sales", listOf(35f, 20f, 25f)),
+                                    BarGroup("Support", listOf(15f, 30f, 20f)),
+                                )
+                            },
+                            colors = ChartyColors.DefaultGradient,
+                            config = StackedHorizontalBarChartConfig(
+                                barWidthFraction = 0.6f,
+                                rightCornerRadius = CornerRadius.Medium,
+                                animation = Animation.Default,
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Stacked Horizontal Bar Chart — Custom Segment Colors",
+                        description = "Each bar group can supply per-segment colors for precise color control.",
+                    ) {
+                        StackedHorizontalBarChart(
+                            modifier = Modifier.fillMaxWidth().height(280.dp),
+                            data = {
+                                listOf(
+                                    BarGroup(
+                                        label = "2021",
+                                        values = listOf(30f, 45f, 25f),
+                                        colors = listOf(
+                                            ChartyColor.Solid(Color(0xFF2196F3)),
+                                            ChartyColor.Solid(Color(0xFF4CAF50)),
+                                            ChartyColor.Solid(Color(0xFFFF9800)),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        label = "2022",
+                                        values = listOf(35f, 40f, 30f),
+                                        colors = listOf(
+                                            ChartyColor.Gradient(listOf(Color(0xFF1976D2), Color(0xFF42A5F5))),
+                                            ChartyColor.Gradient(listOf(Color(0xFF388E3C), Color(0xFF81C784))),
+                                            ChartyColor.Gradient(listOf(Color(0xFFF57C00), Color(0xFFFFB74D))),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        label = "2023",
+                                        values = listOf(50f, 30f, 20f),
+                                        colors = listOf(
+                                            ChartyColor.Solid(Color(0xFF9C27B0)),
+                                            ChartyColor.Solid(Color(0xFFE91E63)),
+                                            ChartyColor.Solid(Color(0xFF00BCD4)),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        label = "2024",
+                                        values = listOf(45f, 35f, 35f),
+                                        colors = listOf(
+                                            ChartyColor.Solid(Color(0xFF3F51B5)),
+                                            ChartyColor.Solid(Color(0xFF009688)),
+                                            ChartyColor.Solid(Color(0xFFFFC107)),
+                                        ),
+                                    ),
+                                )
+                            },
+                            config = StackedHorizontalBarChartConfig(
+                                barWidthFraction = 0.65f,
+                                rightCornerRadius = CornerRadius.Large,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
+                        )
+                    }
+                }
+
+                // Grouped Horizontal Bar Chart
+                item {
+                    ChartCard(
+                        title = "Grouped Horizontal Bar Chart",
+                        description = "Multiple bars per row, side-by-side — compare series across categories.",
+                    ) {
+                        GroupedHorizontalBarChart(
+                            modifier = Modifier.fillMaxWidth().height(320.dp),
+                            data = {
+                                listOf(
+                                    BarGroup("North", listOf(120f, 85f, 60f)),
+                                    BarGroup("South", listOf(95f, 110f, 75f)),
+                                    BarGroup("East",  listOf(80f,  90f, 100f)),
+                                    BarGroup("West",  listOf(105f, 70f, 80f)),
+                                )
+                            },
+                            colors = ChartyColors.ModernPalette,
+                            config = GroupedHorizontalBarChartConfig(
+                                barWidthFraction = 0.8f,
+                                barSpacing = 4f,
+                                cornerRadius = CornerRadius.Medium,
+                                animation = Animation.Default,
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Grouped Horizontal Bar Chart — Negative Values",
+                        description = "Bars extend in both directions from the zero axis for profit/loss and temperature anomaly data.",
+                    ) {
+                        GroupedHorizontalBarChart(
+                            modifier = Modifier.fillMaxWidth().height(320.dp),
+                            data = {
+                                listOf(
+                                    BarGroup("Jan", listOf(40f, -15f, 25f)),
+                                    BarGroup("Feb", listOf(-20f, 30f, -10f)),
+                                    BarGroup("Mar", listOf(55f, -5f, 35f)),
+                                    BarGroup("Apr", listOf(-30f, 45f, 20f)),
+                                )
+                            },
+                            colors = ChartyColors.WarmPalette,
+                            config = GroupedHorizontalBarChartConfig(
+                                barWidthFraction = 0.75f,
+                                barSpacing = 3f,
+                                cornerRadius = CornerRadius.Small,
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+                                animation = Animation.Enabled(duration = 900),
+                            ),
+                        )
+                    }
+                }
+
+                // Normalized Horizontal Bar Chart
+                item {
+                    ChartCard(
+                        title = "Normalized Horizontal Bar Chart",
+                        description = "100% stacked horizontal bars — every bar extends to full width showing proportional share.",
+                    ) {
+                        NormalizedHorizontalBarChart(
+                            modifier = Modifier.fillMaxWidth().height(260.dp),
+                            data = {
+                                listOf(
+                                    BarGroup("Product A", listOf(50f, 30f, 20f)),
+                                    BarGroup("Product B", listOf(25f, 45f, 30f)),
+                                    BarGroup("Product C", listOf(35f, 25f, 40f)),
+                                    BarGroup("Product D", listOf(60f, 20f, 20f)),
+                                )
+                            },
+                            colors = ChartyColors.DefaultGradient,
+                            config = NormalizedHorizontalBarChartConfig(
+                                barWidthFraction = 0.6f,
+                                rightCornerRadius = CornerRadius.Medium,
+                                animation = Animation.Default,
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Normalized Horizontal Bar Chart — Survey Results",
+                        description = "Likert-scale survey responses with per-segment colors and percentage tooltips.",
+                    ) {
+                        NormalizedHorizontalBarChart(
+                            modifier = Modifier.fillMaxWidth().height(280.dp),
+                            data = {
+                                listOf(
+                                    BarGroup(
+                                        label = "Q1",
+                                        values = listOf(40f, 35f, 15f, 10f),
+                                        colors = listOf(
+                                            ChartyColor.Solid(Color(0xFF4CAF50)),
+                                            ChartyColor.Solid(Color(0xFF8BC34A)),
+                                            ChartyColor.Solid(Color(0xFFFF9800)),
+                                            ChartyColor.Solid(Color(0xFFF44336)),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        label = "Q2",
+                                        values = listOf(30f, 40f, 20f, 10f),
+                                        colors = listOf(
+                                            ChartyColor.Solid(Color(0xFF4CAF50)),
+                                            ChartyColor.Solid(Color(0xFF8BC34A)),
+                                            ChartyColor.Solid(Color(0xFFFF9800)),
+                                            ChartyColor.Solid(Color(0xFFF44336)),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        label = "Q3",
+                                        values = listOf(20f, 25f, 35f, 20f),
+                                        colors = listOf(
+                                            ChartyColor.Solid(Color(0xFF4CAF50)),
+                                            ChartyColor.Solid(Color(0xFF8BC34A)),
+                                            ChartyColor.Solid(Color(0xFFFF9800)),
+                                            ChartyColor.Solid(Color(0xFFF44336)),
+                                        ),
+                                    ),
+                                    BarGroup(
+                                        label = "Q4",
+                                        values = listOf(10f, 15f, 30f, 45f),
+                                        colors = listOf(
+                                            ChartyColor.Solid(Color(0xFF4CAF50)),
+                                            ChartyColor.Solid(Color(0xFF8BC34A)),
+                                            ChartyColor.Solid(Color(0xFFFF9800)),
+                                            ChartyColor.Solid(Color(0xFFF44336)),
+                                        ),
+                                    ),
+                                )
+                            },
+                            config = NormalizedHorizontalBarChartConfig(
+                                barWidthFraction = 0.65f,
+                                rightCornerRadius = CornerRadius.Large,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
+                        )
+                    }
+                }
+
                 // Area Chart
                 item {
                     ChartCard(
@@ -2986,6 +3220,91 @@ fun App(modifier: Modifier = Modifier) {
                                 text = "All charts built using the same ChartContext helpers:\n" + "• valueToY() - Value to pixel conversion\n" + "• getBarX() - Bar positioning\n" + "• getGroupCenterX() - Centered positioning",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Calendar Heatmap Chart",
+                        description = "GitHub-style contribution graph. Tap a cell to see the value.",
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(24.dp),
+                        ) {
+                            val calendarData = remember {
+                                buildList {
+                                    val contributions = listOf(0, 1, 2, 4, 6, 3, 0, 5, 7, 2, 1, 0, 4, 8, 3, 5, 0, 2, 6, 1, 9, 4, 3, 0, 7, 2, 5, 1, 8, 0, 4)
+                                    var idx = 0
+                                    for (month in 1..12) {
+                                        val days = when (month) { 2 -> 29; 4, 6, 9, 11 -> 30; else -> 31 }
+                                        for (day in 1..days) {
+                                            val value = contributions[idx % contributions.size].toFloat()
+                                            add(CalendarData(year = 2024, month = month, day = day, value = value))
+                                            idx++
+                                        }
+                                    }
+                                }
+                            }
+
+                            Text(
+                                text = "Default (Rounded Squares, Sunday start)",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            CalendarHeatmapChart(
+                                data = { calendarData },
+                                modifier = Modifier.fillMaxWidth(),
+                                config = CalendarHeatmapConfig(
+                                    intensityColors = listOf(
+                                        Color(0xFF9BE9A8), Color(0xFF40C463),
+                                        Color(0xFF30A14E), Color(0xFF216E39),
+                                    ),
+                                    cellShape = CellShape.RoundedSquare(cornerRadius = 2f),
+                                    weekStartDay = WeekStartDay.SUNDAY,
+                                ),
+                            )
+
+                            Text(
+                                text = "Circle Cells, Monday start",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            CalendarHeatmapChart(
+                                data = { calendarData },
+                                modifier = Modifier.fillMaxWidth(),
+                                config = CalendarHeatmapConfig(
+                                    intensityColors = listOf(
+                                        Color(0xFFBBDEFB), Color(0xFF64B5F6),
+                                        Color(0xFF1976D2), Color(0xFF0D47A1),
+                                    ),
+                                    emptyColor = Color(0xFFE3F2FD),
+                                    cellShape = CellShape.Circle,
+                                    weekStartDay = WeekStartDay.MONDAY,
+                                ),
+                            )
+
+                            Text(
+                                text = "Diamond Cells, last 26 weeks, non-scrollable",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            CalendarHeatmapChart(
+                                data = { calendarData },
+                                modifier = Modifier.fillMaxWidth(),
+                                visibleWeeks = 26,
+                                scrollEnabled = false,
+                                config = CalendarHeatmapConfig(
+                                    intensityColors = listOf(
+                                        Color(0xFFF8BBD9), Color(0xFFF48FB1),
+                                        Color(0xFFE91E63), Color(0xFF880E4F),
+                                    ),
+                                    emptyColor = Color(0xFFFCE4EC),
+                                    cellShape = CellShape.Diamond,
+                                    weekStartDay = WeekStartDay.SUNDAY,
+                                ),
                             )
                         }
                     }

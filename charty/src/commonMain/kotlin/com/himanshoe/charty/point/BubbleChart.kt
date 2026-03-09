@@ -18,18 +18,28 @@ import com.himanshoe.charty.point.data.BubbleData
 /**
  * A composable function that displays a bubble chart.
  *
- * A bubble chart is a variation of a scatter plot where each point is represented by a circle (bubble),
- * and the size of the bubble represents a third dimension of data. This is useful for visualizing three variables at once:
- * x-position, y-position, and size.
+ * A bubble chart is a variation of a scatter plot where each point is represented by a circle
+ * (bubble), and the size of the bubble encodes a third dimension of data. This is useful for
+ * visualizing three variables at once: x-position (category), y-position (value), and bubble size.
+ *
+ * Bubble radii are linearly interpolated between [minBubbleRadius] and [PointChartConfig.pointRadius]
+ * based on each bubble's [BubbleData.size] relative to the full size range in the dataset.
  *
  * @param data A lambda function that returns a list of [BubbleData] to be displayed.
  * @param modifier The modifier to be applied to the chart.
- * @param color The color or color scheme for the bubbles, defined by a [ChartyColor].
- * @param config The configuration for the bubbles' appearance, where `pointRadius` is the maximum bubble size, defined by a [PointChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param minBubbleRadius The minimum radius for a bubble in pixels.
- * @param onBubbleClick A lambda function to be invoked when a bubble is clicked, providing the corresponding [BubbleData].
+ * @param color The color or color scheme for the bubbles, defined by a [ChartyColor]. When using
+ *   [ChartyColor.Gradient], each bubble receives a different color from the gradient list.
+ * @param config The configuration for the bubbles' appearance. [PointChartConfig.pointRadius]
+ *   defines the maximum bubble radius in pixels.
+ * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels,
+ *   defined by a [ChartScaffoldConfig].
+ * @param minBubbleRadius The minimum radius for a bubble in pixels. Must be positive and less than
+ *   [PointChartConfig.pointRadius].
+ * @param onBubbleClick A lambda function invoked when a bubble is clicked, providing the
+ *   corresponding [BubbleData].
  *
+ * Example usage:
+ * ```kotlin
  * BubbleChart(
  *     data = {
  *         listOf(
@@ -41,10 +51,11 @@ import com.himanshoe.charty.point.data.BubbleData
  *     color = ChartyColor.Gradient(
  *         listOf(Color(0xFF2196F3), Color(0xFF4CAF50), Color(0xFFFF9800))
  *     ),
- *     pointConfig = PointChartConfig(
+ *     config = PointChartConfig(
  *         pointRadius = 30f // Maximum bubble radius
  *     )
  * )
+ * ```
  */
 @Composable
 fun BubbleChart(
