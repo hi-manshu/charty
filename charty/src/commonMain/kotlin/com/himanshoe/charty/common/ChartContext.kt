@@ -16,8 +16,6 @@ private const val ZERO_RANGE = 0f
  * @property top The starting y-coordinate of the drawing area.
  * @property right The ending x-coordinate of the drawing area.
  * @property bottom The ending y-coordinate of the drawing area.
- * @property width The total width of the drawing area.
- * @property height The total height of the drawing area.
  * @property minValue The minimum value in the dataset, corresponding to the bottom of the chart.
  * @property maxValue The maximum value in the dataset, corresponding to the top of the chart.
  */
@@ -26,11 +24,15 @@ data class ChartContext(
     val top: Float,
     val right: Float,
     val bottom: Float,
-    val width: Float,
-    val height: Float,
     val minValue: Float,
     val maxValue: Float,
 ) {
+    /** The total width of the drawing area, derived from [right] – [left]. */
+    val width: Float get() = right - left
+
+    /** The total height of the drawing area, derived from [bottom] – [top]. */
+    val height: Float get() = bottom - top
+
     /**
      * Converts a data value to its corresponding y-coordinate on the canvas.
      *

@@ -11,7 +11,6 @@ import com.himanshoe.charty.bar.config.GroupedHorizontalBarEntry
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.GroupedHorizontalBarDrawParams
-import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.calculateGroupedHorizontalAxisOffset
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.calculateGroupedHorizontalBaselineX
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.createGroupedHorizontalAxisConfig
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.createGroupedHorizontalBarChartModifier
@@ -96,14 +95,14 @@ fun GroupedHorizontalBarChart(
     require(dataList.isNotEmpty()) { "Grouped horizontal bar chart data cannot be empty" }
     require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val (minValue, maxValue, colorList) = rememberGroupedHorizontalState(
+    val state = rememberGroupedHorizontalState(
         dataList = dataList,
         negativeValuesDrawMode = config.negativeValuesDrawMode,
         colors = colors,
     )
 
     val isBelowAxisMode = config.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
+    val drawAxisAtZero = state.minValue < 0f && state.maxValue > 0f && isBelowAxisMode
 
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, GroupedHorizontalBarEntry>()
@@ -120,18 +119,16 @@ fun GroupedHorizontalBarChart(
             ),
         ),
         xLabels = dataList.map { it.label },
-        yAxisConfig = createGroupedHorizontalAxisConfig(minValue, maxValue, drawAxisAtZero),
+        yAxisConfig = createGroupedHorizontalAxisConfig(state.minValue, state.maxValue, state.axisSteps, drawAxisAtZero),
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         tooltipManager.clearBounds()
-        val axisOffset = calculateGroupedHorizontalAxisOffset(scaffoldConfig)
         val baselineX = calculateGroupedHorizontalBaselineX(
             drawAxisAtZero = drawAxisAtZero,
-            minValue = minValue,
-            maxValue = maxValue,
+            minValue = state.minValue,
+            maxValue = state.maxValue,
             chartContext = chartContext,
-            axisOffset = axisOffset,
         )
 
         drawGroupedHorizontalBars(
@@ -139,11 +136,10 @@ fun GroupedHorizontalBarChart(
                 dataList = dataList,
                 chartContext = chartContext,
                 config = config,
-                colorList = colorList,
+                colorList = state.colorList,
                 baselineX = baselineX,
-                axisOffset = axisOffset,
-                minValue = minValue,
-                maxValue = maxValue,
+                minValue = state.minValue,
+                maxValue = state.maxValue,
                 animationProgress = animationProgress.value,
                 onBarClick = onBarClick,
                 barBounds = tooltipManager.bounds,

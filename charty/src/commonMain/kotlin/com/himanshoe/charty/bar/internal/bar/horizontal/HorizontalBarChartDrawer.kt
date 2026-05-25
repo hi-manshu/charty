@@ -26,8 +26,7 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
         val centeredBarY = barY + (barHeight - barThickness) / 2
 
         val valueNormalized = (bar.value - params.minValue) / range
-        val barValueX = params.chartContext.left + params.axisOffset +
-            (valueNormalized * (params.chartContext.width - params.axisOffset))
+        val barValueX = params.chartContext.left + (valueNormalized * params.chartContext.width)
         val isNegative = bar.value < 0f
 
         val (barLeft, barWidth) = calculateHorizontalBarDimensions(

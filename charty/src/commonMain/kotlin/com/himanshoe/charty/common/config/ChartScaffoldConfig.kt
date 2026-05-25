@@ -1,5 +1,6 @@
 package com.himanshoe.charty.common.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
@@ -20,14 +21,15 @@ import com.himanshoe.charty.common.axis.LabelRotation
  * @property gridThickness The thickness of the grid lines.
  * @property labelTextStyle The [TextStyle] for the axis labels, allowing for full customization of their appearance.
  */
+@Stable
 data class ChartScaffoldConfig(
     val showAxis: Boolean = true,
     val showGrid: Boolean = true,
     val showLabels: Boolean = true,
-    val axisColor: Color = Color.Companion.Black,
+    val axisColor: Color = Color.Black,
     val leftLabelRotation: LabelRotation = LabelRotation.Straight,
-    val gridColor: Color = Color.Companion.LightGray,
+    val gridColor: Color = Color.LightGray,
     val axisThickness: Float = 2f,
     val gridThickness: Float = 1f,
-    val labelTextStyle: TextStyle = TextStyle(color = Color.Companion.Black, fontSize = 12.sp),
+    val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = 12.sp),
 )

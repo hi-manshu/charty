@@ -1,11 +1,9 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.MosiacBarChartConfig
 import com.himanshoe.charty.bar.config.MosiacBarSegment
@@ -13,11 +11,11 @@ import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.mosiac.createMosiacAxisConfig
 import com.himanshoe.charty.bar.internal.bar.mosiac.createMosiacChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosiac.drawMosiacBars
-import com.himanshoe.charty.bar.internal.bar.mosiac.rememberMosiacAnimation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 
 /**
  * Mosiac Bar Chart - 100% stacked bar chart.
@@ -43,9 +41,8 @@ fun MosiacBarChart(
     require(groups.isNotEmpty()) { "Mosiac bar chart data cannot be empty" }
     require(groups.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val animationProgress = rememberMosiacAnimation(config.animation)
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val segmentBounds = remember { mutableListOf<Pair<androidx.compose.ui.geometry.Rect, MosiacBarSegment>>() }
+    val animationProgress = rememberChartAnimation(config.animation)
+    val tooltipManager = rememberTooltipManager<Rect, MosiacBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartModifier = createMosiacChartModifier(
@@ -53,8 +50,8 @@ fun MosiacBarChart(
         onSegmentClick = onSegmentClick,
         groups = groups,
         config = config,
-        segmentBounds = segmentBounds,
-        onTooltipUpdate = { tooltipState = it },
+        segmentBounds = tooltipManager.bounds,
+        onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
     ChartScaffold(
@@ -63,7 +60,7 @@ fun MosiacBarChart(
         yAxisConfig = createMosiacAxisConfig(),
         config = scaffoldConfig,
     ) { chartContext ->
-        segmentBounds.clear()
+        tooltipManager.clearBounds()
 
         drawMosiacBars(
             groups = groups,
@@ -71,10 +68,10 @@ fun MosiacBarChart(
             config = config,
             animationProgress = animationProgress.value,
             onSegmentClick = onSegmentClick,
-            onSegmentBoundCalculated = { segmentBounds.add(it) },
+            onSegmentBoundCalculated = { tooltipManager.bounds.add(it) },
         )
 
-        tooltipState?.let { state ->
+        tooltipManager.tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
                 config = config.tooltipConfig,
@@ -86,4 +83,3 @@ fun MosiacBarChart(
         }
     }
 }
-

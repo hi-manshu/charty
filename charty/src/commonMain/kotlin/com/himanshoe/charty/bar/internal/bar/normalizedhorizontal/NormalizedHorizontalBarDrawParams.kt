@@ -16,8 +16,6 @@ internal data class NormalizedHorizontalBarDrawParams(
     val config: NormalizedHorizontalBarChartConfig,
     /** Resolved [Color] list derived from the chart-level [ChartyColor]. */
     val colorList: List<Color>,
-    /** Left-side pixel offset reserved for value-axis labels. */
-    val axisOffset: Float,
     val animationProgress: Float,
     val onSegmentClick: ((NormalizedHorizontalBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, NormalizedHorizontalBarSegment>>,

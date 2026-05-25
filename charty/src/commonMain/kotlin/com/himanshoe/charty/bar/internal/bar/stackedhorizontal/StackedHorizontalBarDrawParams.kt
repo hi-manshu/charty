@@ -21,8 +21,6 @@ internal data class StackedHorizontalBarDrawParams(
     val colorList: List<Color>,
     /** Pre-computed maximum total across all groups — used as the value axis upper bound. */
     val maxTotal: Float,
-    /** Left-side pixel offset reserved for the value-axis labels. */
-    val axisOffset: Float,
     val animationProgress: Float,
     val onSegmentClick: ((StackedHorizontalBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, StackedHorizontalBarSegment>>,

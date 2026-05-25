@@ -1,5 +1,7 @@
 package com.himanshoe.charty.bar.config
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.tooltip.TooltipConfig
@@ -13,6 +15,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param segmentValue The value of the clicked segment
  * @param segmentPercentage The percentage this segment represents of the total
  */
+@Immutable
 data class MosiacBarSegment(
     val barGroup: BarGroup,
     val segmentIndex: Int,
@@ -28,6 +31,7 @@ data class MosiacBarSegment(
  * @param tooltipConfig Configuration for tooltip appearance when a segment is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
+@Stable
 data class MosiacBarChartConfig(
     val barWidthFraction: Float = 0.9f,
     val animation: Animation = Animation.Default,

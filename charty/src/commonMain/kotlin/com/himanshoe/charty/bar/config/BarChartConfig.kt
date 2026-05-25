@@ -1,5 +1,6 @@
 package com.himanshoe.charty.bar.config
 
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -38,6 +39,7 @@ enum class NegativeValuesDrawMode {
  * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
+@Stable
 data class BarChartConfig(
     val barWidthFraction: Float = 0.6f,
     val barSpacing: Float = 0f,

@@ -44,7 +44,7 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
     val totalGroups = params.dataList.size
     val rowHeight = params.chartContext.height / totalGroups
     val barThickness = rowHeight * params.config.barWidthFraction
-    val availableWidth = params.chartContext.width - params.axisOffset
+    val availableWidth = params.chartContext.width
 
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
         val groupTotal = barGroup.values.filter { it > 0f }.sum()
@@ -64,8 +64,7 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
 
             val fraction = value / groupTotal
             val segmentPercentage = fraction * NORMALIZED_HORIZONTAL_MAX_PERCENT
-            val startX = params.chartContext.left + params.axisOffset +
-                (cumulativeFraction * effectiveWidth)
+            val startX = params.chartContext.left + (cumulativeFraction * effectiveWidth)
             val segmentWidth = fraction * effectiveWidth
 
             cumulativeFraction += fraction

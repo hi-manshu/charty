@@ -2,7 +2,6 @@ package com.himanshoe.charty.bar.internal.bar.horizontal
 
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
 internal fun createHorizontalAxisConfig(
     minValue: Float,
@@ -17,27 +16,18 @@ internal fun createHorizontalAxisConfig(
     )
 }
 
-internal fun calculateHorizontalAxisOffset(scaffoldConfig: ChartScaffoldConfig): Float {
-    return if (scaffoldConfig.showAxis) {
-        scaffoldConfig.axisThickness * HORIZONTAL_AXIS_OFFSET_MULTIPLIER
-    } else {
-        0f
-    }
-}
-
 internal fun calculateHorizontalBaselineX(
     drawAxisAtZero: Boolean,
     minValue: Float,
     maxValue: Float,
     chartContext: ChartContext,
-    axisOffset: Float,
 ): Float {
     return if (drawAxisAtZero) {
         val range = maxValue - minValue
         val zeroNormalized = (0f - minValue) / range
         chartContext.left + (zeroNormalized * chartContext.width)
     } else {
-        chartContext.left + axisOffset
+        chartContext.left
     }
 }
 

@@ -14,8 +14,8 @@ import com.himanshoe.charty.bar.internal.bar.barchart.createBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBarReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBarTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBars
-import com.himanshoe.charty.bar.internal.bar.barchart.rememberBarAnimationProgress
 import com.himanshoe.charty.bar.internal.bar.barchart.rememberBarValueRange
+import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
@@ -67,7 +67,7 @@ fun BarChart(
 
     val (minValue, maxValue) = rememberBarValueRange(dataList, barConfig.negativeValuesDrawMode)
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = rememberBarAnimationProgress(barConfig.animation)
+    val animationProgress = rememberChartAnimation(barConfig.animation)
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 

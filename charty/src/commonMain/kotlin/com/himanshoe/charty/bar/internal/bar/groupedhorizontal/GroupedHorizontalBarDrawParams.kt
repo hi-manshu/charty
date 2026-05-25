@@ -19,10 +19,8 @@ internal data class GroupedHorizontalBarDrawParams(
     val config: GroupedHorizontalBarChartConfig,
     /** Resolved [Color] list derived from the chart-level [ChartyColor]. */
     val colorList: List<Color>,
-    /** X pixel position of the zero baseline (or left edge when mode is FROM_MIN_VALUE). */
+    /** X pixel position of the zero baseline (or [ChartContext.left] when mode is FROM_MIN_VALUE). */
     val baselineX: Float,
-    /** Left-side pixel offset reserved for value-axis labels. */
-    val axisOffset: Float,
     val minValue: Float,
     val maxValue: Float,
     val animationProgress: Float,

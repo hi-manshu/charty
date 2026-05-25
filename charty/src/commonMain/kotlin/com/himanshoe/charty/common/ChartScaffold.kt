@@ -11,7 +11,8 @@ import com.himanshoe.charty.common.axis.DrawAxisAndLabels
 import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
-private const val LEFT_PADDING_WITH_LABELS = 60f
+private const val VERTICAL_LEFT_PADDING_WITH_LABELS = 60f
+private const val HORIZONTAL_LEFT_PADDING_WITH_LABELS = 100f
 private const val LEFT_PADDING_WITHOUT_LABELS = 20f
 private const val RIGHT_PADDING = 20f
 private const val TOP_PADDING = 20f
@@ -50,10 +51,10 @@ fun ChartScaffold(
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val leftPadding = if (config.showLabels) {
-                LEFT_PADDING_WITH_LABELS
-            } else {
-                LEFT_PADDING_WITHOUT_LABELS
+            val leftPadding = when {
+                !config.showLabels -> LEFT_PADDING_WITHOUT_LABELS
+                orientation == ChartOrientation.HORIZONTAL -> HORIZONTAL_LEFT_PADDING_WITH_LABELS
+                else -> VERTICAL_LEFT_PADDING_WITH_LABELS
             }
             val bottomPadding = if (config.showLabels && xLabels.isNotEmpty()) {
                 BOTTOM_PADDING_WITH_LABELS
@@ -66,8 +67,6 @@ fun ChartScaffold(
                 top = TOP_PADDING,
                 right = size.width - RIGHT_PADDING,
                 bottom = size.height - bottomPadding,
-                width = size.width - leftPadding - RIGHT_PADDING,
-                height = size.height - TOP_PADDING - bottomPadding,
                 minValue = yAxisConfig.minValue,
                 maxValue = yAxisConfig.maxValue,
             )

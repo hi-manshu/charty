@@ -63,8 +63,7 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
             val barTop = usableStart + barIndex * (singleBarHeight + params.config.barSpacing)
 
             val valueNormalized = (value - params.minValue) / range
-            val barValueX = params.chartContext.left + params.axisOffset +
-                (valueNormalized * (params.chartContext.width - params.axisOffset))
+            val barValueX = params.chartContext.left + (valueNormalized * params.chartContext.width)
 
             val isNegative = value < 0f
 

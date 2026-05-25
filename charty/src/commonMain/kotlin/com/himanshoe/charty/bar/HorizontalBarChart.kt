@@ -10,7 +10,6 @@ import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.horizontal.HorizontalBarDrawParams
-import com.himanshoe.charty.bar.internal.bar.horizontal.calculateHorizontalAxisOffset
 import com.himanshoe.charty.bar.internal.bar.horizontal.calculateHorizontalBaselineX
 import com.himanshoe.charty.bar.internal.bar.horizontal.createHorizontalAxisConfig
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalBars
@@ -89,8 +88,7 @@ fun HorizontalBarChart(
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         tooltipManager.clearBounds()
-        val axisOffset = calculateHorizontalAxisOffset(scaffoldConfig)
-        val baselineX = calculateHorizontalBaselineX(drawAxisAtZero, minValue, maxValue, chartContext, axisOffset)
+        val baselineX = calculateHorizontalBaselineX(drawAxisAtZero, minValue, maxValue, chartContext)
 
         drawHorizontalBars(
             HorizontalBarDrawParams(
@@ -98,7 +96,6 @@ fun HorizontalBarChart(
                 chartContext = chartContext,
                 barConfig = barConfig,
                 baselineX = baselineX,
-                axisOffset = axisOffset,
                 animationProgress = animationProgress.value,
                 color = color,
                 isBelowAxisMode = isBelowAxisMode,

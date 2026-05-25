@@ -14,7 +14,6 @@ internal data class HorizontalBarDrawParams(
     val chartContext: ChartContext,
     val barConfig: BarChartConfig,
     val baselineX: Float,
-    val axisOffset: Float,
     val animationProgress: Float,
     val color: ChartyColor,
     val isBelowAxisMode: Boolean,

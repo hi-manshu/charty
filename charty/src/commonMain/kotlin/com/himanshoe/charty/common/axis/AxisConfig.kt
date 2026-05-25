@@ -8,20 +8,20 @@ import kotlin.math.round
  * @property minValue The minimum value to be displayed on the axis.
  * @property maxValue The maximum value to be displayed on the axis.
  * @property steps The number of steps or divisions to be shown on the axis.
- * @property label A descriptive label for the axis (e.g., "Sales", "Revenue").
  * @property drawAxisAtZero If `true` and the data spans across zero, the x-axis will be drawn at the zero-line (centered). If `false`, the x-axis will always be at the bottom.
  */
 data class AxisConfig(
     val minValue: Float = 0f,
     val maxValue: Float = 100f,
     val steps: Int = 5,
-    val label: String = "",
     val drawAxisAtZero: Boolean = true,
 )
 
 
 private const val ROUNDING_MULTIPLIER = 100f
-private const val MAX_DECIMAL_DIGITS = 3
+// Number of decimal places shown on axis labels (e.g. 2 → "3.14").
+// str.take(dotIndex + 1 + MAX_DECIMAL_PLACES) keeps the dot plus this many digits after it.
+private const val MAX_DECIMAL_PLACES = 2
 private const val MODULO_CHECK_ZERO = 1
 private const val ZERO_VALUE = 0f
 
@@ -42,10 +42,10 @@ internal fun formatAxisLabel(value: Float): String =
         val rounded = round(value * ROUNDING_MULTIPLIER) / ROUNDING_MULTIPLIER
         val str = rounded.toString()
 
-        // Ensure max 2 decimal places
+        // Ensure max 2 decimal places: keep dotIndex + 1 (the dot) + MAX_DECIMAL_PLACES digits
         val dotIndex = str.indexOf('.')
-        if (dotIndex >= 0 && str.length > dotIndex + MAX_DECIMAL_DIGITS) {
-            str.take(dotIndex + MAX_DECIMAL_DIGITS).trimEnd('0').trimEnd('.')
+        if (dotIndex >= 0 && str.length > dotIndex + 1 + MAX_DECIMAL_PLACES) {
+            str.take(dotIndex + 1 + MAX_DECIMAL_PLACES).trimEnd('0').trimEnd('.')
         } else {
             str.trimEnd('0').trimEnd('.')
         }

@@ -1,5 +1,9 @@
 package com.himanshoe.charty.common.data
 
+import com.himanshoe.charty.common.util.calculateMaxValue
+import com.himanshoe.charty.common.util.calculateMinMaxValue
+import com.himanshoe.charty.common.util.calculateMinValue
+
 /**
  * A common interface for a basic chart data point, which includes a label and a value.
  *
@@ -42,7 +46,7 @@ fun <T : ChartDataPoint> List<T>.getLabels(): List<String> = map { it.label }
  * @return The calculated minimum value.
  */
 fun <T : ChartDataPoint> List<T>.calculateMinValue(stepSize: Int = 10): Float {
-    return com.himanshoe.charty.common.util.calculateMinValue(getValues(), stepSize)
+    return calculateMinValue(getValues(), stepSize)
 }
 
 /**
@@ -52,7 +56,7 @@ fun <T : ChartDataPoint> List<T>.calculateMinValue(stepSize: Int = 10): Float {
  * @return The calculated maximum value.
  */
 fun <T : ChartDataPoint> List<T>.calculateMaxValue(stepSize: Int = 10): Float {
-    return com.himanshoe.charty.common.util.calculateMaxValue(getValues(), stepSize)
+    return calculateMaxValue(getValues(), stepSize)
 }
 
 /**
@@ -62,6 +66,6 @@ fun <T : ChartDataPoint> List<T>.calculateMaxValue(stepSize: Int = 10): Float {
  * @return A [Pair] containing the calculated minimum and maximum values.
  */
 fun <T : ChartDataPoint> List<T>.calculateMinMaxValue(stepSize: Int = 10): Pair<Float, Float> {
-    return com.himanshoe.charty.common.util.calculateMinMaxValue(getValues(), stepSize)
+    return calculateMinMaxValue(getValues(), stepSize)
 }
 

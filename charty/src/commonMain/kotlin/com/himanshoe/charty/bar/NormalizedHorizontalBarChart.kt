@@ -10,7 +10,6 @@ import com.himanshoe.charty.bar.config.NormalizedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.NormalizedHorizontalBarDrawParams
-import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.calculateNormalizedHorizontalAxisOffset
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.createNormalizedHorizontalAxisConfig
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.createNormalizedHorizontalBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.drawNormalizedHorizontalBars
@@ -113,7 +112,6 @@ fun NormalizedHorizontalBarChart(
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         tooltipManager.clearBounds()
-        val axisOffset = calculateNormalizedHorizontalAxisOffset(scaffoldConfig)
 
         drawNormalizedHorizontalBars(
             NormalizedHorizontalBarDrawParams(
@@ -121,7 +119,6 @@ fun NormalizedHorizontalBarChart(
                 chartContext = chartContext,
                 config = config,
                 colorList = colorList,
-                axisOffset = axisOffset,
                 animationProgress = animationProgress.value,
                 onSegmentClick = onSegmentClick,
                 segmentBounds = tooltipManager.bounds,

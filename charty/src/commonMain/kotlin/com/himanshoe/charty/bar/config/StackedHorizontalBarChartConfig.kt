@@ -1,5 +1,7 @@
 package com.himanshoe.charty.bar.config
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -14,6 +16,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param segmentIndex The index of the clicked segment within the bar.
  * @param segmentValue The value of the clicked segment.
  */
+@Immutable
 data class StackedHorizontalBarSegment(
     val barGroup: BarGroup,
     val segmentIndex: Int,
@@ -32,6 +35,7 @@ data class StackedHorizontalBarSegment(
  * @param tooltipPosition Preferred position for tooltips ([TooltipPosition.ABOVE], [TooltipPosition.BELOW], or [TooltipPosition.AUTO]).
  * @param tooltipFormatter Lambda that formats the tooltip label for a clicked [StackedHorizontalBarSegment].
  */
+@Stable
 data class StackedHorizontalBarChartConfig(
     val barWidthFraction: Float = 0.6f,
     val barSpacing: Float = 0f,

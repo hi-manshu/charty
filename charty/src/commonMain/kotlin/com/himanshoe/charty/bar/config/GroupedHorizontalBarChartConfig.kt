@@ -1,5 +1,7 @@
 package com.himanshoe.charty.bar.config
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -14,6 +16,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param barIndex Zero-based index of the bar within its group.
  * @param barValue The value of the tapped bar.
  */
+@Immutable
 data class GroupedHorizontalBarEntry(
     val barGroup: BarGroup,
     val barIndex: Int,
@@ -36,6 +39,7 @@ data class GroupedHorizontalBarEntry(
  * @param tooltipPosition Preferred tooltip placement ([TooltipPosition.AUTO] by default).
  * @param tooltipFormatter Lambda that formats the tooltip text for a tapped [GroupedHorizontalBarEntry].
  */
+@Stable
 data class GroupedHorizontalBarChartConfig(
     val barWidthFraction: Float = 0.8f,
     val barSpacing: Float = 4f,

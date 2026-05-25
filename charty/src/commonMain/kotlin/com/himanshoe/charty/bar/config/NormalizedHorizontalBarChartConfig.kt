@@ -1,5 +1,7 @@
 package com.himanshoe.charty.bar.config
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -14,6 +16,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param segmentValue The raw value of the tapped segment.
  * @param segmentPercentage The percentage share this segment holds within its group (0–100).
  */
+@Immutable
 data class NormalizedHorizontalBarSegment(
     val barGroup: BarGroup,
     val segmentIndex: Int,
@@ -32,6 +35,7 @@ data class NormalizedHorizontalBarSegment(
  * @param tooltipFormatter Lambda that formats the tooltip text for a tapped [NormalizedHorizontalBarSegment].
  *   Defaults to showing the segment label, index, and percentage.
  */
+@Stable
 data class NormalizedHorizontalBarChartConfig(
     val barWidthFraction: Float = 0.6f,
     val rightCornerRadius: CornerRadius = CornerRadius.Medium,

@@ -10,7 +10,6 @@ import com.himanshoe.charty.bar.config.StackedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.StackedHorizontalBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.StackedHorizontalBarDrawParams
-import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.calculateStackedHorizontalAxisOffset
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.createStackedHorizontalAxisConfig
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.createStackedHorizontalBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.drawStackedHorizontalBars
@@ -117,7 +116,6 @@ fun StackedHorizontalBarChart(
         orientation = ChartOrientation.HORIZONTAL,
     ) { chartContext ->
         tooltipManager.clearBounds()
-        val axisOffset = calculateStackedHorizontalAxisOffset(scaffoldConfig)
 
         drawStackedHorizontalBars(
             StackedHorizontalBarDrawParams(
@@ -126,7 +124,6 @@ fun StackedHorizontalBarChart(
                 config = config,
                 colorList = colorList,
                 maxTotal = maxTotal,
-                axisOffset = axisOffset,
                 animationProgress = animationProgress.value,
                 onSegmentClick = onSegmentClick,
                 segmentBounds = tooltipManager.bounds,
