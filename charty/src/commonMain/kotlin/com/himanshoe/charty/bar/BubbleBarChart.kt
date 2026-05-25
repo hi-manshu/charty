@@ -24,39 +24,26 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
  * A composable function that displays a bubble bar chart.
  *
- * A bubble bar chart represents data as stacked bubbles in vertical columns.
- * The number and size of the bubbles are proportional to the value they represent, offering a visually distinct way to compare categorical data.
- *
  * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
- * @param color The color or color scheme for the bubbles, defined by a [ChartyColor].
- * @param bubbleConfig The configuration for the bubbles, such as radius, spacing, and animation, defined by a [BubbleBarChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param onBarClick A lambda function to be invoked when a bar (a column of bubbles) is clicked, providing the corresponding [BarData].
- *
- * BubbleBarChart(
- *     data = {
- *         listOf(
- *             BarData("Jan", 100f),
- *             BarData("Feb", 150f),
- *             BarData("Mar", 120f)
- *         )
- *     },
- *     color = ChartyColor.Solid(Color(0xFF2196F3)),
- *     bubbleConfig = BubbleBarChartConfig(
- *         barWidthFraction = 0.6f,
- *         bubbleRadius = 8.dp,
- *         bubbleSpacing = 4.dp,
- *         animation = Animation.Enabled()
- *     )
- * )
+ * @param color The color or color scheme for the bubbles.
+ * @param bubbleConfig The configuration for the bubbles.
+ * @param scaffoldConfig The configuration for the chart's scaffold.
+ * @param onBarClick A lambda function invoked when a bar is clicked.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -67,9 +54,12 @@ fun BubbleBarChart(
     bubbleConfig: BubbleBarChartConfig = BubbleBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Bubble bar chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Bubble bar chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberValueRange(dataList, bubbleConfig.negativeValuesDrawMode)
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -79,7 +69,14 @@ fun BubbleBarChart(
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
     val textMeasurer = rememberTextMeasurer()
 
-    val chartModifier = createBubbleChartModifier(
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val clickModifier = createBubbleChartModifier(
         modifier = modifier,
         onBarClick = onBarClick,
         dataList = dataList,
@@ -88,13 +85,23 @@ fun BubbleBarChart(
         onTooltipUpdate = { tooltipState = it },
     )
 
+    val chartModifier = buildInteractionModifier(
+        base = clickModifier,
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
         modifier = chartModifier,
         xLabels = dataList.getLabels(),
         yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
         leftLabelRotation = scaffoldConfig.leftLabelRotation,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: "Bubble bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         barBounds.clear()
         val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
 
@@ -113,6 +120,7 @@ fun BubbleBarChart(
         drawBubbleBars(drawParams)
         drawReferenceLineIfNeeded(drawParams)
         drawTooltipIfNeeded(drawParams, tooltipState)
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }
-

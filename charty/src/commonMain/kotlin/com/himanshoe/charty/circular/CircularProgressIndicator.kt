@@ -18,6 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.circular.config.CircularProgressConfig
@@ -47,6 +50,7 @@ import com.himanshoe.charty.circular.internal.ringClickHandler
  *   [CircularRingData] and its index.
  * @param centerContent An optional composable lambda for placing custom content in the center of
  *   the rings. When provided, overrides [CircularProgressConfig.showCenterText].
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
  *
  * Example usage:
  * ```kotlin
@@ -86,29 +90,26 @@ fun CircularProgressIndicator(
     config: CircularProgressConfig = CircularProgressConfig(),
     onRingClick: ((ring: CircularRingData, index: Int) -> Unit)? = null,
     centerContent: (@Composable BoxScope.() -> Unit)? = null,
+    accessibilityDescription: String? = null,
 ) {
     val ringsList = remember(rings) { rings() }
+    val chartDescription = remember(ringsList, accessibilityDescription) {
+        when (accessibilityDescription) {
+            "" -> null
+            null -> "Circular progress, ${ringsList.size} rings."
+            else -> accessibilityDescription
+        }
+    }
+    val semanticsModifier = if (chartDescription != null) {
+        Modifier.semantics { contentDescription = chartDescription }
+    } else {
+        Modifier
+    }
     val animatedProgress = rememberAnimatedProgress(ringsList, config.animation)
-
-    val infiniteTransition = rememberInfiniteTransition(label = "rotation")
-    val rotationAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = if (config.rotationEnabled) 360f else 0f,
-        animationSpec =
-            infiniteRepeatable(
-                animation =
-                    tween(
-                        durationMillis = config.rotationDurationMs,
-                        easing = LinearEasing,
-                    ),
-                repeatMode = RepeatMode.Restart,
-            ),
-        label = "rotationAngle",
-    )
-
+    val rotationAngle = rememberRotationAngle(config)
 
     Box(
-        modifier = modifier.padding(config.paddingDp.dp),
+        modifier = modifier.then(semanticsModifier).padding(config.paddingDp.dp),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(
@@ -121,65 +122,65 @@ fun CircularProgressIndicator(
                     onRingClick = onRingClick,
                 ),
         ) {
-            val canvasSize = size.minDimension
-            val radius = canvasSize / CircularProgressConstants.TWO
-            val center = Offset(size.width / CircularProgressConstants.TWO, size.height / CircularProgressConstants.TWO)
-            val strokeWidth = calculateStrokeWidth(
-                radius = radius,
-                centerHoleRatio = config.centerHoleRatio,
-                gapBetweenRings = config.gapBetweenRings,
-                ringCount = ringsList.size,
-            )
-            ringsList.fastForEachIndexed { index, ring ->
-                val ringRadius = calculateRingRadius(
-                    index = index,
-                    radius = radius,
-                    gapBetweenRings = config.gapBetweenRings,
-                    strokeWidth = strokeWidth,
-                )
-
-                val animProgress = if (index < animatedProgress.size) {
-                    animatedProgress[index]
-                } else {
-                    ring.progress
-                }
-                drawRingBackground(
-                    center = center,
-                    radius = ringRadius,
-                    ring = ring,
-                    config = config,
-                    rotationAngle = rotationAngle,
-                    strokeWidth = strokeWidth,
-                )
-                drawRingProgress(
-                    center = center,
-                    radius = ringRadius,
-                    ring = ring,
-                    progress = animProgress,
-                    config = config,
-                    rotationAngle = rotationAngle,
-                    strokeWidth = strokeWidth,
-                )
-            }
+            drawRingsContent(ringsList, config, animatedProgress, rotationAngle)
         }
-        if (centerContent != null) {
-            Box(
+        when {
+            centerContent != null -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
                 content = centerContent,
             )
-        } else if (config.showCenterText && ringsList.isNotEmpty()) {
-            val firstRing = ringsList.first()
-            val percentage = remember(animatedProgress.firstOrNull()) {
-                val progress = animatedProgress.firstOrNull() ?: firstRing.progress
-                ((progress / firstRing.maxValue) * CircularProgressConstants.PERCENTAGE_MULTIPLIER).toInt()
+            config.showCenterText && ringsList.isNotEmpty() -> {
+                val firstRing = ringsList.first()
+                val percentage = remember(animatedProgress.firstOrNull()) {
+                    val progress = animatedProgress.firstOrNull() ?: firstRing.progress
+                    ((progress / firstRing.maxValue) * CircularProgressConstants.PERCENTAGE_MULTIPLIER).toInt()
+                }
+                Text(text = "$percentage%", style = config.centerTextStyle)
             }
-
-            Text(
-                text = "$percentage%",
-                style = config.centerTextStyle,
-            )
         }
     }
 }
 
+@Composable
+private fun rememberRotationAngle(config: CircularProgressConfig): Float {
+    val infiniteTransition = rememberInfiniteTransition(label = "rotation")
+    val rotationAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = if (config.rotationEnabled) 360f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = config.rotationDurationMs, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "rotationAngle",
+    )
+    return rotationAngle
+}
+
+private fun DrawScope.drawRingsContent(
+    ringsList: List<CircularRingData>,
+    config: CircularProgressConfig,
+    animatedProgress: List<Float>,
+    rotationAngle: Float,
+) {
+    val canvasSize = size.minDimension
+    val radius = canvasSize / CircularProgressConstants.TWO
+    val center = Offset(size.width / CircularProgressConstants.TWO, size.height / CircularProgressConstants.TWO)
+    val strokeWidth = calculateStrokeWidth(
+        radius = radius,
+        centerHoleRatio = config.centerHoleRatio,
+        gapBetweenRings = config.gapBetweenRings,
+        ringCount = ringsList.size,
+    )
+    ringsList.fastForEachIndexed { index, ring ->
+        val ringRadius = calculateRingRadius(
+            index = index,
+            radius = radius,
+            gapBetweenRings = config.gapBetweenRings,
+            strokeWidth = strokeWidth,
+        )
+        val animProgress = if (index < animatedProgress.size) animatedProgress[index] else ring.progress
+        drawRingBackground(center, ringRadius, ring, config, rotationAngle, strokeWidth)
+        drawRingProgress(center, ringRadius, ring, animProgress, config, rotationAngle, strokeWidth)
+    }
+}

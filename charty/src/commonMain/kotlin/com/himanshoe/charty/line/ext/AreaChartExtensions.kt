@@ -3,6 +3,7 @@ package com.himanshoe.charty.line.ext
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.color.ChartyColor
 
 private const val DEFAULT_FILL_ALPHA = 0.3f
@@ -93,7 +94,7 @@ internal fun createAreaBrush(
 
         is ChartyColor.Gradient ->
             Brush.verticalGradient(
-                colors = color.colors.map { it.copy(alpha = it.alpha * fillAlpha) },
+                colors = color.colors.fastMap { it.copy(alpha = it.alpha * fillAlpha) },
                 startY = chartTop,
                 endY = chartBottom,
             )

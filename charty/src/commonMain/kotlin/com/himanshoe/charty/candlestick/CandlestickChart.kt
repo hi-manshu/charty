@@ -5,6 +5,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
 import com.himanshoe.charty.candlestick.data.CandleData
@@ -16,44 +19,31 @@ import com.himanshoe.charty.candlestick.internal.CandlestickDrawParams
 import com.himanshoe.charty.candlestick.internal.calculateOptimizedLabels
 import com.himanshoe.charty.candlestick.internal.drawCandlestick
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
  * A composable function that displays a candlestick chart.
  *
- * A candlestick chart is a financial chart used to describe price movements of a security, derivative, or currency.
- * Each candlestick displays the open, high, low, and close (OHLC) prices for a specific time period.
- *
- * - **Bullish candles** (close >= open) indicate a price increase and are typically colored green or blue.
- * - **Bearish candles** (close < open) indicate a price decrease and are typically colored red or pink.
- *
  * @param data A lambda function that returns a list of [CandleData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
- * @param bullishColor The color for bullish candles, where the closing price is greater than or equal to the opening price.
- * @param bearishColor The color for bearish candles, where the closing price is less than the opening price.
- * @param candlestickConfig The configuration for the candlestick's appearance, such as width and animation, defined by a [CandlestickChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- *
- * CandlestickChart(
- *     data = {
- *         listOf(
- *             CandleData(label = "09:00", open = 100f, high = 110f, low = 95f, close = 105f),
- *             CandleData(label = "10:00", open = 105f, high = 115f, low = 100f, close = 112f)
- *         )
- *     },
- *     bullishColor = ChartyColor.Solid(Color(0xFF4CAF50)), // Green for up
- *     bearishColor = ChartyColor.Solid(Color(0xFFF44336)), // Red for down
- *     candlestickConfig = CandlestickChartConfig(
- *         candleWidthFraction = 0.7f,
- *         wickWidthFraction = 0.1f,
- *         showWicks = true,
- *         animation = Animation.Enabled(duration = 800)
- *     )
- * )
+ * @param bullishColor The color for bullish candles.
+ * @param bearishColor The color for bearish candles.
+ * @param candlestickConfig The configuration for the candlestick's appearance.
+ * @param scaffoldConfig The configuration for the chart's scaffold.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun CandlestickChart(
     data: () -> List<CandleData>,
@@ -62,9 +52,13 @@ fun CandlestickChart(
     bearishColor: ChartyColor = ChartyColor.Solid(Color(CandlestickChartConstants.DEFAULT_BEARISH_COLOR)),
     candlestickConfig: CandlestickChartConfig = CandlestickChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Candlestick chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Candlestick chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+
     val (minValue, maxValue) = remember(dataList) {
         calculateMinValue(dataList) to calculateMaxValue(dataList)
     }
@@ -73,9 +67,23 @@ fun CandlestickChart(
     }
 
     val animationProgress = rememberChartAnimation(candlestickConfig.animation)
+    val textMeasurer = rememberTextMeasurer()
+
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val chartModifier = buildInteractionModifier(
+        base = modifier,
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
 
     ChartScaffold(
-        modifier = modifier,
+        modifier = chartModifier,
         xLabels = xLabels,
         yAxisConfig =
             AxisConfig(
@@ -85,62 +93,85 @@ fun CandlestickChart(
                 drawAxisAtZero = false,
             ),
         config = scaffoldConfig,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: generateCandlestickChartDescription(fullDataList),
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         dataList.fastForEachIndexed { index, candle ->
-            val candleX = chartContext.calculateBarLeftPosition(
-                index,
-                dataList.size,
-                candlestickConfig.candleWidthFraction,
-            )
-            val candleWidth = chartContext.calculateBarWidth(
-                dataList.size,
-                candlestickConfig.candleWidthFraction,
-            )
-            val openY = chartContext.convertValueToYPosition(candle.open)
-            val highY = chartContext.convertValueToYPosition(candle.high)
-            val lowY = chartContext.convertValueToYPosition(candle.low)
-            val closeY = chartContext.convertValueToYPosition(candle.close)
-            val isBullish = candle.isBullish
-            val candleColor = if (isBullish) {
-                bullishColor.value
-            } else {
-                bearishColor.value
-            }
-            val bodyTop = minOf(openY, closeY)
-            val bodyBottom = maxOf(openY, closeY)
-            val bodyHeight = bodyBottom - bodyTop
-            val actualBodyHeight = maxOf(bodyHeight, candlestickConfig.minCandleBodyHeight)
-            val actualBodyTop =
-                if (bodyHeight < candlestickConfig.minCandleBodyHeight) {
-                    (openY + closeY - candlestickConfig.minCandleBodyHeight) / CandlestickChartConstants.TWO
-                } else {
-                    bodyTop
-                }
-
-            val animatedBodyTop = chartContext.bottom -
-                (chartContext.bottom - actualBodyTop) * animationProgress.value
-            val animatedBodyHeight = actualBodyHeight * animationProgress.value
-            val animatedHighY = chartContext.bottom -
-                (chartContext.bottom - highY) * animationProgress.value
-            val animatedLowY = chartContext.bottom -
-                (chartContext.bottom - lowY) * animationProgress.value
-
-            // Draw the candlestick
-            drawCandlestick(
-                CandlestickDrawParams(
-                    brush = Brush.verticalGradient(candleColor),
-                    centerX = candleX + candleWidth / CandlestickChartConstants.TWO,
-                    bodyTop = animatedBodyTop,
-                    bodyHeight = animatedBodyHeight,
-                    bodyWidth = candleWidth,
-                    highY = animatedHighY,
-                    lowY = animatedLowY,
-                    wickWidth = candleWidth * candlestickConfig.wickWidthFraction,
-                    showWicks = candlestickConfig.showWicks,
-                    cornerRadius = candlestickConfig.cornerRadius.value,
-                ),
+            drawCandleBar(
+                index = index,
+                candle = candle,
+                dataList = dataList,
+                chartContext = chartContext,
+                candlestickConfig = candlestickConfig,
+                bullishColor = bullishColor,
+                bearishColor = bearishColor,
+                animationProgress = animationProgress.value,
             )
         }
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }
 
+private fun DrawScope.drawCandleBar(
+    index: Int,
+    candle: CandleData,
+    dataList: List<CandleData>,
+    chartContext: ChartContext,
+    candlestickConfig: CandlestickChartConfig,
+    bullishColor: ChartyColor,
+    bearishColor: ChartyColor,
+    animationProgress: Float,
+) {
+    val candleX = chartContext.calculateBarLeftPosition(
+        index,
+        dataList.size,
+        candlestickConfig.candleWidthFraction,
+    )
+    val candleWidth = chartContext.calculateBarWidth(
+        dataList.size,
+        candlestickConfig.candleWidthFraction,
+    )
+    val openY = chartContext.convertValueToYPosition(candle.open)
+    val highY = chartContext.convertValueToYPosition(candle.high)
+    val lowY = chartContext.convertValueToYPosition(candle.low)
+    val closeY = chartContext.convertValueToYPosition(candle.close)
+    val isBullish = candle.isBullish
+    val candleColor = if (isBullish) bullishColor.value else bearishColor.value
+
+    val bodyTop = minOf(openY, closeY)
+    val bodyBottom = maxOf(openY, closeY)
+    val bodyHeight = bodyBottom - bodyTop
+    val actualBodyHeight = maxOf(bodyHeight, candlestickConfig.minCandleBodyHeight)
+    val actualBodyTop =
+        if (bodyHeight < candlestickConfig.minCandleBodyHeight) {
+            (openY + closeY - candlestickConfig.minCandleBodyHeight) / CandlestickChartConstants.TWO
+        } else {
+            bodyTop
+        }
+
+    val animatedBodyTop = chartContext.bottom -
+        (chartContext.bottom - actualBodyTop) * animationProgress
+    val animatedBodyHeight = actualBodyHeight * animationProgress
+    val animatedHighY = chartContext.bottom -
+        (chartContext.bottom - highY) * animationProgress
+    val animatedLowY = chartContext.bottom -
+        (chartContext.bottom - lowY) * animationProgress
+
+    drawCandlestick(
+        CandlestickDrawParams(
+            brush = Brush.verticalGradient(candleColor),
+            centerX = candleX + candleWidth / CandlestickChartConstants.TWO,
+            bodyTop = animatedBodyTop,
+            bodyHeight = animatedBodyHeight,
+            bodyWidth = candleWidth,
+            highY = animatedHighY,
+            lowY = animatedLowY,
+            wickWidth = candleWidth * candlestickConfig.wickWidthFraction,
+            showWicks = candlestickConfig.showWicks,
+            cornerRadius = candlestickConfig.cornerRadius.value,
+        ),
+    )
+}

@@ -23,39 +23,30 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 
 /**
  * A composable that displays a **grouped horizontal bar chart**.
  *
  * Each [BarGroup] becomes one row of horizontally-oriented bars laid out side-by-side
- * vertically within the row. This is the horizontal counterpart to a grouped (clustered)
- * bar chart and is best suited for:
- * - Comparing multiple series across categories.
- * - Scenarios where category labels are long (horizontal layout accommodates them naturally).
- * - Data that includes negative values — bars extend to the left of the zero baseline.
- *
- * ### Colour resolution (per bar, in priority order)
- * 1. `BarGroup.colors[barIndex]` — per-bar override.
- * 2. `colors.value[barIndex % colorCount]` — chart-level palette cycle.
- *
- * ### Negative value support
- * - **[NegativeValuesDrawMode.BELOW_AXIS]** (default): positive bars grow right, negative
- *   bars grow left from a shared zero axis line. This is the most intuitive mode for data
- *   such as profit/loss or temperature anomalies.
- * - **[NegativeValuesDrawMode.FROM_MIN_VALUE]**: all bars start from the minimum value so
- *   the visual emphasis is on relative differences rather than absolute sign.
+ * vertically within the row.
  *
  * @param data Lambda returning the list of [BarGroup] to display. Each group forms one bar row.
  * @param modifier Modifier applied to the chart container.
- * @param colors Colour palette for the bars. A [ChartyColor.Gradient] with one colour per
- *   bar-in-group gives the clearest series distinction. Defaults to [ChartyColors.ModernPalette].
- * @param config Appearance and behaviour settings — bar thickness, spacing between bars in a
- *   group, corner radius, negative-value mode, animation, reference line, and tooltip.
+ * @param colors Colour palette for the bars.
+ * @param config Appearance and behaviour settings.
  * @param scaffoldConfig Chart scaffold configuration controlling axes, grid lines, and labels.
- * @param onBarClick Optional callback invoked when a bar is tapped, receiving a
- *   [GroupedHorizontalBarEntry] that describes the group, bar index, and value.
+ * @param onBarClick Optional callback invoked when a bar is tapped.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  *
  * Example usage:
  * ```kotlin
@@ -64,20 +55,9 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  *         listOf(
  *             BarGroup("North", listOf(120f, 85f, 60f)),
  *             BarGroup("South", listOf(95f, 110f, 75f)),
- *             BarGroup("East",  listOf(80f,  90f, 100f)),
- *             BarGroup("West",  listOf(105f, 70f, 80f)),
  *         )
  *     },
  *     colors = ChartyColors.ModernPalette,
- *     config = GroupedHorizontalBarChartConfig(
- *         barWidthFraction = 0.8f,
- *         barSpacing = 4f,
- *         cornerRadius = CornerRadius.Medium,
- *         animation = Animation.Default,
- *     ),
- *     onBarClick = { entry ->
- *         println("${entry.barGroup.label}[${entry.barIndex}] = ${entry.barValue}")
- *     },
  * )
  * ```
  */
@@ -90,10 +70,13 @@ fun GroupedHorizontalBarChart(
     config: GroupedHorizontalBarChartConfig = GroupedHorizontalBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((GroupedHorizontalBarEntry) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Grouped horizontal bar chart data cannot be empty" }
-    require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Grouped horizontal bar chart data cannot be empty" }
+    require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val state = rememberGroupedHorizontalState(
         dataList = dataList,
@@ -108,21 +91,40 @@ fun GroupedHorizontalBarChart(
     val tooltipManager = rememberTooltipManager<Rect, GroupedHorizontalBarEntry>()
     val textMeasurer = rememberTextMeasurer()
 
+    syncInteractionDataSizes(
+        interactionConfig.viewPortState,
+        interactionConfig.brushSelectionState,
+        fullDataList.size,
+        dataList.size,
+    )
+
+    val clickModifier = createGroupedHorizontalBarChartModifier(
+        dataList = dataList,
+        config = config,
+        onBarClick = onBarClick,
+        barBounds = tooltipManager.bounds,
+        onTooltipStateChange = tooltipManager::updateTooltip,
+    )
+
+    val chartModifier = buildInteractionModifier(
+        base = modifier.then(clickModifier),
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
-        modifier = modifier.then(
-            createGroupedHorizontalBarChartModifier(
-                dataList = dataList,
-                config = config,
-                onBarClick = onBarClick,
-                barBounds = tooltipManager.bounds,
-                onTooltipStateChange = tooltipManager::updateTooltip,
-            ),
+        modifier = chartModifier,
+        xLabels = dataList.fastMap { it.label },
+        yAxisConfig = createGroupedHorizontalAxisConfig(
+            state.minValue, state.maxValue, state.axisSteps, drawAxisAtZero,
         ),
-        xLabels = dataList.map { it.label },
-        yAxisConfig = createGroupedHorizontalAxisConfig(state.minValue, state.maxValue, state.axisSteps, drawAxisAtZero),
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: "Grouped horizontal bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
         val baselineX = calculateGroupedHorizontalBaselineX(
             drawAxisAtZero = drawAxisAtZero,
@@ -148,5 +150,7 @@ fun GroupedHorizontalBarChart(
 
         drawGroupedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
         drawGroupedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }

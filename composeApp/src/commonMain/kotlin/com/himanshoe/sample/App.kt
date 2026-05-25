@@ -129,6 +129,12 @@ import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
 import com.himanshoe.charty.calendar.config.CellShape
 import com.himanshoe.charty.calendar.config.WeekStartDay
 import com.himanshoe.charty.calendar.data.CalendarData
+import com.himanshoe.charty.common.annotation.AnnotationStyle
+import com.himanshoe.charty.common.annotation.ChartAnnotation
+import com.himanshoe.charty.common.brush.rememberBrushSelectionState
+import com.himanshoe.charty.common.config.ChartInteractionConfig
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
+import com.himanshoe.charty.common.viewport.rememberViewPortState
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -3307,6 +3313,309 @@ fun App(modifier: Modifier = Modifier) {
                                 ),
                             )
                         }
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Zoom & Pan",
+                        description = "Pinch to zoom and drag to pan across a large dataset. The viewport shows 40 weekly data points.",
+                    ) {
+                        val viewPortState = rememberViewPortState()
+                        LineChart(
+                            data = {
+                                listOf(
+                                    12f, 25f, 8f, 40f, 33f, 18f, 50f, 44f, 29f, 60f,
+                                    55f, 38f, 70f, 62f, 45f, 80f, 74f, 58f, 90f, 84f,
+                                    67f, 95f, 89f, 72f, 100f, 93f, 78f, 85f, 70f, 60f,
+                                    50f, 65f, 75f, 55f, 45f, 35f, 48f, 30f, 20f, 10f,
+                                ).mapIndexed { i, v -> LineData(value = v, label = "W${i + 1}") }
+                            },
+                            modifier = Modifier.fillMaxWidth().height(220.dp).padding(16.dp),
+                            color = ChartyColor.Solid(Color(0xFF6200EE)),
+                            lineConfig = LineChartConfig(smoothCurve = true),
+                            interactionConfig = ChartInteractionConfig(
+                                viewPortState = viewPortState,
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Brush Range Selection",
+                        description = "Drag across the chart to highlight a data range. The selected indices are reported below.",
+                    ) {
+                        val brushState = rememberBrushSelectionState()
+                        var selectedRange by remember { mutableStateOf("None selected") }
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text(
+                                text = "Selected: $selectedRange",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            BarChart(
+                                data = {
+                                    listOf(
+                                        BarData(value = 30f, label = "Jan"),
+                                        BarData(value = 45f, label = "Feb"),
+                                        BarData(value = 25f, label = "Mar"),
+                                        BarData(value = 60f, label = "Apr"),
+                                        BarData(value = 50f, label = "May"),
+                                        BarData(value = 40f, label = "Jun"),
+                                        BarData(value = 70f, label = "Jul"),
+                                        BarData(value = 55f, label = "Aug"),
+                                        BarData(value = 35f, label = "Sep"),
+                                        BarData(value = 65f, label = "Oct"),
+                                        BarData(value = 48f, label = "Nov"),
+                                        BarData(value = 80f, label = "Dec"),
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth().height(220.dp),
+                                color = ChartyColor.Solid(Color(0xFF6200EE)),
+                                interactionConfig = ChartInteractionConfig(
+                                    brushSelectionState = brushState,
+                                    onRangeSelect = { start, end ->
+                                        selectedRange = "Index $start – $end"
+                                    },
+                                ),
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Chart Annotations",
+                        description = "Vertical marker lines with labels pinned to specific data-point indices.",
+                    ) {
+                        LineChart(
+                            data = {
+                                listOf(
+                                    LineData(value = 20f, label = "Mon"),
+                                    LineData(value = 35f, label = "Tue"),
+                                    LineData(value = 28f, label = "Wed"),
+                                    LineData(value = 55f, label = "Thu"),
+                                    LineData(value = 42f, label = "Fri"),
+                                    LineData(value = 60f, label = "Sat"),
+                                    LineData(value = 48f, label = "Sun"),
+                                    LineData(value = 72f, label = "Mon"),
+                                    LineData(value = 38f, label = "Tue"),
+                                    LineData(value = 52f, label = "Wed"),
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth().height(220.dp).padding(16.dp),
+                            color = ChartyColor.Solid(Color(0xFF0288D1)),
+                            lineConfig = LineChartConfig(smoothCurve = true, showPoints = true),
+                            interactionConfig = ChartInteractionConfig(
+                                annotations = listOf(
+                                    ChartAnnotation(
+                                        xIndex = 2,
+                                        label = "Dip",
+                                        style = AnnotationStyle(
+                                            lineColor = Color(0xFFE53935),
+                                            labelBackgroundColor = Color(0xFFE53935),
+                                        ),
+                                    ),
+                                    ChartAnnotation(
+                                        xIndex = 7,
+                                        label = "Peak",
+                                        style = AnnotationStyle(
+                                            lineColor = Color(0xFF43A047),
+                                            labelBackgroundColor = Color(0xFF43A047),
+                                            isDashed = false,
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Crosshair",
+                        description = "Long-press and drag to reveal a crosshair that snaps to the nearest data point.",
+                    ) {
+                        LineChart(
+                            data = {
+                                listOf(
+                                    LineData(value = 10f, label = "Jan"),
+                                    LineData(value = 42f, label = "Feb"),
+                                    LineData(value = 28f, label = "Mar"),
+                                    LineData(value = 65f, label = "Apr"),
+                                    LineData(value = 48f, label = "May"),
+                                    LineData(value = 80f, label = "Jun"),
+                                    LineData(value = 55f, label = "Jul"),
+                                    LineData(value = 72f, label = "Aug"),
+                                    LineData(value = 30f, label = "Sep"),
+                                    LineData(value = 50f, label = "Oct"),
+                                    LineData(value = 38f, label = "Nov"),
+                                    LineData(value = 68f, label = "Dec"),
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth().height(220.dp).padding(16.dp),
+                            color = ChartyColor.Solid(Color(0xFFE91E63)),
+                            lineConfig = LineChartConfig(
+                                smoothCurve = true,
+                                showPoints = true,
+                                crosshairConfig = ChartCrosshairConfig(
+                                    verticalLineColor = ChartyColor.Solid(Color(0xFFE91E63).copy(alpha = 0.6f)),
+                                    dotRadius = 10f,
+                                ),
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Multiline Crosshair",
+                        description = "Drag to snap the crosshair to the nearest x-position. Each series gets its own dot and the label shows all values.",
+                    ) {
+                        MultilineChart(
+                            modifier = Modifier.fillMaxWidth().height(260.dp).padding(16.dp),
+                            data = {
+                                listOf(
+                                    LineGroup("Mon", listOf(20f, 35f, 15f)),
+                                    LineGroup("Tue", listOf(45f, 28f, 38f)),
+                                    LineGroup("Wed", listOf(30f, 52f, 25f)),
+                                    LineGroup("Thu", listOf(70f, 40f, 55f)),
+                                    LineGroup("Fri", listOf(55f, 65f, 45f)),
+                                    LineGroup("Sat", listOf(40f, 50f, 35f)),
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                ),
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 3f,
+                                smoothCurve = true,
+                                showPoints = true,
+                                animation = Animation.Enabled(duration = 1000),
+                                crosshairConfig = ChartCrosshairConfig(
+                                    verticalLineColor = ChartyColor.Solid(Color(0xFF607D8B).copy(alpha = 0.7f)),
+                                    dotRadius = 8f,
+                                ),
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Stacked Area Crosshair",
+                        description = "Drag to snap the crosshair to the stacked top position at each x.",
+                    ) {
+                        StackedAreaChart(
+                            modifier = Modifier.fillMaxWidth().height(260.dp).padding(16.dp),
+                            data = {
+                                listOf(
+                                    LineGroup("Mon", listOf(20f, 15f, 10f)),
+                                    LineGroup("Tue", listOf(45f, 28f, 12f)),
+                                    LineGroup("Wed", listOf(30f, 22f, 18f)),
+                                    LineGroup("Thu", listOf(70f, 30f, 15f)),
+                                    LineGroup("Fri", listOf(55f, 35f, 20f)),
+                                    LineGroup("Sat", listOf(40f, 25f, 15f)),
+                                )
+                            },
+                            colors = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                ),
+                            ),
+                            lineConfig = LineChartConfig(
+                                lineWidth = 2f,
+                                smoothCurve = true,
+                                animation = Animation.Enabled(duration = 1000),
+                                crosshairConfig = ChartCrosshairConfig(
+                                    verticalLineColor = ChartyColor.Solid(Color(0xFF2196F3).copy(alpha = 0.7f)),
+                                    dotRadius = 8f,
+                                ),
+                            ),
+                            fillAlpha = 0.7f,
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Combo Chart Crosshair",
+                        description = "Drag to reveal a crosshair that snaps to the line data points.",
+                    ) {
+                        ComboChart(
+                            modifier = Modifier.fillMaxWidth().height(260.dp).padding(16.dp),
+                            data = {
+                                listOf(
+                                    ComboChartData("Jan", barValue = 100f, lineValue = 80f),
+                                    ComboChartData("Feb", barValue = 150f, lineValue = 120f),
+                                    ComboChartData("Mar", barValue = 120f, lineValue = 140f),
+                                    ComboChartData("Apr", barValue = 180f, lineValue = 160f),
+                                    ComboChartData("May", barValue = 160f, lineValue = 145f),
+                                    ComboChartData("Jun", barValue = 200f, lineValue = 180f),
+                                )
+                            },
+                            barColor = ChartyColor.Solid(Color(0xFF2196F3)),
+                            lineColor = ChartyColor.Solid(Color(0xFFFF5722)),
+                            comboConfig = ComboChartConfig(
+                                barWidthFraction = 0.6f,
+                                lineWidth = 3f,
+                                showPoints = true,
+                                animation = Animation.Enabled(duration = 1000),
+                                crosshairConfig = ChartCrosshairConfig(
+                                    verticalLineColor = ChartyColor.Solid(Color(0xFFFF5722).copy(alpha = 0.7f)),
+                                    dotRadius = 8f,
+                                ),
+                            ),
+                        )
+                    }
+                }
+
+                item {
+                    ChartCard(
+                        title = "Bubble Chart Crosshair",
+                        description = "Drag to reveal a crosshair that snaps to each bubble center.",
+                    ) {
+                        BubbleChart(
+                            modifier = Modifier.fillMaxWidth().height(260.dp).padding(16.dp),
+                            data = {
+                                listOf(
+                                    BubbleData("Product A", yValue = 45f, size = 150f),
+                                    BubbleData("Product B", yValue = 72f, size = 280f),
+                                    BubbleData("Product C", yValue = 38f, size = 100f),
+                                    BubbleData("Product D", yValue = 85f, size = 220f),
+                                    BubbleData("Product E", yValue = 55f, size = 180f),
+                                )
+                            },
+                            color = ChartyColor.Gradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFF9800),
+                                    Color(0xFF9C27B0),
+                                ),
+                            ),
+                            config = PointChartConfig(
+                                pointRadius = 40f,
+                                animation = Animation.Enabled(duration = 1000),
+                            ),
+                            minBubbleRadius = 15f,
+                            crosshairConfig = ChartCrosshairConfig(
+                                verticalLineColor = ChartyColor.Solid(Color(0xFF607D8B).copy(alpha = 0.7f)),
+                                dotRadius = 10f,
+                            ),
+                        )
                     }
                 }
             }

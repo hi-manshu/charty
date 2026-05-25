@@ -21,8 +21,17 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generateBarChartDescription
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberChartDescription
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
+import androidx.compose.ui.util.fastMap
 
 /**
  * A composable function that displays a horizontal bar chart.
@@ -40,6 +49,7 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  *   defined by a [ChartScaffoldConfig].
  * @param onBarClick A lambda function invoked when a bar is clicked, providing the corresponding
  *   [BarData].
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  *
  * Example usage:
  * ```kotlin
@@ -68,9 +78,12 @@ fun HorizontalBarChart(
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberHorizontalValueRange(dataList, barConfig.negativeValuesDrawMode)
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -80,13 +93,33 @@ fun HorizontalBarChart(
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
+    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+        generateBarChartDescription(it, minValue, maxValue)
+    }
+
+    syncInteractionDataSizes(
+        interactionConfig.viewPortState,
+        interactionConfig.brushSelectionState,
+        fullDataList.size,
+        dataList.size,
+    )
+
+    val chartModifier = buildInteractionModifier(
+        base = modifier,
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
-        modifier = modifier,
-        xLabels = dataList.map { it.label },
+        modifier = chartModifier,
+        xLabels = dataList.fastMap { it.label },
         yAxisConfig = createHorizontalAxisConfig(minValue, maxValue, drawAxisAtZero),
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
+        contentDescription = chartDescription,
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
         val baselineX = calculateHorizontalBaselineX(drawAxisAtZero, minValue, maxValue, chartContext)
 
@@ -108,5 +141,7 @@ fun HorizontalBarChart(
 
         drawHorizontalReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
         drawHorizontalTooltipIfNeeded(tooltipManager.tooltipState, barConfig, textMeasurer, chartContext)
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }

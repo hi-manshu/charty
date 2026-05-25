@@ -4,6 +4,7 @@ package com.himanshoe.charty.common.ext
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
@@ -165,7 +166,7 @@ internal fun DrawScope.drawVerticalChartAxes(
 
     if (config.showLabels && xLabels.isNotEmpty()) {
         val labelWidth = bounds.width / xLabels.size
-        xLabels.forEachIndexed { index, label ->
+        xLabels.fastForEachIndexed { index, label ->
             val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
             val centerX = bounds.left + labelWidth * (index + POSITION_OFFSET)
             drawText(
@@ -282,7 +283,7 @@ internal fun DrawScope.drawHorizontalChartAxes(
 
     if (config.showLabels && xLabels.isNotEmpty()) {
         val barHeight = bounds.height / xLabels.size
-        xLabels.forEachIndexed { index, label ->
+        xLabels.fastForEachIndexed { index, label ->
             val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
             val centerY = bounds.top + barHeight * (index + POSITION_OFFSET)
             val labelX = bounds.left - textLayout.size.width - LABEL_OFFSET

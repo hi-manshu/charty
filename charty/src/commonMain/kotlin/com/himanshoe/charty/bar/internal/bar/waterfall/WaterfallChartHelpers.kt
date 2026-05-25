@@ -1,5 +1,6 @@
 package com.himanshoe.charty.bar.internal.bar.waterfall
 
+import androidx.compose.ui.util.fastForEach
 import com.himanshoe.charty.bar.data.BarData
 
 /**
@@ -8,7 +9,7 @@ import com.himanshoe.charty.bar.data.BarData
 internal fun calculateCumulativeValues(items: List<BarData>): List<Float> {
     val result = mutableListOf<Float>()
     var running = 0f
-    items.forEach { bar ->
+    items.fastForEach { bar ->
         running += bar.value
         result += running
     }

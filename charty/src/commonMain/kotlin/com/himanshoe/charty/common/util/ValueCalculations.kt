@@ -11,6 +11,14 @@ import kotlin.math.pow
  * for chart axis scaling.
  */
 
+private const val NICE_STEP_UPPER_1 = 1.5f
+private const val NICE_STEP_UPPER_2 = 3.5f
+private const val NICE_STEP_UPPER_5 = 7.5f
+private const val NICE_FACTOR_2 = 2f
+private const val NICE_FACTOR_5 = 5f
+private const val NICE_FACTOR_10 = 10f
+private const val NICE_RANGE_ROUND_HALF = 0.5f
+
 /**
  * Calculates an appropriate maximum value with "nice" rounding, suitable for a chart axis.
  *
@@ -84,13 +92,13 @@ fun calculateMinMaxValue(
 internal fun niceAxisStep(roughStep: Float): Float {
     if (roughStep <= 0f) return 1f
     val exponent = floor(log10(roughStep)).toInt()
-    val magnitude = 10f.pow(exponent)
+    val magnitude = NICE_FACTOR_10.pow(exponent)
     val normalized = roughStep / magnitude
     val niceFraction = when {
-        normalized <= 1.5f -> 1f
-        normalized <= 3.5f -> 2f
-        normalized <= 7.5f -> 5f
-        else -> 10f
+        normalized <= NICE_STEP_UPPER_1 -> 1f
+        normalized <= NICE_STEP_UPPER_2 -> NICE_FACTOR_2
+        normalized <= NICE_STEP_UPPER_5 -> NICE_FACTOR_5
+        else -> NICE_FACTOR_10
     }
     return niceFraction * magnitude
 }
@@ -122,7 +130,7 @@ internal fun calculateNiceAxisRange(
     val step = niceAxisStep(range / targetSteps)
     val niceMin = floor(rawMin / step) * step
     val niceMax = ceil(rawMax / step) * step
-    val actualSteps = ((niceMax - niceMin) / step + 0.5f).toInt().coerceAtLeast(1)
+    val actualSteps = ((niceMax - niceMin) / step + NICE_RANGE_ROUND_HALF).toInt().coerceAtLeast(1)
     return Triple(niceMin, niceMax, actualSteps)
 }
 

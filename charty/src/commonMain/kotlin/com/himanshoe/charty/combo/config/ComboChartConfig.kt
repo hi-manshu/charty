@@ -6,6 +6,7 @@ import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 
@@ -25,6 +26,8 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
  * @param tooltipConfig Configuration for tooltip appearance when a data point is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @param crosshairConfig When non-null, enables a draggable crosshair snapping to line points.
+ *   Enabling this replaces tap-to-tooltip interaction.
  */
 data class ComboChartConfig(
     val barWidthFraction: Float = 0.6f,
@@ -43,6 +46,7 @@ data class ComboChartConfig(
     val tooltipFormatter: (ComboChartData) -> String = { data ->
         "${data.label}: Bar=${data.barValue}, Line=${data.lineValue}"
     },
+    val crosshairConfig: ChartCrosshairConfig? = null,
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }

@@ -1,28 +1,35 @@
 package com.himanshoe.charty.common.gesture
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFirstOrNull
+import androidx.compose.ui.util.fastForEach
+import com.himanshoe.charty.common.brush.BrushSelectionState
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.viewport.ViewPortState
 
 /**
- * Common modifier extensions for handling chart interactions with gestures
- */
-
-/**
- * A modifier extension that adds tap gesture detection for charts with rectangular bounds, such as bar charts.
+ * Adds tap gesture detection for charts with rectangular hit areas, such as bar charts.
  *
- * @param T The type of the data associated with each bound.
+ * @param T The type of data associated with each bound.
  * @param D The type of the items in the data list.
  * @param dataList The list of data items, used as a recomposition key.
- * @param bounds A list of pairs, where each pair contains the [Rect] bounds and its associated data.
- * @param onItemClick A lambda function to be invoked when an item is clicked.
- * @param onTooltipStateChange A lambda function to update the tooltip state.
- * @param createTooltipContent A function that creates a [TooltipState] from the given data and bounds.
- * @return A [Modifier] that handles tap gestures.
+ * @param bounds Pairs of [Rect] bounds and their associated data.
+ * @param onItemClick Invoked when a bound is tapped.
+ * @param onTooltipStateChange Callback to update the tooltip state.
+ * @param createTooltipContent Builds a [TooltipState] from the tapped data and its bounds.
  */
 fun <T, D> Modifier.rectangularChartClickHandler(
     dataList: List<D>,
@@ -35,7 +42,6 @@ fun <T, D> Modifier.rectangularChartClickHandler(
         this.pointerInput(dataList, onItemClick) {
             detectTapGestures { offset ->
                 val clickedItem = findClickedItemWithBounds(offset, bounds)
-
                 clickedItem?.let { (rect, data) ->
                     onItemClick.invoke(data)
                     onTooltipStateChange(createTooltipContent(data, rect))
@@ -50,17 +56,16 @@ fun <T, D> Modifier.rectangularChartClickHandler(
 }
 
 /**
- * A modifier extension that adds tap gesture detection for point-based charts, such as line or scatter charts.
+ * Adds tap gesture detection for point-based charts, such as line or scatter charts.
  *
- * @param T The type of the data associated with each point.
+ * @param T The type of data associated with each point.
  * @param D The type of the items in the data list.
  * @param dataList The list of data items, used as a recomposition key.
- * @param pointBounds A list of pairs, where each pair contains the [Offset] position of a point and its associated data.
- * @param tapRadius The maximum radius around a point to be considered a tap.
- * @param onPointClick A lambda function to be invoked when a point is clicked.
- * @param onTooltipStateChange A lambda function to update the tooltip state.
- * @param createTooltipContent A function that creates a [TooltipState] from the given data and position.
- * @return A [Modifier] that handles tap gestures.
+ * @param pointBounds Pairs of [Offset] positions and their associated data.
+ * @param tapRadius Maximum distance from a point that counts as a hit.
+ * @param onPointClick Invoked when a point is tapped.
+ * @param onTooltipStateChange Callback to update the tooltip state.
+ * @param createTooltipContent Builds a [TooltipState] from the tapped data and position.
  */
 fun <T, D> Modifier.pointChartClickHandler(
     dataList: List<D>,
@@ -73,7 +78,6 @@ fun <T, D> Modifier.pointChartClickHandler(
     return this.pointerInput(dataList, onPointClick) {
         detectTapGestures { offset ->
             val nearestPoint = findNearestPoint(offset, pointBounds, tapRadius)
-
             nearestPoint?.let { (position, data) ->
                 onPointClick.invoke(data)
                 onTooltipStateChange(createTooltipContent(data, position))
@@ -85,12 +89,11 @@ fun <T, D> Modifier.pointChartClickHandler(
 }
 
 /**
- * A helper function to create a standard [TooltipState] for items with rectangular bounds.
+ * Creates a [TooltipState] anchored to a rectangular bar hit area.
  *
- * @param content The text content to be displayed in the tooltip.
- * @param rect The [Rect] bounds of the clicked item.
- * @param position The preferred position of the tooltip, defined by [TooltipPosition].
- * @return A [TooltipState] instance configured for the given parameters.
+ * @param content Text displayed in the tooltip bubble.
+ * @param rect The [Rect] bounds of the tapped bar.
+ * @param position Preferred placement of the tooltip.
  */
 fun createRectangularTooltipState(
     content: String,
@@ -107,13 +110,13 @@ fun createRectangularTooltipState(
 }
 
 /**
- * Helper to create a standard tooltip state for point positions
+ * Creates a [TooltipState] anchored to a point position.
  *
- * @param content The tooltip content text
- * @param position The point position
- * @param pointRadius The radius of the point
- * @param tooltipPosition The preferred tooltip position
- * @param pointRadiusMultiplier Multiplier for the point radius in tooltip (default 2.0)
+ * @param content Text displayed inside the tooltip bubble.
+ * @param position Canvas pixel coordinate of the data point.
+ * @param pointRadius Radius of the point marker, used to offset the tooltip anchor.
+ * @param tooltipPosition Preferred placement relative to the point.
+ * @param pointRadiusMultiplier Multiplier applied to [pointRadius] for arrow positioning.
  */
 fun createPointTooltipState(
     content: String,
@@ -131,3 +134,111 @@ fun createPointTooltipState(
     )
 }
 
+/**
+ * Tracks a draggable crosshair over a point-based chart.
+ *
+ * On first touch the crosshair appears immediately (no drag threshold), then follows the
+ * finger horizontally, snapping to the nearest data point by x-coordinate. The crosshair
+ * is dismissed on finger lift if [dismissOnRelease] is `true`.
+ *
+ * @param T The type of data associated with each point.
+ * @param D The type of items in the data list.
+ * @param dataList Used as a recomposition key.
+ * @param pointBounds Pixel positions and associated data; updated each draw frame.
+ * @param onCrosshairUpdate Called with a new [CrosshairState] on each position change,
+ *   or `null` when the crosshair should be dismissed.
+ * @param labelFormatter Converts a data item to the string shown in the label.
+ * @param dismissOnRelease When `true`, the crosshair disappears on finger lift.
+ */
+fun <T, D> Modifier.chartCrosshairHandler(
+    dataList: List<D>,
+    pointBounds: List<Pair<Offset, T>>,
+    onCrosshairUpdate: (CrosshairState?) -> Unit,
+    labelFormatter: (T) -> String,
+    dismissOnRelease: Boolean = true,
+): Modifier = this.pointerInput(dataList) {
+    awaitEachGesture {
+        val down = awaitFirstDown(requireUnconsumed = false)
+        findNearestPointByX(down.position.x, pointBounds)?.let { (position, data) ->
+            onCrosshairUpdate(CrosshairState(x = position.x, y = position.y, label = labelFormatter(data)))
+        }
+        var isPressed = true
+        while (isPressed) {
+            val event = awaitPointerEvent()
+            val primary = event.changes.fastFirstOrNull { true } ?: break
+            if (primary.pressed) {
+                findNearestPointByX(primary.position.x, pointBounds)?.let { (position, data) ->
+                    onCrosshairUpdate(CrosshairState(x = position.x, y = position.y, label = labelFormatter(data)))
+                }
+            } else {
+                isPressed = false
+            }
+        }
+        if (dismissOnRelease) onCrosshairUpdate(null)
+    }
+}
+
+/**
+ * Captures a horizontal drag gesture and records it as a brush selection.
+ *
+ * Writes the drag start and current position into [brushState]. On drag end,
+ * [onRangeSelect] is called with the resolved data indices.
+ *
+ * @param dataList Used as a recomposition key.
+ * @param brushState The mutable selection state updated during the gesture.
+ * @param onRangeSelect Called with `(startIndex, endIndex)` when the drag ends.
+ */
+fun <D> Modifier.chartBrushSelectionHandler(
+    dataList: List<D>,
+    brushState: BrushSelectionState,
+    onRangeSelect: ((startIndex: Int, endIndex: Int) -> Unit)?,
+): Modifier = this.pointerInput(dataList) {
+    detectDragGestures(
+        onDragStart = { offset -> brushState.start(offset.x) },
+        onDrag = { change, _ -> brushState.update(change.position.x) },
+        onDragEnd = {
+            brushState.toIndexRange()?.let { (start, end) ->
+                onRangeSelect?.invoke(start, end)
+            }
+            brushState.clear()
+        },
+        onDragCancel = { brushState.clear() },
+    )
+}
+
+/**
+ * Enables pinch-to-zoom, drag-to-pan, and inertial fling on a chart.
+ *
+ * Zoom is centred on the pinch focal point. Drag pans the viewport, and releasing with
+ * velocity launches a fling inside [viewPortState] that decelerates smoothly using
+ * exponential decay. Starting a new gesture cancels any in-progress fling immediately.
+ *
+ * The [viewPortState] must have `chartLeft` and `chartWidth` populated by the canvas draw
+ * pass, which [com.himanshoe.charty.common.ChartScaffold] does automatically. The fling
+ * coroutine scope is injected via [rememberViewPortState][com.himanshoe.charty.common.viewport.rememberViewPortState].
+ *
+ * @param viewPortState The shared viewport state the chart reads each frame.
+ */
+fun Modifier.chartZoomAndPan(viewPortState: ViewPortState): Modifier =
+    this.pointerInput(viewPortState) {
+        awaitEachGesture {
+            viewPortState.cancelFling()
+            val velocityTracker = VelocityTracker()
+            awaitFirstDown(requireUnconsumed = false)
+            do {
+                val event = awaitPointerEvent()
+                val zoom = event.calculateZoom()
+                val pan = event.calculatePan()
+                val centroid = event.calculateCentroid(useCurrent = true)
+                val chartWidth = viewPortState.chartWidth.coerceAtLeast(1f)
+                val focusFraction = ((centroid.x - viewPortState.chartLeft) / chartWidth).coerceIn(0f, 1f)
+                viewPortState.zoom(focusFraction, zoom)
+                viewPortState.pan(-pan.x / chartWidth * viewPortState.visibleFraction)
+                event.changes.fastFirstOrNull { true }?.let { change ->
+                    velocityTracker.addPosition(change.uptimeMillis, change.position)
+                }
+                event.changes.fastForEach { it.consume() }
+            } while (event.changes.fastAny { it.pressed })
+            viewPortState.fling(-velocityTracker.calculateVelocity().x)
+        }
+    }

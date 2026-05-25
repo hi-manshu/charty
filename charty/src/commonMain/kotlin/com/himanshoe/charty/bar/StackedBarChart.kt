@@ -18,10 +18,20 @@ import com.himanshoe.charty.bar.internal.bar.stacked.rememberStackedMaxTotal
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generateBarGroupChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberChartDescription
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 
 /**
  * Stacked Bar Chart - Display data as stacked vertical bars showing composition
@@ -53,6 +63,8 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  * @param colors Color configuration - Gradient assigns different color to each stack segment
  * @param stackedConfig Configuration for stacked bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onSegmentClick Called when a stacked segment is clicked, providing the [StackedBarSegment].
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -63,27 +75,47 @@ fun StackedBarChart(
     stackedConfig: StackedBarChartConfig = StackedBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onSegmentClick: ((StackedBarSegment) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
-    require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
+    require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (maxTotal, colorList) = rememberStackedMaxTotal(dataList, colors)
     val animationProgress = rememberChartAnimation(stackedConfig.animation)
     val tooltipManager = rememberTooltipManager<Rect, StackedBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
+    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+        generateBarGroupChartDescription(it, "stacked bar")
+    }
+
+    syncInteractionDataSizes(
+        interactionConfig.viewPortState,
+        interactionConfig.brushSelectionState,
+        fullDataList.size,
+        dataList.size,
+    )
+
+    val clickModifier = createStackedBarChartModifier(
+        dataList = dataList,
+        stackedConfig = stackedConfig,
+        onSegmentClick = onSegmentClick,
+        segmentBounds = tooltipManager.bounds,
+        onTooltipStateChange = tooltipManager::updateTooltip,
+    )
+
+    val chartModifier = buildInteractionModifier(
+        base = modifier.then(clickModifier),
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
-        modifier = modifier.then(
-            createStackedBarChartModifier(
-                dataList = dataList,
-                stackedConfig = stackedConfig,
-                onSegmentClick = onSegmentClick,
-                segmentBounds = tooltipManager.bounds,
-                onTooltipStateChange = tooltipManager::updateTooltip,
-            ),
-        ),
-        xLabels = dataList.map { it.label },
+        modifier = chartModifier,
+        xLabels = dataList.fastMap { it.label },
         yAxisConfig =
             AxisConfig(
                 minValue = 0f,
@@ -91,7 +123,10 @@ fun StackedBarChart(
                 steps = 6,
             ),
         config = scaffoldConfig,
+        contentDescription = chartDescription,
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
 
         drawStackedBars(
@@ -108,5 +143,7 @@ fun StackedBarChart(
 
         drawStackedReferenceLineIfNeeded(stackedConfig, chartContext, textMeasurer)
         drawStackedTooltipIfNeeded(tooltipManager.tooltipState, stackedConfig, textMeasurer, chartContext)
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }

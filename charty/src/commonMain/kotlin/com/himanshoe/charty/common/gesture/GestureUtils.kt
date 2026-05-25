@@ -2,12 +2,10 @@ package com.himanshoe.charty.common.gesture
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.util.fastFirstOrNull
+import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
-
-/**
- * Common utilities for gesture handling across different chart types
- */
 
 /**
  * Calculates the Euclidean distance between two points.
@@ -34,7 +32,7 @@ fun <T> findClickedItem(
     offset: Offset,
     bounds: List<Pair<Rect, T>>,
 ): T? {
-    return bounds.find { (rect, _) -> rect.contains(offset) }?.second
+    return bounds.fastFirstOrNull { (rect, _) -> rect.contains(offset) }?.second
 }
 
 /**
@@ -49,7 +47,7 @@ fun <T> findClickedItemWithBounds(
     offset: Offset,
     bounds: List<Pair<Rect, T>>,
 ): Pair<Rect, T>? {
-    return bounds.find { (rect, _) -> rect.contains(offset) }
+    return bounds.fastFirstOrNull { (rect, _) -> rect.contains(offset) }
 }
 
 /**
@@ -79,4 +77,21 @@ fun <T> findNearestPoint(
         }
     }
 }
+
+/**
+ * Finds the point whose x-coordinate is closest to [xOffset], ignoring the y-axis distance.
+ *
+ * This is used by the crosshair handler to snap to the nearest data point as the user drags
+ * horizontally across the chart.
+ *
+ * @param T The type of data associated with each point.
+ * @param xOffset The x position of the touch/drag event.
+ * @param pointBounds A list of pairs, where each pair contains the [Offset] position of a point
+ *   and its associated data.
+ * @return The nearest point pair, or `null` if [pointBounds] is empty.
+ */
+fun <T> findNearestPointByX(
+    xOffset: Float,
+    pointBounds: List<Pair<Offset, T>>,
+): Pair<Offset, T>? = pointBounds.minByOrNull { (position, _) -> abs(position.x - xOffset) }
 

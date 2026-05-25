@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.DrawAxisAndLabels
 import com.himanshoe.charty.common.axis.LabelRotation
@@ -29,6 +31,9 @@ private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
  * @param config The general configuration for the chart scaffold, such as whether to show labels.
  * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
  * @param leftLabelRotation The rotation for the labels on the left axis.
+ * @param contentDescription An accessibility description read by screen readers. When provided,
+ *   it is attached to the chart's root composable via [Modifier.semantics]. Generate one
+ *   automatically with helpers such as `generateLineChartDescription`.
  * @param content A lambda function that provides a [DrawScope] and [ChartContext] for drawing the chart content.
  */
 @Composable
@@ -39,9 +44,15 @@ fun ChartScaffold(
     config: ChartScaffoldConfig = ChartScaffoldConfig(),
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
     leftLabelRotation: LabelRotation = LabelRotation.Straight,
+    contentDescription: String? = null,
     content: DrawScope.(ChartContext) -> Unit,
 ) {
-    Box(modifier = modifier) {
+    val accessibilityModifier = if (contentDescription != null) {
+        Modifier.semantics { this.contentDescription = contentDescription }
+    } else {
+        Modifier
+    }
+    Box(modifier = modifier.then(accessibilityModifier)) {
         DrawAxisAndLabels(
             xLabels = xLabels,
             yAxisConfig = yAxisConfig,

@@ -10,15 +10,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastForEachIndexed
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
+import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.chartCrosshairHandler
+import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.rememberChartDescription
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -26,40 +44,38 @@ import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.MultilinePoint
 import com.himanshoe.charty.line.ext.getAllValues
 import com.himanshoe.charty.line.ext.getLabels
+import com.himanshoe.charty.line.internal.multiline.calculateSeriesPointPositions
 import com.himanshoe.charty.line.internal.multiline.drawLineSeries
+import com.himanshoe.charty.line.internal.multiline.drawMultilineChartCrosshair
 import com.himanshoe.charty.line.internal.multiline.multilineChartClickHandler
+
+private data class MultilineDrawParams(
+    val dataList: List<LineGroup>,
+    val chartContext: ChartContext,
+    val colorList: List<Color>,
+    val lineConfig: LineChartConfig,
+    val animationProgress: Float,
+    val pointBounds: MutableList<Pair<Offset, MultilinePoint>>,
+    val crosshairBounds: MutableList<Pair<Offset, MultilinePoint>>,
+    val onPointClick: ((MultilinePoint) -> Unit)?,
+    val crosshairManager: CrosshairManager?,
+    val tooltipState: TooltipState?,
+    val textMeasurer: TextMeasurer,
+    val interactionConfig: ChartInteractionConfig,
+)
 
 /**
  * A composable function that displays a multiline chart.
  *
- * A multiline chart shows multiple data series as separate lines on the same chart, making it ideal for comparing trends over time.
- * Each line starts smoothly from the (0,0) axis intersection point.
- *
- * @param data A lambda function that returns a list of [LineGroup], where each group contains values for all series at a specific x-position.
+ * @param data A lambda function that returns a list of [LineGroup].
  * @param modifier The modifier to be applied to the chart.
- * @param colors The color or color scheme for the lines. A gradient is recommended to distinguish between multiple lines.
- * @param lineConfig The configuration for the lines' appearance and behavior, defined by a [LineChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param onPointClick A lambda function to be invoked when a point on any line is clicked, providing the corresponding [MultilinePoint].
- *
- * MultilineChart(
- *     data = {
- *         listOf(
- *             LineGroup("Mon", listOf(20f, 35f, 15f)),
- *             LineGroup("Tue", listOf(45f, 28f, 38f)),
- *             LineGroup("Wed", listOf(30f, 52f, 25f)),
- *             LineGroup("Thu", listOf(70f, 40f, 55f))
- *         )
- *     },
- *     colors = ChartyColors.DefaultMultiline,
- *     lineConfig = LineChartConfig(
- *         lineWidth = 3f,
- *         showPoints = true,
- *         pointRadius = 6f,
- *         smoothCurve = true
- *     )
- * )
+ * @param colors The color or color scheme for the lines.
+ * @param lineConfig The configuration for the lines' appearance and behavior.
+ * @param scaffoldConfig The configuration for the chart's scaffold.
+ * @param onPointClick A lambda function invoked when a point is clicked.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun MultilineChart(
     data: () -> List<LineGroup>,
@@ -68,30 +84,27 @@ fun MultilineChart(
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onPointClick: ((MultilinePoint) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Multiline chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Multiline chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue, colorList) =
         remember(dataList, colors, lineConfig.negativeValuesDrawMode) {
             val allValues = dataList.getAllValues()
-            Triple(
-                calculateMinValue(allValues),
-                calculateMaxValue(allValues),
-                colors.value,
-            )
+            Triple(calculateMinValue(allValues), calculateMaxValue(allValues), colors.value)
         }
 
-    val isBelowAxisMode =
-        lineConfig.negativeValuesDrawMode == com.himanshoe.charty.bar.config.NegativeValuesDrawMode.BELOW_AXIS
-
-    val animationProgress =
-        remember {
-            Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f)
-        }
+    val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
+    val animationProgress = remember { Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f) }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
+    val crosshairBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
+    val crosshairManager = if (lineConfig.crosshairConfig != null) rememberCrosshairManager() else null
     val textMeasurer = rememberTextMeasurer()
+
     LaunchedEffect(lineConfig.animation) {
         if (lineConfig.animation is Animation.Enabled) {
             animationProgress.animateTo(
@@ -101,54 +114,136 @@ fun MultilineChart(
         }
     }
 
+    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+        generateLineGroupChartDescription(it, "multiline")
+    }
+
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
     ChartScaffold(
-        modifier = modifier.then(
-            if (onPointClick != null) {
-                Modifier.multilineChartClickHandler(
-                    dataList = dataList,
-                    lineConfig = lineConfig,
-                    pointBounds = pointBounds,
-                    onPointClick = onPointClick,
-                    onTooltipStateChange = { tooltipState = it },
-                )
-            } else {
-                Modifier
-            },
+        modifier = buildMultilineModifier(
+            base = modifier,
+            crosshairManager = crosshairManager,
+            dataList = dataList,
+            lineConfig = lineConfig,
+            pointBounds = pointBounds,
+            crosshairBounds = crosshairBounds,
+            onPointClick = onPointClick,
+            onTooltipStateChange = { tooltipState = it },
+            interactionConfig = interactionConfig,
         ),
         xLabels = dataList.getLabels(),
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = isBelowAxisMode,
-            ),
+        yAxisConfig = AxisConfig(minValue = minValue, maxValue = maxValue, steps = 6, drawAxisAtZero = isBelowAxisMode),
         config = scaffoldConfig,
+        contentDescription = chartDescription,
     ) { chartContext ->
-        pointBounds.clear()
-        val seriesCount = dataList.firstOrNull()?.values?.size ?: 0
-
-        for (seriesIndex in 0 until seriesCount) {
-            drawLineSeries(
-                seriesIndex = seriesIndex,
+        updateInteractionBounds(interactionConfig, chartContext)
+        drawMultilineContent(
+            MultilineDrawParams(
                 dataList = dataList,
                 chartContext = chartContext,
-                lineConfig = lineConfig,
                 colorList = colorList,
+                lineConfig = lineConfig,
                 animationProgress = animationProgress.value,
-                pointBounds = if (onPointClick != null) pointBounds else null,
+                pointBounds = pointBounds,
+                crosshairBounds = crosshairBounds,
+                onPointClick = onPointClick,
+                crosshairManager = crosshairManager,
+                tooltipState = tooltipState,
+                textMeasurer = textMeasurer,
+                interactionConfig = interactionConfig,
             )
-        }
+        )
+    }
+}
 
-        tooltipState?.let { state ->
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
+    p.pointBounds.clear()
+    p.crosshairBounds.clear()
+    val seriesCount = p.dataList.getOrNull(0)?.values?.size ?: 0
+
+    if (p.crosshairManager != null) {
+        p.chartContext.calculateSeriesPointPositions(p.dataList, 0).fastForEachIndexed { index, pos ->
+            val group = p.dataList.getOrNull(index) ?: return@fastForEachIndexed
+            p.crosshairBounds.add(pos to MultilinePoint(group, 0, index, group.values.getOrNull(0) ?: 0f))
+        }
+    }
+
+    for (seriesIndex in 0 until seriesCount) {
+        drawLineSeries(
+            seriesIndex = seriesIndex,
+            dataList = p.dataList,
+            chartContext = p.chartContext,
+            lineConfig = p.lineConfig,
+            colorList = p.colorList,
+            animationProgress = p.animationProgress,
+            pointBounds = if (p.onPointClick != null) p.pointBounds else null,
+        )
+    }
+
+    if (p.crosshairManager == null) {
+        p.tooltipState?.let { state ->
             drawTooltip(
                 tooltipState = state,
-                config = lineConfig.tooltipConfig,
-                textMeasurer = textMeasurer,
-                chartWidth = chartContext.right,
-                chartTop = chartContext.top,
-                chartBottom = chartContext.bottom,
+                config = p.lineConfig.tooltipConfig,
+                textMeasurer = p.textMeasurer,
+                chartWidth = p.chartContext.right,
+                chartTop = p.chartContext.top,
+                chartBottom = p.chartContext.bottom,
             )
         }
     }
+    drawInteractionOverlays(p.interactionConfig, p.chartContext, p.dataList.size, p.textMeasurer)
+
+    p.crosshairManager?.state?.let { state ->
+        p.lineConfig.crosshairConfig?.let { config ->
+            drawMultilineChartCrosshair(
+                state = state,
+                config = config,
+                chartContext = p.chartContext,
+                dataList = p.dataList,
+                colorList = p.colorList,
+                textMeasurer = p.textMeasurer,
+            )
+        }
+    }
+}
+
+private fun buildMultilineModifier(
+    base: Modifier,
+    crosshairManager: CrosshairManager?,
+    dataList: List<LineGroup>,
+    lineConfig: LineChartConfig,
+    pointBounds: MutableList<Pair<Offset, MultilinePoint>>,
+    crosshairBounds: MutableList<Pair<Offset, MultilinePoint>>,
+    onPointClick: ((MultilinePoint) -> Unit)?,
+    onTooltipStateChange: (TooltipState?) -> Unit,
+    interactionConfig: ChartInteractionConfig,
+): Modifier {
+    val mod: Modifier = when {
+        crosshairManager != null -> Modifier.chartCrosshairHandler(
+            dataList = dataList,
+            pointBounds = crosshairBounds,
+            onCrosshairUpdate = crosshairManager::update,
+            labelFormatter = { point ->
+                point.lineGroup.values.mapIndexed { i, v -> "L${i + 1}: $v" }.joinToString("  ")
+            },
+            dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+        )
+        onPointClick != null -> Modifier.multilineChartClickHandler(
+            dataList = dataList,
+            lineConfig = lineConfig,
+            pointBounds = pointBounds,
+            onPointClick = onPointClick,
+            onTooltipStateChange = onTooltipStateChange,
+        )
+        else -> Modifier
+    }
+    return buildInteractionModifier(base = base.then(mod), interactionConfig = interactionConfig, dataList = dataList)
 }

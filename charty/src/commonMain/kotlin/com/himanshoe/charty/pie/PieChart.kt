@@ -22,8 +22,11 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import com.himanshoe.charty.common.accessibility.generatePieChartDescription
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
@@ -145,6 +148,7 @@ private data class PieSliceDrawParams(
  * @param config Comprehensive configuration for chart appearance and behavior
  * @param onSliceClick Callback invoked when a slice is clicked (receives PieData and index)
  * @param centerContent Optional composable content for donut chart center
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
  */
 @Composable
 fun PieChart(
@@ -154,9 +158,25 @@ fun PieChart(
     config: PieChartConfig = PieChartConfig(),
     onSliceClick: ((PieData, Int) -> Unit)? = null,
     centerContent: @Composable (() -> Unit)? = null,
+    accessibilityDescription: String? = null,
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Pie chart data cannot be empty" }
+    val chartDescription = remember(dataList, config.style, accessibilityDescription) {
+        when (accessibilityDescription) {
+            "" -> null
+            null -> generatePieChartDescription(
+                data = dataList,
+                chartTypeName = if (config.style == PieChartStyle.DONUT) "Donut" else "Pie",
+            )
+            else -> accessibilityDescription
+        }
+    }
+    val semanticsModifier = if (chartDescription != null) {
+        Modifier.semantics { contentDescription = chartDescription }
+    } else {
+        Modifier
+    }
     val total = remember(dataList) { dataList.sumOf { it.value.toDouble() }.toFloat() }
     require(total > 0f) { "Total of all pie slices must be positive" }
     val sliceColors =
@@ -194,7 +214,7 @@ fun PieChart(
                 onSliceClick?.invoke(dataList[index], index)
             },
         ),
-        modifier = modifier,
+        modifier = modifier.then(semanticsModifier),
     )
 }
 

@@ -13,9 +13,17 @@ import com.himanshoe.charty.bar.internal.bar.mosiac.createMosiacChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosiac.drawMosiacBars
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 
 /**
  * Mosiac Bar Chart - 100% stacked bar chart.
@@ -28,6 +36,7 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  * @param config Configuration for mosiac chart appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param onSegmentClick Optional callback when a segment is clicked
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @Composable
 fun MosiacBarChart(
@@ -36,34 +45,54 @@ fun MosiacBarChart(
     config: MosiacBarChartConfig = MosiacBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onSegmentClick: ((MosiacBarSegment) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val groups = remember(data) { data() }
-    require(groups.isNotEmpty()) { "Mosiac bar chart data cannot be empty" }
-    require(groups.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Mosiac bar chart data cannot be empty" }
+    require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, MosiacBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartModifier = createMosiacChartModifier(
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val clickModifier = createMosiacChartModifier(
         modifier = modifier,
         onSegmentClick = onSegmentClick,
-        groups = groups,
+        groups = dataList,
         config = config,
         segmentBounds = tooltipManager.bounds,
         onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
+    val chartModifier = buildInteractionModifier(
+        base = clickModifier,
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
         modifier = chartModifier,
-        xLabels = groups.map { it.label },
+        xLabels = dataList.fastMap { it.label },
         yAxisConfig = createMosiacAxisConfig(),
         config = scaffoldConfig,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: "Mosaic bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
 
         drawMosiacBars(
-            groups = groups,
+            groups = dataList,
             chartContext = chartContext,
             config = config,
             animationProgress = animationProgress.value,
@@ -81,5 +110,7 @@ fun MosiacBarChart(
                 chartBottom = chartContext.bottom,
             )
         }
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }

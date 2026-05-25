@@ -9,26 +9,42 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generatePointChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
+import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
+import com.himanshoe.charty.common.gesture.chartCrosshairHandler
+import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.createPointTooltipState
 import com.himanshoe.charty.common.gesture.pointChartClickHandler
+import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.rememberChartDescription
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
+import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.PointData
 
@@ -121,7 +137,7 @@ private fun DrawScope.drawTooltipHighlight(
     chartContext: com.himanshoe.charty.common.ChartContext,
     textMeasurer: androidx.compose.ui.text.TextMeasurer,
 ) {
-    val clickedPosition = pointBounds.find { (_, data) ->
+    val clickedPosition = pointBounds.fastFirstOrNull { (_, data) ->
         pointConfig.tooltipFormatter(data) == tooltipState.content
     }?.first
 
@@ -157,19 +173,14 @@ private fun DrawScope.drawTooltipHighlight(
 /**
  * A composable function that displays a point chart, also known as a scatter plot.
  *
- * A point chart displays data as a collection of individual points positioned on a shared axis.
- * It is useful for showing distribution, outliers, or the relationship between ordered categories
- * and numeric values.
- *
  * @param data A lambda function that returns a list of [PointData] to be displayed.
  * @param modifier The modifier to be applied to the chart.
- * @param color The color or color scheme for the points, defined by a [ChartyColor].
- * @param pointConfig The configuration for the points' appearance and behavior (radius, alpha,
- *   animation, tooltip formatter), defined by a [PointChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels,
- *   defined by a [ChartScaffoldConfig].
- * @param onPointClick A lambda function invoked when a point is clicked, providing the
- *   corresponding [PointData].
+ * @param color The color or color scheme for the points.
+ * @param pointConfig The configuration for the points' appearance and behavior.
+ * @param scaffoldConfig The configuration for the chart's scaffold.
+ * @param onPointClick A lambda function invoked when a point is clicked.
+ * @param crosshairConfig When non-null, enables a draggable crosshair.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  *
  * Example usage:
  * ```kotlin
@@ -178,20 +189,9 @@ private fun DrawScope.drawTooltipHighlight(
  *         listOf(
  *             PointData("Mon", 30f),
  *             PointData("Tue", 55f),
- *             PointData("Wed", 42f),
- *             PointData("Thu", 70f),
- *             PointData("Fri", 38f)
  *         )
  *     },
  *     color = ChartyColor.Solid(ChartyColors.Blue),
- *     pointConfig = PointChartConfig(
- *         pointRadius = 10f,
- *         pointAlpha = 0.8f,
- *         animation = Animation.Enabled()
- *     ),
- *     onPointClick = { pointData ->
- *         println("Clicked: ${pointData.label} = ${pointData.value}")
- *     }
  * )
  * ```
  */
@@ -204,9 +204,13 @@ fun PointChart(
     pointConfig: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onPointClick: ((PointData) -> Unit)? = null,
+    crosshairConfig: ChartCrosshairConfig? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Point chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Point chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) = remember(dataList, pointConfig.negativeValuesDrawMode) {
         val values = dataList.getValues()
@@ -224,16 +228,33 @@ fun PointChart(
     val tooltipManager = rememberTooltipManager<Offset, PointData>()
     val textMeasurer = rememberTextMeasurer()
 
+    val crosshairManager = if (crosshairConfig != null) rememberCrosshairManager() else null
+
+    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+        generatePointChartDescription(it, minValue, maxValue)
+    }
+
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val chartModifier = modifier.then(
+        buildPointChartModifier(
+            crosshairManager = crosshairManager,
+            dataList = dataList,
+            tooltipManager = tooltipManager,
+            pointConfig = pointConfig,
+            onPointClick = onPointClick,
+            crosshairConfig = crosshairConfig,
+            interactionConfig = interactionConfig,
+        )
+    )
 
     ChartScaffold(
-        modifier = createChartModifier(
-            modifier = modifier,
-            dataList = dataList,
-            pointConfig = pointConfig,
-            pointBounds = tooltipManager.bounds,
-            onPointClick = onPointClick,
-            onTooltipUpdate = tooltipManager::updateTooltip,
-        ),
+        modifier = chartModifier,
         xLabels = dataList.getLabels(),
         yAxisConfig = AxisConfig(
             minValue = minValue,
@@ -242,7 +263,10 @@ fun PointChart(
             drawAxisAtZero = isBelowAxisMode,
         ),
         config = scaffoldConfig,
+        contentDescription = chartDescription,
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
 
         dataList.fastForEachIndexed { index, point ->
@@ -255,7 +279,7 @@ fun PointChart(
                 pointConfig = pointConfig,
                 color = color,
                 pointBounds = tooltipManager.bounds,
-                addToBounds = onPointClick != null,
+                addToBounds = onPointClick != null || crosshairManager != null,
             )
         }
 
@@ -268,15 +292,71 @@ fun PointChart(
             )
         }
 
-        tooltipManager.tooltipState?.let { state ->
-            drawTooltipHighlight(
-                tooltipState = state,
-                pointBounds = tooltipManager.bounds,
-                pointConfig = pointConfig,
-                color = color,
-                chartContext = chartContext,
-                textMeasurer = textMeasurer,
-            )
+        if (crosshairManager == null) {
+            tooltipManager.tooltipState?.let { state ->
+                drawTooltipHighlight(
+                    tooltipState = state,
+                    pointBounds = tooltipManager.bounds,
+                    pointConfig = pointConfig,
+                    color = color,
+                    chartContext = chartContext,
+                    textMeasurer = textMeasurer,
+                )
+            }
+        }
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+
+        crosshairManager?.state?.let { crosshairState ->
+            crosshairConfig?.let { config ->
+                drawLineChartCrosshair(
+                    state = crosshairState,
+                    config = config,
+                    chartContext = chartContext,
+                    textMeasurer = textMeasurer,
+                    chartColor = color,
+                )
+            }
         }
     }
+}
+
+private fun buildPointChartModifier(
+    crosshairManager: CrosshairManager?,
+    dataList: List<PointData>,
+    tooltipManager: TooltipManager<Offset, PointData>,
+    pointConfig: PointChartConfig,
+    onPointClick: ((PointData) -> Unit)?,
+    crosshairConfig: ChartCrosshairConfig?,
+    interactionConfig: ChartInteractionConfig,
+): Modifier {
+    var mod: Modifier = if (crosshairManager != null) {
+        Modifier.chartCrosshairHandler(
+            dataList = dataList,
+            pointBounds = tooltipManager.bounds,
+            onCrosshairUpdate = crosshairManager::update,
+            labelFormatter = { pointData -> pointConfig.tooltipFormatter(pointData) },
+            dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
+        )
+    } else {
+        createChartModifier(
+            modifier = Modifier,
+            dataList = dataList,
+            pointConfig = pointConfig,
+            pointBounds = tooltipManager.bounds,
+            onPointClick = onPointClick,
+            onTooltipUpdate = tooltipManager::updateTooltip,
+        )
+    }
+    if (interactionConfig.brushSelectionState != null) {
+        mod = mod.chartBrushSelectionHandler(
+            dataList = dataList,
+            brushState = interactionConfig.brushSelectionState,
+            onRangeSelect = interactionConfig.onRangeSelect,
+        )
+    }
+    if (interactionConfig.viewPortState != null) {
+        mod = mod.chartZoomAndPan(interactionConfig.viewPortState)
+    }
+    return mod
 }

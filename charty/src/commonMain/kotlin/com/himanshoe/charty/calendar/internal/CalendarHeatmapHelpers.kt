@@ -7,30 +7,64 @@ import com.himanshoe.charty.calendar.config.calendarMonthName
 import com.himanshoe.charty.calendar.data.CalendarData
 import kotlin.math.roundToInt
 
+// ── Gregorian ↔ Julian Day Number constants ──────────────────────────────────
+private const val JDN_MONTH_ADJUST = 14
+private const val JDN_MONTH_BASE = 12
+private const val JDN_YEAR_SHIFT = 4800
+private const val JDN_MONTH_FACTOR = 153
+private const val JDN_MONTH_DIVISOR = 5
+private const val JDN_DAYS_IN_YEAR = 365
+private const val JDN_4_YEAR_CYCLE = 4
+private const val JDN_100_YEAR_CYCLE = 100
+private const val JDN_400_YEAR_CYCLE = 400
+private const val JDN_EPOCH_OFFSET = 32045
+
+// ── jdnToGregorian-specific constants ────────────────────────────────────────
+private const val JDN_REVERSE_OFFSET = 32044
+private const val JDN_400Y_DAYS = 146097
+private const val JDN_4Y_DAYS = 1461
+
+// ── Algorithm literal constants ───────────────────────────────────────────────
+// These are algorithm-intrinsic offsets that appear inside the JDN formulas.
+private const val JDN_ALGO_OFFSET_2 = 2
+private const val JDN_ALGO_OFFSET_3 = 3
+private const val JDN_MONTH_TENS_DIVISOR = 10
+private const val JDN_MONTH_ADJUST_M = 3
+private const val PREV_YEAR_MONTH_THRESHOLD = 3
+
+// ── Sakamoto day-of-week constants ───────────────────────────────────────────
+private val SAKAMOTO_TABLE = intArrayOf(0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4)
+private const val DAYS_PER_WEEK = 7
+
+// ── computeGridLayout constants ───────────────────────────────────────────────
+private const val MONTH_KEY_BASE = 100L
+
 /**
  * Converts a proleptic Gregorian date to its Julian Day Number (JDN).
  * Uses the standard astronomical algorithm valid for all dates after 1 March 200 AD.
  */
 internal fun gregorianToJdn(year: Int, month: Int, day: Int): Long {
-    val a = (14 - month) / 12
-    val y = year + 4800 - a
-    val m = month + 12 * a - 3
-    return day + (153 * m + 2) / 5 + 365L * y + y / 4 - y / 100 + y / 400 - 32045
+    val a = (JDN_MONTH_ADJUST - month) / JDN_MONTH_BASE
+    val y = year + JDN_YEAR_SHIFT - a
+    val m = month + JDN_MONTH_BASE * a - JDN_MONTH_ADJUST_M
+    return day + (JDN_MONTH_FACTOR * m + JDN_ALGO_OFFSET_2) / JDN_MONTH_DIVISOR +
+        JDN_DAYS_IN_YEAR.toLong() * y + y / JDN_4_YEAR_CYCLE -
+        y / JDN_100_YEAR_CYCLE + y / JDN_400_YEAR_CYCLE - JDN_EPOCH_OFFSET
 }
 
 /**
  * Converts a Julian Day Number back to a Gregorian (year, month, day) triple.
  */
 internal fun jdnToGregorian(jdn: Long): Triple<Int, Int, Int> {
-    val a = jdn + 32044
-    val b = (4 * a + 3) / 146097
-    val c = a - (146097 * b) / 4
-    val d = (4 * c + 3) / 1461
-    val e = c - (1461 * d) / 4
-    val m = (5 * e + 2) / 153
-    val day = (e - (153 * m + 2) / 5 + 1).toInt()
-    val month = (m + 3 - 12 * (m / 10)).toInt()
-    val year = (100 * b + d - 4800 + m / 10).toInt()
+    val a = jdn + JDN_REVERSE_OFFSET
+    val b = (JDN_4_YEAR_CYCLE * a + JDN_ALGO_OFFSET_3) / JDN_400Y_DAYS
+    val c = a - (JDN_400Y_DAYS * b) / JDN_4_YEAR_CYCLE
+    val d = (JDN_4_YEAR_CYCLE * c + JDN_ALGO_OFFSET_3) / JDN_4Y_DAYS
+    val e = c - (JDN_4Y_DAYS * d) / JDN_4_YEAR_CYCLE
+    val m = (JDN_MONTH_DIVISOR * e + JDN_ALGO_OFFSET_2) / JDN_MONTH_FACTOR
+    val day = (e - (JDN_MONTH_FACTOR * m + JDN_ALGO_OFFSET_2) / JDN_MONTH_DIVISOR + 1).toInt()
+    val month = (m + JDN_MONTH_ADJUST_M - JDN_MONTH_BASE * (m / JDN_MONTH_TENS_DIVISOR)).toInt()
+    val year = (JDN_100_YEAR_CYCLE * b + d - JDN_YEAR_SHIFT + m / JDN_MONTH_TENS_DIVISOR).toInt()
     return Triple(year, month, day)
 }
 
@@ -39,9 +73,9 @@ internal fun jdnToGregorian(jdn: Long): Triple<Int, Int, Int> {
  * Result: 0 = Sunday, 1 = Monday, …, 6 = Saturday.
  */
 internal fun dayOfWeek(year: Int, month: Int, day: Int): Int {
-    val t = intArrayOf(0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4)
-    val y = if (month < 3) year - 1 else year
-    return (y + y / 4 - y / 100 + y / 400 + t[month - 1] + day) % 7
+    val y = if (month < PREV_YEAR_MONTH_THRESHOLD) year - 1 else year
+    return (y + y / JDN_4_YEAR_CYCLE - y / JDN_100_YEAR_CYCLE +
+        y / JDN_400_YEAR_CYCLE + SAKAMOTO_TABLE[month - 1] + day) % DAYS_PER_WEEK
 }
 
 /** A single cell in the rendered grid that has data attached to it. */
@@ -66,6 +100,31 @@ internal data class GridLayout(
     val totalWeeks: Int,
     val monthBoundaries: List<Pair<Int, String>>,
 )
+
+/**
+ * Processes a single grid cell: records data if present, and marks month boundaries on day 1.
+ */
+private fun processGridCell(
+    jdn: Long,
+    weekIndex: Int,
+    dayIndex: Int,
+    lookup: Map<Long, CalendarData>,
+    cells: MutableList<GridCell>,
+    seenMonthKeys: MutableSet<Long>,
+    monthBoundaries: MutableList<Pair<Int, String>>,
+) {
+    lookup[jdn]?.let { data ->
+        cells.add(GridCell(weekIndex, dayIndex, data))
+    }
+    val (year, month, day) = jdnToGregorian(jdn)
+    if (day == 1) {
+        val key = year * MONTH_KEY_BASE + month
+        if (key !in seenMonthKeys) {
+            seenMonthKeys.add(key)
+            monthBoundaries.add(weekIndex to calendarMonthName(month))
+        }
+    }
+}
 
 /**
  * Computes the full grid layout from a list of [CalendarData] entries.
@@ -93,21 +152,21 @@ internal fun computeGridLayout(
 
     val (minYear, minMonth, minDay) = jdnToGregorian(minJdn)
     val minDow = dayOfWeek(minYear, minMonth, minDay)
-    val offsetToWeekStart = ((minDow - startOffset + 7) % 7).toLong()
+    val offsetToWeekStart = ((minDow - startOffset + DAYS_PER_WEEK) % DAYS_PER_WEEK).toLong()
     val gridStartJdn = minJdn - offsetToWeekStart
 
     val (maxYear, maxMonth, maxDay) = jdnToGregorian(maxJdn)
     val maxDow = dayOfWeek(maxYear, maxMonth, maxDay)
-    val offsetToWeekEnd = ((startOffset + 6 - maxDow + 7) % 7).toLong()
+    val offsetToWeekEnd = ((startOffset + DAYS_PER_WEEK - 1 - maxDow + DAYS_PER_WEEK) % DAYS_PER_WEEK).toLong()
     val gridEndJdn = maxJdn + offsetToWeekEnd
 
-    val totalWeeks = ((gridEndJdn - gridStartJdn + 1) / 7).toInt()
+    val totalWeeks = ((gridEndJdn - gridStartJdn + 1) / DAYS_PER_WEEK).toInt()
 
     val effectiveTotalWeeks: Int
     val effectiveStartJdn: Long
     if (visibleWeeks != null && visibleWeeks < totalWeeks) {
         effectiveTotalWeeks = visibleWeeks
-        effectiveStartJdn = gridEndJdn - (visibleWeeks * 7L) + 1
+        effectiveStartJdn = gridEndJdn - (visibleWeeks * DAYS_PER_WEEK.toLong()) + 1
     } else {
         effectiveTotalWeeks = totalWeeks
         effectiveStartJdn = gridStartJdn
@@ -118,25 +177,13 @@ internal fun computeGridLayout(
     val seenMonthKeys = mutableSetOf<Long>()
 
     val (firstYear, firstMonth, _) = jdnToGregorian(effectiveStartJdn)
-    seenMonthKeys.add(firstYear * 100L + firstMonth)
+    seenMonthKeys.add(firstYear * MONTH_KEY_BASE + firstMonth)
     monthBoundaries.add(0 to calendarMonthName(firstMonth))
 
     for (weekIndex in 0 until effectiveTotalWeeks) {
-        for (dayIndex in 0..6) {
-            val jdn = effectiveStartJdn + weekIndex * 7L + dayIndex
-
-            lookup[jdn]?.let { data ->
-                cells.add(GridCell(weekIndex, dayIndex, data))
-            }
-
-            val (year, month, day) = jdnToGregorian(jdn)
-            if (day == 1) {
-                val key = year * 100L + month
-                if (key !in seenMonthKeys) {
-                    seenMonthKeys.add(key)
-                    monthBoundaries.add(weekIndex to calendarMonthName(month))
-                }
-            }
+        for (dayIndex in 0 until DAYS_PER_WEEK) {
+            val jdn = effectiveStartJdn + weekIndex * DAYS_PER_WEEK.toLong() + dayIndex
+            processGridCell(jdn, weekIndex, dayIndex, lookup, cells, seenMonthKeys, monthBoundaries)
         }
     }
 

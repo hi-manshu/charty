@@ -10,20 +10,34 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generateLineChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
+import com.himanshoe.charty.common.gesture.chartCrosshairHandler
+import com.himanshoe.charty.common.gesture.chartZoomAndPan
+import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.rememberChartDescription
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.createAreaBrush
@@ -31,6 +45,7 @@ import com.himanshoe.charty.line.ext.createAreaPath
 import com.himanshoe.charty.line.ext.createLineBrush
 import com.himanshoe.charty.line.ext.createLinePath
 import com.himanshoe.charty.line.internal.area.createAreaChartModifier
+import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 
 private const val DEFAULT_FILL_ALPHA = 0.3f
 private const val DEFAULT_AXIS_STEPS = 6
@@ -57,34 +72,14 @@ private data class AreaChartDrawParams(
 /**
  * A composable function that displays an area chart.
  *
- * An area chart is a type of line chart where the area between the line and the axis is filled with color or a gradient.
- * It is useful for showing cumulative trends and emphasizing the magnitude of change over time.
- *
  * @param data A lambda function that returns a list of [LineData] points to be displayed.
  * @param modifier The modifier to be applied to the chart.
- * @param color The color or color scheme for the filled area. A gradient is recommended for a fade effect.
- * @param lineConfig The configuration for the line and its points, defined by a [LineChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
+ * @param color The color or color scheme for the filled area.
+ * @param lineConfig The configuration for the line and its points.
+ * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param fillAlpha The alpha transparency for the filled area, ranging from 0.0f to 1.0f.
- * @param onPointClick A lambda function to be invoked when a point on the line is clicked, providing the corresponding [LineData].
- *
- * AreaChart(
- *     data = {
- *         listOf(
- *             LineData("Jan", 20f),
- *             LineData("Feb", 45f),
- *             LineData("Mar", 30f),
- *             LineData("Apr", 70f)
- *         )
- *     },
- *     color = ChartyColor.Gradient(
- *         listOf(Color(0xFF2196F3), Color(0xFF2196F3).copy(alpha = 0.3f))
- *     ),
- *     lineConfig = LineChartConfig(
- *         lineWidth = 3f,
- *         showPoints = true
- *     )
- * )
+ * @param onPointClick A lambda function invoked when a point on the line is clicked.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -102,10 +97,13 @@ fun AreaChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     fillAlpha: Float = DEFAULT_FILL_ALPHA,
     onPointClick: ((LineData) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Area chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Area chart data cannot be empty" }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberAreaValueRange(dataList, lineConfig.negativeValuesDrawMode)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -113,13 +111,28 @@ fun AreaChart(
     val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartModifier = createAreaChartModifier(
-        modifier = modifier,
-        onPointClick = onPointClick,
-        dataList = dataList,
-        lineConfig = lineConfig,
-        pointBounds = tooltipManager.bounds,
-        onTooltipUpdate = tooltipManager::updateTooltip,
+    val crosshairManager = if (lineConfig.crosshairConfig != null) rememberCrosshairManager() else null
+
+    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+        generateLineChartDescription(it, minValue, maxValue)
+    }
+
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val chartModifier = modifier.then(
+        buildAreaModifier(
+            crosshairManager = crosshairManager,
+            dataList = dataList,
+            tooltipManager = tooltipManager,
+            lineConfig = lineConfig,
+            onPointClick = onPointClick,
+            interactionConfig = interactionConfig,
+        )
     )
 
     ChartScaffold(
@@ -127,11 +140,12 @@ fun AreaChart(
         xLabels = dataList.getLabels(),
         yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
+        contentDescription = chartDescription,
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
         tooltipManager.clearBounds()
         val pointPositions = calculatePointPositions(dataList, chartContext) { tooltipManager.bounds.add(it) }
         val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
-
         drawAreaChart(
             params = AreaChartDrawParams(
                 dataList = dataList,
@@ -145,21 +159,60 @@ fun AreaChart(
                 onBarBoundCalculated = { if (onPointClick != null) tooltipManager.bounds.add(it) },
             ),
         )
+        if (crosshairManager == null) {
+            drawTooltipHighlightIfNeeded(
+                tooltipManager.tooltipState, lineConfig, tooltipManager.bounds, chartContext, color,
+            )
+            drawTooltipIfNeeded(tooltipManager.tooltipState, lineConfig, textMeasurer, chartContext)
+        }
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        crosshairManager?.state?.let { crosshairState ->
+            lineConfig.crosshairConfig?.let { crosshairConfig ->
+                drawLineChartCrosshair(crosshairState, crosshairConfig, chartContext, textMeasurer, color)
+            }
+        }
+    }
+}
 
-        drawTooltipHighlightIfNeeded(
-            tooltipState = tooltipManager.tooltipState,
+private fun buildAreaModifier(
+    crosshairManager: CrosshairManager?,
+    dataList: List<LineData>,
+    tooltipManager: TooltipManager<Offset, LineData>,
+    lineConfig: LineChartConfig,
+    onPointClick: ((LineData) -> Unit)?,
+    interactionConfig: ChartInteractionConfig,
+): Modifier {
+    var mod: Modifier = if (crosshairManager != null) {
+        Modifier.chartCrosshairHandler(
+            dataList = dataList,
+            pointBounds = tooltipManager.bounds,
+            onCrosshairUpdate = crosshairManager::update,
+            labelFormatter = lineConfig.tooltipFormatter,
+            dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+        )
+    } else if (onPointClick != null) {
+        createAreaChartModifier(
+            modifier = Modifier,
+            onPointClick = onPointClick,
+            dataList = dataList,
             lineConfig = lineConfig,
             pointBounds = tooltipManager.bounds,
-            chartContext = chartContext,
-            color = color,
+            onTooltipUpdate = tooltipManager::updateTooltip,
         )
-        drawTooltipIfNeeded(
-            tooltipState = tooltipManager.tooltipState,
-            lineConfig = lineConfig,
-            textMeasurer = textMeasurer,
-            chartContext = chartContext,
+    } else {
+        Modifier
+    }
+    if (interactionConfig.brushSelectionState != null) {
+        mod = mod.chartBrushSelectionHandler(
+            dataList = dataList,
+            brushState = interactionConfig.brushSelectionState,
+            onRangeSelect = interactionConfig.onRangeSelect,
         )
     }
+    if (interactionConfig.viewPortState != null) {
+        mod = mod.chartZoomAndPan(interactionConfig.viewPortState)
+    }
+    return mod
 }
 
 @Composable
@@ -281,7 +334,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipHighligh
     color: ChartyColor,
 ) {
     tooltipState?.let { state ->
-        val clickedPosition = pointBounds.find { (_, data) ->
+        val clickedPosition = pointBounds.fastFirstOrNull { (_, data) ->
             lineConfig.tooltipFormatter(data) == state.content
         }?.first
 

@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.WaterfallChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallBarParams
@@ -16,9 +17,15 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
  * Waterfall Chart - visualizes cumulative effect of sequential gains/losses.
@@ -28,6 +35,7 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
  * @param config Configuration for waterfall chart appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param onBarClick Optional callback when a bar is clicked
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @Composable
 fun WaterfallChart(
@@ -36,11 +44,14 @@ fun WaterfallChart(
     config: WaterfallChartConfig = WaterfallChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val items = remember(data) { data() }
-    require(items.isNotEmpty()) { "Waterfall chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Waterfall chart data cannot be empty" }
 
-    val cumulativeValues = rememberCumulativeValues(items)
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+
+    val cumulativeValues = rememberCumulativeValues(dataList)
     val (minValue, maxValue) = remember(cumulativeValues) {
         calculateWaterfallRange(cumulativeValues)
     }
@@ -49,19 +60,30 @@ fun WaterfallChart(
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartModifier = modifier.then(
-        createWaterfallClickModifier(
-            items = items,
-            config = config,
-            barBounds = tooltipManager.bounds,
-            onBarClick = onBarClick,
-            onTooltipUpdate = tooltipManager::updateTooltip,
-        ),
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val clickModifier = createWaterfallClickModifier(
+        items = dataList,
+        config = config,
+        barBounds = tooltipManager.bounds,
+        onBarClick = onBarClick,
+        onTooltipUpdate = tooltipManager::updateTooltip,
+    )
+
+    val chartModifier = buildInteractionModifier(
+        base = modifier.then(clickModifier),
+        interactionConfig = interactionConfig,
+        dataList = dataList,
     )
 
     ChartScaffold(
         modifier = chartModifier,
-        xLabels = items.map { it.label },
+        xLabels = dataList.fastMap { it.label },
         yAxisConfig = AxisConfig(
             minValue = minValue,
             maxValue = maxValue,
@@ -69,14 +91,18 @@ fun WaterfallChart(
             drawAxisAtZero = true,
         ),
         config = scaffoldConfig,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: "Waterfall chart, ${fullDataList.size} data points.",
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
 
-        items.fastForEachIndexed { index, bar ->
+        dataList.fastForEachIndexed { index, bar ->
             val barParams = calculateWaterfallBarParams(
                 index = index,
                 bar = bar,
-                items = items,
+                items = dataList,
                 cumulativeValues = cumulativeValues,
                 config = config,
                 chartContext = chartContext,
@@ -107,5 +133,7 @@ fun WaterfallChart(
                 chartBottom = chartContext.bottom,
             )
         }
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }

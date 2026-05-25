@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarSegment
@@ -47,7 +48,7 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
     val availableWidth = params.chartContext.width
 
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
-        val groupTotal = barGroup.values.filter { it > 0f }.sum()
+        val groupTotal = barGroup.values.fastFilter { it > 0f }.sum()
         if (groupTotal == 0f) return@fastForEachIndexed
 
         val centeredBarY = params.chartContext.top +

@@ -4,6 +4,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.util.fastFirstOrNull
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.common.gesture.calculateDistance
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
@@ -52,8 +54,8 @@ internal data class BubbleBounds(
  * @return A [BubbleSizeInfo] instance containing the calculated size information.
  */
 internal fun calculateBubbleSizeInfo(dataList: List<BubbleData>): BubbleSizeInfo {
-    val yValues = dataList.map { it.yValue }
-    val sizes = dataList.map { it.size }
+    val yValues = dataList.fastMap { it.yValue }
+    val sizes = dataList.fastMap { it.size }
     val min = sizes.minOrNull() ?: 0f
     val max = sizes.maxOrNull() ?: 1f
     return BubbleSizeInfo(
@@ -107,7 +109,7 @@ internal fun createBubbleClickModifier(
     return if (onBubbleClick != null) {
         Modifier.pointerInput(dataList, onBubbleClick) {
             detectTapGestures { tapOffset ->
-                val clickedBubble = bubbleBounds.find { bubble ->
+                val clickedBubble = bubbleBounds.fastFirstOrNull { bubble ->
                     val distance = calculateDistance(bubble.center, tapOffset)
                     distance <= bubble.radius
                 }

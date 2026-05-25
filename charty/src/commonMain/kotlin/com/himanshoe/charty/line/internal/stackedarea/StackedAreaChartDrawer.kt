@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
 
@@ -78,7 +79,7 @@ private fun addSegmentBounds(
     lowerPositions: List<Offset>,
     onSegmentBoundsCalculated: (Triple<Rect, Path, StackedAreaPoint>) -> Unit,
 ) {
-    dataList.forEachIndexed { dataIndex, group ->
+    dataList.fastForEachIndexed { dataIndex, group ->
         val segmentValue = group.values.getOrNull(seriesIndex) ?: 0f
         val upperPoint = cumulativePositions.getOrNull(dataIndex)
         val lowerPoint = lowerPositions.getOrNull(dataIndex)

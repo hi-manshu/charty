@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
@@ -14,7 +16,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.radar.config.RadarChartConfig
@@ -43,6 +48,7 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  *   must have the same number of axes.
  * @param modifier The modifier to be applied to the chart.
  * @param config The configuration for the radar chart's appearance, defined by a [RadarChartConfig].
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
  *
  * Example usage:
  * ```kotlin
@@ -78,20 +84,33 @@ fun RadarChart(
     data: () -> List<RadarDataSet>,
     modifier: Modifier = Modifier,
     config: RadarChartConfig = RadarChartConfig(),
+    accessibilityDescription: String? = null,
 ) {
     val dataSets = remember(data) { data() }
     require(dataSets.isNotEmpty()) { "Radar chart data cannot be empty" }
 
     val numberOfAxes = dataSets.first().axes.size
-    require(dataSets.all { it.axes.size == numberOfAxes }) {
+    require(dataSets.fastAll { it.axes.size == numberOfAxes }) {
         "All datasets must have the same number of axes"
     }
 
+    val chartDescription = remember(dataSets, accessibilityDescription) {
+        when (accessibilityDescription) {
+            "" -> null
+            null -> "Radar chart, ${dataSets.size} datasets."
+            else -> accessibilityDescription
+        }
+    }
+    val semanticsModifier = if (chartDescription != null) {
+        Modifier.semantics { contentDescription = chartDescription }
+    } else {
+        Modifier
+    }
     val animationProgress = rememberChartAnimation(config.animation)
     val textMeasurer = rememberTextMeasurer()
-    val axisLabels = remember(dataSets) { dataSets.first().axes.map { it.label } }
+    val axisLabels = remember(dataSets) { dataSets.first().axes.fastMap { it.label } }
 
-    BoxWithConstraints(modifier = modifier) {
+    BoxWithConstraints(modifier = modifier.then(semanticsModifier)) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val centerX = size.width / 2f
             val centerY = size.height / 2f
@@ -304,7 +323,7 @@ private fun DrawScope.drawRadarDataSet(
             ),
     )
     if (config.showDataPoints) {
-        points.forEach { point ->
+        points.fastForEach { point ->
             drawCircle(
                 color = dataColor,
                 radius = config.dataPointRadius * animationProgress,

@@ -3,6 +3,7 @@ package com.himanshoe.charty.bar.internal.bar.groupedhorizontal
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.util.fastFlatMap
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.color.ChartyColor
@@ -38,7 +39,7 @@ internal fun rememberGroupedHorizontalState(
     colors: ChartyColor,
 ): GroupedHorizontalState =
     remember(dataList, negativeValuesDrawMode, colors) {
-        val allValues = dataList.flatMap { it.values }
+        val allValues = dataList.fastFlatMap { it.values }
         val rawMin = allValues.minOrNull() ?: 0f
         val rawMax = allValues.maxOrNull() ?: 0f
 

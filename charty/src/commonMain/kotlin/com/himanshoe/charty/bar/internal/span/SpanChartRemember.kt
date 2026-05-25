@@ -3,6 +3,7 @@ package com.himanshoe.charty.bar.internal.span
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.util.fastFlatMap
 import com.himanshoe.charty.bar.data.SpanData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -14,7 +15,7 @@ internal fun rememberSpanValueRange(
     colors: ChartyColor,
 ): Pair<Float, Float> {
     return remember(dataList, colors) {
-        val allValues = dataList.flatMap { listOf(it.startValue, it.endValue) }
+        val allValues = dataList.fastFlatMap { listOf(it.startValue, it.endValue) }
         Pair(
             allValues.minOrNull() ?: 0f,
             allValues.maxOrNull() ?: 100f,

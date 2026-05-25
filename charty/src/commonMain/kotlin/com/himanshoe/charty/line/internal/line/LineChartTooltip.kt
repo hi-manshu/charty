@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.util.fastFirstOrNull
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -23,7 +24,7 @@ internal fun DrawScope.drawLineChartTooltip(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
 ) {
-    val clickedPosition = pointBounds.find { (_, data) ->
+    val clickedPosition = pointBounds.fastFirstOrNull { (_, data) ->
         lineConfig.tooltipFormatter(data) == tooltipState.content
     }?.first
 

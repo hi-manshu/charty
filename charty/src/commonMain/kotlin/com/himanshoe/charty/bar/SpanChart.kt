@@ -22,42 +22,27 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
+import androidx.compose.ui.util.fastMap
 
 /**
  * Span Chart - Display ranges/spans horizontally across categories
  *
- * A span chart (also known as a range chart or Gantt-style chart) displays horizontal bars
- * showing ranges or time periods for different categories. Each span has a start and end value,
- * making it ideal for visualizing schedules, timelines, or value ranges.
- *
- * Usage:
- * ```kotlin
- * SpanChart(
- *     data = {
- *         listOf(
- *             SpanData("Category 1", startValue = 5f, endValue = 15f),
- *             SpanData("Category 2", startValue = 10f, endValue = 25f),
- *             SpanData("Category 3", startValue = 3f, endValue = 18f)
- *         )
- *     },
- *     colors = ChartyColor.Gradient(
- *         listOf(Color(0xFF2196F3), Color(0xFF4CAF50), Color(0xFFFF9800))
- *     ),
- *     barConfig = BarChartConfig(
- *         barWidthFraction = 0.6f,
- *         cornerRadius = CornerRadius.Medium
- *     )
- * )
- * ```
- *
  * @param data Lambda returning list of span data to display
  * @param modifier Modifier for the chart
- * @param colors Color configuration - Gradient recommended for distinguishing multiple spans
+ * @param colors Color configuration
  * @param barConfig Configuration for span bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
+ * @param onSpanClick Called when a span bar is tapped, providing the tapped [SpanData].
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -75,16 +60,26 @@ fun SpanChart(
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onSpanClick: ((SpanData) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Span chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Span chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberSpanValueRange(dataList, colors)
     val animationProgress = rememberChartAnimation(barConfig.animation)
     val tooltipManager = rememberTooltipManager<Rect, SpanData>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartModifier = createSpanChartModifier(
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val clickModifier = createSpanChartModifier(
         modifier = modifier,
         onSpanClick = onSpanClick,
         dataList = dataList,
@@ -93,13 +88,23 @@ fun SpanChart(
         onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
+    val chartModifier = buildInteractionModifier(
+        base = clickModifier,
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
         modifier = chartModifier,
-        xLabels = dataList.map { it.label },
+        xLabels = dataList.fastMap { it.label },
         yAxisConfig = createAxisConfig(minValue, maxValue),
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: "Span chart, ${fullDataList.size} spans.",
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
         val axisOffset = calculateAxisOffset(scaffoldConfig)
 
@@ -124,6 +129,7 @@ fun SpanChart(
             textMeasurer = textMeasurer,
             chartContext = chartContext,
         )
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }
-

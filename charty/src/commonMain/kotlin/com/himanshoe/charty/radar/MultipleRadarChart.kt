@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -32,7 +34,10 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.Animation
@@ -69,6 +74,7 @@ private const val CLICK_TOLERANCE_MULTIPLIER = 2f
  * @param modifier The modifier to be applied to the composable root.
  * @param config The visual and behavioral configuration for the chart, defined by a [MultipleRadarChartConfig].
  * @param onDataSetClick An optional callback that is invoked when a dataset entry is clicked.
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
  */
 @Composable
 fun MultipleRadarChart(
@@ -76,12 +82,26 @@ fun MultipleRadarChart(
     modifier: Modifier = Modifier,
     config: MultipleRadarChartConfig = MultipleRadarChartConfig(),
     onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
+    accessibilityDescription: String? = null,
 ) {
     val dataSetsList = remember(dataSets) { dataSets() }
     require(dataSetsList.isNotEmpty()) { "Multiple radar chart data cannot be empty" }
 
+    val chartDescription = remember(dataSetsList, accessibilityDescription) {
+        when (accessibilityDescription) {
+            "" -> null
+            null -> "Multiple radar chart, ${dataSetsList.size} datasets."
+            else -> accessibilityDescription
+        }
+    }
+    val semanticsModifier = if (chartDescription != null) {
+        Modifier.semantics { contentDescription = chartDescription }
+    } else {
+        Modifier
+    }
+
     val numberOfAxes = dataSetsList.first().axes.size
-    require(dataSetsList.all { it.axes.size == numberOfAxes }) {
+    require(dataSetsList.fastAll { it.axes.size == numberOfAxes }) {
         "All datasets must have the same number of axes"
     }
 
@@ -90,7 +110,7 @@ fun MultipleRadarChart(
             dataSetsList = dataSetsList,
             numberOfAxes = numberOfAxes,
             config = config,
-            modifier = modifier,
+            modifier = modifier.then(semanticsModifier),
             onDataSetClick = onDataSetClick,
         )
     } else {
@@ -98,7 +118,7 @@ fun MultipleRadarChart(
             dataSetsList = dataSetsList,
             numberOfAxes = numberOfAxes,
             config = config,
-            modifier = modifier,
+            modifier = modifier.then(semanticsModifier),
             onDataSetClick = onDataSetClick,
         )
     }
@@ -341,7 +361,7 @@ private fun Legend(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(LEGEND_ITEM_SPACING.dp),
     ) {
-        dataSets.forEachIndexed { index, dataSet ->
+        dataSets.fastForEachIndexed { index, dataSet ->
             val dataColor =
                 when (dataSet.color) {
                     is ChartyColor.Solid -> dataSet.color.color
@@ -393,7 +413,7 @@ private fun RadarChartContent(
 ) {
     val animationProgress = rememberRadarAnimation(config.radarConfig.animation)
     val textMeasurer = rememberTextMeasurer()
-    val axisLabels = remember(dataSetsList) { dataSetsList.first().axes.map { it.label } }
+    val axisLabels = remember(dataSetsList) { dataSetsList.first().axes.fastMap { it.label } }
     val dataPointPositions = remember { mutableMapOf<Int, List<Offset>>() }
 
     BoxWithConstraints(modifier = modifier) {
@@ -631,7 +651,7 @@ private fun DrawScope.drawRadarDataSet(
     // Draw data points
     if (config.radarConfig.showDataPoints) {
         val pointRadius = config.datasetPointRadius ?: config.radarConfig.dataPointRadius
-        points.forEach { point ->
+        points.fastForEach { point ->
             // Outer circle
             drawCircle(
                 color = dataColor,

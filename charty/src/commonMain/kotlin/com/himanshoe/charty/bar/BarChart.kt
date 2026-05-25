@@ -19,9 +19,17 @@ import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generateBarChartDescription
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberChartDescription
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
  * A composable function that displays a bar chart.
@@ -35,6 +43,7 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  * @param barConfig The configuration for the bars, such as width, corner radius, and animation, defined by a [BarChartConfig].
  * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
  * @param onBarClick A lambda function to be invoked when a bar is clicked, providing the corresponding [BarData].
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  *
  * BarChart(
  *     data = {
@@ -61,9 +70,12 @@ fun BarChart(
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Bar chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Bar chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberBarValueRange(dataList, barConfig.negativeValuesDrawMode)
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -71,7 +83,18 @@ fun BarChart(
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartModifier = createBarChartModifier(
+    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+        generateBarChartDescription(it, minValue, maxValue)
+    }
+
+    syncInteractionDataSizes(
+        interactionConfig.viewPortState,
+        interactionConfig.brushSelectionState,
+        fullDataList.size,
+        dataList.size,
+    )
+
+    val clickModifier = createBarChartModifier(
         modifier = modifier,
         onBarClick = onBarClick,
         dataList = dataList,
@@ -80,13 +103,22 @@ fun BarChart(
         onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
+    val chartModifier = buildInteractionModifier(
+        base = clickModifier,
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
         modifier = chartModifier,
         xLabels = dataList.getLabels(),
         yAxisConfig = createBarAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
         leftLabelRotation = scaffoldConfig.leftLabelRotation,
+        contentDescription = chartDescription,
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
         val baselineY = calculateBarBaselineY(minValue, isBelowAxisMode, chartContext)
 
@@ -103,5 +135,7 @@ fun BarChart(
 
         drawBarReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
         drawBarTooltipIfNeeded(tooltipManager.tooltipState, barConfig, textMeasurer, chartContext)
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }

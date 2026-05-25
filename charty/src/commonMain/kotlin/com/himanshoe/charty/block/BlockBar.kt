@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.util.fastFilter
 import com.himanshoe.charty.block.config.BlockBarChartConfig
 import com.himanshoe.charty.block.data.BlockData
 import com.himanshoe.charty.block.internal.drawBlockBar
@@ -25,6 +28,7 @@ import com.himanshoe.charty.block.internal.drawBlockBar
  * @param modifier The modifier to be applied to the chart.
  * @param blockBarConfig The configuration for the block bar's appearance, such as colors, spacing,
  *   and height, defined by a [BlockBarChartConfig].
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
  *
  * Example usage:
  * ```kotlin
@@ -45,11 +49,25 @@ fun BlockBarChart(
     data: () -> List<BlockData>,
     modifier: Modifier = Modifier,
     blockBarConfig: BlockBarChartConfig = BlockBarChartConfig(),
+    accessibilityDescription: String? = null,
 ) {
-    val blocks = remember(data) { data().filter { it.value > 0f } }
+    val blocks = remember(data) { data().fastFilter { it.value > 0f } }
+    val chartDescription = remember(blocks, accessibilityDescription) {
+        when (accessibilityDescription) {
+            "" -> null
+            null -> "Block bar chart, ${blocks.size} segments."
+            else -> accessibilityDescription
+        }
+    }
+    val semanticsModifier = if (chartDescription != null) {
+        Modifier.semantics { contentDescription = chartDescription }
+    } else {
+        Modifier
+    }
 
     Canvas(
         modifier = modifier
+            .then(semanticsModifier)
             .fillMaxWidth()
             .height(blockBarConfig.barHeight),
     ) {

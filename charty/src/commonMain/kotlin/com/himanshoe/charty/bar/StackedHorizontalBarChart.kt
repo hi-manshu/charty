@@ -21,8 +21,16 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 
 /**
  * A composable that displays a **stacked horizontal bar chart**.
@@ -32,28 +40,14 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  * smooth entrance animation; all segments scale uniformly so the bar reads as a
  * cohesive unit rather than independent pieces.
  *
- * This chart is the horizontal counterpart to [StackedBarChart] and is ideal for:
- * - Part-to-whole comparisons across multiple categories.
- * - Situations where category labels are long (horizontal layout gives them more space).
- * - Survey results, budget breakdowns, or time-allocation visualisations.
- *
- * ### Colour resolution (per segment, in priority order)
- * 1. `BarGroup.colors[segmentIndex]` — per-segment override.
- * 2. `colors.value[segmentIndex % colorCount]` — chart-level palette cycle.
- *
- * ### Constraints
- * - All segment values must be **non-negative**. Negative stacked values are not supported.
- * - Every group must contain **at least one** value.
- *
  * @param data Lambda returning the list of [BarGroup] to display. Each group becomes one bar row.
  * @param modifier Modifier applied to the chart container.
- * @param colors Colour palette used to differentiate segments. A [ChartyColor.Gradient] with
- *   one colour per segment gives the clearest distinction. Defaults to [ChartyColors.DefaultGradient].
+ * @param colors Colour palette used to differentiate segments.
  * @param config Appearance and behaviour configuration — bar thickness, corner radius,
  *   animation, reference line, and tooltip settings.
  * @param scaffoldConfig Chart scaffold configuration controlling axes, grid lines, and labels.
- * @param onSegmentClick Optional callback invoked when a segment is tapped, receiving a
- *   [StackedHorizontalBarSegment] that describes the tapped bar group, segment index, and value.
+ * @param onSegmentClick Optional callback invoked when a segment is tapped.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  *
  * Example usage:
  * ```kotlin
@@ -62,19 +56,9 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
  *         listOf(
  *             BarGroup("Q1", listOf(20f, 30f, 15f)),
  *             BarGroup("Q2", listOf(25f, 35f, 20f)),
- *             BarGroup("Q3", listOf(30f, 25f, 25f)),
- *             BarGroup("Q4", listOf(28f, 32f, 18f)),
  *         )
  *     },
  *     colors = ChartyColors.DefaultGradient,
- *     config = StackedHorizontalBarChartConfig(
- *         barWidthFraction = 0.6f,
- *         rightCornerRadius = CornerRadius.Medium,
- *         animation = Animation.Default,
- *     ),
- *     onSegmentClick = { segment ->
- *         println("${segment.barGroup.label}[${segment.segmentIndex}] = ${segment.segmentValue}")
- *     },
  * )
  * ```
  */
@@ -87,34 +71,54 @@ fun StackedHorizontalBarChart(
     config: StackedHorizontalBarChartConfig = StackedHorizontalBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onSegmentClick: ((StackedHorizontalBarSegment) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Stacked horizontal bar chart data cannot be empty" }
-    require(dataList.all { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
-    require(dataList.all { group -> group.values.all { it >= 0f } }) {
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Stacked horizontal bar chart data cannot be empty" }
+    require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+    require(fullDataList.fastAll { group -> group.values.fastAll { it >= 0f } }) {
         "Stacked horizontal bar chart does not support negative values"
     }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (maxTotal, colorList) = rememberStackedHorizontalMaxTotal(dataList, colors)
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, StackedHorizontalBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
+    syncInteractionDataSizes(
+        interactionConfig.viewPortState,
+        interactionConfig.brushSelectionState,
+        fullDataList.size,
+        dataList.size,
+    )
+
+    val clickModifier = createStackedHorizontalBarChartModifier(
+        dataList = dataList,
+        config = config,
+        onSegmentClick = onSegmentClick,
+        segmentBounds = tooltipManager.bounds,
+        onTooltipStateChange = tooltipManager::updateTooltip,
+    )
+
+    val chartModifier = buildInteractionModifier(
+        base = modifier.then(clickModifier),
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
-        modifier = modifier.then(
-            createStackedHorizontalBarChartModifier(
-                dataList = dataList,
-                config = config,
-                onSegmentClick = onSegmentClick,
-                segmentBounds = tooltipManager.bounds,
-                onTooltipStateChange = tooltipManager::updateTooltip,
-            ),
-        ),
-        xLabels = dataList.map { it.label },
+        modifier = chartModifier,
+        xLabels = dataList.fastMap { it.label },
         yAxisConfig = createStackedHorizontalAxisConfig(maxTotal),
         config = scaffoldConfig,
         orientation = ChartOrientation.HORIZONTAL,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: "Stacked horizontal bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
 
         drawStackedHorizontalBars(
@@ -132,5 +136,7 @@ fun StackedHorizontalBarChart(
 
         drawStackedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
         drawStackedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }

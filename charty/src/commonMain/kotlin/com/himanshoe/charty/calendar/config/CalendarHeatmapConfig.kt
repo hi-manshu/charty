@@ -18,6 +18,17 @@ private val MONTH_ABBREVS = arrayOf(
 internal fun calendarMonthName(month: Int): String =
     if (month in 1..12) MONTH_ABBREVS[month - 1] else ""
 
+private val DEFAULT_INTENSITY_COLOR_1 = Color(0xFF9BE9A8)
+private val DEFAULT_INTENSITY_COLOR_2 = Color(0xFF40C463)
+private val DEFAULT_INTENSITY_COLOR_3 = Color(0xFF30A14E)
+private val DEFAULT_INTENSITY_COLOR_4 = Color(0xFF216E39)
+private val DEFAULT_EMPTY_COLOR = Color(0xFFEBEDF0)
+private val DEFAULT_LABEL_COLOR = Color(0xFF57606A)
+private const val DEFAULT_CELL_CORNER_RADIUS = 2f
+private const val DEFAULT_CELL_SIZE_DP = 14
+private const val DEFAULT_CELL_SPACING_DP = 2
+private const val DEFAULT_LABEL_FONT_SIZE_SP = 10
+
 /**
  * Controls which day of the week the calendar grid columns start from.
  */
@@ -62,22 +73,22 @@ enum class WeekStartDay {
  */
 data class CalendarHeatmapConfig(
     val intensityColors: List<Color> = listOf(
-        Color(0xFF9BE9A8),
-        Color(0xFF40C463),
-        Color(0xFF30A14E),
-        Color(0xFF216E39),
+        DEFAULT_INTENSITY_COLOR_1,
+        DEFAULT_INTENSITY_COLOR_2,
+        DEFAULT_INTENSITY_COLOR_3,
+        DEFAULT_INTENSITY_COLOR_4,
     ),
-    val emptyColor: Color = Color(0xFFEBEDF0),
-    val cellShape: CellShape = CellShape.RoundedSquare(cornerRadius = 2f),
-    val cellSize: Dp = 14.dp,
-    val cellSpacing: Dp = 2.dp,
+    val emptyColor: Color = DEFAULT_EMPTY_COLOR,
+    val cellShape: CellShape = CellShape.RoundedSquare(cornerRadius = DEFAULT_CELL_CORNER_RADIUS),
+    val cellSize: Dp = DEFAULT_CELL_SIZE_DP.dp,
+    val cellSpacing: Dp = DEFAULT_CELL_SPACING_DP.dp,
     val showMonthLabels: Boolean = true,
     val showDayLabels: Boolean = true,
     val weekStartDay: WeekStartDay = WeekStartDay.SUNDAY,
     val labelTextStyle: TextStyle = TextStyle(
-        fontSize = 10.sp,
+        fontSize = DEFAULT_LABEL_FONT_SIZE_SP.sp,
         fontWeight = FontWeight.Normal,
-        color = Color(0xFF57606A),
+        color = DEFAULT_LABEL_COLOR,
     ),
     val animation: Animation = Animation.Default,
     val tooltipConfig: TooltipConfig = TooltipConfig(),

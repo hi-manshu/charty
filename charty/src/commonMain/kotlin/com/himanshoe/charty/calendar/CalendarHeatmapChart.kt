@@ -14,14 +14,17 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
 import com.himanshoe.charty.calendar.config.WeekStartDay
 import com.himanshoe.charty.calendar.data.CalendarData
+import com.himanshoe.charty.calendar.internal.GridLayout
 import com.himanshoe.charty.calendar.internal.computeGridLayout
 import com.himanshoe.charty.calendar.internal.drawCalendarGrid
 import com.himanshoe.charty.calendar.internal.drawDayLabels
@@ -30,6 +33,34 @@ import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+
+private data class CalendarDrawParams(
+    val config: CalendarHeatmapConfig,
+    val gridLayout: GridLayout,
+    val measuredMonthLabels: Map<String, TextLayoutResult>,
+    val measuredDayLabelRows: List<Pair<Int, TextLayoutResult>>,
+    val leftPadding: Float,
+    val topPadding: Float,
+    val cellSizePx: Float,
+    val cellStridePx: Float,
+    val maxValue: Float,
+    val animationProgress: Float,
+    val cellBounds: MutableList<Pair<Rect, CalendarData>>,
+    val tooltipState: TooltipState?,
+    val textMeasurer: TextMeasurer,
+)
+
+private const val DAY_LABEL_RIGHT_GAP = 8f
+private const val MONTH_LABEL_BOTTOM_GAP = 4f
+private const val DAYS_PER_WEEK = 7
+
+// Day-of-week row indices for Mon/Wed/Fri labels (Sunday-start grid vs Monday-start grid)
+private const val DOW_MON_SUNDAY_START = 1
+private const val DOW_WED_SUNDAY_START = 3
+private const val DOW_FRI_SUNDAY_START = 5
+private const val DOW_MON_MONDAY_START = 0
+private const val DOW_WED_MONDAY_START = 2
+private const val DOW_FRI_MONDAY_START = 4
 
 /**
  * A GitHub-style contribution calendar heatmap chart.
@@ -84,44 +115,15 @@ fun CalendarHeatmapChart(
     val gridLayout = remember(dataList, config.weekStartDay, visibleWeeks) {
         computeGridLayout(dataList, config.weekStartDay, visibleWeeks)
     }
-
-    val maxValue = remember(dataList) {
-        dataList.maxOfOrNull { it.value }?.coerceAtLeast(1f) ?: 1f
-    }
-
+    val maxValue = remember(dataList) { dataList.maxOfOrNull { it.value }?.coerceAtLeast(1f) ?: 1f }
     val animationProgress = rememberChartAnimation(config.animation)
 
-    // rememberUpdatedState ensures the pointerInput coroutine (which is never restarted
-    // because its key is Unit) always reads the latest config and callback values.
+    // rememberUpdatedState ensures the pointerInput coroutine always reads the latest values.
     val currentConfig by rememberUpdatedState(config)
     val currentOnDayClick by rememberUpdatedState(onDayClick)
 
-    // Pre-measure month labels once per style/data change so the draw path is allocation-free.
-    val measuredMonthLabels: Map<String, TextLayoutResult> = remember(
-        config.showMonthLabels,
-        config.labelTextStyle,
-        gridLayout.monthBoundaries,
-    ) {
-        if (!config.showMonthLabels) return@remember emptyMap()
-        gridLayout.monthBoundaries.associate { (_, label) ->
-            label to textMeasurer.measure(label, config.labelTextStyle)
-        }
-    }
-
-    // Pre-measure day-of-week labels (Mon, Wed, Fri) including their grid row index.
-    val measuredDayLabelRows: List<Pair<Int, TextLayoutResult>> = remember(
-        config.showDayLabels,
-        config.weekStartDay,
-        config.labelTextStyle,
-    ) {
-        if (!config.showDayLabels) return@remember emptyList()
-        val rows = if (config.weekStartDay == WeekStartDay.SUNDAY) {
-            listOf(1 to "Mon", 3 to "Wed", 5 to "Fri")
-        } else {
-            listOf(0 to "Mon", 2 to "Wed", 4 to "Fri")
-        }
-        rows.map { (dayIndex, label) -> dayIndex to textMeasurer.measure(label, config.labelTextStyle) }
-    }
+    val measuredMonthLabels = rememberMeasuredMonthLabels(config, gridLayout, textMeasurer)
+    val measuredDayLabelRows = rememberMeasuredDayLabelRows(config, textMeasurer)
 
     val cellSizePx = remember(config.cellSize, density) { with(density) { config.cellSize.toPx() } }
     val cellStridePx = remember(config.cellSize, config.cellSpacing, density) {
@@ -129,12 +131,12 @@ fun CalendarHeatmapChart(
     }
 
     val leftPadding = measuredDayLabelRows.maxOfOrNull { (_, r) -> r.size.width }
-        ?.let { it + 8f } ?: 0f
+        ?.let { it + DAY_LABEL_RIGHT_GAP } ?: 0f
     val topPadding = measuredMonthLabels.values.firstOrNull()?.size?.height
-        ?.let { it + 4f } ?: 0f
+        ?.let { it + MONTH_LABEL_BOTTOM_GAP } ?: 0f
 
     val canvasWidth = leftPadding + gridLayout.totalWeeks * cellStridePx
-    val canvasHeight = topPadding + 7 * cellStridePx
+    val canvasHeight = topPadding + DAYS_PER_WEEK * cellStridePx
 
     val cellBounds = remember { mutableListOf<Pair<Rect, CalendarData>>() }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
@@ -168,47 +170,94 @@ fun CalendarHeatmapChart(
                     }
                 },
         ) {
-            if (config.showMonthLabels) {
-                drawMonthLabels(
-                    monthBoundaries = gridLayout.monthBoundaries,
-                    measuredLabels = measuredMonthLabels,
+            drawCalendarContent(
+                CalendarDrawParams(
+                    config = config,
+                    gridLayout = gridLayout,
+                    measuredMonthLabels = measuredMonthLabels,
+                    measuredDayLabelRows = measuredDayLabelRows,
                     leftPadding = leftPadding,
                     topPadding = topPadding,
+                    cellSizePx = cellSizePx,
                     cellStridePx = cellStridePx,
-                )
-            }
-
-            if (config.showDayLabels) {
-                drawDayLabels(
-                    dayLabelRows = measuredDayLabelRows,
-                    topPadding = topPadding,
-                    leftPadding = leftPadding,
-                    cellStridePx = cellStridePx,
-                )
-            }
-
-            drawCalendarGrid(
-                gridLayout = gridLayout,
-                config = config,
-                maxValue = maxValue,
-                leftPadding = leftPadding,
-                topPadding = topPadding,
-                cellSizePx = cellSizePx,
-                cellStridePx = cellStridePx,
-                animationProgress = animationProgress.value,
-                cellBoundsOutput = cellBounds,
-            )
-
-            tooltipState?.let { ts ->
-                drawTooltip(
-                    tooltipState = ts,
-                    config = config.tooltipConfig,
+                    maxValue = maxValue,
+                    animationProgress = animationProgress.value,
+                    cellBounds = cellBounds,
+                    tooltipState = tooltipState,
                     textMeasurer = textMeasurer,
-                    chartWidth = size.width,
-                    chartTop = topPadding,
-                    chartBottom = size.height,
                 )
-            }
+            )
         }
+    }
+}
+
+@Composable
+private fun rememberMeasuredMonthLabels(
+    config: CalendarHeatmapConfig,
+    gridLayout: GridLayout,
+    textMeasurer: TextMeasurer,
+): Map<String, TextLayoutResult> {
+    return remember(config.showMonthLabels, config.labelTextStyle, gridLayout.monthBoundaries) {
+        if (!config.showMonthLabels) return@remember emptyMap()
+        gridLayout.monthBoundaries.associate { (_, label) ->
+            label to textMeasurer.measure(label, config.labelTextStyle)
+        }
+    }
+}
+
+@Composable
+private fun rememberMeasuredDayLabelRows(
+    config: CalendarHeatmapConfig,
+    textMeasurer: TextMeasurer,
+): List<Pair<Int, TextLayoutResult>> {
+    return remember(config.showDayLabels, config.weekStartDay, config.labelTextStyle) {
+        if (!config.showDayLabels) return@remember emptyList()
+        val rows = if (config.weekStartDay == WeekStartDay.SUNDAY) {
+            listOf(DOW_MON_SUNDAY_START to "Mon", DOW_WED_SUNDAY_START to "Wed", DOW_FRI_SUNDAY_START to "Fri")
+        } else {
+            listOf(DOW_MON_MONDAY_START to "Mon", DOW_WED_MONDAY_START to "Wed", DOW_FRI_MONDAY_START to "Fri")
+        }
+        rows.map { (dayIndex, label) -> dayIndex to textMeasurer.measure(label, config.labelTextStyle) }
+    }
+}
+
+private fun DrawScope.drawCalendarContent(params: CalendarDrawParams) {
+    if (params.config.showMonthLabels) {
+        drawMonthLabels(
+            monthBoundaries = params.gridLayout.monthBoundaries,
+            measuredLabels = params.measuredMonthLabels,
+            leftPadding = params.leftPadding,
+            topPadding = params.topPadding,
+            cellStridePx = params.cellStridePx,
+        )
+    }
+    if (params.config.showDayLabels) {
+        drawDayLabels(
+            dayLabelRows = params.measuredDayLabelRows,
+            topPadding = params.topPadding,
+            leftPadding = params.leftPadding,
+            cellStridePx = params.cellStridePx,
+        )
+    }
+    drawCalendarGrid(
+        gridLayout = params.gridLayout,
+        config = params.config,
+        maxValue = params.maxValue,
+        leftPadding = params.leftPadding,
+        topPadding = params.topPadding,
+        cellSizePx = params.cellSizePx,
+        cellStridePx = params.cellStridePx,
+        animationProgress = params.animationProgress,
+        cellBoundsOutput = params.cellBounds,
+    )
+    params.tooltipState?.let { ts ->
+        drawTooltip(
+            tooltipState = ts,
+            config = params.config.tooltipConfig,
+            textMeasurer = params.textMeasurer,
+            chartWidth = size.width,
+            chartTop = params.topPadding,
+            chartBottom = size.height,
+        )
     }
 }

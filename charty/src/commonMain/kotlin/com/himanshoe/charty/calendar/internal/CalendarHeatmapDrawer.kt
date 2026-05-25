@@ -13,6 +13,8 @@ import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
 import com.himanshoe.charty.calendar.config.CellShape
 import com.himanshoe.charty.calendar.data.CalendarData
 
+private const val DAY_LABEL_END_GAP = 4f
+
 /**
  * Draws the month abbreviation labels along the top of the calendar grid.
  *
@@ -58,7 +60,7 @@ internal fun DrawScope.drawDayLabels(
     cellStridePx: Float,
 ) {
     for ((dayIndex, measured) in dayLabelRows) {
-        val x = leftPadding - measured.size.width - 4f
+        val x = leftPadding - measured.size.width - DAY_LABEL_END_GAP
         val y = topPadding + dayIndex * cellStridePx + (cellStridePx - measured.size.height) / 2f
         drawText(textLayoutResult = measured, topLeft = Offset(x.coerceAtLeast(0f), y))
     }

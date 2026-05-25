@@ -20,33 +20,24 @@ import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonReferenceL
 import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonChartValues
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
+import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
  * A composable function that displays a comparison bar chart.
  *
- * A comparison bar chart, also known as a grouped bar chart, displays multiple data series side-by-side for each category.
- * It is ideal for comparing sub-categories or multiple metrics within each main category.
- *
- * @param data A lambda function that returns a list of [BarGroup], where each group contains multiple values to be compared.
+ * @param data A lambda function that returns a list of [BarGroup].
  * @param modifier The modifier to be applied to the chart.
- * @param comparisonConfig The configuration for the comparison bar chart, such as the mode for drawing negative values, defined by a [ComparisonBarChartConfig].
- * @param scaffoldConfig The configuration for the chart's scaffold, including axes and labels, defined by a [ChartScaffoldConfig].
- * @param onBarClick A lambda function to be invoked when a bar segment is clicked, providing the corresponding [ComparisonBarSegment].
- *
- * ComparisonBarChart(
- *     data = {
- *         listOf(
- *             BarGroup("Q1", listOf(45f, 52f)),
- *             BarGroup("Q2", listOf(58f, 63f)),
- *             BarGroup("Q3", listOf(72f, 68f))
- *         )
- *     },
- *     colors = ChartyColor.Gradient(
- *         listOf(Color(0xFFE91E63), Color(0xFF2196F3))
- *     )
- * )
+ * @param comparisonConfig The configuration for the comparison bar chart.
+ * @param scaffoldConfig The configuration for the chart's scaffold.
+ * @param onBarClick A lambda function invoked when a bar segment is clicked.
+ * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -56,16 +47,26 @@ fun ComparisonBarChart(
     comparisonConfig: ComparisonBarChartConfig = ComparisonBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((ComparisonBarSegment) -> Unit)? = null,
+    interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
+    val fullDataList = remember(data) { data() }
+    require(fullDataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
+
+    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberComparisonChartValues(dataList)
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val tooltipManager = rememberTooltipManager<Rect, ComparisonBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartModifier = createComparisonChartModifier(
+    syncInteractionDataSizes(
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
+    )
+
+    val clickModifier = createComparisonChartModifier(
         modifier = modifier,
         onBarClick = onBarClick,
         dataList = dataList,
@@ -74,12 +75,22 @@ fun ComparisonBarChart(
         onTooltipUpdate = tooltipManager::updateTooltip,
     )
 
+    val chartModifier = buildInteractionModifier(
+        base = clickModifier,
+        interactionConfig = interactionConfig,
+        dataList = dataList,
+    )
+
     ChartScaffold(
         modifier = chartModifier,
         xLabels = dataList.getLabels(),
         yAxisConfig = createComparisonAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
+        contentDescription = interactionConfig.accessibilityDescription
+            ?: "Comparison bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
+        updateInteractionBounds(interactionConfig, chartContext)
+
         tooltipManager.clearBounds()
         val baselineY = calculateComparisonBaselineY(minValue, isBelowAxisMode, chartContext)
 
@@ -96,5 +107,7 @@ fun ComparisonBarChart(
 
         drawComparisonReferenceLineIfNeeded(comparisonConfig, chartContext, textMeasurer)
         drawComparisonTooltipIfNeeded(tooltipManager.tooltipState, comparisonConfig, textMeasurer, chartContext)
+
+        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
     }
 }
