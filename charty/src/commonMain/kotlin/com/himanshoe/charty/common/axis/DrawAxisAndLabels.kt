@@ -29,6 +29,8 @@ internal fun DrawAxisAndLabels(
     config: ChartScaffoldConfig,
     orientation: ChartOrientation,
     leftLabelRotation: LabelRotation,
+    leftPadding: Float,
+    rightPadding: Float,
     secondaryYAxisConfig: AxisConfig? = null,
 ) {
     val textMeasurer = rememberTextMeasurer()
@@ -44,6 +46,8 @@ internal fun DrawAxisAndLabels(
                     textMeasurer = textMeasurer,
                     labelStyle = labelStyle,
                     leftLabelRotation = leftLabelRotation,
+                    leftPadding = leftPadding,
+                    rightPadding = rightPadding,
                     secondaryYAxisConfig = secondaryYAxisConfig,
                 )
 

@@ -11,10 +11,6 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
-private const val VERTICAL_CHART_LEFT_PADDING_WITH_LABELS = 60f
-private const val VERTICAL_CHART_LEFT_PADDING_WITHOUT_LABELS = 20f
-private const val VERTICAL_CHART_RIGHT_PADDING = 20f
-private const val VERTICAL_CHART_RIGHT_PADDING_WITH_SECONDARY = 60f
 private const val VERTICAL_CHART_TOP_PADDING = 20f
 private const val VERTICAL_CHART_BOTTOM_PADDING_WITH_LABELS = 50f
 private const val VERTICAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS = 20f
@@ -44,20 +40,11 @@ private data class ChartBounds(
 
 private fun calculateVerticalChartBounds(
     size: androidx.compose.ui.geometry.Size,
+    leftPadding: Float,
+    rightPadding: Float,
     showLabels: Boolean,
     hasXLabels: Boolean,
-    hasSecondaryAxis: Boolean = false,
 ): ChartBounds {
-    val leftPadding =
-        if (showLabels) VERTICAL_CHART_LEFT_PADDING_WITH_LABELS else VERTICAL_CHART_LEFT_PADDING_WITHOUT_LABELS
-    val rightPadding =
-        if (hasSecondaryAxis &&
-            showLabels
-        ) {
-            VERTICAL_CHART_RIGHT_PADDING_WITH_SECONDARY
-        } else {
-            VERTICAL_CHART_RIGHT_PADDING
-        }
     val topPadding = VERTICAL_CHART_TOP_PADDING
     val bottomPadding =
         if (showLabels && hasXLabels) {
@@ -119,14 +106,17 @@ internal fun DrawScope.drawVerticalChartAxes(
     textMeasurer: TextMeasurer,
     labelStyle: TextStyle,
     leftLabelRotation: LabelRotation,
+    leftPadding: Float,
+    rightPadding: Float,
     secondaryYAxisConfig: AxisConfig? = null,
 ) {
     val bounds =
         calculateVerticalChartBounds(
             size = size,
+            leftPadding = leftPadding,
+            rightPadding = rightPadding,
             showLabels = config.showLabels,
             hasXLabels = xLabels.isNotEmpty(),
-            hasSecondaryAxis = secondaryYAxisConfig != null,
         )
     val valueRange = yAxisConfig.maxValue - yAxisConfig.minValue
     val steps = yAxisConfig.steps.coerceAtLeast(MIN_STEPS)

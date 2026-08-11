@@ -4,20 +4,21 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.DrawAxisAndLabels
 import com.himanshoe.charty.common.axis.LabelRotation
+import com.himanshoe.charty.common.axis.measureAxisGutter
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
-private const val VERTICAL_LEFT_PADDING_WITH_LABELS = 60f
 private const val HORIZONTAL_LEFT_PADDING_WITH_LABELS = 100f
 private const val LEFT_PADDING_WITHOUT_LABELS = 20f
 private const val RIGHT_PADDING = 20f
-private const val RIGHT_PADDING_WITH_SECONDARY = 60f
 private const val TOP_PADDING = 20f
 private const val BOTTOM_PADDING_WITH_LABELS = 50f
 private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
@@ -58,6 +59,34 @@ fun ChartScaffold(
         } else {
             Modifier
         }
+    val textMeasurer = rememberTextMeasurer()
+    val leftPadding =
+        remember(yAxisConfig, config.showLabels, config.labelTextStyle, orientation) {
+            when {
+                orientation == ChartOrientation.HORIZONTAL ->
+                    if (config.showLabels) HORIZONTAL_LEFT_PADDING_WITH_LABELS else LEFT_PADDING_WITHOUT_LABELS
+
+                else ->
+                    measureAxisGutter(
+                        axisConfig = yAxisConfig,
+                        textMeasurer = textMeasurer,
+                        labelStyle = config.labelTextStyle,
+                        showLabels = config.showLabels,
+                    )
+            }
+        }
+    val rightPadding =
+        remember(secondaryYAxisConfig, config.showLabels, config.labelTextStyle) {
+            secondaryYAxisConfig?.let {
+                measureAxisGutter(
+                    axisConfig = it,
+                    textMeasurer = textMeasurer,
+                    labelStyle = config.labelTextStyle,
+                    showLabels = config.showLabels,
+                )
+            } ?: RIGHT_PADDING
+        }
+
     Box(modifier = modifier.then(accessibilityModifier)) {
         DrawAxisAndLabels(
             xLabels = xLabels,
@@ -65,18 +94,12 @@ fun ChartScaffold(
             config = config,
             orientation = orientation,
             leftLabelRotation = leftLabelRotation,
+            leftPadding = leftPadding,
+            rightPadding = rightPadding,
             secondaryYAxisConfig = secondaryYAxisConfig,
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val leftPadding =
-                when {
-                    !config.showLabels -> LEFT_PADDING_WITHOUT_LABELS
-                    orientation == ChartOrientation.HORIZONTAL -> HORIZONTAL_LEFT_PADDING_WITH_LABELS
-                    else -> VERTICAL_LEFT_PADDING_WITH_LABELS
-                }
-            val rightPadding =
-                if (secondaryYAxisConfig != null && config.showLabels) RIGHT_PADDING_WITH_SECONDARY else RIGHT_PADDING
             val bottomPadding =
                 if (config.showLabels && xLabels.isNotEmpty()) {
                     BOTTOM_PADDING_WITH_LABELS
