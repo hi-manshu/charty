@@ -1,17 +1,17 @@
 [versions]
-agp = "9.1.0"
+agp = "9.2.0"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
 androidx-activity = "1.12.0"
 androidx-lifecycle = "2.9.6"
-composeHotReload = "1.0.0"
+composeHotReload = "1.1.1"
 composeMultiplatform = "1.11.1"
 detekt = "1.23.8"
-dokka = "2.1.0"
+dokka = "2.2.0"
 kotlin = "2.4.0"
-kotlinx-coroutines = "1.10.2"
-ktlint = "14.0.1"
+kotlinx-coroutines = "1.11.0"
+ktlint = "14.2.0"
 mavenPublish = "0.30.0"
 
 [libraries]

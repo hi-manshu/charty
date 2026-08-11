@@ -85,16 +85,10 @@ android {
     }
 }
 
-tasks.dokkaHtml.configure {
-    outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+dokka {
     moduleName.set("charty")
-
-    dokkaSourceSets.configureEach {
-        when (name) {
-            "commonMain" -> {
-                sourceRoots.from(file("src/commonMain/kotlin"))
-            }
-        }
+    dokkaPublications.html {
+        outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
     }
 }
 
