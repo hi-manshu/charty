@@ -46,6 +46,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data Lambda returning the list of [BarGroup] to display. Each group becomes one bar row.
  * @param modifier Modifier applied to the chart container.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param colors Colour palette for segments.
  * @param config Appearance and behaviour settings — bar thickness, corner radius, animation,
  *   and tooltip configuration.
@@ -59,6 +61,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun NormalizedHorizontalBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     colors: ChartyColor = ChartyColors.DefaultGradient,
     config: NormalizedHorizontalBarChartConfig = NormalizedHorizontalBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -68,7 +71,7 @@ fun NormalizedHorizontalBarChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }

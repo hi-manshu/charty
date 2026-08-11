@@ -84,6 +84,8 @@ private data class ComboDrawParams(
  * @param data A lambda function that returns a list of [ComboChartData], each containing a bar
  *   value and a line value.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param barColor The color or color scheme for the bars, defined by a [ChartyColor].
  * @param lineColor The color or color scheme for the line and its points, defined by a [ChartyColor].
  * @param comboConfig The configuration for the combo chart's appearance and behavior, defined by a
@@ -123,6 +125,7 @@ private data class ComboDrawParams(
 fun ComboChart(
     data: () -> List<ComboChartData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     barColor: ChartyColor = ChartyColor.Solid(Color(ComboChartConstants.DEFAULT_BAR_COLOR)),
     lineColor: ChartyColor = ChartyColor.Solid(Color(ComboChartConstants.DEFAULT_LINE_COLOR)),
     comboConfig: ComboChartConfig = ComboChartConfig(),
@@ -133,7 +136,7 @@ fun ComboChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

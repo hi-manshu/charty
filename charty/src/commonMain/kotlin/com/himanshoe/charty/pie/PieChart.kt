@@ -146,6 +146,8 @@ private data class PieSliceDrawParams(
  *
  * @param data Lambda returning list of pie slice data
  * @param modifier Modifier for the chart
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color Color configuration - Solid or Gradient for slice colors
  * @param config Comprehensive configuration for chart appearance and behavior
  * @param onSliceClick Callback invoked when a slice is clicked (receives PieData and index)
@@ -156,6 +158,7 @@ private data class PieSliceDrawParams(
 fun PieChart(
     data: () -> List<PieData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     config: PieChartConfig = PieChartConfig(),
     onSliceClick: ((PieData, Int) -> Unit)? = null,
@@ -164,7 +167,7 @@ fun PieChart(
 ) {
     val dataList = remember(data) { data() }
     if (dataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     val chartDescription =

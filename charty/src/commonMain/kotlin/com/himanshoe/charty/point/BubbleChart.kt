@@ -43,6 +43,8 @@ import com.himanshoe.charty.point.data.BubbleData
  *
  * @param data A lambda function that returns a list of [BubbleData] to be displayed.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color The color or color scheme for the bubbles.
  * @param config The configuration for the bubbles' appearance.
  * @param scaffoldConfig The configuration for the chart's scaffold.
@@ -67,6 +69,7 @@ import com.himanshoe.charty.point.data.BubbleData
 fun BubbleChart(
     data: () -> List<BubbleData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     config: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -77,7 +80,7 @@ fun BubbleChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     require(minBubbleRadius > 0f) { "Minimum bubble radius must be positive" }

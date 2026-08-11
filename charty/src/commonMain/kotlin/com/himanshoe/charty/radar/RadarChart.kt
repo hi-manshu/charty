@@ -55,6 +55,8 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  * @param data A lambda function that returns a list of [RadarDataSet] to be displayed. All sets
  *   must have the same number of axes.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param config The configuration for the radar chart's appearance, defined by a [RadarChartConfig].
  * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
  * @param onAxisClick Invoked with the [RadarAxisData] and index of the axis nearest the tap (a tap
@@ -93,13 +95,14 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
 fun RadarChart(
     data: () -> List<RadarDataSet>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     config: RadarChartConfig = RadarChartConfig(),
     accessibilityDescription: String? = null,
     onAxisClick: ((axis: RadarAxisData, index: Int) -> Unit)? = null,
 ) {
     val dataSets = remember(data) { data() }
     if (dataSets.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

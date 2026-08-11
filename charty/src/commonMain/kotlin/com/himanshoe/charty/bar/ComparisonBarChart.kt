@@ -55,6 +55,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data A lambda function that returns a list of [BarGroup].
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param comparisonConfig The configuration for the comparison bar chart.
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param onBarClick A lambda function invoked when a bar segment is clicked.
@@ -66,6 +68,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun ComparisonBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     comparisonConfig: ComparisonBarChartConfig = ComparisonBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((ComparisonBarSegment) -> Unit)? = null,
@@ -74,7 +77,7 @@ fun ComparisonBarChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each comparison group must have at least one value" }

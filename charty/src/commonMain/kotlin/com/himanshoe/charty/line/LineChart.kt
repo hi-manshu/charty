@@ -70,6 +70,8 @@ import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
  *
  * @param data A lambda returning the list of [LineData] points to display.
  * @param modifier Modifier applied to the chart composable.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color The line and point colour defined by [ChartyColor].
  * @param lineConfig Appearance and behaviour configuration for the line.
  * @param scaffoldConfig Axes and label configuration for the chart scaffold.
@@ -95,6 +97,7 @@ import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
 fun LineChart(
     data: () -> List<LineData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -105,7 +108,7 @@ fun LineChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

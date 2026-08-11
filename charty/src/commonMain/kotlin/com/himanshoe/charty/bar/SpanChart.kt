@@ -57,6 +57,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data Lambda returning list of span data to display
  * @param modifier Modifier for the chart
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param colors Color configuration
  * @param barConfig Configuration for span bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
@@ -69,6 +71,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun SpanChart(
     data: () -> List<SpanData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     colors: ChartyColor =
         ChartyColor.Gradient(
             listOf(
@@ -85,7 +88,7 @@ fun SpanChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

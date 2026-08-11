@@ -34,6 +34,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +86,8 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.theme.ChartyTheme
+import com.himanshoe.charty.common.theme.ChartyThemeProvider
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.PillTooltip
 import com.himanshoe.charty.line.AreaChart
@@ -133,14 +137,35 @@ private val galleryDemos: List<ChartDemo> = buildGalleryDemos()
  */
 @Composable
 fun App(modifier: Modifier = Modifier) {
-    MaterialTheme {
-        var selected by remember { mutableStateOf<ChartDemo?>(null) }
-        var showAll by remember { mutableStateOf(false) }
-        Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            when {
-                showAll -> AllChartsScreen(onBack = { showAll = false })
-                selected != null -> ChartDetailScreen(demo = selected!!, onBack = { selected = null })
-                else -> GalleryHomeScreen(onOpenAll = { showAll = true }, onOpen = { selected = it })
+    var darkMode by remember { mutableStateOf(false) }
+    val colorScheme =
+        if (darkMode) {
+            darkColorScheme()
+        } else {
+            lightColorScheme()
+        }
+    val chartyTheme =
+        if (darkMode) {
+            ChartyTheme.dark()
+        } else {
+            ChartyTheme.light()
+        }
+    MaterialTheme(colorScheme = colorScheme) {
+        ChartyThemeProvider(theme = chartyTheme) {
+            var selected by remember { mutableStateOf<ChartDemo?>(null) }
+            var showAll by remember { mutableStateOf(false) }
+            Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                when {
+                    showAll -> AllChartsScreen(onBack = { showAll = false })
+                    selected != null -> ChartDetailScreen(demo = selected!!, onBack = { selected = null })
+                    else ->
+                        GalleryHomeScreen(
+                            darkMode = darkMode,
+                            onToggleDark = { darkMode = !darkMode },
+                            onOpenAll = { showAll = true },
+                            onOpen = { selected = it },
+                        )
+                }
             }
         }
     }
@@ -156,6 +181,8 @@ private fun AllChartsScreen(onBack: () -> Unit) {
 
 @Composable
 private fun GalleryHomeScreen(
+    darkMode: Boolean,
+    onToggleDark: () -> Unit,
     onOpenAll: () -> Unit,
     onOpen: (ChartDemo) -> Unit,
 ) {
@@ -164,7 +191,7 @@ private fun GalleryHomeScreen(
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { GalleryHeader() }
+        item { GalleryHeader(darkMode = darkMode, onToggleDark = onToggleDark) }
         item { AllChartsBanner(onClick = onOpenAll) }
         val grouped = galleryDemos.groupBy { it.category }
         grouped.forEach { (category, demos) ->
@@ -186,18 +213,40 @@ private fun GalleryHomeScreen(
 }
 
 @Composable
-private fun GalleryHeader() {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+private fun GalleryHeader(
+    darkMode: Boolean,
+    onToggleDark: () -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Charty",
+                fontSize = 34.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = "A gallery of every chart. Tap one to open it full-screen.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Text(
-            text = "Charty",
-            fontSize = 34.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = "A gallery of every chart. Tap one to open it full-screen.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text =
+                if (darkMode) {
+                    "☀︎ Light"
+                } else {
+                    "☾ Dark"
+                },
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable(onClick = onToggleDark)
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
         )
     }
 }
@@ -489,6 +538,21 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             blue,
             listOf(
                 ChartVariant("Default") { BarChart(data = { bars }, modifier = chartFill) },
+                ChartVariant("Empty data (built-in placeholder)") {
+                    BarChart(data = { emptyList() }, modifier = chartFill)
+                },
+                ChartVariant("Empty data (custom placeholder)") {
+                    BarChart(
+                        data = { emptyList() },
+                        emptyContent = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "📭", fontSize = 40.sp)
+                                Text(text = "Nothing to show yet", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        },
+                        modifier = chartFill,
+                    )
+                },
                 ChartVariant("Gradient bars") { BarChart(data = { bars }, color = blueGradient, modifier = chartFill) },
                 ChartVariant("Extra-rounded corners") {
                     BarChart(

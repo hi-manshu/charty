@@ -253,6 +253,8 @@ private fun DrawScope.drawTooltipHighlight(
  *
  * @param data A lambda function that returns a list of [PointData] to be displayed.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color The color or color scheme for the points.
  * @param pointConfig The configuration for the points' appearance and behavior.
  * @param scaffoldConfig The configuration for the chart's scaffold.
@@ -276,6 +278,7 @@ private fun DrawScope.drawTooltipHighlight(
 fun PointChart(
     data: () -> List<PointData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     pointConfig: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -286,7 +289,7 @@ fun PointChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

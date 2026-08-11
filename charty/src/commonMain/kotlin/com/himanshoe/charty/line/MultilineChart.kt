@@ -94,6 +94,8 @@ private data class MultilineDrawParams(
  *
  * @param data A lambda function that returns a list of [LineGroup].
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param colors The color or color scheme for the lines.
  * @param lineConfig The configuration for the lines' appearance and behavior.
  * @param scaffoldConfig The configuration for the chart's scaffold.
@@ -107,6 +109,7 @@ private data class MultilineDrawParams(
 fun MultilineChart(
     data: () -> List<LineGroup>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     colors: ChartyColor = ChartyColors.DefaultMultiline,
     lineConfig: LineChartConfig = LineChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -116,7 +119,7 @@ fun MultilineChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

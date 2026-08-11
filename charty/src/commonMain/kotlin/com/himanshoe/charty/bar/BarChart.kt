@@ -74,6 +74,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data A lambda returning the list of [BarData] points to display.
  * @param modifier Modifier applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color Color or gradient for the bars, defined by a [ChartyColor].
  * @param barConfig Appearance and behaviour configuration — width fraction, corner radius,
  *   animation, negative-value mode, data labels, tooltip, and reference line.
@@ -87,6 +89,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun BarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -96,7 +99,7 @@ fun BarChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

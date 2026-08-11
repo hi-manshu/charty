@@ -94,6 +94,8 @@ private const val CLICK_TOLERANCE_MULTIPLIER = 2f
  *
  * @param dataSets A lambda function that provides the datasets to be rendered.
  * @param modifier The modifier to be applied to the composable root.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param config The visual and behavioral configuration for the chart, defined by a [MultipleRadarChartConfig].
  * @param onDataSetClick An optional callback that is invoked when a dataset entry is clicked.
  * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
@@ -102,13 +104,14 @@ private const val CLICK_TOLERANCE_MULTIPLIER = 2f
 fun MultipleRadarChart(
     dataSets: () -> List<RadarDataSet>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     config: MultipleRadarChartConfig = MultipleRadarChartConfig(),
     onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)? = null,
     accessibilityDescription: String? = null,
 ) {
     val dataSetsList = remember(dataSets) { dataSets() }
     if (dataSetsList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

@@ -54,6 +54,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color The color or color scheme for the bubbles.
  * @param bubbleConfig The configuration for the bubbles.
  * @param scaffoldConfig The configuration for the chart's scaffold.
@@ -64,6 +66,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun BubbleBarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     bubbleConfig: BubbleBarChartConfig = BubbleBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -72,7 +75,7 @@ fun BubbleBarChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

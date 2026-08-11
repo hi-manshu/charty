@@ -108,6 +108,8 @@ private fun calculateStackedCumulativeValues(dataList: List<LineGroup>): List<Fl
  *
  * @param data A lambda function that returns a list of [LineGroup].
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param colors The color or color scheme for the stacked areas.
  * @param lineConfig The configuration for the lines' appearance and behavior.
  * @param scaffoldConfig The configuration for the chart's scaffold.
@@ -122,6 +124,7 @@ private fun calculateStackedCumulativeValues(dataList: List<LineGroup>): List<Fl
 fun StackedAreaChart(
     data: () -> List<LineGroup>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     colors: ChartyColor =
         ChartyColor.Gradient(
             listOf(
@@ -139,7 +142,7 @@ fun StackedAreaChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }

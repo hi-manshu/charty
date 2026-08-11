@@ -68,8 +68,8 @@ complexity:
     threshold: 130
   LongParameterList:
     active: true
-    functionThreshold: 10
-    constructorThreshold: 10
+    functionThreshold: 11
+    constructorThreshold: 11
   NestedBlockDepth:
     active: true
     threshold: 4

@@ -50,6 +50,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data A lambda function that returns a list of [CandleData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param bullishColor The color for bullish candles.
  * @param bearishColor The color for bearish candles.
  * @param candlestickConfig The configuration for the candlestick's appearance.
@@ -60,6 +62,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun CandlestickChart(
     data: () -> List<CandleData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     bullishColor: ChartyColor = ChartyColor.Solid(Color(CandlestickChartConstants.DEFAULT_BULLISH_COLOR)),
     bearishColor: ChartyColor = ChartyColor.Solid(Color(CandlestickChartConstants.DEFAULT_BEARISH_COLOR)),
     candlestickConfig: CandlestickChartConfig = CandlestickChartConfig(),
@@ -68,7 +71,7 @@ fun CandlestickChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

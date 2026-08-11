@@ -54,6 +54,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data Lambda returning list of bar groups to display
  * @param modifier Modifier for the chart
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param config Configuration for mosaic chart appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param onSegmentClick Optional callback when a segment is clicked
@@ -65,6 +67,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun MosaicBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     config: MosaicBarChartConfig = MosaicBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onSegmentClick: ((MosaicBarSegment) -> Unit)? = null,
@@ -73,7 +76,7 @@ fun MosaicBarChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }

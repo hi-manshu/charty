@@ -84,6 +84,8 @@ private data class WaveDrawContext(
  *
  * @param data Lambda returning list of bar data to display.
  * @param modifier Modifier for the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color Color for the wave lines.
  * @param wavyConfig Configuration for wave appearance and animation.
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels.
@@ -97,6 +99,7 @@ private data class WaveDrawContext(
 fun WavyChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     wavyConfig: WavyChartConfig = WavyChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -106,7 +109,7 @@ fun WavyChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 

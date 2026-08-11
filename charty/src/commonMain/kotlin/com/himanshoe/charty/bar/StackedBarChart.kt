@@ -67,6 +67,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *
  * @param data Lambda returning list of bar groups (each group represents one stacked bar)
  * @param modifier Modifier for the chart
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param colors Color configuration - Gradient assigns different color to each stack segment
  * @param stackedConfig Configuration for stacked bar appearance
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
@@ -79,6 +81,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun StackedBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     colors: ChartyColor = ChartyColors.DefaultGradient,
     stackedConfig: StackedBarChartConfig = StackedBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -88,7 +91,7 @@ fun StackedBarChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }

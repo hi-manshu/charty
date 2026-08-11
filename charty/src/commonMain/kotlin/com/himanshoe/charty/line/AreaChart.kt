@@ -102,6 +102,8 @@ private data class AreaChartDrawParams(
  *
  * @param data A lambda function that returns a list of [LineData] points to be displayed.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color The color or color scheme for the filled area.
  * @param lineConfig The configuration for the line and its points.
  * @param scaffoldConfig The configuration for the chart's scaffold.
@@ -114,6 +116,7 @@ private data class AreaChartDrawParams(
 fun AreaChart(
     data: () -> List<LineData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor =
         ChartyColor.Gradient(
             listOf(
@@ -130,7 +133,7 @@ fun AreaChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
     val fillAlpha = lineConfig.fillAlpha

@@ -55,6 +55,8 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
  *
  * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param colors The color or color scheme for the stems and circles.
  * @param config The configuration for the lollipop chart's appearance.
  * @param scaffoldConfig The configuration for the chart's scaffold.
@@ -67,6 +69,7 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
 fun LollipopBarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     colors: ChartyColor = ChartyColor.Solid(Color(DEFAULT_COLOR_HEX)),
     config: LollipopBarChartConfig = LollipopBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
@@ -76,7 +79,7 @@ fun LollipopBarChart(
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
 
