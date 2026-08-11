@@ -1,5 +1,8 @@
 package com.himanshoe.charty.combo
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +36,7 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
@@ -64,6 +68,7 @@ private data class ComboDrawParams(
     val tooltipState: com.himanshoe.charty.common.tooltip.TooltipState?,
     val textMeasurer: androidx.compose.ui.text.TextMeasurer,
     val interactionConfig: com.himanshoe.charty.common.config.ChartInteractionConfig,
+    val drawCrosshairLabel: Boolean,
 )
 
 /**
@@ -85,6 +90,9 @@ private data class ComboDrawParams(
  * @param onDataClick A lambda function invoked when a data point (bar or line point) is clicked,
  *   providing the corresponding [ComboChartData].
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param crosshairContent An optional composable slot for rendering a custom crosshair label. When
+ *   provided (and a crosshair is configured via [comboConfig]), it replaces the default canvas
+ *   crosshair label and is invoked with the [ComboChartData] under the dragging finger.
  *
  * Example usage:
  * ```kotlin
@@ -119,6 +127,7 @@ fun ComboChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onDataClick: ((ComboChartData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    crosshairContent: (@Composable (ComboChartData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Combo chart data cannot be empty" }
@@ -179,40 +188,68 @@ fun ComboChart(
             dataList = dataList,
         )
 
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.getLabels(),
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = isBelowAxisMode,
-            ),
-        config = scaffoldConfig,
-        contentDescription = chartDescription,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-        dataBounds.clear()
-        drawComboContent(
-            ComboDrawParams(
-                dataList = dataList,
-                chartContext = chartContext,
-                comboConfig = comboConfig,
-                barColor = barColor,
-                lineColor = lineColor,
-                minValue = minValue,
-                isBelowAxisMode = isBelowAxisMode,
-                animationProgress = animationProgress.value,
-                onDataClick = onDataClick,
-                dataBounds = dataBounds,
-                crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
-                crosshairManager = crosshairManager,
-                crosshairState = animatedCrosshairState?.resolve(),
-                tooltipState = tooltipState,
-                textMeasurer = textMeasurer,
-                interactionConfig = interactionConfig,
-            ),
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.getLabels(),
+            yAxisConfig =
+                AxisConfig(
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    steps = 6,
+                    drawAxisAtZero = isBelowAxisMode,
+                ),
+            config = scaffoldConfig,
+            contentDescription = chartDescription,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
+            dataBounds.clear()
+            drawComboContent(
+                ComboDrawParams(
+                    dataList = dataList,
+                    chartContext = chartContext,
+                    comboConfig = comboConfig,
+                    barColor = barColor,
+                    lineColor = lineColor,
+                    minValue = minValue,
+                    isBelowAxisMode = isBelowAxisMode,
+                    animationProgress = animationProgress.value,
+                    onDataClick = onDataClick,
+                    dataBounds = dataBounds,
+                    crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
+                    crosshairManager = crosshairManager,
+                    crosshairState = animatedCrosshairState?.resolve(),
+                    tooltipState = tooltipState,
+                    textMeasurer = textMeasurer,
+                    interactionConfig = interactionConfig,
+                    drawCrosshairLabel = crosshairContent == null,
+                ),
+            )
+        }
+
+        ComboChartOverlays(
+            crosshairManager = crosshairManager,
+            animatedCrosshairState = animatedCrosshairState?.resolve(),
+            comboConfig = comboConfig,
+            crosshairContent = crosshairContent,
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.ComboChartOverlays(
+    crosshairManager: CrosshairManager<ComboChartData>?,
+    animatedCrosshairState: CrosshairState?,
+    comboConfig: ComboChartConfig,
+    crosshairContent: (@Composable (ComboChartData) -> Unit)?,
+) {
+    if (crosshairContent != null && crosshairManager != null) {
+        ChartCrosshairOverlay(
+            item = crosshairManager.selectedItem,
+            state = animatedCrosshairState,
+            config = comboConfig.crosshairConfig?.tooltipConfig ?: comboConfig.tooltipConfig,
+            modifier = Modifier.matchParentSize(),
+            content = crosshairContent,
         )
     }
 }
@@ -272,7 +309,14 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
     drawInteractionOverlays(p.interactionConfig, p.chartContext, p.dataList.size, p.textMeasurer)
     p.crosshairState?.let { state ->
         p.comboConfig.crosshairConfig?.let { config ->
-            drawLineChartCrosshair(state, config, p.chartContext, p.textMeasurer, p.lineColor)
+            drawLineChartCrosshair(
+                state,
+                config,
+                p.chartContext,
+                p.textMeasurer,
+                p.lineColor,
+                drawLabel = p.drawCrosshairLabel,
+            )
         }
     }
 }

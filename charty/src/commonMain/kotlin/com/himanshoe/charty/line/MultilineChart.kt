@@ -1,7 +1,10 @@
 package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +33,7 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
@@ -66,6 +70,7 @@ private data class MultilineDrawParams(
     val tooltipState: TooltipState?,
     val textMeasurer: TextMeasurer,
     val interactionConfig: ChartInteractionConfig,
+    val drawCrosshairLabel: Boolean,
 )
 
 /**
@@ -91,6 +96,9 @@ private data class MultilineDrawParams(
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param onPointClick A lambda function invoked when a point is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param crosshairContent An optional composable slot for rendering a custom crosshair label. When
+ *   provided (and a crosshair is configured via [lineConfig]), it replaces the default canvas
+ *   crosshair label and is invoked with the [MultilinePoint] under the dragging finger.
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -102,6 +110,7 @@ fun MultilineChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onPointClick: ((MultilinePoint) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    crosshairContent: (@Composable (MultilinePoint) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Multiline chart data cannot be empty" }
@@ -145,47 +154,57 @@ fun MultilineChart(
     )
 
     Column(modifier = modifier) {
-        ChartScaffold(
-            modifier =
-                buildMultilineModifier(
-                    base = Modifier.weight(1f),
-                    crosshairManager = crosshairManager,
-                    dataList = dataList,
-                    lineConfig = lineConfig,
-                    pointBounds = pointBounds,
-                    crosshairBounds = crosshairBounds,
-                    onPointClick = onPointClick,
-                    onTooltipStateChange = { state, _ -> tooltipState = state },
-                    interactionConfig = interactionConfig,
-                ),
-            xLabels = dataList.getLabels(),
-            yAxisConfig =
-                AxisConfig(
-                    minValue = minValue,
-                    maxValue = maxValue,
-                    steps = 6,
-                    drawAxisAtZero = isBelowAxisMode,
-                ),
-            config = scaffoldConfig,
-            contentDescription = chartDescription,
-        ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
-            drawMultilineContent(
-                MultilineDrawParams(
-                    dataList = dataList,
-                    chartContext = chartContext,
-                    colorList = colorList,
-                    lineConfig = lineConfig,
-                    animationProgress = animationProgress.value,
-                    pointBounds = pointBounds,
-                    crosshairBounds = crosshairBounds,
-                    onPointClick = onPointClick,
-                    crosshairManager = crosshairManager,
-                    crosshairState = animatedCrosshairState?.resolve(),
-                    tooltipState = tooltipState,
-                    textMeasurer = textMeasurer,
-                    interactionConfig = interactionConfig,
-                ),
+        Box(modifier = Modifier.weight(1f)) {
+            ChartScaffold(
+                modifier =
+                    buildMultilineModifier(
+                        base = Modifier.fillMaxSize(),
+                        crosshairManager = crosshairManager,
+                        dataList = dataList,
+                        lineConfig = lineConfig,
+                        pointBounds = pointBounds,
+                        crosshairBounds = crosshairBounds,
+                        onPointClick = onPointClick,
+                        onTooltipStateChange = { state, _ -> tooltipState = state },
+                        interactionConfig = interactionConfig,
+                    ),
+                xLabels = dataList.getLabels(),
+                yAxisConfig =
+                    AxisConfig(
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        steps = 6,
+                        drawAxisAtZero = isBelowAxisMode,
+                    ),
+                config = scaffoldConfig,
+                contentDescription = chartDescription,
+            ) { chartContext ->
+                updateInteractionBounds(interactionConfig, chartContext)
+                drawMultilineContent(
+                    MultilineDrawParams(
+                        dataList = dataList,
+                        chartContext = chartContext,
+                        colorList = colorList,
+                        lineConfig = lineConfig,
+                        animationProgress = animationProgress.value,
+                        pointBounds = pointBounds,
+                        crosshairBounds = crosshairBounds,
+                        onPointClick = onPointClick,
+                        crosshairManager = crosshairManager,
+                        crosshairState = animatedCrosshairState?.resolve(),
+                        tooltipState = tooltipState,
+                        textMeasurer = textMeasurer,
+                        interactionConfig = interactionConfig,
+                        drawCrosshairLabel = crosshairContent == null,
+                    ),
+                )
+            }
+
+            MultilineChartOverlays(
+                crosshairManager = crosshairManager,
+                animatedCrosshairState = animatedCrosshairState?.resolve(),
+                lineConfig = lineConfig,
+                crosshairContent = crosshairContent,
             )
         }
         if (lineConfig.legendLabels.isNotEmpty()) {
@@ -195,6 +214,24 @@ fun MultilineChart(
                 textStyle = lineConfig.legendTextStyle,
             )
         }
+    }
+}
+
+@Composable
+private fun BoxScope.MultilineChartOverlays(
+    crosshairManager: CrosshairManager<MultilinePoint>?,
+    animatedCrosshairState: CrosshairState?,
+    lineConfig: LineChartConfig,
+    crosshairContent: (@Composable (MultilinePoint) -> Unit)?,
+) {
+    if (crosshairContent != null && crosshairManager != null) {
+        ChartCrosshairOverlay(
+            item = crosshairManager.selectedItem,
+            state = animatedCrosshairState,
+            config = lineConfig.crosshairConfig?.tooltipConfig ?: lineConfig.tooltipConfig,
+            modifier = Modifier.matchParentSize(),
+            content = crosshairContent,
+        )
     }
 }
 
@@ -250,6 +287,7 @@ private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
                 dataList = p.dataList,
                 colorList = p.colorList,
                 textMeasurer = p.textMeasurer,
+                drawLabel = p.drawCrosshairLabel,
             )
         }
     }

@@ -34,6 +34,8 @@ private const val MULTILINE_DOT_OUTER_PADDING = 2f
  * @param dataList The visible dataset — used to find the snapped index and per-series values.
  * @param colorList Per-series colours cycling as `colorList[seriesIndex % colorList.size]`.
  * @param textMeasurer Required for measuring and drawing the label text.
+ * @param drawLabel When `false`, the value label bubble is suppressed (lines and dots are still
+ *   drawn), letting a caller-supplied `crosshairContent` composable render the label instead.
  */
 @OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawMultilineChartCrosshair(
@@ -43,6 +45,7 @@ internal fun DrawScope.drawMultilineChartCrosshair(
     dataList: List<LineGroup>,
     colorList: List<Color>,
     textMeasurer: TextMeasurer,
+    drawLabel: Boolean = true,
 ) {
     if (dataList.isEmpty() || colorList.isEmpty()) return
     val dashEffect = MULTILINE_CROSSHAIR_DASH_EFFECT
@@ -84,7 +87,7 @@ internal fun DrawScope.drawMultilineChartCrosshair(
         )
     }
 
-    if (config.showLabel) {
+    if (config.showLabel && drawLabel) {
         drawTooltip(
             tooltipState =
                 TooltipState(
