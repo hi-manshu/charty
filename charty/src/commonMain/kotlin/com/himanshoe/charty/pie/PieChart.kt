@@ -17,7 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -57,7 +58,7 @@ private const val RADIANS_TO_DEGREES = 180.0 / PI
  */
 private data class PieChartContentParams(
     val dataList: List<PieData>,
-    val sliceColors: List<Color>,
+    val sliceColors: List<ChartyColor>,
     val total: Float,
     val config: PieChartConfig,
     // Held as Animatables (not their .value) so the entry + selection animations are read inside the
@@ -74,7 +75,7 @@ private data class PieChartContentParams(
  */
 private data class PieSliceDrawParams(
     val dataList: List<PieData>,
-    val colors: List<Color>,
+    val colors: List<ChartyColor>,
     val total: Float,
     val center: Offset,
     val radius: Float,
@@ -345,7 +346,7 @@ private fun DrawScope.drawPieSlices(params: PieSliceDrawParams) {
             when (params.config.style) {
                 PieChartStyle.PIE -> {
                     drawArc(
-                        color = sliceColor,
+                        brush = sliceColor.toSliceBrush(),
                         startAngle = currentAngle + params.config.sliceSpacingDegrees / HALF_DIVIDER,
                         sweepAngle = max(0f, sweepAngle - params.config.sliceSpacingDegrees),
                         useCenter = true,
@@ -364,7 +365,7 @@ private fun DrawScope.drawPieSlices(params: PieSliceDrawParams) {
                     val arcRadius = actualRadius - strokeWidth / HALF_DIVIDER
 
                     drawArc(
-                        color = sliceColor,
+                        brush = sliceColor.toSliceBrush(),
                         startAngle = currentAngle + params.config.sliceSpacingDegrees / HALF_DIVIDER,
                         sweepAngle = max(0f, sweepAngle - params.config.sliceSpacingDegrees),
                         useCenter = false,
@@ -491,21 +492,21 @@ private fun findClickedSlice(
 private fun generateSliceColors(
     dataList: List<PieData>,
     color: ChartyColor,
-): List<Color> {
+): List<ChartyColor> {
     val customColors = dataList.mapNotNull { it.color }
     if (customColors.size == dataList.size) {
         return customColors
     }
     return when (color) {
-        is ChartyColor.Solid -> List(dataList.size) { color.color }
-        is ChartyColor.Gradient -> {
-            if (color.colors.size >= dataList.size) {
-                color.colors.take(dataList.size)
-            } else {
-                List(dataList.size) { index ->
-                    color.colors[index % color.colors.size]
-                }
-            }
-        }
+        is ChartyColor.Solid -> List(dataList.size) { color }
+        is ChartyColor.Gradient ->
+            List(dataList.size) { index -> ChartyColor.Solid(color.colors[index % color.colors.size]) }
     }
 }
+
+/** Resolves a [ChartyColor] to a [Brush] for filling a slice (solid or gradient). */
+private fun ChartyColor.toSliceBrush(): Brush =
+    when (this) {
+        is ChartyColor.Solid -> SolidColor(color)
+        is ChartyColor.Gradient -> Brush.linearGradient(colors)
+    }

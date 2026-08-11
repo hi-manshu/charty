@@ -1,7 +1,7 @@
 package com.himanshoe.charty.pie.data
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.graphics.Color
+import com.himanshoe.charty.color.ChartyColor
 
 private const val PERCENTAGE_MULTIPLIER = 100f
 private const val DEGREES_IN_CIRCLE = 360f
@@ -9,15 +9,17 @@ private const val DEGREES_IN_CIRCLE = 360f
 /**
  * Data class representing a single slice in a Pie or Donut chart
  *
- * @param label The label/name for this slice (e.g., "Product A", "Sales")
- * @param value The numeric value of this slice (must be positive)
- * @param color Optional custom color for this slice. If null, uses chart's color scheme
- * @param metadata Optional metadata for custom handling in click listeners
+ * @property label The label/name for this slice (e.g., "Product A", "Sales")
+ * @property value The numeric value of this slice (must be positive)
+ * @property color Optional custom [ChartyColor] (solid or gradient) for this slice. If null, the
+ *   chart's colour scheme is used. Using [ChartyColor] keeps pie slices consistent with every other
+ *   chart type and lets a slice be filled with a gradient.
+ * @property metadata Optional metadata for custom handling in click listeners
  *
  * Usage:
  * ```kotlin
  * val slice1 = PieData("Product A", 45.5f)
- * val slice2 = PieData("Product B", 30.0f, Color.Blue)
+ * val slice2 = PieData("Product B", 30.0f, ChartyColor.Solid(Color.Blue))
  * val slice3 = PieData("Product C", 24.5f, metadata = mapOf("category" to "Electronics"))
  * ```
  */
@@ -25,7 +27,7 @@ private const val DEGREES_IN_CIRCLE = 360f
 data class PieData(
     val label: String,
     val value: Float,
-    val color: Color? = null,
+    val color: ChartyColor? = null,
     val metadata: Map<String, Any>? = null,
 ) {
     init {

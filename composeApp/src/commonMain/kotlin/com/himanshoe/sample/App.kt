@@ -3101,8 +3101,8 @@ fun App(modifier: Modifier = Modifier) {
                                     staggerDelay = 0.2f,
                                     showPointInnerCircle = true,
                                 ),
-                            onDataSetClick = { label, index ->
-                                println("Clicked dataset: $label at index $index")
+                            onDataSetClick = { dataSet, index ->
+                                println("Clicked dataset: ${dataSet.label} at index $index")
                             },
                         )
                     }

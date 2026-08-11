@@ -83,7 +83,7 @@ fun MultipleRadarChart(
     dataSets: () -> List<RadarDataSet>,
     modifier: Modifier = Modifier,
     config: MultipleRadarChartConfig = MultipleRadarChartConfig(),
-    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
+    onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)? = null,
     accessibilityDescription: String? = null,
 ) {
     val dataSetsList = remember(dataSets) { dataSets() }
@@ -137,7 +137,7 @@ private fun RadarChartWithLegend(
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
     modifier: Modifier = Modifier,
-    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
+    onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)? = null,
 ) {
     when (config.legendPosition) {
         LegendPosition.TOP -> {
@@ -238,7 +238,7 @@ private fun CreateVerticalLegendLayout(
     dataSetsList: List<RadarDataSet>,
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
-    onDataSetClick: ((label: String, index: Int) -> Unit)?,
+    onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)?,
     legendFirst: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -283,7 +283,7 @@ private fun CreateHorizontalLegendLayout(
     dataSetsList: List<RadarDataSet>,
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
-    onDataSetClick: ((label: String, index: Int) -> Unit)?,
+    onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)?,
     legendFirst: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -329,7 +329,7 @@ private fun CreateOverlayLegendLayout(
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
     alignment: Alignment,
-    onDataSetClick: ((label: String, index: Int) -> Unit)?,
+    onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
@@ -359,7 +359,7 @@ private fun Legend(
     dataSets: List<RadarDataSet>,
     modifier: Modifier = Modifier,
     legendTextStyle: TextStyle = TextStyle(fontSize = LEGEND_ICON_SIZE.sp),
-    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
+    onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)? = null,
 ) {
     Column(
         modifier = modifier,
@@ -377,7 +377,7 @@ private fun Legend(
                 horizontalArrangement = Arrangement.spacedBy(LEGEND_ICON_TEXT_SPACING.dp),
                 modifier =
                     if (onDataSetClick != null) {
-                        Modifier.clickable { onDataSetClick(dataSet.label, index) }
+                        Modifier.clickable { onDataSetClick(dataSet, index) }
                     } else {
                         Modifier
                     },
@@ -413,7 +413,7 @@ private fun RadarChartContent(
     numberOfAxes: Int,
     config: MultipleRadarChartConfig,
     modifier: Modifier = Modifier,
-    onDataSetClick: ((label: String, index: Int) -> Unit)? = null,
+    onDataSetClick: ((dataSet: RadarDataSet, index: Int) -> Unit)? = null,
 ) {
     val animationProgress = rememberRadarAnimation(config.radarConfig.animation)
     val textMeasurer = rememberTextMeasurer()
@@ -735,7 +735,7 @@ private fun handleDataPointClick(
     dataPointPositions: Map<Int, List<Offset>>,
     dataSetsList: List<RadarDataSet>,
     config: MultipleRadarChartConfig,
-    onDataSetClick: (label: String, index: Int) -> Unit,
+    onDataSetClick: (dataSet: RadarDataSet, index: Int) -> Unit,
 ) {
     val clickTolerance = (config.datasetPointRadius ?: config.radarConfig.dataPointRadius) * CLICK_TOLERANCE_MULTIPLIER
 
@@ -751,7 +751,7 @@ private fun handleDataPointClick(
                 )
 
             if (distance <= clickTolerance) {
-                onDataSetClick(dataSetsList[datasetIndex].label, pointIndex)
+                onDataSetClick(dataSetsList[datasetIndex], pointIndex)
                 return
             }
         }
