@@ -98,9 +98,10 @@ class ViewPortState {
      *   The window is clamped so it never extends beyond the dataset boundaries.
      */
     internal fun pan(deltaFraction: Float) {
-        val newStart = (startFraction + deltaFraction).coerceIn(0f, 1f - visibleFraction)
+        val width = visibleFraction
+        val newStart = (startFraction + deltaFraction).coerceIn(0f, 1f - width)
         startFraction = newStart
-        endFraction = newStart + visibleFraction
+        endFraction = newStart + width
     }
 
     /**
