@@ -694,26 +694,46 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(280.dp),
                             data = {
                                 listOf(
-                                    BarGroup(label = "A", values = listOf(55f, 30f, 15f), colors = listOf(
-                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
-                                            ChartyColor.Solid(Color(0xFFD64C66)),
-                                            ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        )),
-                                    BarGroup(label = "B", values = listOf(45f, 22f, 33f), colors = listOf(
-                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
-                                            ChartyColor.Solid(Color(0xFFD64C66)),
-                                            ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        )),
-                                    BarGroup(label = "C", values = listOf(25f, 30f, 45f), colors = listOf(
-                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
-                                            ChartyColor.Solid(Color(0xFFD64C66)),
-                                            ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        )),
-                                    BarGroup(label = "D", values = listOf(10f, 38f, 52f), colors = listOf(
-                                            ChartyColor.Solid(Color(0xFF0B1D3B)),
-                                            ChartyColor.Solid(Color(0xFFD64C66)),
-                                            ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        )),
+                                    BarGroup(
+                                        label = "A",
+                                        values = listOf(55f, 30f, 15f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                                ChartyColor.Solid(Color(0xFFD64C66)),
+                                                ChartyColor.Solid(Color(0xFFFFA64D)),
+                                            ),
+                                    ),
+                                    BarGroup(
+                                        label = "B",
+                                        values = listOf(45f, 22f, 33f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                                ChartyColor.Solid(Color(0xFFD64C66)),
+                                                ChartyColor.Solid(Color(0xFFFFA64D)),
+                                            ),
+                                    ),
+                                    BarGroup(
+                                        label = "C",
+                                        values = listOf(25f, 30f, 45f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                                ChartyColor.Solid(Color(0xFFD64C66)),
+                                                ChartyColor.Solid(Color(0xFFFFA64D)),
+                                            ),
+                                    ),
+                                    BarGroup(
+                                        label = "D",
+                                        values = listOf(10f, 38f, 52f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Solid(Color(0xFF0B1D3B)),
+                                                ChartyColor.Solid(Color(0xFFD64C66)),
+                                                ChartyColor.Solid(Color(0xFFFFA64D)),
+                                            ),
+                                    ),
                                 )
                             },
                             config =
@@ -1389,86 +1409,106 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF1976D2),
-                                                        Color(0xFF64B5F6),
+                                        BarGroup(
+                                            label = "Q1",
+                                            values = listOf(20f, 30f, 15f),
+                                            colors =
+                                                listOf(
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF1976D2),
+                                                            Color(0xFF64B5F6),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF388E3C),
+                                                            Color(0xFF81C784),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFFE64A19),
+                                                            Color(0xFFFF8A65),
+                                                        ),
                                                     ),
                                                 ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF388E3C),
-                                                        Color(0xFF81C784),
+                                        ),
+                                        BarGroup(
+                                            label = "Q2",
+                                            values = listOf(25f, 35f, 20f),
+                                            colors =
+                                                listOf(
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF1976D2),
+                                                            Color(0xFF64B5F6),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF388E3C),
+                                                            Color(0xFF81C784),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFFE64A19),
+                                                            Color(0xFFFF8A65),
+                                                        ),
                                                     ),
                                                 ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFFE64A19),
-                                                        Color(0xFFFF8A65),
+                                        ),
+                                        BarGroup(
+                                            label = "Q3",
+                                            values = listOf(30f, 25f, 25f),
+                                            colors =
+                                                listOf(
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF1976D2),
+                                                            Color(0xFF64B5F6),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF388E3C),
+                                                            Color(0xFF81C784),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFFE64A19),
+                                                            Color(0xFFFF8A65),
+                                                        ),
                                                     ),
                                                 ),
-                                            )),
-                                        BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF1976D2),
-                                                        Color(0xFF64B5F6),
+                                        ),
+                                        BarGroup(
+                                            label = "Q4",
+                                            values = listOf(28f, 40f, 18f),
+                                            colors =
+                                                listOf(
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF1976D2),
+                                                            Color(0xFF64B5F6),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFF388E3C),
+                                                            Color(0xFF81C784),
+                                                        ),
+                                                    ),
+                                                    ChartyColor.Gradient(
+                                                        listOf(
+                                                            Color(0xFFE64A19),
+                                                            Color(0xFFFF8A65),
+                                                        ),
                                                     ),
                                                 ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF388E3C),
-                                                        Color(0xFF81C784),
-                                                    ),
-                                                ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFFE64A19),
-                                                        Color(0xFFFF8A65),
-                                                    ),
-                                                ),
-                                            )),
-                                        BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF1976D2),
-                                                        Color(0xFF64B5F6),
-                                                    ),
-                                                ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF388E3C),
-                                                        Color(0xFF81C784),
-                                                    ),
-                                                ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFFE64A19),
-                                                        Color(0xFFFF8A65),
-                                                    ),
-                                                ),
-                                            )),
-                                        BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF1976D2),
-                                                        Color(0xFF64B5F6),
-                                                    ),
-                                                ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFF388E3C),
-                                                        Color(0xFF81C784),
-                                                    ),
-                                                ),
-                                                ChartyColor.Gradient(
-                                                    listOf(
-                                                        Color(0xFFE64A19),
-                                                        Color(0xFFFF8A65),
-                                                    ),
-                                                ),
-                                            )),
+                                        ),
                                     )
                                 },
                                 onBarClick = { segment ->
@@ -1492,86 +1532,106 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
+                                    BarGroup(
+                                        label = "Q1",
+                                        values = listOf(20f, 30f, 15f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
+                                    ),
+                                    BarGroup(
+                                        label = "Q2",
+                                        values = listOf(25f, 35f, 20f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
+                                    ),
+                                    BarGroup(
+                                        label = "Q3",
+                                        values = listOf(30f, 25f, 25f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                        )),
-                                    BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
+                                    ),
+                                    BarGroup(
+                                        label = "Q4",
+                                        values = listOf(28f, 40f, 18f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
-                                    BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
-                                    BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
+                                    ),
                                 )
                             },
                             comparisonConfig =
@@ -1592,86 +1652,106 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
+                                    BarGroup(
+                                        label = "Q1",
+                                        values = listOf(20f, 30f, 15f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
+                                    ),
+                                    BarGroup(
+                                        label = "Q2",
+                                        values = listOf(25f, 35f, 20f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
+                                    ),
+                                    BarGroup(
+                                        label = "Q3",
+                                        values = listOf(30f, 25f, 25f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                        )),
-                                    BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
+                                    ),
+                                    BarGroup(
+                                        label = "Q4",
+                                        values = listOf(28f, 40f, 18f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
-                                    BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
-                                    BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
+                                    ),
                                 )
                             },
                             comparisonConfig =
@@ -1996,86 +2076,106 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
+                                    BarGroup(
+                                        label = "Q1",
+                                        values = listOf(20f, 30f, 15f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
+                                    ),
+                                    BarGroup(
+                                        label = "Q2",
+                                        values = listOf(25f, 35f, 20f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
+                                    ),
+                                    BarGroup(
+                                        label = "Q3",
+                                        values = listOf(30f, 25f, 25f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                        )),
-                                    BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
+                                    ),
+                                    BarGroup(
+                                        label = "Q4",
+                                        values = listOf(28f, 40f, 18f),
+                                        colors =
+                                            listOf(
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF1976D2),
+                                                        Color(0xFF64B5F6),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFF388E3C),
+                                                        Color(0xFF81C784),
+                                                    ),
+                                                ),
+                                                ChartyColor.Gradient(
+                                                    listOf(
+                                                        Color(0xFFE64A19),
+                                                        Color(0xFFFF8A65),
+                                                    ),
                                                 ),
                                             ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
-                                    BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
-                                    BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF1976D2),
-                                                    Color(0xFF64B5F6),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFF388E3C),
-                                                    Color(0xFF81C784),
-                                                ),
-                                            ),
-                                            ChartyColor.Gradient(
-                                                listOf(
-                                                    Color(0xFFE64A19),
-                                                    Color(0xFFFF8A65),
-                                                ),
-                                            ),
-                                        )),
+                                    ),
                                 )
                             },
                             colors = ChartyColor.Solid(Color.Gray), // Fallback (not used)
@@ -2877,7 +2977,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         fontWeight = FontWeight.Bold,
                                     )
                                     Text(
-                                        text = if (selectedCategory != null) { "Selected" } else { "400" },
+                                        text =
+                                            if (selectedCategory != null) {
+                                                "Selected"
+                                            } else {
+                                                "400"
+                                            },
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = Color.Gray,
                                     )

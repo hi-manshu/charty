@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEach
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.BubbleBarChart
 import com.himanshoe.charty.bar.ComparisonBarChart
@@ -59,6 +60,8 @@ import com.himanshoe.charty.bar.StackedBarChart
 import com.himanshoe.charty.bar.StackedHorizontalBarChart
 import com.himanshoe.charty.bar.WaterfallChart
 import com.himanshoe.charty.bar.WavyChart
+import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.data.SpanData
@@ -73,17 +76,26 @@ import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.combo.ComboChart
+import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
+import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.PersistentMarker
+import com.himanshoe.charty.common.config.ReferenceBandConfig
+import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
 import com.himanshoe.charty.line.StackedAreaChart
+import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.pie.PieChart
+import com.himanshoe.charty.pie.config.PieChartConfig
+import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.data.PieData
 import com.himanshoe.charty.point.BubbleChart
 import com.himanshoe.charty.point.PointChart
+import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.BubbleData
 import com.himanshoe.charty.point.data.PointData
 import com.himanshoe.charty.radar.MultipleRadarChart
@@ -91,13 +103,19 @@ import com.himanshoe.charty.radar.RadarChart
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
 
-/** One entry in the chart gallery: a titled, categorised demo that renders a chart. */
+/** A single configuration of a chart — one "iteration" shown on the chart's detail screen. */
+private data class ChartVariant(
+    val label: String,
+    val content: @Composable () -> Unit,
+)
+
+/** One entry in the chart gallery: a titled, categorised chart type with one or more [variants]. */
 private data class ChartDemo(
     val title: String,
     val description: String,
     val category: String,
     val accent: Color,
-    val content: @Composable () -> Unit,
+    val variants: List<ChartVariant>,
 )
 
 private val galleryDemos: List<ChartDemo> = buildGalleryDemos()
@@ -243,6 +261,19 @@ private fun ChartRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            val variantCount = demo.variants.size
+            Text(
+                text =
+                    if (variantCount == 1) {
+                        "1 style"
+                    } else {
+                        "$variantCount styles"
+                    },
+                style = MaterialTheme.typography.labelSmall,
+                color = demo.accent,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Text(text = "›", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
@@ -268,18 +299,40 @@ private fun ChartDetailScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            demo.variants.fastForEach { variant ->
+                ChartVariantCard(accent = demo.accent, variant = variant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChartVariantCard(
+    accent: Color,
+    variant: ChartVariant,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(accent))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = variant.label,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(320.dp).padding(16.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(340.dp).padding(16.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    demo.content()
-                }
+                variant.content()
             }
         }
     }
@@ -327,9 +380,43 @@ private fun buildGalleryDemos(): List<ChartDemo> {
     val purple = ChartyColors.Purple
     val red = ChartyColors.Red
 
-    val bars = listOf(BarData(label = "Jan", value = 120f), BarData(label = "Feb", value = 180f), BarData(label = "Mar", value = 90f), BarData(label = "Apr", value = 210f), BarData(label = "May", value = 150f))
-    val line = listOf(LineData(label = "Mon", value = 20f), LineData(label = "Tue", value = 45f), LineData(label = "Wed", value = 30f), LineData(label = "Thu", value = 70f), LineData(label = "Fri", value = 55f))
-    val points = listOf(PointData(label = "A", value = 30f), PointData(label = "B", value = 65f), PointData(label = "C", value = 45f), PointData(label = "D", value = 80f), PointData(label = "E", value = 50f))
+    val blueGradient = ChartyColor.Gradient(listOf(blue, purple))
+    val warmGradient = ChartyColor.Gradient(listOf(orange, red))
+    val coolGradient = ChartyColor.Gradient(listOf(green, blue))
+    val palette = ChartyColor.Gradient(listOf(blue, green, orange, purple, red))
+
+    val bars =
+        listOf(
+            BarData(label = "Jan", value = 120f),
+            BarData(label = "Feb", value = 180f),
+            BarData(label = "Mar", value = 90f),
+            BarData(label = "Apr", value = 210f),
+            BarData(label = "May", value = 150f),
+        )
+    val barsSigned =
+        listOf(
+            BarData(label = "Jan", value = 120f),
+            BarData(label = "Feb", value = -60f),
+            BarData(label = "Mar", value = 90f),
+            BarData(label = "Apr", value = -30f),
+            BarData(label = "May", value = 150f),
+        )
+    val line =
+        listOf(
+            LineData(label = "Mon", value = 20f),
+            LineData(label = "Tue", value = 45f),
+            LineData(label = "Wed", value = 30f),
+            LineData(label = "Thu", value = 70f),
+            LineData(label = "Fri", value = 55f),
+        )
+    val points =
+        listOf(
+            PointData(label = "A", value = 30f),
+            PointData(label = "B", value = 65f),
+            PointData(label = "C", value = 45f),
+            PointData(label = "D", value = 80f),
+            PointData(label = "E", value = 50f),
+        )
     val groups =
         listOf(
             BarGroup(label = "Q1", values = listOf(40f, 30f, 20f)),
@@ -347,188 +434,706 @@ private fun buildGalleryDemos(): List<ChartDemo> {
         )
 
     return listOf(
-        ChartDemo("Bar Chart", "Compare values across categories", "Bar", blue) {
-            BarChart(data = { bars }, modifier = chartFill)
-        },
-        ChartDemo("Horizontal Bar", "Bars laid out left to right", "Bar", green) {
-            HorizontalBarChart(data = { bars }, modifier = chartFill)
-        },
-        ChartDemo("Stacked Bar", "Segments stacked per category", "Bar", orange) {
-            StackedBarChart(data = { groups }, modifier = chartFill)
-        },
-        ChartDemo("Grouped Horizontal Bar", "Grouped bars per row", "Bar", purple) {
-            GroupedHorizontalBarChart(data = { groups }, modifier = chartFill)
-        },
-        ChartDemo("Stacked Horizontal Bar", "Horizontal stacked segments", "Bar", blue) {
-            StackedHorizontalBarChart(data = { groups }, modifier = chartFill)
-        },
-        ChartDemo("Normalized Horizontal Bar", "Each bar fills 100%", "Bar", green) {
-            NormalizedHorizontalBarChart(data = { groups }, modifier = chartFill)
-        },
-        ChartDemo("Mosaic Bar", "Proportional stacked columns", "Bar", red) {
-            MosaicBarChart(data = { groups }, modifier = chartFill)
-        },
-        ChartDemo("Comparison Bar", "Two series compared", "Bar", purple) {
-            ComparisonBarChart(data = { groups.map { BarGroup(label = it.label, values = it.values.take(2)) } }, modifier = chartFill)
-        },
-        ChartDemo("Lollipop Bar", "Stems with value dots", "Bar", orange) {
-            LollipopBarChart(data = { bars }, modifier = chartFill)
-        },
-        ChartDemo("Bubble Bar", "Bars rendered as bubbles", "Bar", blue) {
-            BubbleBarChart(data = { bars }, modifier = chartFill)
-        },
-        ChartDemo("Waterfall", "Running cumulative total", "Bar", green) {
-            WaterfallChart(data = { bars }, modifier = chartFill)
-        },
-        ChartDemo("Wavy Bar", "Bars with a wavy top", "Bar", purple) {
-            WavyChart(data = { bars }, modifier = chartFill)
-        },
-        ChartDemo("Span (Range) Chart", "Start-to-end ranges", "Bar", red) {
-            SpanChart(
-                data = {
-                    listOf(
-                        SpanData(label = "Mon", startValue = 10f, endValue = 40f),
-                        SpanData(label = "Tue", startValue = 20f, endValue = 60f),
-                        SpanData(label = "Wed", startValue = 15f, endValue = 35f),
-                        SpanData(label = "Thu", startValue = 30f, endValue = 70f),
+        ChartDemo(
+            "Bar Chart",
+            "Compare values across categories",
+            "Bar",
+            blue,
+            listOf(
+                ChartVariant("Default") { BarChart(data = { bars }, modifier = chartFill) },
+                ChartVariant("Gradient bars") { BarChart(data = { bars }, color = blueGradient, modifier = chartFill) },
+                ChartVariant("Extra-rounded corners") {
+                    BarChart(
+                        data = { bars },
+                        barConfig = BarChartConfig(cornerRadius = CornerRadius.ExtraLarge),
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Line Chart", "Trend over an axis", "Line & Area", blue) {
-            LineChart(data = { line }, modifier = chartFill)
-        },
-        ChartDemo("Area Chart", "Line with a filled area", "Line & Area", green) {
-            AreaChart(data = { line }, modifier = chartFill)
-        },
-        ChartDemo("Multiline Chart", "Several series at once", "Line & Area", orange) {
-            MultilineChart(data = { lineGroups }, modifier = chartFill)
-        },
-        ChartDemo("Stacked Area", "Cumulative stacked areas", "Line & Area", purple) {
-            StackedAreaChart(data = { lineGroups }, modifier = chartFill)
-        },
-        ChartDemo("Point (Scatter)", "Individual data points", "Point", blue) {
-            PointChart(data = { points }, modifier = chartFill)
-        },
-        ChartDemo("Bubble Chart", "Points sized by a value", "Point", red) {
-            BubbleChart(
-                data = {
-                    listOf(
-                        BubbleData("A", yValue = 30f, size = 120f),
-                        BubbleData("B", yValue = 60f, size = 220f),
-                        BubbleData("C", yValue = 45f, size = 160f),
-                        BubbleData("D", yValue = 80f, size = 90f),
+                ChartVariant("Square corners, thin bars") {
+                    BarChart(
+                        data = {
+                            bars
+                        },
+                        barConfig =
+                            BarChartConfig(
+                                cornerRadius = CornerRadius.None,
+                                barWidthFraction = 0.4f,
+                            ),
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Combo Chart", "Bars plus a line", "Point", orange) {
-            ComboChart(
-                data = {
-                    listOf(
-                        ComboChartData(label = "Jan", barValue = 120f, lineValue = 40f),
-                        ComboChartData(label = "Feb", barValue = 180f, lineValue = 65f),
-                        ComboChartData(label = "Mar", barValue = 90f, lineValue = 55f),
-                        ComboChartData(label = "Apr", barValue = 210f, lineValue = 80f),
+                ChartVariant("Value labels") {
+                    BarChart(data = { bars }, barConfig = BarChartConfig(showDataLabels = true), modifier = chartFill)
+                },
+                ChartVariant("Reference line (target)") {
+                    BarChart(
+                        data = {
+                            bars
+                        },
+                        barConfig =
+                            BarChartConfig(
+                                referenceLine = ReferenceLineConfig(value = 160f, label = "Target"),
+                            ),
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Candlestick", "Financial OHLC prices", "Point", green) {
-            CandlestickChart(
-                data = {
-                    listOf(
-                        CandleData(label = "Mon", open = 100f, high = 130f, low = 90f, close = 120f),
-                        CandleData(label = "Tue", open = 120f, high = 140f, low = 110f, close = 115f),
-                        CandleData(label = "Wed", open = 115f, high = 125f, low = 95f, close = 105f),
-                        CandleData(label = "Thu", open = 105f, high = 150f, low = 100f, close = 145f),
+                ChartVariant("Reference band (range)") {
+                    BarChart(
+                        data = {
+                            bars
+                        },
+                        barConfig =
+                            BarChartConfig(
+                                referenceBand =
+                                    ReferenceBandConfig(
+                                        lowValue = 100f,
+                                        highValue = 180f,
+                                        fill = ChartyColor.Solid(green),
+                                        label = "Healthy",
+                                    ),
+                            ),
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Pie Chart", "Parts of a whole", "Circular", purple) {
-            PieChart(
-                data = {
-                    listOf(
-                        PieData(label = "A", value = 40f, color = ChartyColor.Solid(blue)),
-                        PieData(label = "B", value = 25f, color = ChartyColor.Solid(green)),
-                        PieData(label = "C", value = 20f, color = ChartyColor.Solid(orange)),
-                        PieData(label = "D", value = 15f, color = ChartyColor.Solid(red)),
+                ChartVariant("Negative values (below axis)") {
+                    BarChart(
+                        data = {
+                            barsSigned
+                        },
+                        barConfig =
+                            BarChartConfig(
+                                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+                            ),
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Circular Progress", "Concentric progress rings", "Circular", blue) {
-            CircularProgressIndicator(
-                rings = {
-                    listOf(
-                        CircularRingData(label = "Steps", progress = 72f, maxValue = 100f, color = ChartyColor.Solid(blue)),
-                        CircularRingData(label = "Move", progress = 55f, maxValue = 100f, color = ChartyColor.Solid(green)),
-                        CircularRingData(label = "Stand", progress = 88f, maxValue = 100f, color = ChartyColor.Solid(orange)),
+                ChartVariant("Negative values (from min)") {
+                    BarChart(
+                        data = {
+                            barsSigned
+                        },
+                        barConfig =
+                            BarChartConfig(
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+                            ),
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Radar Chart", "Multi-axis profile", "Circular", red) {
-            RadarChart(
-                data = {
-                    listOf(
-                        RadarDataSet(
-                            label = "Player",
-                            axes =
-                                listOf(
-                                    RadarAxisData(label = "Speed", value = 80f),
-                                    RadarAxisData(label = "Power", value = 65f),
-                                    RadarAxisData(label = "Skill", value = 90f),
-                                    RadarAxisData(label = "Stamina", value = 70f),
-                                    RadarAxisData(label = "Defense", value = 55f),
+            ),
+        ),
+        ChartDemo(
+            "Horizontal Bar",
+            "Bars laid out left to right",
+            "Bar",
+            green,
+            listOf(
+                ChartVariant("Default") { HorizontalBarChart(data = { bars }, modifier = chartFill) },
+                ChartVariant(
+                    "Gradient",
+                ) { HorizontalBarChart(data = { bars }, color = coolGradient, modifier = chartFill) },
+                ChartVariant("Value labels") {
+                    HorizontalBarChart(
+                        data = { bars },
+                        barConfig = BarChartConfig(showDataLabels = true),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Negative values") {
+                    HorizontalBarChart(data = { barsSigned }, modifier = chartFill)
+                },
+            ),
+        ),
+        ChartDemo(
+            "Stacked Bar",
+            "Segments stacked per category",
+            "Bar",
+            orange,
+            listOf(
+                ChartVariant("Default") { StackedBarChart(data = { groups }, modifier = chartFill) },
+                ChartVariant(
+                    "Custom palette",
+                ) { StackedBarChart(data = { groups }, colors = palette, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Grouped Horizontal Bar",
+            "Grouped bars per row",
+            "Bar",
+            purple,
+            listOf(
+                ChartVariant("Default") { GroupedHorizontalBarChart(data = { groups }, modifier = chartFill) },
+                ChartVariant(
+                    "Custom palette",
+                ) { GroupedHorizontalBarChart(data = { groups }, colors = palette, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Stacked Horizontal Bar",
+            "Horizontal stacked segments",
+            "Bar",
+            blue,
+            listOf(
+                ChartVariant("Default") { StackedHorizontalBarChart(data = { groups }, modifier = chartFill) },
+                ChartVariant(
+                    "Custom palette",
+                ) { StackedHorizontalBarChart(data = { groups }, colors = palette, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Normalized Horizontal Bar",
+            "Each bar fills 100%",
+            "Bar",
+            green,
+            listOf(
+                ChartVariant("Default") { NormalizedHorizontalBarChart(data = { groups }, modifier = chartFill) },
+                ChartVariant("Custom palette") {
+                    NormalizedHorizontalBarChart(data = { groups }, colors = palette, modifier = chartFill)
+                },
+            ),
+        ),
+        ChartDemo(
+            "Mosaic Bar",
+            "Proportional stacked columns",
+            "Bar",
+            red,
+            listOf(
+                ChartVariant("Default") { MosaicBarChart(data = { groups }, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Comparison Bar",
+            "Two series compared",
+            "Bar",
+            purple,
+            listOf(
+                ChartVariant("Default") {
+                    ComparisonBarChart(data = {
+                        groups.map { BarGroup(label = it.label, values = it.values.take(2)) }
+                    }, modifier = chartFill)
+                },
+            ),
+        ),
+        ChartDemo(
+            "Lollipop Bar",
+            "Stems with value dots",
+            "Bar",
+            orange,
+            listOf(
+                ChartVariant("Default") { LollipopBarChart(data = { bars }, modifier = chartFill) },
+                ChartVariant(
+                    "Gradient",
+                ) { LollipopBarChart(data = { bars }, colors = warmGradient, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Bubble Bar",
+            "Bars rendered as bubbles",
+            "Bar",
+            blue,
+            listOf(
+                ChartVariant("Default") { BubbleBarChart(data = { bars }, modifier = chartFill) },
+                ChartVariant(
+                    "Gradient",
+                ) { BubbleBarChart(data = { bars }, color = blueGradient, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Waterfall",
+            "Running cumulative total",
+            "Bar",
+            green,
+            listOf(
+                ChartVariant("Default") { WaterfallChart(data = { bars }, modifier = chartFill) },
+                ChartVariant("With ups and downs") { WaterfallChart(data = { barsSigned }, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Wavy Bar",
+            "Bars with a wavy top",
+            "Bar",
+            purple,
+            listOf(
+                ChartVariant("Default") { WavyChart(data = { bars }, modifier = chartFill) },
+                ChartVariant("Gradient") { WavyChart(data = { bars }, color = blueGradient, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Span (Range) Chart",
+            "Start-to-end ranges",
+            "Bar",
+            red,
+            listOf(
+                ChartVariant("Default") {
+                    SpanChart(
+                        data = {
+                            listOf(
+                                SpanData(label = "Mon", startValue = 10f, endValue = 40f),
+                                SpanData(label = "Tue", startValue = 20f, endValue = 60f),
+                                SpanData(label = "Wed", startValue = 15f, endValue = 35f),
+                                SpanData(label = "Thu", startValue = 30f, endValue = 70f),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Custom palette") {
+                    SpanChart(
+                        data = {
+                            listOf(
+                                SpanData(label = "Mon", startValue = 10f, endValue = 40f),
+                                SpanData(label = "Tue", startValue = 20f, endValue = 60f),
+                                SpanData(label = "Wed", startValue = 15f, endValue = 35f),
+                                SpanData(label = "Thu", startValue = 30f, endValue = 70f),
+                            )
+                        },
+                        colors = palette,
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Line Chart",
+            "Trend over an axis",
+            "Line & Area",
+            blue,
+            listOf(
+                ChartVariant("Straight") { LineChart(data = { line }, modifier = chartFill) },
+                ChartVariant("Smooth curve") {
+                    LineChart(data = { line }, lineConfig = LineChartConfig(smoothCurve = true), modifier = chartFill)
+                },
+                ChartVariant(
+                    "Gradient line",
+                ) { LineChart(data = { line }, color = blueGradient, modifier = chartFill) },
+                ChartVariant("Line only (no points)") {
+                    LineChart(data = { line }, lineConfig = LineChartConfig(showPoints = false), modifier = chartFill)
+                },
+                ChartVariant("Pinned markers") {
+                    LineChart(
+                        data = {
+                            line
+                        },
+                        lineConfig =
+                            LineChartConfig(
+                                markers = listOf(PersistentMarker(dataIndex = 3, label = "Peak")),
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Reference band") {
+                    LineChart(
+                        data = {
+                            line
+                        },
+                        lineConfig =
+                            LineChartConfig(
+                                referenceBand =
+                                    ReferenceBandConfig(
+                                        lowValue = 30f,
+                                        highValue = 55f,
+                                        fill = ChartyColor.Solid(green),
+                                        label = "Target",
+                                    ),
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Area Chart",
+            "Line with a filled area",
+            "Line & Area",
+            green,
+            listOf(
+                ChartVariant("Default") { AreaChart(data = { line }, modifier = chartFill) },
+                ChartVariant("Smooth curve") {
+                    AreaChart(data = { line }, lineConfig = LineChartConfig(smoothCurve = true), modifier = chartFill)
+                },
+                ChartVariant(
+                    "Warm gradient",
+                ) { AreaChart(data = { line }, color = warmGradient, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Multiline Chart",
+            "Several series at once",
+            "Line & Area",
+            orange,
+            listOf(
+                ChartVariant("Default") { MultilineChart(data = { lineGroups }, modifier = chartFill) },
+                ChartVariant("Gradient fill") {
+                    MultilineChart(
+                        data = { lineGroups },
+                        lineConfig = LineChartConfig(showGradientFill = true),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Smooth curves") {
+                    MultilineChart(
+                        data = { lineGroups },
+                        lineConfig = LineChartConfig(smoothCurve = true),
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Stacked Area",
+            "Cumulative stacked areas",
+            "Line & Area",
+            purple,
+            listOf(
+                ChartVariant("Default") { StackedAreaChart(data = { lineGroups }, modifier = chartFill) },
+                ChartVariant(
+                    "Custom palette",
+                ) { StackedAreaChart(data = { lineGroups }, colors = palette, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Point (Scatter)",
+            "Individual data points",
+            "Point",
+            blue,
+            listOf(
+                ChartVariant("Default") { PointChart(data = { points }, modifier = chartFill) },
+                ChartVariant("Value labels") {
+                    PointChart(
+                        data = { points },
+                        pointConfig = PointChartConfig(showLabels = true),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Pinned markers") {
+                    PointChart(
+                        data = {
+                            points
+                        },
+                        pointConfig =
+                            PointChartConfig(
+                                markers = listOf(PersistentMarker(dataIndex = 3, label = "Max")),
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant(
+                    "Gradient points",
+                ) { PointChart(data = { points }, color = blueGradient, modifier = chartFill) },
+            ),
+        ),
+        ChartDemo(
+            "Bubble Chart",
+            "Points sized by a value",
+            "Point",
+            red,
+            listOf(
+                ChartVariant("Default") {
+                    BubbleChart(
+                        data = {
+                            listOf(
+                                BubbleData("A", yValue = 30f, size = 120f),
+                                BubbleData("B", yValue = 60f, size = 220f),
+                                BubbleData("C", yValue = 45f, size = 160f),
+                                BubbleData("D", yValue = 80f, size = 90f),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Gradient") {
+                    BubbleChart(
+                        data = {
+                            listOf(
+                                BubbleData("A", yValue = 30f, size = 120f),
+                                BubbleData("B", yValue = 60f, size = 220f),
+                                BubbleData("C", yValue = 45f, size = 160f),
+                                BubbleData("D", yValue = 80f, size = 90f),
+                            )
+                        },
+                        color = warmGradient,
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Combo Chart",
+            "Bars plus a line",
+            "Point",
+            orange,
+            listOf(
+                ChartVariant("Shared axis") {
+                    ComboChart(
+                        data = {
+                            listOf(
+                                ComboChartData(label = "Jan", barValue = 120f, lineValue = 40f),
+                                ComboChartData(label = "Feb", barValue = 180f, lineValue = 65f),
+                                ComboChartData(label = "Mar", barValue = 90f, lineValue = 55f),
+                                ComboChartData(label = "Apr", barValue = 210f, lineValue = 80f),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Dual Y axis") {
+                    ComboChart(
+                        data = {
+                            listOf(
+                                ComboChartData(label = "Jan", barValue = 1200f, lineValue = 4f),
+                                ComboChartData(label = "Feb", barValue = 1800f, lineValue = 6.5f),
+                                ComboChartData(label = "Mar", barValue = 900f, lineValue = 5.5f),
+                                ComboChartData(label = "Apr", barValue = 2100f, lineValue = 8f),
+                            )
+                        },
+                        comboConfig = ComboChartConfig(secondaryAxisForLine = true),
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Candlestick",
+            "Financial OHLC prices",
+            "Point",
+            green,
+            listOf(
+                ChartVariant("Default") {
+                    CandlestickChart(
+                        data = {
+                            listOf(
+                                CandleData(label = "Mon", open = 100f, high = 130f, low = 90f, close = 120f),
+                                CandleData(label = "Tue", open = 120f, high = 140f, low = 110f, close = 115f),
+                                CandleData(label = "Wed", open = 115f, high = 125f, low = 95f, close = 105f),
+                                CandleData(label = "Thu", open = 105f, high = 150f, low = 100f, close = 145f),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Pie Chart",
+            "Parts of a whole",
+            "Circular",
+            purple,
+            listOf(
+                ChartVariant("Pie") {
+                    PieChart(
+                        data = {
+                            listOf(
+                                PieData(label = "A", value = 40f, color = ChartyColor.Solid(blue)),
+                                PieData(label = "B", value = 25f, color = ChartyColor.Solid(green)),
+                                PieData(label = "C", value = 20f, color = ChartyColor.Solid(orange)),
+                                PieData(label = "D", value = 15f, color = ChartyColor.Solid(red)),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Donut") {
+                    PieChart(
+                        data = {
+                            listOf(
+                                PieData(label = "A", value = 40f, color = ChartyColor.Solid(blue)),
+                                PieData(label = "B", value = 25f, color = ChartyColor.Solid(green)),
+                                PieData(label = "C", value = 20f, color = ChartyColor.Solid(orange)),
+                                PieData(label = "D", value = 15f, color = ChartyColor.Solid(red)),
+                            )
+                        },
+                        config = PieChartConfig(style = PieChartStyle.DONUT),
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Circular Progress",
+            "Concentric progress rings",
+            "Circular",
+            blue,
+            listOf(
+                ChartVariant("Three rings") {
+                    CircularProgressIndicator(
+                        rings = {
+                            listOf(
+                                CircularRingData(
+                                    label = "Steps",
+                                    progress = 72f,
+                                    maxValue = 100f,
+                                    color = ChartyColor.Solid(blue),
                                 ),
-                            color = ChartyColor.Solid(blue),
-                        ),
+                                CircularRingData(
+                                    label = "Move",
+                                    progress = 55f,
+                                    maxValue = 100f,
+                                    color = ChartyColor.Solid(green),
+                                ),
+                                CircularRingData(
+                                    label = "Stand",
+                                    progress = 88f,
+                                    maxValue = 100f,
+                                    color = ChartyColor.Solid(orange),
+                                ),
+                            )
+                        },
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Multiple Radar", "Several profiles overlaid", "Circular", purple) {
-            MultipleRadarChart(
-                dataSets = {
-                    listOf(
-                        RadarDataSet(label = "A", axes = listOf(RadarAxisData("Speed", 80f), RadarAxisData("Power", 60f), RadarAxisData("Skill", 90f), RadarAxisData("Stamina", 70f)), color = ChartyColor.Solid(blue)),
-                        RadarDataSet(label = "B", axes = listOf(RadarAxisData("Speed", 55f), RadarAxisData("Power", 85f), RadarAxisData("Skill", 60f), RadarAxisData("Stamina", 90f)), color = ChartyColor.Solid(orange)),
+                ChartVariant("Single ring") {
+                    CircularProgressIndicator(
+                        rings = {
+                            listOf(
+                                CircularRingData(
+                                    label = "Goal",
+                                    progress = 64f,
+                                    maxValue = 100f,
+                                    color = ChartyColor.Solid(purple),
+                                ),
+                            )
+                        },
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Block Bar", "Segmented value blocks", "Specialized", green) {
-            BlockBarChart(
-                data = {
-                    listOf(
-                        BlockData(value = 40f, color = ChartyColor.Solid(blue)),
-                        BlockData(value = 30f, color = ChartyColor.Solid(green)),
-                        BlockData(value = 20f, color = ChartyColor.Solid(orange)),
-                        BlockData(value = 10f, color = ChartyColor.Solid(red)),
+            ),
+        ),
+        ChartDemo(
+            "Radar Chart",
+            "Multi-axis profile",
+            "Circular",
+            red,
+            listOf(
+                ChartVariant("Blue profile") {
+                    RadarChart(
+                        data = {
+                            listOf(
+                                RadarDataSet(
+                                    label = "Player",
+                                    axes =
+                                        listOf(
+                                            RadarAxisData(label = "Speed", value = 80f),
+                                            RadarAxisData(label = "Power", value = 65f),
+                                            RadarAxisData(label = "Skill", value = 90f),
+                                            RadarAxisData(label = "Stamina", value = 70f),
+                                            RadarAxisData(label = "Defense", value = 55f),
+                                        ),
+                                    color = ChartyColor.Solid(blue),
+                                ),
+                            )
+                        },
+                        modifier = chartFill,
                     )
                 },
-                modifier = chartFill,
-            )
-        },
-        ChartDemo("Calendar Heatmap", "GitHub-style activity grid", "Specialized", green) {
-            CalendarHeatmapChart(
-                data = {
-                    (1..90).map { day ->
-                        CalendarData(year = 2024, month = ((day - 1) / 30) + 1, day = ((day - 1) % 30) + 1, value = (day * 7 % 10).toFloat())
-                    }
+                ChartVariant("Warm profile") {
+                    RadarChart(
+                        data = {
+                            listOf(
+                                RadarDataSet(
+                                    label = "Rival",
+                                    axes =
+                                        listOf(
+                                            RadarAxisData(label = "Speed", value = 60f),
+                                            RadarAxisData(label = "Power", value = 85f),
+                                            RadarAxisData(label = "Skill", value = 60f),
+                                            RadarAxisData(label = "Stamina", value = 90f),
+                                            RadarAxisData(label = "Defense", value = 75f),
+                                        ),
+                                    color = ChartyColor.Solid(orange),
+                                ),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
                 },
-                modifier = chartFill,
-            )
-        },
+            ),
+        ),
+        ChartDemo(
+            "Multiple Radar",
+            "Several profiles overlaid",
+            "Circular",
+            purple,
+            listOf(
+                ChartVariant("Two profiles") {
+                    MultipleRadarChart(
+                        dataSets = {
+                            listOf(
+                                RadarDataSet(
+                                    label = "A",
+                                    axes =
+                                        listOf(
+                                            RadarAxisData("Speed", 80f),
+                                            RadarAxisData("Power", 60f),
+                                            RadarAxisData("Skill", 90f),
+                                            RadarAxisData("Stamina", 70f),
+                                        ),
+                                    color = ChartyColor.Solid(blue),
+                                ),
+                                RadarDataSet(
+                                    label = "B",
+                                    axes =
+                                        listOf(
+                                            RadarAxisData("Speed", 55f),
+                                            RadarAxisData("Power", 85f),
+                                            RadarAxisData("Skill", 60f),
+                                            RadarAxisData("Stamina", 90f),
+                                        ),
+                                    color = ChartyColor.Solid(orange),
+                                ),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Block Bar",
+            "Segmented value blocks",
+            "Specialized",
+            green,
+            listOf(
+                ChartVariant("Default") {
+                    BlockBarChart(
+                        data = {
+                            listOf(
+                                BlockData(value = 40f, color = ChartyColor.Solid(blue)),
+                                BlockData(value = 30f, color = ChartyColor.Solid(green)),
+                                BlockData(value = 20f, color = ChartyColor.Solid(orange)),
+                                BlockData(value = 10f, color = ChartyColor.Solid(red)),
+                            )
+                        },
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Calendar Heatmap",
+            "GitHub-style activity grid",
+            "Specialized",
+            green,
+            listOf(
+                ChartVariant("90 days") {
+                    CalendarHeatmapChart(
+                        data = {
+                            (1..90).map { day ->
+                                CalendarData(
+                                    year = 2024,
+                                    month = ((day - 1) / 30) + 1,
+                                    day = ((day - 1) % 30) + 1,
+                                    value =
+                                        (
+                                            day *
+                                                7 %
+                                                10
+                                        ).toFloat(),
+                                )
+                            }
+                        },
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
     )
 }
