@@ -87,6 +87,7 @@ import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
 import com.himanshoe.charty.line.StackedAreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
+import com.himanshoe.charty.line.config.LineInterpolation
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.pie.PieChart
@@ -834,7 +835,18 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                     }
                 },
                 ChartVariant("Smooth curve") {
-                    LineChart(data = { line }, lineConfig = LineChartConfig(smoothCurve = true), modifier = chartFill)
+                    LineChart(
+                        data = { line },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.SMOOTH),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Step line") {
+                    LineChart(
+                        data = { line },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.STEP),
+                        modifier = chartFill,
+                    )
                 },
                 ChartVariant(
                     "Gradient line",

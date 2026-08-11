@@ -51,12 +51,14 @@ import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.line.config.LineChartConfig
+import com.himanshoe.charty.line.config.LineInterpolation
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.internal.line.calculatePointPositions
 import com.himanshoe.charty.line.internal.line.drawAnimatedPoints
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.line.internal.line.drawLineChartTooltip
 import com.himanshoe.charty.line.internal.line.drawSmoothLine
+import com.himanshoe.charty.line.internal.line.drawStepLineSegments
 import com.himanshoe.charty.line.internal.line.drawStraightLineSegments
 import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
 
@@ -316,20 +318,30 @@ private fun DrawScope.drawLineContent(
     dataList: List<LineData>,
     textMeasurer: TextMeasurer,
 ) {
-    if (lineConfig.smoothCurve) {
-        drawSmoothLine(
-            pointPositions = pointPositions,
-            color = color,
-            lineConfig = lineConfig,
-            animationProgress = animationProgress,
-        )
-    } else {
-        drawStraightLineSegments(
-            pointPositions = pointPositions,
-            color = color,
-            lineConfig = lineConfig,
-            animationProgress = animationProgress,
-        )
+    when (resolveLineInterpolation(lineConfig)) {
+        LineInterpolation.SMOOTH ->
+            drawSmoothLine(
+                pointPositions = pointPositions,
+                color = color,
+                lineConfig = lineConfig,
+                animationProgress = animationProgress,
+            )
+
+        LineInterpolation.STEP ->
+            drawStepLineSegments(
+                pointPositions = pointPositions,
+                color = color,
+                lineConfig = lineConfig,
+                animationProgress = animationProgress,
+            )
+
+        LineInterpolation.LINEAR ->
+            drawStraightLineSegments(
+                pointPositions = pointPositions,
+                color = color,
+                lineConfig = lineConfig,
+                animationProgress = animationProgress,
+            )
     }
 
     if (lineConfig.showPoints) {
@@ -364,6 +376,18 @@ private fun lineAxisConfig(
         steps = LINE_AXIS_STEPS,
         drawAxisAtZero = drawAxisAtZero,
     )
+
+/**
+ * Resolves the effective [LineInterpolation]: [LineChartConfig.interpolation] wins unless it is
+ * [LineInterpolation.LINEAR], in which case the legacy [LineChartConfig.smoothCurve] flag decides
+ * between [LineInterpolation.SMOOTH] and [LineInterpolation.LINEAR].
+ */
+internal fun resolveLineInterpolation(config: LineChartConfig): LineInterpolation =
+    when {
+        config.interpolation != LineInterpolation.LINEAR -> config.interpolation
+        config.smoothCurve -> LineInterpolation.SMOOTH
+        else -> LineInterpolation.LINEAR
+    }
 
 /**
  * Remembers the min/max value range for [dataList], recomputed only when the data or

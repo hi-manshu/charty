@@ -30,7 +30,11 @@ private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
  * @property pointAlpha Opacity of point markers in the range `[0, 1]`.
  * @property strokeCap Cap style applied to both line ends and each segment.
  * @property smoothCurve When `true`, draws a cubic-bezier smooth curve instead of straight
- *   segments between data points.
+ *   segments between data points. Kept for compatibility; prefer [interpolation]. When
+ *   [interpolation] is [LineInterpolation.LINEAR] and this is `true`, the line is drawn smooth.
+ * @property interpolation How points are connected: [LineInterpolation.LINEAR] straight segments,
+ *   [LineInterpolation.SMOOTH] a cubic curve, or [LineInterpolation.STEP] horizontal-then-vertical
+ *   steps. Takes precedence over [smoothCurve] unless it is [LineInterpolation.LINEAR].
  * @property negativeValuesDrawMode Controls how bars below zero are rendered.
  * @property animation Entry animation played when the chart first appears.
  * @property animateValueChanges When `true`, the line tweens from its previous points to the new ones
@@ -73,6 +77,7 @@ data class LineChartConfig(
     val pointAlpha: Float = 1f,
     val strokeCap: StrokeCap = StrokeCap.Round,
     val smoothCurve: Boolean = false,
+    val interpolation: LineInterpolation = LineInterpolation.LINEAR,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
     val animateValueChanges: Boolean = false,
