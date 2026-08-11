@@ -2,6 +2,7 @@ package com.himanshoe.charty.bar.internal.bar.stacked
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
@@ -18,5 +19,6 @@ internal data class StackedBarDrawParams(
     val animationProgress: Float,
     val onSegmentClick: ((StackedBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, StackedBarSegment>>,
+    val textMeasurer: TextMeasurer? = null,
+    val recordBounds: Boolean = onSegmentClick != null,
 )
-

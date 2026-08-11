@@ -1,6 +1,5 @@
 package com.himanshoe.charty.common
 
-
 /**
  * Specifies the orientation of a chart, determining the arrangement of its axes and data representation.
  * The orientation affects how components like bars, lines, and axes are displayed.

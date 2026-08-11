@@ -47,11 +47,12 @@ fun ChartScaffold(
     contentDescription: String? = null,
     content: DrawScope.(ChartContext) -> Unit,
 ) {
-    val accessibilityModifier = if (contentDescription != null) {
-        Modifier.semantics { this.contentDescription = contentDescription }
-    } else {
-        Modifier
-    }
+    val accessibilityModifier =
+        if (contentDescription != null) {
+            Modifier.semantics { this.contentDescription = contentDescription }
+        } else {
+            Modifier
+        }
     Box(modifier = modifier.then(accessibilityModifier)) {
         DrawAxisAndLabels(
             xLabels = xLabels,
@@ -62,25 +63,28 @@ fun ChartScaffold(
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val leftPadding = when {
-                !config.showLabels -> LEFT_PADDING_WITHOUT_LABELS
-                orientation == ChartOrientation.HORIZONTAL -> HORIZONTAL_LEFT_PADDING_WITH_LABELS
-                else -> VERTICAL_LEFT_PADDING_WITH_LABELS
-            }
-            val bottomPadding = if (config.showLabels && xLabels.isNotEmpty()) {
-                BOTTOM_PADDING_WITH_LABELS
-            } else {
-                BOTTOM_PADDING_WITHOUT_LABELS
-            }
+            val leftPadding =
+                when {
+                    !config.showLabels -> LEFT_PADDING_WITHOUT_LABELS
+                    orientation == ChartOrientation.HORIZONTAL -> HORIZONTAL_LEFT_PADDING_WITH_LABELS
+                    else -> VERTICAL_LEFT_PADDING_WITH_LABELS
+                }
+            val bottomPadding =
+                if (config.showLabels && xLabels.isNotEmpty()) {
+                    BOTTOM_PADDING_WITH_LABELS
+                } else {
+                    BOTTOM_PADDING_WITHOUT_LABELS
+                }
 
-            val chartContext = ChartContext(
-                left = leftPadding,
-                top = TOP_PADDING,
-                right = size.width - RIGHT_PADDING,
-                bottom = size.height - bottomPadding,
-                minValue = yAxisConfig.minValue,
-                maxValue = yAxisConfig.maxValue,
-            )
+            val chartContext =
+                ChartContext(
+                    left = leftPadding,
+                    top = TOP_PADDING,
+                    right = size.width - RIGHT_PADDING,
+                    bottom = size.height - bottomPadding,
+                    minValue = yAxisConfig.minValue,
+                    maxValue = yAxisConfig.maxValue,
+                )
 
             content(chartContext)
         }

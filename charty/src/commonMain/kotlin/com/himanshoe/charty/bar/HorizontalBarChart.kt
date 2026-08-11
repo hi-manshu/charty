@@ -1,11 +1,14 @@
 package com.himanshoe.charty.bar
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
@@ -25,13 +28,16 @@ import com.himanshoe.charty.common.accessibility.generateBarChartDescription
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.createRectangularTooltipState
+import com.himanshoe.charty.common.gesture.rectangularChartScrubHandler
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
-import androidx.compose.ui.util.fastMap
 
 /**
  * A composable function that displays a horizontal bar chart.
@@ -50,6 +56,8 @@ import androidx.compose.ui.util.fastMap
  * @param onBarClick A lambda function invoked when a bar is clicked, providing the corresponding
  *   [BarData].
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
+ *   provided, it replaces the default canvas tooltip and is invoked with the tapped [BarData].
  *
  * Example usage:
  * ```kotlin
@@ -79,6 +87,7 @@ fun HorizontalBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltipContent: (@Composable (BarData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
@@ -93,9 +102,10 @@ fun HorizontalBarChart(
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-        generateBarChartDescription(it, minValue, maxValue)
-    }
+    val chartDescription =
+        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+            generateBarChartDescription(it, minValue, maxValue)
+        }
 
     syncInteractionDataSizes(
         interactionConfig.viewPortState,
@@ -104,44 +114,79 @@ fun HorizontalBarChart(
         dataList.size,
     )
 
-    val chartModifier = buildInteractionModifier(
-        base = modifier,
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
-
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.fastMap { it.label },
-        yAxisConfig = createHorizontalAxisConfig(minValue, maxValue, drawAxisAtZero),
-        config = scaffoldConfig,
-        orientation = ChartOrientation.HORIZONTAL,
-        contentDescription = chartDescription,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-
-        tooltipManager.clearBounds()
-        val baselineX = calculateHorizontalBaselineX(drawAxisAtZero, minValue, maxValue, chartContext)
-
-        drawHorizontalBars(
-            HorizontalBarDrawParams(
+    val scrubModifier =
+        if (interactionConfig.dragTooltipActive) {
+            modifier.rectangularChartScrubHandler(
                 dataList = dataList,
-                chartContext = chartContext,
-                barConfig = barConfig,
-                baselineX = baselineX,
-                animationProgress = animationProgress.value,
-                color = color,
-                isBelowAxisMode = isBelowAxisMode,
-                minValue = minValue,
-                maxValue = maxValue,
-                onBarClick = onBarClick,
-                onBarBoundCalculated = { bounds -> tooltipManager.bounds.add(bounds) },
-            ),
+                bounds = tooltipManager.bounds,
+                onTooltipStateChange = tooltipManager::updateTooltip,
+                createTooltipContent = { barData, rect ->
+                    createRectangularTooltipState(
+                        content = barConfig.tooltipFormatter(barData),
+                        rect = rect,
+                        position = barConfig.tooltipPosition,
+                    )
+                },
+            )
+        } else {
+            modifier
+        }
+
+    val chartModifier =
+        buildInteractionModifier(
+            base = scrubModifier,
+            interactionConfig = interactionConfig,
+            dataList = dataList,
         )
 
-        drawHorizontalReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
-        drawHorizontalTooltipIfNeeded(tooltipManager.tooltipState, barConfig, textMeasurer, chartContext)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.fastMap { it.label },
+            yAxisConfig = createHorizontalAxisConfig(minValue, maxValue, drawAxisAtZero),
+            config = scaffoldConfig,
+            orientation = ChartOrientation.HORIZONTAL,
+            contentDescription = chartDescription,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            tooltipManager.clearBounds()
+            val baselineX = calculateHorizontalBaselineX(drawAxisAtZero, minValue, maxValue, chartContext)
+
+            drawHorizontalBars(
+                HorizontalBarDrawParams(
+                    dataList = dataList,
+                    chartContext = chartContext,
+                    barConfig = barConfig,
+                    baselineX = baselineX,
+                    animationProgress = animationProgress.value,
+                    color = color,
+                    isBelowAxisMode = isBelowAxisMode,
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    onBarClick = onBarClick,
+                    onBarBoundCalculated = { bounds -> tooltipManager.bounds.add(bounds) },
+                    textMeasurer = textMeasurer,
+                    recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
+                ),
+            )
+
+            drawHorizontalReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
+            if (tooltipContent == null) {
+                drawHorizontalTooltipIfNeeded(tooltipManager.tooltipState, barConfig, textMeasurer, chartContext)
+            }
+
+            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        }
+
+        if (tooltipContent != null) {
+            ChartTooltipOverlay(
+                item = tooltipManager.selectedItem,
+                anchor = tooltipManager.tooltipState,
+                config = barConfig.tooltipConfig,
+                modifier = Modifier.matchParentSize(),
+                content = tooltipContent,
+            )
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.himanshoe.charty.pie.data
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 private const val PERCENTAGE_MULTIPLIER = 100f
@@ -20,6 +21,7 @@ private const val DEGREES_IN_CIRCLE = 360f
  * val slice3 = PieData("Product C", 24.5f, metadata = mapOf("category" to "Electronics"))
  * ```
  */
+@Immutable
 data class PieData(
     val label: String,
     val value: Float,

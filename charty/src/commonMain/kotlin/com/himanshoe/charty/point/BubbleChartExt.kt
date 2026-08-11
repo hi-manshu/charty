@@ -84,11 +84,12 @@ internal fun calculateBubbleRadius(
     minBubbleRadius: Float,
     maxBubbleRadius: Float,
 ): Float {
-    val normalizedSize = if (sizeRange > 0f) {
-        (bubbleSize - minSize) / sizeRange
-    } else {
-        DEFAULT_NORMALIZED_SIZE
-    }
+    val normalizedSize =
+        if (sizeRange > 0f) {
+            (bubbleSize - minSize) / sizeRange
+        } else {
+            DEFAULT_NORMALIZED_SIZE
+        }
     val radiusRange = maxBubbleRadius - minBubbleRadius
     return minBubbleRadius + (sqrt(normalizedSize) * radiusRange)
 }
@@ -105,14 +106,15 @@ internal fun createBubbleClickModifier(
     dataList: List<BubbleData>,
     bubbleBounds: List<BubbleBounds>,
     onBubbleClick: ((BubbleData) -> Unit)?,
-): Modifier {
-    return if (onBubbleClick != null) {
+): Modifier =
+    if (onBubbleClick != null) {
         Modifier.pointerInput(dataList, onBubbleClick) {
             detectTapGestures { tapOffset ->
-                val clickedBubble = bubbleBounds.fastFirstOrNull { bubble ->
-                    val distance = calculateDistance(bubble.center, tapOffset)
-                    distance <= bubble.radius
-                }
+                val clickedBubble =
+                    bubbleBounds.fastFirstOrNull { bubble ->
+                        val distance = calculateDistance(bubble.center, tapOffset)
+                        distance <= bubble.radius
+                    }
                 clickedBubble?.let { bubble ->
                     onBubbleClick.invoke(bubble.data)
                 }
@@ -121,5 +123,3 @@ internal fun createBubbleClickModifier(
     } else {
         Modifier
     }
-}
-

@@ -1,5 +1,6 @@
 package com.himanshoe.charty.radar.data
 
+import androidx.compose.runtime.Immutable
 import com.himanshoe.charty.color.ChartyColor
 
 /**
@@ -9,6 +10,7 @@ import com.himanshoe.charty.color.ChartyColor
  * @param value The value for this axis (should be between 0 and maxValue)
  * @param maxValue Maximum value for this axis (default: 100f)
  */
+@Immutable
 data class RadarAxisData(
     val label: String,
     val value: Float,
@@ -40,6 +42,7 @@ data class RadarAxisData(
  * @param color Color for this dataset's polygon and line
  * @param fillAlpha Alpha transparency for the filled polygon (0.0 to 1.0)
  */
+@Immutable
 data class RadarDataSet(
     val label: String,
     val axes: List<RadarAxisData>,

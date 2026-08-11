@@ -8,8 +8,9 @@ package com.himanshoe.charty.common.axis
  *
  * @property degrees The rotation angle in degrees.
  */
-sealed class LabelRotation(val degrees: Float) {
-
+sealed class LabelRotation(
+    val degrees: Float,
+) {
     /**
      * Represents no rotation, where labels are displayed horizontally.
      */
@@ -40,7 +41,9 @@ sealed class LabelRotation(val degrees: Float) {
      *
      * @param angle The rotation angle in degrees.
      */
-    data class Custom(val angle: Float) : LabelRotation(angle)
+    data class Custom(
+        val angle: Float,
+    ) : LabelRotation(angle)
 
     /**
      * A companion object that holds constants for common rotation angles.
@@ -51,4 +54,3 @@ sealed class LabelRotation(val degrees: Float) {
         private const val ANGLE_90_DEGREES = 90F
     }
 }
-

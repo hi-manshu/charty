@@ -8,7 +8,7 @@ import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 
 /**
- * Represents a single segment within a mosiac bar that was clicked
+ * Represents a single segment within a mosaic bar that was clicked
  *
  * @param barGroup The entire bar group that contains this segment
  * @param segmentIndex The index of the clicked segment within the bar
@@ -16,7 +16,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param segmentPercentage The percentage this segment represents of the total
  */
 @Immutable
-data class MosiacBarSegment(
+data class MosaicBarSegment(
     val barGroup: BarGroup,
     val segmentIndex: Int,
     val segmentValue: Float,
@@ -24,7 +24,7 @@ data class MosiacBarSegment(
 )
 
 /**
- * Configuration for [com.himanshoe.charty.bar.MosiacBarChart]
+ * Configuration for [com.himanshoe.charty.bar.MosaicBarChart]
  *
  * @param barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
  * @param animation Animation configuration (Disabled or Enabled with duration)
@@ -32,12 +32,12 @@ data class MosiacBarSegment(
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
 @Stable
-data class MosiacBarChartConfig(
+data class MosaicBarChartConfig(
     val barWidthFraction: Float = 0.9f,
     val animation: Animation = Animation.Default,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
-    val tooltipFormatter: (MosiacBarSegment) -> String = { segment ->
+    val tooltipFormatter: (MosaicBarSegment) -> String = { segment ->
         "${segment.barGroup.label} [${segment.segmentIndex}]: ${segment.segmentPercentage.toInt()}%"
     },
 ) {

@@ -1,5 +1,7 @@
 package com.himanshoe.charty.candlestick.data
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Data class representing a single candlestick in a candlestick chart
  * Commonly used for financial/stock market data visualization
@@ -11,6 +13,7 @@ package com.himanshoe.charty.candlestick.data
  * @param close Closing price/value
  * @param volume Optional volume data for this period
  */
+@Immutable
 data class CandleData(
     val label: String,
     val open: Float,

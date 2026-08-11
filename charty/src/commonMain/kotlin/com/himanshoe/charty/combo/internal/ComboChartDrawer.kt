@@ -23,24 +23,27 @@ internal fun DrawScope.drawComboBars(
     dataBounds: MutableList<Pair<Rect, ComboChartData>>?,
 ) {
     dataList.fastForEachIndexed { index, comboData ->
-        val barX = chartContext.calculateBarLeftPosition(
-            index,
-            dataList.size,
-            comboConfig.barWidthFraction,
-        )
-        val barWidth = chartContext.calculateBarWidth(
-            dataList.size,
-            comboConfig.barWidthFraction,
-        )
+        val barX =
+            chartContext.calculateBarLeftPosition(
+                index,
+                dataList.size,
+                comboConfig.barWidthFraction,
+            )
+        val barWidth =
+            chartContext.calculateBarWidth(
+                dataList.size,
+                comboConfig.barWidthFraction,
+            )
         val barValueY = chartContext.convertValueToYPosition(comboData.barValue)
         val isNegative = comboData.barValue < 0f
 
-        val barDimensions = calculateAnimatedBarDimensions(
-            barValueY = barValueY,
-            baselineY = baselineY,
-            isNegative = isNegative,
-            animationProgress = animationProgress,
-        )
+        val barDimensions =
+            calculateAnimatedBarDimensions(
+                barValueY = barValueY,
+                baselineY = baselineY,
+                isNegative = isNegative,
+                animationProgress = animationProgress,
+            )
 
         if (dataBounds != null && barDimensions.height > 0) {
             dataBounds.add(
@@ -110,4 +113,3 @@ internal fun DrawScope.drawComboLine(
         )
     }
 }
-

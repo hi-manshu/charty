@@ -59,12 +59,14 @@ fun CandlestickChart(
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
-    val (minValue, maxValue) = remember(dataList) {
-        calculateMinValue(dataList) to calculateMaxValue(dataList)
-    }
-    val xLabels = remember(dataList) {
-        calculateOptimizedLabels(dataList.getLabels())
-    }
+    val (minValue, maxValue) =
+        remember(dataList) {
+            calculateMinValue(dataList) to calculateMaxValue(dataList)
+        }
+    val xLabels =
+        remember(dataList) {
+            calculateOptimizedLabels(dataList.getLabels())
+        }
 
     val animationProgress = rememberChartAnimation(candlestickConfig.animation)
     val textMeasurer = rememberTextMeasurer()
@@ -76,11 +78,12 @@ fun CandlestickChart(
         dataSize = dataList.size,
     )
 
-    val chartModifier = buildInteractionModifier(
-        base = modifier,
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
+    val chartModifier =
+        buildInteractionModifier(
+            base = modifier,
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+        )
 
     ChartScaffold(
         modifier = chartModifier,
@@ -93,8 +96,9 @@ fun CandlestickChart(
                 drawAxisAtZero = false,
             ),
         config = scaffoldConfig,
-        contentDescription = interactionConfig.accessibilityDescription
-            ?: generateCandlestickChartDescription(fullDataList),
+        contentDescription =
+            interactionConfig.accessibilityDescription
+                ?: generateCandlestickChartDescription(fullDataList),
     ) { chartContext ->
         updateInteractionBounds(interactionConfig, chartContext)
 
@@ -125,15 +129,17 @@ private fun DrawScope.drawCandleBar(
     bearishColor: ChartyColor,
     animationProgress: Float,
 ) {
-    val candleX = chartContext.calculateBarLeftPosition(
-        index,
-        dataList.size,
-        candlestickConfig.candleWidthFraction,
-    )
-    val candleWidth = chartContext.calculateBarWidth(
-        dataList.size,
-        candlestickConfig.candleWidthFraction,
-    )
+    val candleX =
+        chartContext.calculateBarLeftPosition(
+            index,
+            dataList.size,
+            candlestickConfig.candleWidthFraction,
+        )
+    val candleWidth =
+        chartContext.calculateBarWidth(
+            dataList.size,
+            candlestickConfig.candleWidthFraction,
+        )
     val openY = chartContext.convertValueToYPosition(candle.open)
     val highY = chartContext.convertValueToYPosition(candle.high)
     val lowY = chartContext.convertValueToYPosition(candle.low)
@@ -152,13 +158,16 @@ private fun DrawScope.drawCandleBar(
             bodyTop
         }
 
-    val animatedBodyTop = chartContext.bottom -
-        (chartContext.bottom - actualBodyTop) * animationProgress
+    val animatedBodyTop =
+        chartContext.bottom -
+            (chartContext.bottom - actualBodyTop) * animationProgress
     val animatedBodyHeight = actualBodyHeight * animationProgress
-    val animatedHighY = chartContext.bottom -
-        (chartContext.bottom - highY) * animationProgress
-    val animatedLowY = chartContext.bottom -
-        (chartContext.bottom - lowY) * animationProgress
+    val animatedHighY =
+        chartContext.bottom -
+            (chartContext.bottom - highY) * animationProgress
+    val animatedLowY =
+        chartContext.bottom -
+            (chartContext.bottom - lowY) * animationProgress
 
     drawCandlestick(
         CandlestickDrawParams(

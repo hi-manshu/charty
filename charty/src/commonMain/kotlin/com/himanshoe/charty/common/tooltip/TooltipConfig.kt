@@ -30,10 +30,11 @@ data class TooltipConfig(
     val backgroundColor: Color = DEFAULT_COLOR,
     val borderColor: Color? = null,
     val borderWidth: Dp = 1.dp,
-    val textStyle: TextStyle = TextStyle(
-        color = Color.White,
-        fontSize = 14.sp,
-    ),
+    val textStyle: TextStyle =
+        TextStyle(
+            color = Color.White,
+            fontSize = 14.sp,
+        ),
     val padding: TooltipPadding = TooltipPadding(),
     val elevation: Dp = 4.dp,
     val offsetY: Dp = 8.dp,
@@ -83,4 +84,3 @@ data class TooltipState(
     val barWidth: Float,
     val position: TooltipPosition = TooltipPosition.AUTO,
 )
-

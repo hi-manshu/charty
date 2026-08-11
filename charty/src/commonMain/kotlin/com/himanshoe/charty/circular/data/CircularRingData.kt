@@ -1,5 +1,6 @@
 package com.himanshoe.charty.circular.data
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.color.ChartyColor
 
@@ -36,6 +37,7 @@ private const val DEGREES_IN_CIRCLE = 360f
  * )
  * ```
  */
+@Immutable
 data class CircularRingData(
     val label: String,
     val progress: Float,

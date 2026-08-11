@@ -12,19 +12,24 @@ private const val DEFAULT_AXIS_STEPS = 6
 /**
  * Creates axis configuration for lollipop chart.
  */
-internal fun createAxisConfig(minValue: Float, maxValue: Float): AxisConfig {
-    return AxisConfig(
+internal fun createAxisConfig(
+    minValue: Float,
+    maxValue: Float,
+): AxisConfig =
+    AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
         steps = DEFAULT_AXIS_STEPS,
         drawAxisAtZero = true,
     )
-}
 
 /**
  * Calculates Euclidean distance between two points.
  */
-internal fun calculateDistance(point1: Offset, point2: Offset): Float {
+internal fun calculateDistance(
+    point1: Offset,
+    point2: Offset,
+): Float {
     val dx = point1.x - point2.x
     val dy = point1.y - point2.y
     return sqrt(dx.pow(2) + dy.pow(2))
@@ -37,8 +42,8 @@ internal fun createStemBrush(
     chartyColor: ChartyColor,
     baselineY: Float,
     barValueY: Float,
-): Brush {
-    return when (chartyColor) {
+): Brush =
+    when (chartyColor) {
         is ChartyColor.Solid ->
             Brush.verticalGradient(
                 colors = listOf(chartyColor.color, chartyColor.color),
@@ -53,15 +58,15 @@ internal fun createStemBrush(
                 endY = barValueY,
             )
     }
-}
 
 /**
  * Extracts circle color from ChartyColor based on index.
  */
-internal fun getCircleColor(circleChartyColor: ChartyColor, index: Int): androidx.compose.ui.graphics.Color {
-    return when (circleChartyColor) {
+internal fun getCircleColor(
+    circleChartyColor: ChartyColor,
+    index: Int,
+): androidx.compose.ui.graphics.Color =
+    when (circleChartyColor) {
         is ChartyColor.Solid -> circleChartyColor.color
         is ChartyColor.Gradient -> circleChartyColor.colors[index % circleChartyColor.colors.size]
     }
-}
-

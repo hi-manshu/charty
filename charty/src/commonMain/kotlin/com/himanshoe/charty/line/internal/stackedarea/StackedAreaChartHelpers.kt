@@ -11,8 +11,8 @@ import com.himanshoe.charty.line.data.LineGroup
 internal fun ChartContext.calculateCumulativePositions(
     dataList: List<LineGroup>,
     seriesIndex: Int,
-): List<Offset> {
-    return dataList.fastMapIndexed { index, group ->
+): List<Offset> =
+    dataList.fastMapIndexed { index, group ->
         var cumulativeValue = 0f
         for (i in 0..seriesIndex) {
             cumulativeValue += group.values.getOrNull(i) ?: 0f
@@ -22,7 +22,6 @@ internal fun ChartContext.calculateCumulativePositions(
             y = convertValueToYPosition(cumulativeValue),
         )
     }
-}
 
 /**
  * Calculate lower bound positions (previous series cumulative or baseline)
@@ -31,8 +30,8 @@ internal fun ChartContext.calculateLowerPositions(
     dataList: List<LineGroup>,
     seriesIndex: Int,
     baselineY: Float,
-): List<Offset> {
-    return if (seriesIndex > 0) {
+): List<Offset> =
+    if (seriesIndex > 0) {
         dataList.fastMapIndexed { index, group ->
             var cumulativeValue = 0f
             for (i in 0 until seriesIndex) {
@@ -51,7 +50,6 @@ internal fun ChartContext.calculateLowerPositions(
             )
         }
     }
-}
 
 /**
  * Calculate cumulative value up to a series index
@@ -63,4 +61,3 @@ internal fun LineGroup.calculateCumulativeValue(seriesIndex: Int): Float {
     }
     return cumulativeValue
 }
-

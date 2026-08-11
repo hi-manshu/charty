@@ -45,10 +45,11 @@ internal fun DrawScope.drawSmoothCurveLine(
         drawPath(
             path = path,
             brush = Brush.linearGradient(lineColor.value),
-            style = Stroke(
-                width = comboConfig.lineWidth,
-                cap = comboConfig.strokeCap,
-            ),
+            style =
+                Stroke(
+                    width = comboConfig.lineWidth,
+                    cap = comboConfig.strokeCap,
+                ),
             alpha = animationProgress,
         )
     }
@@ -79,10 +80,11 @@ internal fun DrawScope.drawStraightLine(
     if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
         val start = pointPositions[segmentsToDraw]
         val end = pointPositions[segmentsToDraw + 1]
-        val partialEnd = Offset(
-            x = start.x + (end.x - start.x) * segmentProgress,
-            y = start.y + (end.y - start.y) * segmentProgress,
-        )
+        val partialEnd =
+            Offset(
+                x = start.x + (end.x - start.x) * segmentProgress,
+                y = start.y + (end.y - start.y) * segmentProgress,
+            )
         drawLine(
             brush = Brush.linearGradient(lineColor.value),
             start = start,
@@ -114,4 +116,3 @@ internal fun DrawScope.drawLinePoints(
         }
     }
 }
-

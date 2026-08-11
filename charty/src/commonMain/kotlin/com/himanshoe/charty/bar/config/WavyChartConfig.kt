@@ -1,7 +1,8 @@
 package com.himanshoe.charty.bar.config
 
 import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.runtime.Stable
 
 private const val DEFAULT_BAR_WIDTH_FRACTION = 0.8f
 private const val DEFAULT_WAVE_AMPLITUDE_FRACTION = 1f / 3f
@@ -27,12 +28,21 @@ private const val DEFAULT_STROKE_WIDTH_DP = 3f
  * @param phaseOffsetPerBar Optional additional phase offset applied per bar index.
  * Use `0f` to keep all bars in sync, or a small positive value to create a cascading effect.
  */
+@Stable
 data class WavyChartConfig(
     val barWidthFraction: Float = DEFAULT_BAR_WIDTH_FRACTION,
     val waveAmplitudeFractionOfBarWidth: Float = DEFAULT_WAVE_AMPLITUDE_FRACTION,
     val waveSegments: Int = DEFAULT_WAVE_SEGMENTS,
     val animationDurationMillis: Int = DEFAULT_ANIMATION_DURATION_MS,
-    val animationEasing: Easing = LinearEasing,
+    val animationEasing: Easing = FastOutSlowInEasing,
     val strokeWidthDp: Float = DEFAULT_STROKE_WIDTH_DP,
     val phaseOffsetPerBar: Float = 0f,
-)
+) {
+    init {
+        require(barWidthFraction in 0f..1f) { "barWidthFraction must be between 0 and 1" }
+        require(waveAmplitudeFractionOfBarWidth >= 0f) { "waveAmplitudeFractionOfBarWidth must be non-negative" }
+        require(waveSegments >= 1) { "waveSegments must be at least 1" }
+        require(animationDurationMillis > 0) { "animationDurationMillis must be positive" }
+        require(strokeWidthDp > 0f) { "strokeWidthDp must be positive" }
+    }
+}

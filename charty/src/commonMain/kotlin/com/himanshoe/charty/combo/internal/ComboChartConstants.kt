@@ -9,4 +9,3 @@ internal object ComboChartConstants {
     const val THREE = 3f
     const val TWO = 2f
 }
-

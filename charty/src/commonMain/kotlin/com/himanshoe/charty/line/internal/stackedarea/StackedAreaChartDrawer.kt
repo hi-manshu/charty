@@ -15,19 +15,20 @@ import com.himanshoe.charty.line.data.StackedAreaPoint
  */
 internal fun DrawScope.drawStackedAreaSeries(params: StackedAreaSeriesParams) {
     if (params.cumulativePositions.isEmpty()) return
-    val areaPath = if (params.lineConfig.smoothCurve) {
-        createSmoothAreaPath(
-            cumulativePositions = params.cumulativePositions,
-            startX = params.startX,
-            baselineY = params.baselineY,
-        )
-    } else {
-        createStraightAreaPath(
-            cumulativePositions = params.cumulativePositions,
-            startX = params.startX,
-            baselineY = params.baselineY,
-        )
-    }
+    val areaPath =
+        if (params.lineConfig.smoothCurve) {
+            createSmoothAreaPath(
+                cumulativePositions = params.cumulativePositions,
+                startX = params.startX,
+                baselineY = params.baselineY,
+            )
+        } else {
+            createStraightAreaPath(
+                cumulativePositions = params.cumulativePositions,
+                startX = params.startX,
+                baselineY = params.baselineY,
+            )
+        }
 
     drawPath(
         path = areaPath,
@@ -35,27 +36,29 @@ internal fun DrawScope.drawStackedAreaSeries(params: StackedAreaSeriesParams) {
         style = Fill,
         alpha = params.animationProgress,
     )
-    val linePath = if (params.lineConfig.smoothCurve) {
-        createSmoothLinePath(
-            cumulativePositions = params.cumulativePositions,
-            startX = params.startX,
-            baselineY = params.baselineY,
-        )
-    } else {
-        createStraightLinePath(
-            cumulativePositions = params.cumulativePositions,
-            startX = params.startX,
-            baselineY = params.baselineY,
-        )
-    }
+    val linePath =
+        if (params.lineConfig.smoothCurve) {
+            createSmoothLinePath(
+                cumulativePositions = params.cumulativePositions,
+                startX = params.startX,
+                baselineY = params.baselineY,
+            )
+        } else {
+            createStraightLinePath(
+                cumulativePositions = params.cumulativePositions,
+                startX = params.startX,
+                baselineY = params.baselineY,
+            )
+        }
 
     drawPath(
         path = linePath,
         color = params.seriesColor,
-        style = Stroke(
-            width = params.lineConfig.lineWidth,
-            cap = params.lineConfig.strokeCap,
-        ),
+        style =
+            Stroke(
+                width = params.lineConfig.lineWidth,
+                cap = params.lineConfig.strokeCap,
+            ),
         alpha = params.animationProgress,
     )
     if (params.onSegmentBoundsCalculated != null) {
@@ -88,15 +91,15 @@ private fun addSegmentBounds(
             val nextUpperPoint = cumulativePositions[dataIndex + 1]
             val nextLowerPoint = lowerPositions[dataIndex + 1]
 
-            val segmentPath = Path().apply {
-                moveTo(upperPoint.x, upperPoint.y)
-                lineTo(nextUpperPoint.x, nextUpperPoint.y)
-                lineTo(nextLowerPoint.x, nextLowerPoint.y)
-                lineTo(lowerPoint.x, lowerPoint.y)
-                close()
-            }
+            val segmentPath =
+                Path().apply {
+                    moveTo(upperPoint.x, upperPoint.y)
+                    lineTo(nextUpperPoint.x, nextUpperPoint.y)
+                    lineTo(nextLowerPoint.x, nextLowerPoint.y)
+                    lineTo(lowerPoint.x, lowerPoint.y)
+                    close()
+                }
 
-            // Calculate bounds for this segment
             val minX = minOf(upperPoint.x, lowerPoint.x, nextUpperPoint.x, nextLowerPoint.x)
             val maxX = maxOf(upperPoint.x, lowerPoint.x, nextUpperPoint.x, nextLowerPoint.x)
             val minY = minOf(upperPoint.y, lowerPoint.y, nextUpperPoint.y, nextLowerPoint.y)
@@ -120,4 +123,3 @@ private fun addSegmentBounds(
         }
     }
 }
-

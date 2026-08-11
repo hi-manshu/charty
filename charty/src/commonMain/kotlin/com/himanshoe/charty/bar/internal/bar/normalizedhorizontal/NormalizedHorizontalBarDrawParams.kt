@@ -19,4 +19,5 @@ internal data class NormalizedHorizontalBarDrawParams(
     val animationProgress: Float,
     val onSegmentClick: ((NormalizedHorizontalBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, NormalizedHorizontalBarSegment>>,
+    val recordBounds: Boolean = onSegmentClick != null,
 )

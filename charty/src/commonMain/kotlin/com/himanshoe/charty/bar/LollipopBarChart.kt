@@ -1,5 +1,7 @@
 package com.himanshoe.charty.bar
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -25,6 +27,7 @@ import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -40,6 +43,8 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param onBarClick A lambda function invoked when a lollipop is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
+ *   provided, it replaces the default canvas tooltip and is invoked with the tapped [BarData].
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -51,6 +56,7 @@ fun LollipopBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltipContent: (@Composable (BarData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Lollipop bar chart data cannot be empty" }
@@ -69,46 +75,63 @@ fun LollipopBarChart(
         dataSize = dataList.size,
     )
 
-    val clickModifier = createLollipopChartModifier(
-        modifier = modifier,
-        onBarClick = onBarClick,
-        dataList = dataList,
-        config = config,
-        lollipopBounds = tooltipManager.bounds,
-        onTooltipUpdate = tooltipManager::updateTooltip,
-    )
-
-    val chartModifier = buildInteractionModifier(
-        base = clickModifier,
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
-
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.getLabels(),
-        yAxisConfig = createAxisConfig(minValue, maxValue),
-        config = scaffoldConfig,
-        contentDescription = interactionConfig.accessibilityDescription
-            ?: "Lollipop chart, ${fullDataList.size} data points.",
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-
-        tooltipManager.clearBounds()
-
-        drawLollipops(
-            dataList = dataList,
-            chartContext = chartContext,
-            config = config,
-            animationProgress = animationProgress.value,
-            colors = colors,
+    val clickModifier =
+        createLollipopChartModifier(
+            modifier = modifier,
             onBarClick = onBarClick,
+            dataList = dataList,
+            config = config,
             lollipopBounds = tooltipManager.bounds,
+            onTooltipUpdate = tooltipManager::updateTooltip,
         )
 
-        drawTooltipHighlightIfNeeded(tooltipManager.tooltipState, config, chartContext)
-        drawTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+    val chartModifier =
+        buildInteractionModifier(
+            base = clickModifier,
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+        )
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.getLabels(),
+            yAxisConfig = createAxisConfig(minValue, maxValue),
+            config = scaffoldConfig,
+            contentDescription =
+                interactionConfig.accessibilityDescription
+                    ?: "Lollipop chart, ${fullDataList.size} data points.",
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
+
+            tooltipManager.clearBounds()
+
+            drawLollipops(
+                dataList = dataList,
+                chartContext = chartContext,
+                config = config,
+                animationProgress = animationProgress.value,
+                colors = colors,
+                onBarClick = onBarClick,
+                lollipopBounds = tooltipManager.bounds,
+            )
+
+            drawTooltipHighlightIfNeeded(tooltipManager.tooltipState, config, chartContext)
+            if (tooltipContent == null) {
+                drawTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+            }
+
+            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        }
+
+        if (tooltipContent != null) {
+            ChartTooltipOverlay(
+                item = tooltipManager.selectedItem,
+                anchor = tooltipManager.tooltipState,
+                config = config.tooltipConfig,
+                modifier = Modifier.matchParentSize(),
+                content = tooltipContent,
+            )
+        }
     }
 }

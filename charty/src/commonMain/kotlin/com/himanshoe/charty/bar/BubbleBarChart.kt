@@ -28,6 +28,7 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -76,20 +77,23 @@ fun BubbleBarChart(
         dataSize = dataList.size,
     )
 
-    val clickModifier = createBubbleChartModifier(
-        modifier = modifier,
-        onBarClick = onBarClick,
-        dataList = dataList,
-        bubbleConfig = bubbleConfig,
-        barBounds = barBounds,
-        onTooltipUpdate = { tooltipState = it },
-    )
+    val clickModifier =
+        createBubbleChartModifier(
+            modifier = modifier,
+            onBarClick = onBarClick,
+            dataList = dataList,
+            bubbleConfig = bubbleConfig,
+            barBounds = barBounds,
+            onTooltipUpdate = { state, _ -> tooltipState = state },
+            enableScrub = interactionConfig.dragTooltipActive,
+        )
 
-    val chartModifier = buildInteractionModifier(
-        base = clickModifier,
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
+    val chartModifier =
+        buildInteractionModifier(
+            base = clickModifier,
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+        )
 
     ChartScaffold(
         modifier = chartModifier,
@@ -97,25 +101,28 @@ fun BubbleBarChart(
         yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
         leftLabelRotation = scaffoldConfig.leftLabelRotation,
-        contentDescription = interactionConfig.accessibilityDescription
-            ?: "Bubble bar chart, ${fullDataList.size} data points.",
+        contentDescription =
+            interactionConfig.accessibilityDescription
+                ?: "Bubble bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
         updateInteractionBounds(interactionConfig, chartContext)
 
         barBounds.clear()
         val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
 
-        val drawParams = BubbleBarDrawParams(
-            dataList = dataList,
-            chartContext = chartContext,
-            bubbleConfig = bubbleConfig,
-            baselineY = baselineY,
-            animationProgress = animationProgress.value,
-            color = color,
-            onBarClick = onBarClick,
-            barBounds = barBounds,
-            textMeasurer = textMeasurer,
-        )
+        val drawParams =
+            BubbleBarDrawParams(
+                dataList = dataList,
+                chartContext = chartContext,
+                bubbleConfig = bubbleConfig,
+                baselineY = baselineY,
+                animationProgress = animationProgress.value,
+                color = color,
+                onBarClick = onBarClick,
+                barBounds = barBounds,
+                textMeasurer = textMeasurer,
+                recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
+            )
 
         drawBubbleBars(drawParams)
         drawReferenceLineIfNeeded(drawParams)

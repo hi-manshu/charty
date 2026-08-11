@@ -24,4 +24,3 @@ internal data class LollipopDrawParams(
     val circleRadius: Float,
     val circleStrokeWidth: Float,
 )
-

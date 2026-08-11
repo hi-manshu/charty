@@ -1,4 +1,3 @@
 package com.himanshoe.charty.bar.internal.bar.horizontal
 
 internal const val HORIZONTAL_DEFAULT_AXIS_STEPS = 6
-

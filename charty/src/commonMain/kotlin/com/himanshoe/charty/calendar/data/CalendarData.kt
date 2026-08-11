@@ -1,5 +1,7 @@
 package com.himanshoe.charty.calendar.data
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Represents a single day's contribution data for the [com.himanshoe.charty.calendar.CalendarHeatmapChart].
  *
@@ -14,6 +16,7 @@ package com.himanshoe.charty.calendar.data
  * CalendarData(year = 2024, month = 6, day = 15, value = 4f)
  * ```
  */
+@Immutable
 data class CalendarData(
     val year: Int,
     val month: Int,

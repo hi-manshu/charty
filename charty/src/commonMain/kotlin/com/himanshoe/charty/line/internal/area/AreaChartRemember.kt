@@ -13,12 +13,14 @@ import com.himanshoe.charty.line.data.LineData
 internal fun rememberAreaValueRange(
     dataList: List<LineData>,
     negativeValuesDrawMode: NegativeValuesDrawMode,
-): Pair<Float, Float> {
-    return remember(dataList, negativeValuesDrawMode) {
+): Pair<Float, Float> =
+    remember(dataList, negativeValuesDrawMode) {
         val values = dataList.getValues()
-        val minValue = com.himanshoe.charty.common.util.calculateMinValue(values)
-        val maxValue = com.himanshoe.charty.common.util.calculateMaxValue(values)
+        val minValue =
+            com.himanshoe.charty.common.util
+                .calculateMinValue(values)
+        val maxValue =
+            com.himanshoe.charty.common.util
+                .calculateMaxValue(values)
         minValue to maxValue
     }
-}
-

@@ -1,5 +1,6 @@
 package com.himanshoe.charty.common.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +54,7 @@ enum class ReferenceLineLabelPosition {
  * @property labelPosition The position of the label relative to the line, defined by [ReferenceLineLabelPosition].
  * @property labelOffset The offset in pixels to be applied to the label's position, moving it away from the line.
  */
+@Stable
 data class ReferenceLineConfig(
     /**
      * Whether this reference line should be rendered.

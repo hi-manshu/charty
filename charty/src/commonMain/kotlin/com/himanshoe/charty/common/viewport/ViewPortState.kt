@@ -76,7 +76,10 @@ class ViewPortState {
      *   values less than `1f` zoom out. The minimum visible window is capped at 10 % of
      *   the dataset to prevent over-zooming.
      */
-    internal fun zoom(focusFraction: Float, scaleFactor: Float) {
+    internal fun zoom(
+        focusFraction: Float,
+        scaleFactor: Float,
+    ) {
         val newWidth = (visibleFraction / scaleFactor).coerceIn(MIN_VISIBLE_FRACTION, 1f)
         val focusAbsolute = startFraction + focusFraction * visibleFraction
         val newStart = (focusAbsolute - focusFraction * newWidth).coerceIn(0f, 1f - newWidth)
@@ -110,17 +113,18 @@ class ViewPortState {
         flingJob?.cancel()
         val scope = coroutineScope ?: return
         val cw = chartWidth.coerceAtLeast(1f)
-        flingJob = scope.launch {
-            var prevValue = 0f
-            Animatable(0f).animateDecay(
-                initialVelocity = initialVelocityX,
-                animationSpec = decay,
-            ) {
-                val delta = value - prevValue
-                prevValue = value
-                pan(delta / cw * visibleFraction)
+        flingJob =
+            scope.launch {
+                var prevValue = 0f
+                Animatable(0f).animateDecay(
+                    initialVelocity = initialVelocityX,
+                    animationSpec = decay,
+                ) {
+                    val delta = value - prevValue
+                    prevValue = value
+                    pan(delta / cw * visibleFraction)
+                }
             }
-        }
     }
 
     /**

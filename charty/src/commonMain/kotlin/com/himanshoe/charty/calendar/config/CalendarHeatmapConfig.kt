@@ -1,5 +1,6 @@
 package com.himanshoe.charty.calendar.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -10,13 +11,23 @@ import com.himanshoe.charty.calendar.data.CalendarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 
-private val MONTH_ABBREVS = arrayOf(
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-)
+private val MONTH_ABBREVS =
+    arrayOf(
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    )
 
-internal fun calendarMonthName(month: Int): String =
-    if (month in 1..12) MONTH_ABBREVS[month - 1] else ""
+internal fun calendarMonthName(month: Int): String = if (month in 1..12) MONTH_ABBREVS[month - 1] else ""
 
 private val DEFAULT_INTENSITY_COLOR_1 = Color(0xFF9BE9A8)
 private val DEFAULT_INTENSITY_COLOR_2 = Color(0xFF40C463)
@@ -71,13 +82,15 @@ enum class WeekStartDay {
  * )
  * ```
  */
+@Stable
 data class CalendarHeatmapConfig(
-    val intensityColors: List<Color> = listOf(
-        DEFAULT_INTENSITY_COLOR_1,
-        DEFAULT_INTENSITY_COLOR_2,
-        DEFAULT_INTENSITY_COLOR_3,
-        DEFAULT_INTENSITY_COLOR_4,
-    ),
+    val intensityColors: List<Color> =
+        listOf(
+            DEFAULT_INTENSITY_COLOR_1,
+            DEFAULT_INTENSITY_COLOR_2,
+            DEFAULT_INTENSITY_COLOR_3,
+            DEFAULT_INTENSITY_COLOR_4,
+        ),
     val emptyColor: Color = DEFAULT_EMPTY_COLOR,
     val cellShape: CellShape = CellShape.RoundedSquare(cornerRadius = DEFAULT_CELL_CORNER_RADIUS),
     val cellSize: Dp = DEFAULT_CELL_SIZE_DP.dp,
@@ -85,11 +98,12 @@ data class CalendarHeatmapConfig(
     val showMonthLabels: Boolean = true,
     val showDayLabels: Boolean = true,
     val weekStartDay: WeekStartDay = WeekStartDay.SUNDAY,
-    val labelTextStyle: TextStyle = TextStyle(
-        fontSize = DEFAULT_LABEL_FONT_SIZE_SP.sp,
-        fontWeight = FontWeight.Normal,
-        color = DEFAULT_LABEL_COLOR,
-    ),
+    val labelTextStyle: TextStyle =
+        TextStyle(
+            fontSize = DEFAULT_LABEL_FONT_SIZE_SP.sp,
+            fontWeight = FontWeight.Normal,
+            color = DEFAULT_LABEL_COLOR,
+        ),
     val animation: Animation = Animation.Default,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipFormatter: (CalendarData) -> String = { data ->

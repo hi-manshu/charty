@@ -20,5 +20,5 @@ internal data class SpanDrawParams(
     val colors: ChartyColor,
     val onSpanClick: ((SpanData) -> Unit)?,
     val onSpanBoundCalculated: (Pair<Rect, SpanData>) -> Unit,
+    val recordBounds: Boolean = onSpanClick != null,
 )
-

@@ -20,14 +20,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -39,6 +39,8 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.accessibility.generateRadarChartDescription
+import com.himanshoe.charty.common.animation.isAnimated
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.radar.config.LegendPosition
@@ -87,18 +89,20 @@ fun MultipleRadarChart(
     val dataSetsList = remember(dataSets) { dataSets() }
     require(dataSetsList.isNotEmpty()) { "Multiple radar chart data cannot be empty" }
 
-    val chartDescription = remember(dataSetsList, accessibilityDescription) {
-        when (accessibilityDescription) {
-            "" -> null
-            null -> "Multiple radar chart, ${dataSetsList.size} datasets."
-            else -> accessibilityDescription
+    val chartDescription =
+        remember(dataSetsList, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null -> generateRadarChartDescription(dataSetsList, "Multiple radar")
+                else -> accessibilityDescription
+            }
         }
-    }
-    val semanticsModifier = if (chartDescription != null) {
-        Modifier.semantics { contentDescription = chartDescription }
-    } else {
-        Modifier
-    }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
 
     val numberOfAxes = dataSetsList.first().axes.size
     require(dataSetsList.fastAll { it.axes.size == numberOfAxes }) {
@@ -418,24 +422,30 @@ private fun RadarChartContent(
 
     BoxWithConstraints(modifier = modifier) {
         Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (onDataSetClick != null) {
-                        Modifier.pointerInput(dataSetsList, dataPointPositions) {
-                            detectTapGestures { offset ->
-                                handleDataPointClick(offset, dataPointPositions, dataSetsList, config, onDataSetClick)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (onDataSetClick != null) {
+                            Modifier.pointerInput(dataSetsList, dataPointPositions) {
+                                detectTapGestures { offset ->
+                                    handleDataPointClick(
+                                        offset,
+                                        dataPointPositions,
+                                        dataSetsList,
+                                        config,
+                                        onDataSetClick,
+                                    )
+                                }
                             }
-                        }
-                    } else {
-                        Modifier
-                    },
-                ),
+                        } else {
+                            Modifier
+                        },
+                    ),
         ) {
             val center = Offset(size.width / 2f, size.height / 2f)
             val maxRadius = min(size.width / 2f, size.height / 2f) * (1f - config.radarConfig.paddingFraction)
 
-            // Draw grid
             if (config.radarConfig.gridConfig.showGridLines) {
                 drawRadarGrid(
                     center = center,
@@ -459,26 +469,27 @@ private fun RadarChartContent(
                 )
             }
             dataSetsList.fastForEachIndexed { index, dataSet ->
-                val datasetAnimationProgress = calculateDatasetAnimationProgress(
-                    index = index,
-                    animationProgress = animationProgress.value,
-                    config = config,
-                )
+                val datasetAnimationProgress =
+                    calculateDatasetAnimationProgress(
+                        index = index,
+                        animationProgress = animationProgress.value,
+                        config = config,
+                    )
 
-                val points = drawRadarDataSet(
-                    center = center,
-                    maxRadius = maxRadius,
-                    dataSet = dataSet,
-                    config = config,
-                    animationProgress = datasetAnimationProgress,
-                )
+                val points =
+                    drawRadarDataSet(
+                        center = center,
+                        maxRadius = maxRadius,
+                        dataSet = dataSet,
+                        config = config,
+                        animationProgress = datasetAnimationProgress,
+                    )
 
                 if (onDataSetClick != null) {
                     dataPointPositions[index] = points
                 }
             }
 
-            // Draw labels
             if (config.radarConfig.labelConfig.showLabels) {
                 drawAxisLabels(
                     center = center,
@@ -491,7 +502,6 @@ private fun RadarChartContent(
                 )
             }
 
-            // Draw center background
             if (config.radarConfig.centerConfig.centerBackgroundRadius > 0f) {
                 drawCircle(
                     color = config.radarConfig.centerConfig.centerBackgroundColor,
@@ -507,13 +517,12 @@ private fun RadarChartContent(
  * Remember and manage radar chart animation
  */
 @Composable
-private fun rememberRadarAnimation(animation: Animation): Animatable<Float, *> {
-    return rememberChartAnimation(
+private fun rememberRadarAnimation(animation: Animation): Animatable<Float, *> =
+    rememberChartAnimation(
         animation = animation,
-        initialValue = if (animation is Animation.Enabled) DEFAULT_ANIMATION_START else DEFAULT_ANIMATION_END,
+        initialValue = if (animation.isAnimated) DEFAULT_ANIMATION_START else DEFAULT_ANIMATION_END,
         targetValue = DEFAULT_ANIMATION_END,
     )
-}
 
 /**
  * Calculate animation progress for a specific dataset (with optional stagger)
@@ -522,8 +531,8 @@ private fun calculateDatasetAnimationProgress(
     index: Int,
     animationProgress: Float,
     config: MultipleRadarChartConfig,
-): Float {
-    return if (config.staggerAnimation) {
+): Float =
+    if (config.staggerAnimation) {
         val delay = index * config.staggerDelay
         val adjustedProgress = (animationProgress - delay).coerceIn(DEFAULT_ANIMATION_START, DEFAULT_ANIMATION_END)
         (adjustedProgress / (DEFAULT_ANIMATION_END - delay).coerceAtLeast(MIN_STAGGER_DIVISOR))
@@ -531,8 +540,6 @@ private fun calculateDatasetAnimationProgress(
     } else {
         animationProgress
     }
-}
-
 
 /**
  * Draw the radar grid (circular or polygonal)
@@ -601,7 +608,6 @@ private fun DrawScope.drawRadarDataSet(
     val path = Path()
     val points = mutableListOf<Offset>()
 
-    // Calculate all points
     dataSet.axes.fastForEachIndexed { index, axisData ->
         val baseAngle = config.radarConfig.startAngleDegrees
         val sweepPerAxis = FULL_CIRCLE_DEGREES * index / numberOfAxes
@@ -622,20 +628,17 @@ private fun DrawScope.drawRadarDataSet(
     }
     path.close()
 
-    // Get color from ChartyColor
     val dataColor =
         when (dataSet.color) {
             is ChartyColor.Solid -> dataSet.color.color
             is ChartyColor.Gradient -> dataSet.color.colors.first()
         }
 
-    // Draw filled polygon
     drawPath(
         path = path,
         color = dataColor.copy(alpha = dataSet.fillAlpha * animationProgress),
     )
 
-    // Draw outline with customizable line width per dataset
     val lineWidth = config.datasetLineWidth ?: config.radarConfig.dataLineWidth
     drawPath(
         path = path,
@@ -648,18 +651,15 @@ private fun DrawScope.drawRadarDataSet(
             ),
     )
 
-    // Draw data points
     if (config.radarConfig.showDataPoints) {
         val pointRadius = config.datasetPointRadius ?: config.radarConfig.dataPointRadius
         points.fastForEach { point ->
-            // Outer circle
             drawCircle(
                 color = dataColor,
                 radius = pointRadius * animationProgress,
                 center = point,
             )
 
-            // Optional inner circle for better visibility
             if (config.showPointInnerCircle) {
                 drawCircle(
                     color = Color.White,
@@ -739,18 +739,16 @@ private fun handleDataPointClick(
 ) {
     val clickTolerance = (config.datasetPointRadius ?: config.radarConfig.dataPointRadius) * CLICK_TOLERANCE_MULTIPLIER
 
-    // Iterate through datasets in reverse order (top to bottom in drawing)
-    // to prioritize clicking on the topmost dataset
     for (datasetIndex in dataSetsList.indices.reversed()) {
         val points = dataPointPositions[datasetIndex] ?: continue
 
-        // Check if any point in this dataset was clicked
         for (pointIndex in points.indices) {
             val point = points[pointIndex]
-            val distance = kotlin.math.sqrt(
-                (clickOffset.x - point.x) * (clickOffset.x - point.x) +
-                    (clickOffset.y - point.y) * (clickOffset.y - point.y),
-            )
+            val distance =
+                kotlin.math.sqrt(
+                    (clickOffset.x - point.x) * (clickOffset.x - point.x) +
+                        (clickOffset.y - point.y) * (clickOffset.y - point.y),
+                )
 
             if (distance <= clickTolerance) {
                 onDataSetClick(dataSetsList[datasetIndex].label, pointIndex)
@@ -759,4 +757,3 @@ private fun handleDataPointClick(
         }
     }
 }
-

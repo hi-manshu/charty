@@ -11,4 +11,3 @@ internal object StackedAreaChartConstants {
     const val BEZIER_CONTROL_POINT_2_MULTIPLIER = 2f
     const val BEZIER_CONTROL_POINT_2_DIVISOR = 3f
 }
-

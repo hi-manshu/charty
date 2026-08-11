@@ -43,13 +43,12 @@ internal fun rememberGroupedHorizontalState(
         val rawMin = allValues.minOrNull() ?: 0f
         val rawMax = allValues.maxOrNull() ?: 0f
 
-        // In BELOW_AXIS mode, clamp the minimum to 0 when all data is positive so that bars
-        // always start from the left edge rather than from the smallest value.
-        val axisMin = if (negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS && rawMin >= 0f) {
-            0f
-        } else {
-            rawMin
-        }
+        val axisMin =
+            if (negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS && rawMin >= 0f) {
+                0f
+            } else {
+                rawMin
+            }
         val axisMax = if (rawMax < axisMin) axisMin else rawMax
 
         val (niceMin, niceMax, steps) = calculateNiceAxisRange(axisMin, axisMax, GROUPED_HORIZONTAL_DEFAULT_AXIS_STEPS)

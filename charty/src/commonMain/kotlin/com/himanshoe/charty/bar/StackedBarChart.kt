@@ -1,20 +1,24 @@
 package com.himanshoe.charty.bar
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.rememberStackedMaxTotal
 import com.himanshoe.charty.bar.internal.bar.stacked.StackedBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.stacked.createStackedBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedBars
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedTooltipIfNeeded
-import com.himanshoe.charty.bar.internal.bar.stacked.rememberStackedMaxTotal
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
@@ -24,14 +28,14 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
-import androidx.compose.ui.util.fastAll
-import androidx.compose.ui.util.fastMap
 
 /**
  * Stacked Bar Chart - Display data as stacked vertical bars showing composition
@@ -65,6 +69,8 @@ import androidx.compose.ui.util.fastMap
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param onSegmentClick Called when a stacked segment is clicked, providing the [StackedBarSegment].
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
+ *   provided, it replaces the default canvas tooltip and is invoked with the tapped [StackedBarSegment].
  */
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -76,6 +82,7 @@ fun StackedBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onSegmentClick: ((StackedBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltipContent: (@Composable (StackedBarSegment) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
@@ -88,9 +95,10 @@ fun StackedBarChart(
     val tooltipManager = rememberTooltipManager<Rect, StackedBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-        generateBarGroupChartDescription(it, "stacked bar")
-    }
+    val chartDescription =
+        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+            generateBarGroupChartDescription(it, "stacked bar")
+        }
 
     syncInteractionDataSizes(
         interactionConfig.viewPortState,
@@ -99,51 +107,70 @@ fun StackedBarChart(
         dataList.size,
     )
 
-    val clickModifier = createStackedBarChartModifier(
-        dataList = dataList,
-        stackedConfig = stackedConfig,
-        onSegmentClick = onSegmentClick,
-        segmentBounds = tooltipManager.bounds,
-        onTooltipStateChange = tooltipManager::updateTooltip,
-    )
-
-    val chartModifier = buildInteractionModifier(
-        base = modifier.then(clickModifier),
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
-
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.fastMap { it.label },
-        yAxisConfig =
-            AxisConfig(
-                minValue = 0f,
-                maxValue = maxTotal,
-                steps = 6,
-            ),
-        config = scaffoldConfig,
-        contentDescription = chartDescription,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-
-        tooltipManager.clearBounds()
-
-        drawStackedBars(
-            StackedBarDrawParams(
-                dataList = dataList,
-                chartContext = chartContext,
-                stackedConfig = stackedConfig,
-                colorList = colorList,
-                animationProgress = animationProgress.value,
-                onSegmentClick = onSegmentClick,
-                segmentBounds = tooltipManager.bounds,
-            ),
+    val clickModifier =
+        createStackedBarChartModifier(
+            dataList = dataList,
+            stackedConfig = stackedConfig,
+            onSegmentClick = onSegmentClick,
+            segmentBounds = tooltipManager.bounds,
+            onTooltipStateChange = tooltipManager::updateTooltip,
+            enableScrub = interactionConfig.dragTooltipActive,
         )
 
-        drawStackedReferenceLineIfNeeded(stackedConfig, chartContext, textMeasurer)
-        drawStackedTooltipIfNeeded(tooltipManager.tooltipState, stackedConfig, textMeasurer, chartContext)
+    val chartModifier =
+        buildInteractionModifier(
+            base = modifier.then(clickModifier),
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+        )
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.fastMap { it.label },
+            yAxisConfig =
+                AxisConfig(
+                    minValue = 0f,
+                    maxValue = maxTotal,
+                    steps = 6,
+                ),
+            config = scaffoldConfig,
+            contentDescription = chartDescription,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
+
+            tooltipManager.clearBounds()
+
+            drawStackedBars(
+                StackedBarDrawParams(
+                    dataList = dataList,
+                    chartContext = chartContext,
+                    stackedConfig = stackedConfig,
+                    colorList = colorList,
+                    animationProgress = animationProgress.value,
+                    onSegmentClick = onSegmentClick,
+                    segmentBounds = tooltipManager.bounds,
+                    textMeasurer = textMeasurer,
+                    recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
+                ),
+            )
+
+            drawStackedReferenceLineIfNeeded(stackedConfig, chartContext, textMeasurer)
+            if (tooltipContent == null) {
+                drawStackedTooltipIfNeeded(tooltipManager.tooltipState, stackedConfig, textMeasurer, chartContext)
+            }
+
+            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        }
+
+        if (tooltipContent != null) {
+            ChartTooltipOverlay(
+                item = tooltipManager.selectedItem,
+                anchor = tooltipManager.tooltipState,
+                config = stackedConfig.tooltipConfig,
+                modifier = Modifier.matchParentSize(),
+                content = tooltipContent,
+            )
+        }
     }
 }

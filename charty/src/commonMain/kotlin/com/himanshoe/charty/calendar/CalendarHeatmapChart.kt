@@ -54,7 +54,6 @@ private const val DAY_LABEL_RIGHT_GAP = 8f
 private const val MONTH_LABEL_BOTTOM_GAP = 4f
 private const val DAYS_PER_WEEK = 7
 
-// Day-of-week row indices for Mon/Wed/Fri labels (Sunday-start grid vs Monday-start grid)
 private const val DOW_MON_SUNDAY_START = 1
 private const val DOW_WED_SUNDAY_START = 3
 private const val DOW_FRI_SUNDAY_START = 5
@@ -112,13 +111,13 @@ fun CalendarHeatmapChart(
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
 
-    val gridLayout = remember(dataList, config.weekStartDay, visibleWeeks) {
-        computeGridLayout(dataList, config.weekStartDay, visibleWeeks)
-    }
+    val gridLayout =
+        remember(dataList, config.weekStartDay, visibleWeeks) {
+            computeGridLayout(dataList, config.weekStartDay, visibleWeeks)
+        }
     val maxValue = remember(dataList) { dataList.maxOfOrNull { it.value }?.coerceAtLeast(1f) ?: 1f }
     val animationProgress = rememberChartAnimation(config.animation)
 
-    // rememberUpdatedState ensures the pointerInput coroutine always reads the latest values.
     val currentConfig by rememberUpdatedState(config)
     val currentOnDayClick by rememberUpdatedState(onDayClick)
 
@@ -126,14 +125,21 @@ fun CalendarHeatmapChart(
     val measuredDayLabelRows = rememberMeasuredDayLabelRows(config, textMeasurer)
 
     val cellSizePx = remember(config.cellSize, density) { with(density) { config.cellSize.toPx() } }
-    val cellStridePx = remember(config.cellSize, config.cellSpacing, density) {
-        cellSizePx + with(density) { config.cellSpacing.toPx() }
-    }
+    val cellStridePx =
+        remember(config.cellSize, config.cellSpacing, density) {
+            cellSizePx + with(density) { config.cellSpacing.toPx() }
+        }
 
-    val leftPadding = measuredDayLabelRows.maxOfOrNull { (_, r) -> r.size.width }
-        ?.let { it + DAY_LABEL_RIGHT_GAP } ?: 0f
-    val topPadding = measuredMonthLabels.values.firstOrNull()?.size?.height
-        ?.let { it + MONTH_LABEL_BOTTOM_GAP } ?: 0f
+    val leftPadding =
+        measuredDayLabelRows
+            .maxOfOrNull { (_, r) -> r.size.width }
+            ?.let { it + DAY_LABEL_RIGHT_GAP } ?: 0f
+    val topPadding =
+        measuredMonthLabels.values
+            .firstOrNull()
+            ?.size
+            ?.height
+            ?.let { it + MONTH_LABEL_BOTTOM_GAP } ?: 0f
 
     val canvasWidth = leftPadding + gridLayout.totalWeeks * cellStridePx
     val canvasHeight = topPadding + DAYS_PER_WEEK * cellStridePx
@@ -147,28 +153,29 @@ fun CalendarHeatmapChart(
         if (gridLayout.totalWeeks == 0) return@Box
 
         Canvas(
-            modifier = Modifier
-                .size(
-                    width = with(density) { canvasWidth.toDp() },
-                    height = with(density) { canvasHeight.toDp() },
-                )
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        val hit = cellBounds.firstOrNull { (rect, _) -> rect.contains(offset) }
-                        if (hit != null) {
-                            currentOnDayClick?.invoke(hit.second)
-                            tooltipState = TooltipState(
-                                content = currentConfig.tooltipFormatter(hit.second),
-                                x = hit.first.left,
-                                y = hit.first.top,
-                                barWidth = hit.first.width,
-                                position = TooltipPosition.ABOVE,
-                            )
-                        } else {
-                            tooltipState = null
+            modifier =
+                Modifier
+                    .size(
+                        width = with(density) { canvasWidth.toDp() },
+                        height = with(density) { canvasHeight.toDp() },
+                    ).pointerInput(Unit) {
+                        detectTapGestures { offset ->
+                            val hit = cellBounds.firstOrNull { (rect, _) -> rect.contains(offset) }
+                            if (hit != null) {
+                                currentOnDayClick?.invoke(hit.second)
+                                tooltipState =
+                                    TooltipState(
+                                        content = currentConfig.tooltipFormatter(hit.second),
+                                        x = hit.first.left,
+                                        y = hit.first.top,
+                                        barWidth = hit.first.width,
+                                        position = TooltipPosition.ABOVE,
+                                    )
+                            } else {
+                                tooltipState = null
+                            }
                         }
-                    }
-                },
+                    },
         ) {
             drawCalendarContent(
                 CalendarDrawParams(
@@ -185,7 +192,7 @@ fun CalendarHeatmapChart(
                     cellBounds = cellBounds,
                     tooltipState = tooltipState,
                     textMeasurer = textMeasurer,
-                )
+                ),
             )
         }
     }
@@ -212,11 +219,12 @@ private fun rememberMeasuredDayLabelRows(
 ): List<Pair<Int, TextLayoutResult>> {
     return remember(config.showDayLabels, config.weekStartDay, config.labelTextStyle) {
         if (!config.showDayLabels) return@remember emptyList()
-        val rows = if (config.weekStartDay == WeekStartDay.SUNDAY) {
-            listOf(DOW_MON_SUNDAY_START to "Mon", DOW_WED_SUNDAY_START to "Wed", DOW_FRI_SUNDAY_START to "Fri")
-        } else {
-            listOf(DOW_MON_MONDAY_START to "Mon", DOW_WED_MONDAY_START to "Wed", DOW_FRI_MONDAY_START to "Fri")
-        }
+        val rows =
+            if (config.weekStartDay == WeekStartDay.SUNDAY) {
+                listOf(DOW_MON_SUNDAY_START to "Mon", DOW_WED_SUNDAY_START to "Wed", DOW_FRI_SUNDAY_START to "Fri")
+            } else {
+                listOf(DOW_MON_MONDAY_START to "Mon", DOW_WED_MONDAY_START to "Wed", DOW_FRI_MONDAY_START to "Fri")
+            }
         rows.map { (dayIndex, label) -> dayIndex to textMeasurer.measure(label, config.labelTextStyle) }
     }
 }

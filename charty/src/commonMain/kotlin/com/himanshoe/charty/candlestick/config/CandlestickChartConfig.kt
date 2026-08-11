@@ -1,5 +1,6 @@
 package com.himanshoe.charty.candlestick.config
 
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 
@@ -13,6 +14,7 @@ import com.himanshoe.charty.common.config.CornerRadius
  * @param cornerRadius Corner radius for all corners of candle body (None, Small, Medium, Large, ExtraLarge, or Custom)
  * @param animation Animation configuration (Disabled or Enabled with duration)
  */
+@Stable
 data class CandlestickChartConfig(
     val candleWidthFraction: Float = 0.7f,
     val wickWidthFraction: Float = 0.1f,

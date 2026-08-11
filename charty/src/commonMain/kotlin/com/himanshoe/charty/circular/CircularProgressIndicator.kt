@@ -32,6 +32,7 @@ import com.himanshoe.charty.circular.internal.drawRingBackground
 import com.himanshoe.charty.circular.internal.drawRingProgress
 import com.himanshoe.charty.circular.internal.rememberAnimatedProgress
 import com.himanshoe.charty.circular.internal.ringClickHandler
+import com.himanshoe.charty.common.accessibility.generateCircularProgressDescription
 
 /**
  * A composable function that displays a circular progress indicator with multiple concentric rings.
@@ -93,18 +94,20 @@ fun CircularProgressIndicator(
     accessibilityDescription: String? = null,
 ) {
     val ringsList = remember(rings) { rings() }
-    val chartDescription = remember(ringsList, accessibilityDescription) {
-        when (accessibilityDescription) {
-            "" -> null
-            null -> "Circular progress, ${ringsList.size} rings."
-            else -> accessibilityDescription
+    val chartDescription =
+        remember(ringsList, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null -> generateCircularProgressDescription(ringsList)
+                else -> accessibilityDescription
+            }
         }
-    }
-    val semanticsModifier = if (chartDescription != null) {
-        Modifier.semantics { contentDescription = chartDescription }
-    } else {
-        Modifier
-    }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
     val animatedProgress = rememberAnimatedProgress(ringsList, config.animation)
     val rotationAngle = rememberRotationAngle(config)
 
@@ -113,29 +116,32 @@ fun CircularProgressIndicator(
         contentAlignment = Alignment.Center,
     ) {
         Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .ringClickHandler(
-                    ringsList = ringsList,
-                    config = config,
-                    enabled = config.interactionEnabled,
-                    onRingClick = onRingClick,
-                ),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .ringClickHandler(
+                        ringsList = ringsList,
+                        config = config,
+                        enabled = config.interactionEnabled,
+                        onRingClick = onRingClick,
+                    ),
         ) {
             drawRingsContent(ringsList, config, animatedProgress, rotationAngle)
         }
         when {
-            centerContent != null -> Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-                content = centerContent,
-            )
+            centerContent != null ->
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                    content = centerContent,
+                )
             config.showCenterText && ringsList.isNotEmpty() -> {
                 val firstRing = ringsList.first()
-                val percentage = remember(animatedProgress.firstOrNull()) {
-                    val progress = animatedProgress.firstOrNull() ?: firstRing.progress
-                    ((progress / firstRing.maxValue) * CircularProgressConstants.PERCENTAGE_MULTIPLIER).toInt()
-                }
+                val percentage =
+                    remember(animatedProgress.firstOrNull()) {
+                        val progress = animatedProgress.firstOrNull() ?: firstRing.progress
+                        ((progress / firstRing.maxValue) * CircularProgressConstants.PERCENTAGE_MULTIPLIER).toInt()
+                    }
                 Text(text = "$percentage%", style = config.centerTextStyle)
             }
         }
@@ -148,10 +154,11 @@ private fun rememberRotationAngle(config: CircularProgressConfig): Float {
     val rotationAngle by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = if (config.rotationEnabled) 360f else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = config.rotationDurationMs, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = config.rotationDurationMs, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            ),
         label = "rotationAngle",
     )
     return rotationAngle
@@ -166,19 +173,21 @@ private fun DrawScope.drawRingsContent(
     val canvasSize = size.minDimension
     val radius = canvasSize / CircularProgressConstants.TWO
     val center = Offset(size.width / CircularProgressConstants.TWO, size.height / CircularProgressConstants.TWO)
-    val strokeWidth = calculateStrokeWidth(
-        radius = radius,
-        centerHoleRatio = config.centerHoleRatio,
-        gapBetweenRings = config.gapBetweenRings,
-        ringCount = ringsList.size,
-    )
-    ringsList.fastForEachIndexed { index, ring ->
-        val ringRadius = calculateRingRadius(
-            index = index,
+    val strokeWidth =
+        calculateStrokeWidth(
             radius = radius,
+            centerHoleRatio = config.centerHoleRatio,
             gapBetweenRings = config.gapBetweenRings,
-            strokeWidth = strokeWidth,
+            ringCount = ringsList.size,
         )
+    ringsList.fastForEachIndexed { index, ring ->
+        val ringRadius =
+            calculateRingRadius(
+                index = index,
+                radius = radius,
+                gapBetweenRings = config.gapBetweenRings,
+                strokeWidth = strokeWidth,
+            )
         val animProgress = if (index < animatedProgress.size) animatedProgress[index] else ring.progress
         drawRingBackground(center, ringRadius, ring, config, rotationAngle, strokeWidth)
         drawRingProgress(center, ringRadius, ring, animProgress, config, rotationAngle, strokeWidth)

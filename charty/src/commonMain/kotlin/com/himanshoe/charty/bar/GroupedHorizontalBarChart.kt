@@ -1,11 +1,15 @@
 package com.himanshoe.charty.bar
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarEntry
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -26,13 +30,13 @@ import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
-import androidx.compose.ui.util.fastAll
-import androidx.compose.ui.util.fastMap
 
 /**
  * A composable that displays a **grouped horizontal bar chart**.
@@ -47,6 +51,9 @@ import androidx.compose.ui.util.fastMap
  * @param scaffoldConfig Chart scaffold configuration controlling axes, grid lines, and labels.
  * @param onBarClick Optional callback invoked when a bar is tapped.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
+ *   provided, it replaces the default canvas tooltip and is invoked with the tapped
+ *   [GroupedHorizontalBarEntry].
  *
  * Example usage:
  * ```kotlin
@@ -71,6 +78,7 @@ fun GroupedHorizontalBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onBarClick: ((GroupedHorizontalBarEntry) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltipContent: (@Composable (GroupedHorizontalBarEntry) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Grouped horizontal bar chart data cannot be empty" }
@@ -78,11 +86,12 @@ fun GroupedHorizontalBarChart(
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
-    val state = rememberGroupedHorizontalState(
-        dataList = dataList,
-        negativeValuesDrawMode = config.negativeValuesDrawMode,
-        colors = colors,
-    )
+    val state =
+        rememberGroupedHorizontalState(
+            dataList = dataList,
+            negativeValuesDrawMode = config.negativeValuesDrawMode,
+            colors = colors,
+        )
 
     val isBelowAxisMode = config.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val drawAxisAtZero = state.minValue < 0f && state.maxValue > 0f && isBelowAxisMode
@@ -98,59 +107,83 @@ fun GroupedHorizontalBarChart(
         dataList.size,
     )
 
-    val clickModifier = createGroupedHorizontalBarChartModifier(
-        dataList = dataList,
-        config = config,
-        onBarClick = onBarClick,
-        barBounds = tooltipManager.bounds,
-        onTooltipStateChange = tooltipManager::updateTooltip,
-    )
-
-    val chartModifier = buildInteractionModifier(
-        base = modifier.then(clickModifier),
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
-
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.fastMap { it.label },
-        yAxisConfig = createGroupedHorizontalAxisConfig(
-            state.minValue, state.maxValue, state.axisSteps, drawAxisAtZero,
-        ),
-        config = scaffoldConfig,
-        orientation = ChartOrientation.HORIZONTAL,
-        contentDescription = interactionConfig.accessibilityDescription
-            ?: "Grouped horizontal bar chart, ${fullDataList.size} data points.",
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-
-        tooltipManager.clearBounds()
-        val baselineX = calculateGroupedHorizontalBaselineX(
-            drawAxisAtZero = drawAxisAtZero,
-            minValue = state.minValue,
-            maxValue = state.maxValue,
-            chartContext = chartContext,
+    val clickModifier =
+        createGroupedHorizontalBarChartModifier(
+            dataList = dataList,
+            config = config,
+            onBarClick = onBarClick,
+            barBounds = tooltipManager.bounds,
+            onTooltipStateChange = tooltipManager::updateTooltip,
+            enableScrub = interactionConfig.dragTooltipActive,
         )
 
-        drawGroupedHorizontalBars(
-            GroupedHorizontalBarDrawParams(
-                dataList = dataList,
-                chartContext = chartContext,
-                config = config,
-                colorList = state.colorList,
-                baselineX = baselineX,
-                minValue = state.minValue,
-                maxValue = state.maxValue,
-                animationProgress = animationProgress.value,
-                onBarClick = onBarClick,
-                barBounds = tooltipManager.bounds,
-            ),
+    val chartModifier =
+        buildInteractionModifier(
+            base = modifier.then(clickModifier),
+            interactionConfig = interactionConfig,
+            dataList = dataList,
         )
 
-        drawGroupedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
-        drawGroupedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.fastMap { it.label },
+            yAxisConfig =
+                createGroupedHorizontalAxisConfig(
+                    state.minValue,
+                    state.maxValue,
+                    state.axisSteps,
+                    drawAxisAtZero,
+                ),
+            config = scaffoldConfig,
+            orientation = ChartOrientation.HORIZONTAL,
+            contentDescription =
+                interactionConfig.accessibilityDescription
+                    ?: "Grouped horizontal bar chart, ${fullDataList.size} data points.",
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            tooltipManager.clearBounds()
+            val baselineX =
+                calculateGroupedHorizontalBaselineX(
+                    drawAxisAtZero = drawAxisAtZero,
+                    minValue = state.minValue,
+                    maxValue = state.maxValue,
+                    chartContext = chartContext,
+                )
+
+            drawGroupedHorizontalBars(
+                GroupedHorizontalBarDrawParams(
+                    dataList = dataList,
+                    chartContext = chartContext,
+                    config = config,
+                    colorList = state.colorList,
+                    baselineX = baselineX,
+                    minValue = state.minValue,
+                    maxValue = state.maxValue,
+                    animationProgress = animationProgress.value,
+                    onBarClick = onBarClick,
+                    barBounds = tooltipManager.bounds,
+                    recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
+                ),
+            )
+
+            drawGroupedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
+            if (tooltipContent == null) {
+                drawGroupedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+            }
+
+            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        }
+
+        if (tooltipContent != null) {
+            ChartTooltipOverlay(
+                item = tooltipManager.selectedItem,
+                anchor = tooltipManager.tooltipState,
+                config = config.tooltipConfig,
+                modifier = Modifier.matchParentSize(),
+                content = tooltipContent,
+            )
+        }
     }
 }

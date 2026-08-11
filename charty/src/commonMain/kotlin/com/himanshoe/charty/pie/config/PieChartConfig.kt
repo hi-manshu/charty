@@ -1,5 +1,6 @@
 package com.himanshoe.charty.pie.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -52,17 +53,19 @@ enum class PieChartStyle {
  * @property shouldShowLabelsOutside Whether to show labels outside the chart
  * @property labelTextStyle TextStyle for customizing label appearance
  */
+@Stable
 data class LabelConfig(
     val shouldShowLabels: Boolean = true,
     val shouldShowPercentage: Boolean = true,
     val shouldShowValue: Boolean = false,
     val minimumPercentageToShowLabel: Float = MIN_PERCENTAGE_THRESHOLD,
     val shouldShowLabelsOutside: Boolean = false,
-    val labelTextStyle: TextStyle = TextStyle(
-        fontSize = DEFAULT_LABEL_SIZE_SP.sp,
-        color = Color.White,
-        fontWeight = FontWeight.Bold,
-    ),
+    val labelTextStyle: TextStyle =
+        TextStyle(
+            fontSize = DEFAULT_LABEL_SIZE_SP.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+        ),
 ) {
     init {
         require(minimumPercentageToShowLabel in MIN_PERCENTAGE..MAX_PERCENTAGE) {
@@ -84,6 +87,7 @@ data class LabelConfig(
  * @property enableHoverEffect Whether to enable hover effects (useful for desktop/web)
  * @property unselectedSliceOpacity Opacity for non-selected slices when one is selected
  */
+@Stable
 data class InteractionConfig(
     val isEnabled: Boolean = true,
     val selectedScaleMultiplier: Float = DEFAULT_SELECTED_SCALE,
@@ -122,6 +126,7 @@ data class InteractionConfig(
  * @property centerTextStyle TextStyle for center text
  * @property referenceLine Optional reference line configuration
  */
+@Stable
 data class PieChartConfig(
     val style: PieChartStyle = PieChartStyle.PIE,
     val donutHoleRatio: Float = DEFAULT_DONUT_HOLE_RATIO,
@@ -131,11 +136,12 @@ data class PieChartConfig(
     val animation: Animation = Animation.Default,
     val sliceSpacingDegrees: Float = DEFAULT_SLICE_SPACING_DEGREES,
     val shouldShowCenterText: Boolean = false,
-    val centerTextStyle: TextStyle = TextStyle(
-        fontSize = DEFAULT_CENTER_TEXT_SIZE_SP.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.Black,
-    ),
+    val centerTextStyle: TextStyle =
+        TextStyle(
+            fontSize = DEFAULT_CENTER_TEXT_SIZE_SP.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+        ),
     val referenceLine: ReferenceLineConfig? = null,
 ) {
     init {

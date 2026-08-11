@@ -1,5 +1,6 @@
 package com.himanshoe.charty.bar.data
 
+import androidx.compose.runtime.Immutable
 import com.himanshoe.charty.color.ChartyColor
 
 /**
@@ -10,6 +11,7 @@ import com.himanshoe.charty.color.ChartyColor
  * @param endValue The ending value of the span
  * @param color Optional color for this specific span. If null, uses the chart's default color scheme
  */
+@Immutable
 data class SpanData(
     val label: String,
     val startValue: Float,

@@ -3,8 +3,8 @@ package com.himanshoe.charty.common.gesture
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.util.fastFirstOrNull
+import androidx.compose.ui.util.fastMinByOrNull
 import kotlin.math.abs
-import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
@@ -14,10 +14,33 @@ import kotlin.math.sqrt
  * @param point2 The second point.
  * @return The distance between the two points.
  */
-fun calculateDistance(point1: Offset, point2: Offset): Float {
+fun calculateDistance(
+    point1: Offset,
+    point2: Offset,
+): Float {
     val dx = point1.x - point2.x
     val dy = point1.y - point2.y
-    return sqrt(dx.pow(2) + dy.pow(2))
+    return sqrt(dx * dx + dy * dy)
+}
+
+/**
+ * Returns the shortest distance from [offset] to the edge of this rectangle, or `0` when the
+ * offset falls inside the rectangle. Used to apply a forgiving hit-slop around bar hit areas.
+ */
+private fun Rect.distanceTo(offset: Offset): Float {
+    val dx =
+        when {
+            offset.x < left -> left - offset.x
+            offset.x > right -> offset.x - right
+            else -> 0f
+        }
+    val dy =
+        when {
+            offset.y < top -> top - offset.y
+            offset.y > bottom -> offset.y - bottom
+            else -> 0f
+        }
+    return sqrt(dx * dx + dy * dy)
 }
 
 /**
@@ -31,23 +54,31 @@ fun calculateDistance(point1: Offset, point2: Offset): Float {
 fun <T> findClickedItem(
     offset: Offset,
     bounds: List<Pair<Rect, T>>,
-): T? {
-    return bounds.fastFirstOrNull { (rect, _) -> rect.contains(offset) }?.second
-}
+): T? = bounds.fastFirstOrNull { (rect, _) -> rect.contains(offset) }?.second
 
 /**
  * Finds the clicked item along with its bounds from a list of bounds.
  *
  * @param T The type of the data associated with each bound.
+ * A tap that lands inside a bound is always matched. If none contains the tap and [hitSlop] is
+ * positive, the nearest bound within [hitSlop] pixels of the tap is returned instead, so taps that
+ * narrowly miss a thin bar still register.
+ *
  * @param offset The position of the tap.
  * @param bounds A list of pairs, where each pair contains the [Rect] bounds and its associated data.
- * @return A [Pair] containing the bounds and data of the clicked item, or `null` if no bounds contain the tap offset.
+ * @param hitSlop Extra tolerance in pixels around each bound; `0` requires an exact hit.
+ * @return A [Pair] containing the bounds and data of the clicked item, or `null` if no bounds are within range.
  */
 fun <T> findClickedItemWithBounds(
     offset: Offset,
     bounds: List<Pair<Rect, T>>,
+    hitSlop: Float = 0f,
 ): Pair<Rect, T>? {
-    return bounds.fastFirstOrNull { (rect, _) -> rect.contains(offset) }
+    val exactHit = bounds.fastFirstOrNull { (rect, _) -> rect.contains(offset) }
+    return exactHit ?: bounds
+        .takeIf { hitSlop > 0f }
+        ?.fastMinByOrNull { (rect, _) -> rect.distanceTo(offset) }
+        ?.takeIf { (rect, _) -> rect.distanceTo(offset) <= hitSlop }
 }
 
 /**
@@ -63,20 +94,10 @@ fun <T> findNearestPoint(
     offset: Offset,
     pointBounds: List<Pair<Offset, T>>,
     tapRadius: Float,
-): Pair<Offset, T>? {
-    val nearestPoint = pointBounds.minByOrNull { pair ->
-        calculateDistance(pair.first, offset)
-    }
-
-    return nearestPoint?.let { pair ->
-        val distance = calculateDistance(pair.first, offset)
-        if (distance <= tapRadius) {
-            pair
-        } else {
-            null
-        }
-    }
-}
+): Pair<Offset, T>? =
+    pointBounds
+        .fastMinByOrNull { (position, _) -> calculateDistance(position, offset) }
+        ?.takeIf { (position, _) -> calculateDistance(position, offset) <= tapRadius }
 
 /**
  * Finds the point whose x-coordinate is closest to [xOffset], ignoring the y-axis distance.
@@ -93,5 +114,29 @@ fun <T> findNearestPoint(
 fun <T> findNearestPointByX(
     xOffset: Float,
     pointBounds: List<Pair<Offset, T>>,
-): Pair<Offset, T>? = pointBounds.minByOrNull { (position, _) -> abs(position.x - xOffset) }
+): Pair<Offset, T>? = pointBounds.fastMinByOrNull { (position, _) -> abs(position.x - xOffset) }
 
+/**
+ * Finds the rectangular item under a drag [position], used by the drag-to-track tooltip gesture.
+ *
+ * Preference order:
+ * 1. A bound that geometrically contains [position] (handles stacked segments — the finger's
+ *    y-coordinate disambiguates which segment in a column is selected).
+ * 2. A bound whose horizontal span contains `position.x` (the column under the finger when the
+ *    finger is above or below the bars).
+ * 3. The bound whose horizontal centre is nearest to `position.x` (snaps across gaps).
+ *
+ * @param T The data associated with each bound.
+ * @param position The current drag position.
+ * @param bounds Pairs of [Rect] bounds and their associated data.
+ * @return The matched bound and data, or `null` when [bounds] is empty.
+ */
+fun <T> findItemByX(
+    position: Offset,
+    bounds: List<Pair<Rect, T>>,
+): Pair<Rect, T>? {
+    val inColumn =
+        bounds.fastFirstOrNull { (rect, _) -> rect.contains(position) }
+            ?: bounds.fastFirstOrNull { (rect, _) -> position.x >= rect.left && position.x <= rect.right }
+    return inColumn ?: bounds.fastMinByOrNull { (rect, _) -> abs(rect.center.x - position.x) }
+}

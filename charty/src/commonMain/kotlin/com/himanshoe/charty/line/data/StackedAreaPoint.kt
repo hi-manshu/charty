@@ -1,5 +1,7 @@
 package com.himanshoe.charty.line.data
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Represents an area segment in a stacked area chart that was clicked
  *
@@ -9,6 +11,7 @@ package com.himanshoe.charty.line.data
  * @param value The value of this segment (not cumulative)
  * @param cumulativeValue The cumulative value at this point
  */
+@Immutable
 data class StackedAreaPoint(
     val lineGroup: LineGroup,
     val seriesIndex: Int,

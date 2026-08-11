@@ -1,5 +1,7 @@
 package com.himanshoe.charty.line.data
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Represents a point in a multiline chart that was clicked
  *
@@ -8,6 +10,7 @@ package com.himanshoe.charty.line.data
  * @param dataIndex The index of the data point within the line
  * @param value The value at this point
  */
+@Immutable
 data class MultilinePoint(
     val lineGroup: LineGroup,
     val seriesIndex: Int,

@@ -18,6 +18,7 @@ import com.himanshoe.charty.line.data.LineGroup
 import kotlin.math.abs
 
 private val MULTILINE_CROSSHAIR_DASH = floatArrayOf(8f, 4f)
+private val MULTILINE_CROSSHAIR_DASH_EFFECT = PathEffect.dashPathEffect(MULTILINE_CROSSHAIR_DASH)
 private const val MULTILINE_DOT_OUTER_PADDING = 2f
 
 /**
@@ -44,11 +45,12 @@ internal fun DrawScope.drawMultilineChartCrosshair(
     textMeasurer: TextMeasurer,
 ) {
     if (dataList.isEmpty() || colorList.isEmpty()) return
-    val dashEffect = PathEffect.dashPathEffect(MULTILINE_CROSSHAIR_DASH)
+    val dashEffect = MULTILINE_CROSSHAIR_DASH_EFFECT
 
-    val snappedIndex = dataList.indices.minByOrNull { idx ->
-        abs(chartContext.calculateCenteredXPosition(idx, dataList.size) - state.x)
-    } ?: return
+    val snappedIndex =
+        dataList.indices.minByOrNull { idx ->
+            abs(chartContext.calculateCenteredXPosition(idx, dataList.size) - state.x)
+        } ?: return
 
     drawLine(
         brush = Brush.verticalGradient(config.verticalLineColor.value),
@@ -84,13 +86,14 @@ internal fun DrawScope.drawMultilineChartCrosshair(
 
     if (config.showLabel) {
         drawTooltip(
-            tooltipState = TooltipState(
-                content = state.label,
-                x = state.x - config.dotRadius,
-                y = state.y,
-                barWidth = config.dotRadius * 2f,
-                position = TooltipPosition.ABOVE,
-            ),
+            tooltipState =
+                TooltipState(
+                    content = state.label,
+                    x = state.x - config.dotRadius,
+                    y = state.y,
+                    barWidth = config.dotRadius * 2f,
+                    position = TooltipPosition.ABOVE,
+                ),
             config = config.tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,

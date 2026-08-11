@@ -18,10 +18,10 @@ internal fun createLollipopChartModifier(
     dataList: List<BarData>,
     config: LollipopBarChartConfig,
     lollipopBounds: List<Pair<Offset, BarData>>,
-    onTooltipUpdate: (TooltipState?) -> Unit,
+    onTooltipUpdate: (TooltipState?, BarData?) -> Unit,
     modifier: Modifier = Modifier,
-): Modifier {
-    return if (onBarClick != null) {
+): Modifier =
+    if (onBarClick != null) {
         modifier.pointChartClickHandler(
             dataList = dataList,
             pointBounds = lollipopBounds,
@@ -41,5 +41,3 @@ internal fun createLollipopChartModifier(
     } else {
         modifier
     }
-}
-

@@ -1,5 +1,6 @@
 package com.himanshoe.charty.bar.data
 
+import androidx.compose.runtime.Immutable
 import com.himanshoe.charty.color.ChartyColor
 
 /**
@@ -10,6 +11,7 @@ import com.himanshoe.charty.color.ChartyColor
  * @param colors Optional list of colors for each value. If provided, must match the size of values.
  *               If null, uses the chart's default color scheme
  */
+@Immutable
 data class BarGroup(
     val label: String,
     val values: List<Float>,

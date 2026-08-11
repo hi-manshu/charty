@@ -1,5 +1,6 @@
 package com.himanshoe.charty.block.data
 
+import androidx.compose.runtime.Immutable
 import com.himanshoe.charty.color.ChartyColor
 
 /**
@@ -9,6 +10,7 @@ import com.himanshoe.charty.color.ChartyColor
  * block's width is proportional to `value / totalValue`. Must be positive to be rendered.
  * @property color Color for this block segment. Supports solid colors or gradients via [ChartyColor].
  */
+@Immutable
 data class BlockData(
     val value: Float,
     val color: ChartyColor,

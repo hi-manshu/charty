@@ -26,4 +26,5 @@ internal data class GroupedHorizontalBarDrawParams(
     val animationProgress: Float,
     val onBarClick: ((GroupedHorizontalBarEntry) -> Unit)?,
     val barBounds: MutableList<Pair<Rect, GroupedHorizontalBarEntry>>,
+    val recordBounds: Boolean = onBarClick != null,
 )

@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar.internal.bar.horizontal
 
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
@@ -8,6 +9,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.common.ChartContext
@@ -16,6 +18,9 @@ import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 
+private const val DATA_LABEL_PADDING = 4f
+
+@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
     val range = params.maxValue - params.minValue
 
@@ -29,15 +34,16 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
         val barValueX = params.chartContext.left + (valueNormalized * params.chartContext.width)
         val isNegative = bar.value < 0f
 
-        val (barLeft, barWidth) = calculateHorizontalBarDimensions(
-            isNegative = isNegative,
-            isBelowAxisMode = params.isBelowAxisMode,
-            baselineX = params.baselineX,
-            barValueX = barValueX,
-            animationProgress = params.animationProgress,
-        )
+        val (barLeft, barWidth) =
+            calculateHorizontalBarDimensions(
+                isNegative = isNegative,
+                isBelowAxisMode = params.isBelowAxisMode,
+                baselineX = params.baselineX,
+                barValueX = barValueX,
+                animationProgress = params.animationProgress,
+            )
 
-        if (params.onBarClick != null) {
+        if (params.recordBounds) {
             params.onBarBoundCalculated(
                 Rect(
                     left = barLeft,
@@ -49,11 +55,12 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
         }
 
         val barColor = bar.color ?: params.color
-        val brush = Brush.horizontalGradient(
-            colors = barColor.value,
-            startX = params.chartContext.left,
-            endX = params.chartContext.right,
-        )
+        val brush =
+            Brush.horizontalGradient(
+                colors = barColor.value,
+                startX = params.chartContext.left,
+                endX = params.chartContext.right,
+            )
 
         drawRoundedHorizontalBar(
             brush = brush,
@@ -65,6 +72,23 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
             isBelowAxisMode = params.isBelowAxisMode,
             cornerRadius = params.barConfig.cornerRadius.value,
         )
+
+        if (params.barConfig.showDataLabels && params.textMeasurer != null && params.animationProgress >= 1f) {
+            val labelText = params.barConfig.dataLabelFormatter(bar)
+            val textLayout = params.textMeasurer.measure(labelText, params.barConfig.dataLabelStyle)
+            val labelY = centeredBarY + (barThickness - textLayout.size.height) / 2f
+            val labelX =
+                if (isNegative) {
+                    (barLeft - textLayout.size.width - DATA_LABEL_PADDING).coerceAtLeast(params.chartContext.left)
+                } else {
+                    (barLeft + barWidth + DATA_LABEL_PADDING)
+                        .coerceAtMost(params.chartContext.right - textLayout.size.width)
+                }
+            drawText(
+                textLayoutResult = textLayout,
+                topLeft = Offset(labelX, labelY),
+            )
+        }
     }
 }
 
@@ -149,4 +173,3 @@ private fun DrawScope.drawRoundedHorizontalBar(
 
     drawPath(path, brush)
 }
-

@@ -1,5 +1,6 @@
 package com.himanshoe.charty.circular.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.TextStyle
@@ -59,6 +60,7 @@ enum class RingDirection {
  * )
  * ```
  */
+@Stable
 data class CircularProgressConfig(
     /**
      * Gap between concentric rings in pixels (default: 8f)

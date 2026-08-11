@@ -30,4 +30,3 @@ internal fun calculateRingRadius(
     val accumulatedWidth = index * (strokeWidth + gapBetweenRings)
     return radius - accumulatedWidth - (strokeWidth / CircularProgressConstants.TWO)
 }
-

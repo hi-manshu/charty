@@ -1,5 +1,6 @@
 package com.himanshoe.charty.block.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.common.config.CornerRadius
@@ -15,8 +16,14 @@ import com.himanshoe.charty.common.config.CornerRadius
  * @property gapBetweenBlocks Horizontal spacing between adjacent block segments.
  * @property barHeight Total height of the bar.
  */
+@Stable
 data class BlockBarChartConfig(
     val cornerRadius: CornerRadius = CornerRadius.Small,
     val gapBetweenBlocks: Dp = 4.dp,
     val barHeight: Dp = 16.dp,
-)
+) {
+    init {
+        require(gapBetweenBlocks.value >= 0f) { "gapBetweenBlocks must be non-negative" }
+        require(barHeight.value > 0f) { "barHeight must be positive" }
+    }
+}

@@ -18,8 +18,9 @@ internal fun Path.drawSmoothMultiline(
 
     val firstPoint = pointPositions[0]
     val control1X = startX + (firstPoint.x - startX) / MultilineChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
-    val control2X = startX + MultilineChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
-        (firstPoint.x - startX) / MultilineChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
+    val control2X =
+        startX + MultilineChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
+            (firstPoint.x - startX) / MultilineChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
     val control2Y = firstPoint.y
 
     moveTo(startX, startY)
@@ -31,8 +32,9 @@ internal fun Path.drawSmoothMultiline(
 
         val controlPoint1X = current.x + (next.x - current.x) / MultilineChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
         val controlPoint1Y = current.y
-        val controlPoint2X = current.x + MultilineChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
-            (next.x - current.x) / MultilineChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
+        val controlPoint2X =
+            current.x + MultilineChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
+                (next.x - current.x) / MultilineChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
         val controlPoint2Y = next.y
 
         cubicTo(
@@ -71,13 +73,11 @@ internal fun Path.drawStraightMultiline(
 internal fun ChartContext.calculateSeriesPointPositions(
     dataList: List<LineGroup>,
     seriesIndex: Int,
-): List<Offset> {
-    return dataList.fastMapIndexed { index, group ->
+): List<Offset> =
+    dataList.fastMapIndexed { index, group ->
         val value = group.values.getOrNull(seriesIndex) ?: 0f
         Offset(
             x = calculateCenteredXPosition(index, dataList.size),
             y = convertValueToYPosition(value),
         )
     }
-}
-

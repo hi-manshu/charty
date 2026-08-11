@@ -24,4 +24,3 @@ internal data class StackedAreaSeriesParams(
     val dataList: List<LineGroup>,
     val onSegmentBoundsCalculated: ((Triple<Rect, Path, StackedAreaPoint>) -> Unit)?,
 )
-

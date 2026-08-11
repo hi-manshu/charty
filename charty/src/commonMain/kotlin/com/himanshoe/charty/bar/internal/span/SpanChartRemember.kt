@@ -13,18 +13,14 @@ import com.himanshoe.charty.common.config.Animation
 internal fun rememberSpanValueRange(
     dataList: List<SpanData>,
     colors: ChartyColor,
-): Pair<Float, Float> {
-    return remember(dataList, colors) {
+): Pair<Float, Float> =
+    remember(dataList, colors) {
         val allValues = dataList.fastFlatMap { listOf(it.startValue, it.endValue) }
         Pair(
             allValues.minOrNull() ?: 0f,
             allValues.maxOrNull() ?: 100f,
         )
     }
-}
 
 @Composable
-internal fun rememberSpanAnimation(animation: Animation): Animatable<Float, *> {
-    return rememberChartAnimation(animation)
-}
-
+internal fun rememberSpanAnimation(animation: Animation): Animatable<Float, *> = rememberChartAnimation(animation)

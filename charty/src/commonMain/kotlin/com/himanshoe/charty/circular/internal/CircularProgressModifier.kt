@@ -28,19 +28,21 @@ internal fun Modifier.ringClickHandler(
             val distance = sqrt(dx * dx + dy * dy)
             val canvasSize = minOf(size.width, size.height)
             val radius = canvasSize / CircularProgressConstants.TWO
-            val strokeWidth = calculateStrokeWidth(
-                radius = radius,
-                centerHoleRatio = config.centerHoleRatio,
-                gapBetweenRings = config.gapBetweenRings,
-                ringCount = ringsList.size,
-            )
-            ringsList.fastForEachIndexed { index, ring ->
-                val ringRadius = calculateRingRadius(
-                    index = index,
+            val strokeWidth =
+                calculateStrokeWidth(
                     radius = radius,
+                    centerHoleRatio = config.centerHoleRatio,
                     gapBetweenRings = config.gapBetweenRings,
-                    strokeWidth = strokeWidth,
+                    ringCount = ringsList.size,
                 )
+            ringsList.fastForEachIndexed { index, ring ->
+                val ringRadius =
+                    calculateRingRadius(
+                        index = index,
+                        radius = radius,
+                        gapBetweenRings = config.gapBetweenRings,
+                        strokeWidth = strokeWidth,
+                    )
                 val ringHalfStroke = strokeWidth / CircularProgressConstants.TWO
 
                 if (distance in (ringRadius - ringHalfStroke)..(ringRadius + ringHalfStroke)) {
@@ -50,4 +52,3 @@ internal fun Modifier.ringClickHandler(
         }
     }
 }
-

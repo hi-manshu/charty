@@ -13,18 +13,14 @@ import com.himanshoe.charty.common.util.calculateMaxValue
  * Remembers the value range (min, max) for the lollipop chart.
  */
 @Composable
-internal fun rememberLollipopValueRange(dataList: List<BarData>): Pair<Float, Float> {
-    return remember(dataList) {
+internal fun rememberLollipopValueRange(dataList: List<BarData>): Pair<Float, Float> =
+    remember(dataList) {
         val values = dataList.getValues()
         0f to calculateMaxValue(values)
     }
-}
 
 /**
  * Remembers the animation progress for lollipop chart.
  */
 @Composable
-internal fun rememberLollipopAnimation(animation: Animation): Animatable<Float, *> {
-    return rememberChartAnimation(animation)
-}
-
+internal fun rememberLollipopAnimation(animation: Animation): Animatable<Float, *> = rememberChartAnimation(animation)

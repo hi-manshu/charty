@@ -131,7 +131,6 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
-
     pom {
         name.set("Charty")
         description.set("An Elementary Compose Multiplatform Chart library")
@@ -161,5 +160,3 @@ mavenPublishing {
         }
     }
 }
-
-

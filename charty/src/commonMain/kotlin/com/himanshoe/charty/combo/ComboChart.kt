@@ -25,6 +25,7 @@ import com.himanshoe.charty.combo.internal.drawComboBars
 import com.himanshoe.charty.combo.internal.drawComboLine
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.generateComboChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -33,8 +34,9 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
-import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -57,7 +59,8 @@ private data class ComboDrawParams(
     val onDataClick: ((ComboChartData) -> Unit)?,
     val dataBounds: MutableList<Pair<androidx.compose.ui.geometry.Rect, ComboChartData>>,
     val crosshairBounds: MutableList<Pair<Offset, ComboChartData>>?,
-    val crosshairManager: CrosshairManager?,
+    val crosshairManager: CrosshairManager<ComboChartData>?,
+    val crosshairState: CrosshairState?,
     val tooltipState: com.himanshoe.charty.common.tooltip.TooltipState?,
     val textMeasurer: androidx.compose.ui.text.TextMeasurer,
     val interactionConfig: com.himanshoe.charty.common.config.ChartInteractionConfig,
@@ -127,11 +130,12 @@ fun ComboChart(
             val allValues = dataList.getAllValues()
             val calculatedMin = allValues.minOrNull() ?: 0f
             val calculatedMax = allValues.maxOrNull() ?: 0f
-            val minVal = if (comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS) {
-                min(calculatedMin, 0f)
-            } else {
-                calculatedMin
-            }
+            val minVal =
+                if (comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS) {
+                    min(calculatedMin, 0f)
+                } else {
+                    calculatedMin
+                }
             val maxVal = max(calculatedMax, if (minVal < 0f) 0f else calculatedMin)
             minVal to maxVal
         }
@@ -141,12 +145,14 @@ fun ComboChart(
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, ComboChartData>>() }
-    val crosshairManager = if (comboConfig.crosshairConfig != null) rememberCrosshairManager() else null
+    val (crosshairManager, animatedCrosshairState) =
+        rememberChartCrosshair<ComboChartData>(comboConfig.crosshairConfig != null)
     val textMeasurer = rememberTextMeasurer()
 
-    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-        "Combo chart, ${it.size} data points."
-    }
+    val chartDescription =
+        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+            generateComboChartDescription(it)
+        }
 
     syncInteractionDataSizes(
         interactionConfig.viewPortState,
@@ -155,31 +161,34 @@ fun ComboChart(
         dataList.size,
     )
 
-    val clickModifier = buildComboModifier(
-        crosshairManager = crosshairManager,
-        comboConfig = comboConfig,
-        dataList = dataList,
-        crosshairBounds = crosshairBounds,
-        dataBounds = dataBounds,
-        onDataClick = onDataClick,
-        onTooltipStateChange = { tooltipState = it },
-    )
+    val clickModifier =
+        buildComboModifier(
+            crosshairManager = crosshairManager,
+            comboConfig = comboConfig,
+            dataList = dataList,
+            crosshairBounds = crosshairBounds,
+            dataBounds = dataBounds,
+            onDataClick = onDataClick,
+            onTooltipStateChange = { state, _ -> tooltipState = state },
+        )
 
-    val chartModifier = buildInteractionModifier(
-        base = modifier.then(clickModifier),
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
+    val chartModifier =
+        buildInteractionModifier(
+            base = modifier.then(clickModifier),
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+        )
 
     ChartScaffold(
         modifier = chartModifier,
         xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = isBelowAxisMode,
-        ),
+        yAxisConfig =
+            AxisConfig(
+                minValue = minValue,
+                maxValue = maxValue,
+                steps = 6,
+                drawAxisAtZero = isBelowAxisMode,
+            ),
         config = scaffoldConfig,
         contentDescription = chartDescription,
     ) { chartContext ->
@@ -199,20 +208,22 @@ fun ComboChart(
                 dataBounds = dataBounds,
                 crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
                 crosshairManager = crosshairManager,
+                crosshairState = animatedCrosshairState,
                 tooltipState = tooltipState,
                 textMeasurer = textMeasurer,
                 interactionConfig = interactionConfig,
-            )
+            ),
         )
     }
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p: ComboDrawParams) {
-    val baselineY = if (p.minValue < 0f && p.isBelowAxisMode) {
-        p.chartContext.convertValueToYPosition(0f)
-    } else {
-        p.chartContext.bottom
-    }
+    val baselineY =
+        if (p.minValue < 0f && p.isBelowAxisMode) {
+            p.chartContext.convertValueToYPosition(0f)
+        } else {
+            p.chartContext.bottom
+        }
     drawComboBars(
         dataList = p.dataList,
         chartContext = p.chartContext,
@@ -259,7 +270,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
         }
     }
     drawInteractionOverlays(p.interactionConfig, p.chartContext, p.dataList.size, p.textMeasurer)
-    p.crosshairManager?.state?.let { state ->
+    p.crosshairState?.let { state ->
         p.comboConfig.crosshairConfig?.let { config ->
             drawLineChartCrosshair(state, config, p.chartContext, p.textMeasurer, p.lineColor)
         }
@@ -267,27 +278,30 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
 }
 
 private fun buildComboModifier(
-    crosshairManager: CrosshairManager?,
+    crosshairManager: CrosshairManager<ComboChartData>?,
     comboConfig: ComboChartConfig,
     dataList: List<ComboChartData>,
     crosshairBounds: MutableList<Pair<Offset, ComboChartData>>,
     dataBounds: MutableList<Pair<Rect, ComboChartData>>,
     onDataClick: ((ComboChartData) -> Unit)?,
-    onTooltipStateChange: (TooltipState?) -> Unit,
-): Modifier = when {
-    crosshairManager != null -> Modifier.chartCrosshairHandler(
-        dataList = dataList,
-        pointBounds = crosshairBounds,
-        onCrosshairUpdate = crosshairManager::update,
-        labelFormatter = { data -> "${data.label}: ${data.lineValue}" },
-        dismissOnRelease = comboConfig.crosshairConfig?.dismissOnRelease ?: true,
-    )
-    onDataClick != null -> Modifier.comboChartClickHandler(
-        dataList = dataList,
-        comboConfig = comboConfig,
-        dataBounds = dataBounds,
-        onDataClick = onDataClick,
-        onTooltipStateChange = onTooltipStateChange,
-    )
-    else -> Modifier
-}
+    onTooltipStateChange: (TooltipState?, ComboChartData?) -> Unit,
+): Modifier =
+    when {
+        crosshairManager != null ->
+            Modifier.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = crosshairBounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = { data -> "${data.label}: ${data.lineValue}" },
+                dismissOnRelease = comboConfig.crosshairConfig?.dismissOnRelease ?: true,
+            )
+        onDataClick != null ->
+            Modifier.comboChartClickHandler(
+                dataList = dataList,
+                comboConfig = comboConfig,
+                dataBounds = dataBounds,
+                onDataClick = onDataClick,
+                onTooltipStateChange = onTooltipStateChange,
+            )
+        else -> Modifier
+    }

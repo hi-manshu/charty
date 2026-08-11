@@ -26,10 +26,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
-import com.himanshoe.charty.common.accessibility.generatePieChartDescription
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
+import com.himanshoe.charty.common.accessibility.generatePieChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
@@ -162,21 +162,24 @@ fun PieChart(
 ) {
     val dataList = remember(data) { data() }
     require(dataList.isNotEmpty()) { "Pie chart data cannot be empty" }
-    val chartDescription = remember(dataList, config.style, accessibilityDescription) {
-        when (accessibilityDescription) {
-            "" -> null
-            null -> generatePieChartDescription(
-                data = dataList,
-                chartTypeName = if (config.style == PieChartStyle.DONUT) "Donut" else "Pie",
-            )
-            else -> accessibilityDescription
+    val chartDescription =
+        remember(dataList, config.style, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null ->
+                    generatePieChartDescription(
+                        data = dataList,
+                        chartTypeName = if (config.style == PieChartStyle.DONUT) "Donut" else "Pie",
+                    )
+                else -> accessibilityDescription
+            }
         }
-    }
-    val semanticsModifier = if (chartDescription != null) {
-        Modifier.semantics { contentDescription = chartDescription }
-    } else {
-        Modifier
-    }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
     val total = remember(dataList) { dataList.sumOf { it.value.toDouble() }.toFloat() }
     require(total > 0f) { "Total of all pie slices must be positive" }
     val sliceColors =
@@ -200,20 +203,22 @@ fun PieChart(
         }
     }
     PieChartContent(
-        params = PieChartContentParams(
-            dataList = dataList,
-            sliceColors = sliceColors,
-            total = total,
-            config = config,
-            animationProgress = animationProgress.value,
-            selectedSliceIndex = selectedSliceIndex,
-            selectedScale = selectedScale.value,
-            centerContent = centerContent,
-            onSliceClick = onSliceClickLambda(dataList) { index ->
-                selectedSliceIndex = if (selectedSliceIndex == index) null else index
-                onSliceClick?.invoke(dataList[index], index)
-            },
-        ),
+        params =
+            PieChartContentParams(
+                dataList = dataList,
+                sliceColors = sliceColors,
+                total = total,
+                config = config,
+                animationProgress = animationProgress.value,
+                selectedSliceIndex = selectedSliceIndex,
+                selectedScale = selectedScale.value,
+                centerContent = centerContent,
+                onSliceClick =
+                    onSliceClickLambda(dataList) { index ->
+                        selectedSliceIndex = if (selectedSliceIndex == index) null else index
+                        onSliceClick?.invoke(dataList[index], index)
+                    },
+            ),
         modifier = modifier.then(semanticsModifier),
     )
 }
@@ -251,14 +256,15 @@ private fun PieChartContent(
                                 val center = Offset(size.width / HALF_DIVIDER, size.height / HALF_DIVIDER)
                                 val radius = minOf(size.width, size.height) / HALF_DIVIDER * CHART_SIZE_MULTIPLIER
 
-                                val clickedIndex = findClickedSlice(
-                                    touchPosition = offset,
-                                    center = center,
-                                    radius = radius,
-                                    dataList = params.dataList,
-                                    total = params.total,
-                                    config = params.config,
-                                )
+                                val clickedIndex =
+                                    findClickedSlice(
+                                        touchPosition = offset,
+                                        center = center,
+                                        radius = radius,
+                                        dataList = params.dataList,
+                                        total = params.total,
+                                        config = params.config,
+                                    )
 
                                 clickedIndex?.let { params.onSliceClick(it) }
                             }
@@ -269,18 +275,19 @@ private fun PieChartContent(
             val radius = minOf(size.width, size.height) / HALF_DIVIDER * CHART_SIZE_MULTIPLIER
 
             drawPieSlices(
-                params = PieSliceDrawParams(
-                    dataList = params.dataList,
-                    colors = params.sliceColors,
-                    total = params.total,
-                    center = center,
-                    radius = radius,
-                    config = params.config,
-                    animationProgress = params.animationProgress,
-                    selectedSliceIndex = params.selectedSliceIndex,
-                    selectedScale = params.selectedScale,
-                    textMeasurer = textMeasurer,
-                ),
+                params =
+                    PieSliceDrawParams(
+                        dataList = params.dataList,
+                        colors = params.sliceColors,
+                        total = params.total,
+                        center = center,
+                        radius = radius,
+                        config = params.config,
+                        animationProgress = params.animationProgress,
+                        selectedSliceIndex = params.selectedSliceIndex,
+                        selectedScale = params.selectedScale,
+                        textMeasurer = textMeasurer,
+                    ),
             )
         }
         if (params.config.style == PieChartStyle.DONUT && params.centerContent != null) {

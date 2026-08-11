@@ -11,26 +11,24 @@ internal fun createAxisConfig(
     minValue: Float,
     maxValue: Float,
     isBelowAxisMode: Boolean,
-): AxisConfig {
-    return AxisConfig(
+): AxisConfig =
+    AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
         steps = 6,
         drawAxisAtZero = isBelowAxisMode,
     )
-}
 
 internal fun calculateBaselineY(
     minValue: Float,
     isBelowAxisMode: Boolean,
     chartContext: ChartContext,
-): Float {
-    return if (minValue < 0f && isBelowAxisMode) {
+): Float =
+    if (minValue < 0f && isBelowAxisMode) {
         chartContext.convertValueToYPosition(0f)
     } else {
         chartContext.bottom
     }
-}
 
 internal fun calculateBubbleBarDimensions(
     barValue: Float,
@@ -52,4 +50,3 @@ internal fun calculateBubbleBarDimensions(
         barTop to animatedBarHeight
     }
 }
-

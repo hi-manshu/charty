@@ -7,8 +7,9 @@ import com.himanshoe.charty.common.axis.AxisConfig
  *
  * The axis always spans 0 % – 100 % because every bar is normalised to fill the full width.
  */
-internal fun createNormalizedHorizontalAxisConfig(): AxisConfig = AxisConfig(
-    minValue = 0f,
-    maxValue = NORMALIZED_HORIZONTAL_MAX_PERCENT,
-    steps = NORMALIZED_HORIZONTAL_AXIS_STEPS,
-)
+internal fun createNormalizedHorizontalAxisConfig(): AxisConfig =
+    AxisConfig(
+        minValue = 0f,
+        maxValue = NORMALIZED_HORIZONTAL_MAX_PERCENT,
+        steps = NORMALIZED_HORIZONTAL_AXIS_STEPS,
+    )

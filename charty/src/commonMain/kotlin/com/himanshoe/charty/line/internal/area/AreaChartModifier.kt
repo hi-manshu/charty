@@ -17,10 +17,10 @@ internal fun createAreaChartModifier(
     dataList: List<LineData>,
     lineConfig: LineChartConfig,
     pointBounds: List<Pair<Offset, LineData>>,
-    onTooltipUpdate: (TooltipState?) -> Unit,
+    onTooltipUpdate: (TooltipState?, LineData?) -> Unit,
     modifier: Modifier = Modifier,
-): Modifier {
-    return if (onPointClick != null) {
+): Modifier =
+    if (onPointClick != null) {
         modifier.pointChartClickHandler(
             dataList = dataList,
             pointBounds = pointBounds,
@@ -40,6 +40,3 @@ internal fun createAreaChartModifier(
     } else {
         modifier
     }
-}
-
-

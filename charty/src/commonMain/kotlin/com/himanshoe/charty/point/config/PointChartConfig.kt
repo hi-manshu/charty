@@ -1,8 +1,10 @@
 package com.himanshoe.charty.point.config
 
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.point.data.PointData
@@ -19,7 +21,11 @@ import com.himanshoe.charty.point.data.PointData
  * @param tooltipConfig Configuration for tooltip appearance when a point is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @param tooltipFormatter Function to format tooltip content from PointData
+ * @param crosshairConfig When non-null, enables a draggable crosshair that tracks the user's finger
+ *   and snaps to the nearest point. When set, it replaces the standard tap-to-tooltip interaction.
+ *   Applies to [com.himanshoe.charty.point.PointChart] and [com.himanshoe.charty.point.BubbleChart].
  */
+@Stable
 data class PointChartConfig(
     val pointRadius: Float = 8f,
     val pointAlpha: Float = 1f,
@@ -32,6 +38,7 @@ data class PointChartConfig(
     val tooltipFormatter: (PointData) -> String = { pointData ->
         "${pointData.label}: ${pointData.value}"
     },
+    val crosshairConfig: ChartCrosshairConfig? = null,
 ) {
     init {
         require(pointRadius > 0) { "Point radius must be greater than 0" }

@@ -20,5 +20,5 @@ internal data class BubbleBarDrawParams(
     val onBarClick: ((BarData) -> Unit)?,
     val barBounds: MutableList<Pair<Rect, BarData>>,
     val textMeasurer: TextMeasurer,
+    val recordBounds: Boolean = onBarClick != null,
 )
-

@@ -16,7 +16,6 @@ package com.himanshoe.charty.calendar.config
  * ```
  */
 sealed class CellShape {
-
     /** Plain square cell with no rounding. */
     data object Square : CellShape()
 
@@ -25,7 +24,9 @@ sealed class CellShape {
      *
      * @param cornerRadius The corner radius in pixels. Defaults to `2f`.
      */
-    data class RoundedSquare(val cornerRadius: Float = 2f) : CellShape()
+    data class RoundedSquare(
+        val cornerRadius: Float = 2f,
+    ) : CellShape()
 
     /** Circular cell. The diameter equals [com.himanshoe.charty.calendar.config.CalendarHeatmapConfig.cellSize]. */
     data object Circle : CellShape()

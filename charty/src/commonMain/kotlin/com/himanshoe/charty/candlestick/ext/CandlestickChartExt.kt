@@ -29,7 +29,7 @@ internal fun List<CandleData>.getLowValues(): List<Float> = map { it.low }
  */
 internal fun calculateMaxValue(data: List<CandleData>): Float {
     val maxHigh = data.maxOfOrNull { it.high } ?: 0f
-    return maxHigh * CHART_PADDING_MULTIPLIER_HIGH // Add 5% padding
+    return maxHigh * CHART_PADDING_MULTIPLIER_HIGH
 }
 
 /**
@@ -37,5 +37,5 @@ internal fun calculateMaxValue(data: List<CandleData>): Float {
  */
 internal fun calculateMinValue(data: List<CandleData>): Float {
     val minLow = data.minOfOrNull { it.low } ?: 0f
-    return minLow * CHART_PADDING_MULTIPLIER_LOW // Subtract 5% padding
+    return minLow * CHART_PADDING_MULTIPLIER_LOW
 }

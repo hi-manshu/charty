@@ -67,42 +67,46 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
 
             val isNegative = value < 0f
 
-            val (barLeft, barWidth) = if (isNegative && isBelowAxisMode) {
-                val fullWidth = params.baselineX - barValueX
-                barValueX to (fullWidth * params.animationProgress)
-            } else {
-                val fullWidth = barValueX - params.baselineX
-                params.baselineX to (fullWidth * params.animationProgress)
-            }
+            val (barLeft, barWidth) =
+                if (isNegative && isBelowAxisMode) {
+                    val fullWidth = params.baselineX - barValueX
+                    barValueX to (fullWidth * params.animationProgress)
+                } else {
+                    val fullWidth = barValueX - params.baselineX
+                    params.baselineX to (fullWidth * params.animationProgress)
+                }
 
             if (barWidth <= 0f) return@fastForEachIndexed
 
-            if (params.onBarClick != null) {
+            if (params.recordBounds) {
                 params.barBounds.add(
                     Rect(
                         left = barLeft,
                         top = barTop,
                         right = barLeft + barWidth,
                         bottom = barTop + singleBarHeight,
-                    ) to GroupedHorizontalBarEntry(
-                        barGroup = barGroup,
-                        barIndex = barIndex,
-                        barValue = value,
-                    ),
+                    ) to
+                        GroupedHorizontalBarEntry(
+                            barGroup = barGroup,
+                            barIndex = barIndex,
+                            barValue = value,
+                        ),
                 )
             }
 
-            val barColor = if (barGroup.colors != null && barIndex < barGroup.colors.size) {
-                barGroup.colors[barIndex]
-            } else {
-                ChartyColor.Solid(params.colorList[barIndex % params.colorList.size])
-            }
+            val barColor =
+                if (barGroup.colors != null && barIndex < barGroup.colors.size) {
+                    barGroup.colors[barIndex]
+                } else {
+                    ChartyColor.Solid(params.colorList[barIndex % params.colorList.size])
+                }
 
-            val brush = Brush.horizontalGradient(
-                colors = barColor.value,
-                startX = params.chartContext.left,
-                endX = params.chartContext.right,
-            )
+            val brush =
+                Brush.horizontalGradient(
+                    colors = barColor.value,
+                    startX = params.chartContext.left,
+                    endX = params.chartContext.right,
+                )
 
             drawGroupedHorizontalBar(
                 brush = brush,
@@ -135,35 +139,36 @@ private fun DrawScope.drawGroupedHorizontalBar(
     isNegative: Boolean,
     isBelowAxisMode: Boolean,
 ) {
-    val path = Path().apply {
-        if (isNegative && isBelowAxisMode) {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomRightCornerRadius = CornerRadius.Zero,
-                ),
-            )
-        } else {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                ),
-            )
+    val path =
+        Path().apply {
+            if (isNegative && isBelowAxisMode) {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
+                )
+            } else {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
+                )
+            }
         }
-    }
     drawPath(path, brush)
 }
 

@@ -1,6 +1,9 @@
 package com.himanshoe.charty.common.animation
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,13 +16,33 @@ import com.himanshoe.charty.common.config.Animation
  */
 
 /**
+ * Whether this [Animation] configuration produces a transition. `false` only for [Animation.Disabled].
+ */
+val Animation.isAnimated: Boolean
+    get() = this !is Animation.Disabled
+
+/**
+ * Resolves this [Animation] configuration into a Compose [AnimationSpec] for `Float` values.
+ *
+ * - [Animation.Enabled] maps to a [tween] using its duration and easing.
+ * - [Animation.Spring] maps to a physics-based [spring].
+ * - [Animation.Disabled] maps to [snap] (instant); callers should guard with [isAnimated] first.
+ */
+fun Animation.toFloatSpec(): AnimationSpec<Float> =
+    when (this) {
+        is Animation.Enabled -> tween(durationMillis = duration, easing = easing)
+        is Animation.Spring -> spring(dampingRatio = dampingRatio, stiffness = stiffness)
+        is Animation.Disabled -> snap()
+    }
+
+/**
  * Creates and manages the animation progress for a chart.
  *
  * This composable function automatically handles the animation lifecycle based on the provided [Animation] configuration.
  * It returns an [Animatable] that tracks the animation progress, which can be used to drive animations in the chart's drawing code.
  *
- * @param animation The configuration for the animation, which can be either [Animation.Enabled] or [Animation.Disabled].
- * @param initialValue The starting value for the animation. If `null`, it defaults to `0f` for enabled animations and `targetValue` for disabled animations.
+ * @param animation The configuration for the animation ([Animation.Enabled], [Animation.Spring], or [Animation.Disabled]).
+ * @param initialValue The starting value for the animation. If `null`, it defaults to `0f` for animated configs and `targetValue` when disabled.
  * @param targetValue The target value for the animation, which defaults to `1f`.
  * @return An [Animatable] that tracks the animation progress from `initialValue` to `targetValue`.
  *
@@ -32,16 +55,17 @@ fun rememberChartAnimation(
     initialValue: Float? = null,
     targetValue: Float = 1f,
 ): Animatable<Float, *> {
-    val animationProgress = remember(animation) {
-        val initial = initialValue ?: if (animation is Animation.Enabled) 0f else targetValue
-        Animatable(initial)
-    }
+    val animationProgress =
+        remember(animation) {
+            val initial = initialValue ?: if (animation.isAnimated) 0f else targetValue
+            Animatable(initial)
+        }
 
     LaunchedEffect(animation) {
-        if (animation is Animation.Enabled) {
+        if (animation.isAnimated) {
             animationProgress.animateTo(
                 targetValue = targetValue,
-                animationSpec = tween(durationMillis = animation.duration),
+                animationSpec = animation.toFloatSpec(),
             )
         }
     }
@@ -55,18 +79,16 @@ fun rememberChartAnimation(
  * This function is useful when you need more control over when the animation begins.
  * It provides an [Animatable] instance that can be manually triggered.
  *
- * @param animation The configuration for the animation, which can be either [Animation.Enabled] or [Animation.Disabled].
- * @param initialValue The starting value for the animation. If `null`, it defaults to `0f` for enabled animations and `1f` for disabled animations.
+ * @param animation The configuration for the animation ([Animation.Enabled], [Animation.Spring], or [Animation.Disabled]).
+ * @param initialValue The starting value for the animation. If `null`, it defaults to `0f` for animated configs and `1f` when disabled.
  * @return An [Animatable] instance that can be used to control the animation state.
  */
 @Composable
 fun rememberChartAnimationState(
     animation: Animation,
     initialValue: Float? = null,
-): Animatable<Float, *> {
-    return remember(animation) {
-        val initial = initialValue ?: if (animation is Animation.Enabled) 0f else 1f
+): Animatable<Float, *> =
+    remember(animation) {
+        val initial = initialValue ?: if (animation.isAnimated) 0f else 1f
         Animatable(initial)
     }
-}
-

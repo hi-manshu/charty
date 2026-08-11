@@ -1,6 +1,10 @@
 package com.himanshoe.charty.bar.config
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -38,6 +42,9 @@ enum class NegativeValuesDrawMode {
  * @param referenceLine Optional reference line configuration (target/average line)
  * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @param showDataLabels Whether to show value labels above each bar
+ * @param dataLabelFormatter Formats the bar value for the data label text
+ * @param dataLabelStyle Text style for data labels
  */
 @Stable
 data class BarChartConfig(
@@ -52,6 +59,17 @@ data class BarChartConfig(
     val tooltipFormatter: (BarData) -> String = { barData ->
         "${barData.label}: ${barData.value}"
     },
+    val showDataLabels: Boolean = false,
+    val dataLabelFormatter: (BarData) -> String = { barData ->
+        val v = barData.value
+        if (v == v.toLong().toFloat()) v.toLong().toString() else v.toString()
+    },
+    val dataLabelStyle: TextStyle =
+        TextStyle(
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.DarkGray,
+        ),
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }

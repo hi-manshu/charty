@@ -10,12 +10,15 @@ private const val DEFAULT_FILL_ALPHA = 0.3f
 private const val CONTROL_POINT_DIVISOR = 3f
 private const val CONTROL_POINT_MULTIPLIER = 2f
 
-
 /**
  * Create area path with optional smooth curve
  */
-internal fun createAreaPath(pointPositions: List<Offset>, baselineY: Float, smoothCurve: Boolean): Path {
-    return Path().apply {
+internal fun createAreaPath(
+    pointPositions: List<Offset>,
+    baselineY: Float,
+    smoothCurve: Boolean,
+): Path =
+    Path().apply {
         moveTo(pointPositions[0].x, baselineY)
         lineTo(pointPositions[0].x, pointPositions[0].y)
 
@@ -30,13 +33,15 @@ internal fun createAreaPath(pointPositions: List<Offset>, baselineY: Float, smoo
         lineTo(pointPositions.last().x, baselineY)
         close()
     }
-}
 
 /**
  * Create line path with optional smooth curve
  */
-internal fun createLinePath(pointPositions: List<Offset>, smoothCurve: Boolean): Path {
-    return Path().apply {
+internal fun createLinePath(
+    pointPositions: List<Offset>,
+    smoothCurve: Boolean,
+): Path =
+    Path().apply {
         moveTo(pointPositions[0].x, pointPositions[0].y)
 
         if (smoothCurve) {
@@ -47,7 +52,6 @@ internal fun createLinePath(pointPositions: List<Offset>, smoothCurve: Boolean):
             }
         }
     }
-}
 
 /**
  * Draw smooth curve through points using cubic bezier curves
@@ -80,14 +84,15 @@ internal fun createAreaBrush(
     fillAlpha: Float,
     chartTop: Float,
     chartBottom: Float,
-): Brush {
-    return when (color) {
+): Brush =
+    when (color) {
         is ChartyColor.Solid ->
             Brush.verticalGradient(
-                colors = listOf(
-                    color.color.copy(alpha = fillAlpha),
-                    color.color.copy(alpha = fillAlpha * DEFAULT_FILL_ALPHA),
-                ),
+                colors =
+                    listOf(
+                        color.color.copy(alpha = fillAlpha),
+                        color.color.copy(alpha = fillAlpha * DEFAULT_FILL_ALPHA),
+                    ),
                 startY = chartTop,
                 endY = chartBottom,
             )
@@ -99,15 +104,12 @@ internal fun createAreaBrush(
                 endY = chartBottom,
             )
     }
-}
 
 /**
  * Create brush for line
  */
-internal fun createLineBrush(color: ChartyColor): Brush {
-    return when (color) {
+internal fun createLineBrush(color: ChartyColor): Brush =
+    when (color) {
         is ChartyColor.Solid -> Brush.linearGradient(listOf(color.color, color.color))
         is ChartyColor.Gradient -> Brush.linearGradient(color.colors)
     }
-}
-

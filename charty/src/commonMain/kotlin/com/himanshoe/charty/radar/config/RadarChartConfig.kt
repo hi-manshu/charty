@@ -1,5 +1,6 @@
 package com.himanshoe.charty.radar.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -43,6 +44,7 @@ enum class RadarGridStyle {
  * @param labelTextStyle TextStyle for axis labels - allows full customization of text appearance
  * @param valueTextStyle TextStyle for value labels - allows full customization of text appearance
  */
+@Stable
 data class RadarLabelConfig(
     val showLabels: Boolean = false,
     val showValues: Boolean = false,
@@ -68,6 +70,7 @@ data class RadarLabelConfig(
  * @param axisLineColor Color of axis lines
  * @param gridLineAlpha Alpha transparency for grid lines
  */
+@Stable
 data class RadarGridConfig(
     val gridStyle: RadarGridStyle = RadarGridStyle.POLYGON,
     val numberOfGridLevels: Int = 5,
@@ -75,16 +78,18 @@ data class RadarGridConfig(
     val showAxisLines: Boolean = true,
     val gridLineWidth: Float = DEFAULT_GRID_LINE_WIDTH,
     val axisLineWidth: Float = DEFAULT_AXIS_LINE_WIDTH,
-    val gridLineColor: ChartyColor = ChartyColor.Solid(
-        Color(DEFAULT_GRID_LINE_COLOR).copy(
-            alpha = GRID_LINE_ALPHA_DEFAULT,
+    val gridLineColor: ChartyColor =
+        ChartyColor.Solid(
+            Color(DEFAULT_GRID_LINE_COLOR).copy(
+                alpha = GRID_LINE_ALPHA_DEFAULT,
+            ),
         ),
-    ),
-    val axisLineColor: ChartyColor = ChartyColor.Solid(
-        Color(DEFAULT_AXIS_LINE_COLOR).copy(
-            alpha = AXIS_LINE_ALPHA_DEFAULT,
+    val axisLineColor: ChartyColor =
+        ChartyColor.Solid(
+            Color(DEFAULT_AXIS_LINE_COLOR).copy(
+                alpha = AXIS_LINE_ALPHA_DEFAULT,
+            ),
         ),
-    ),
     val gridLineAlpha: Float = GRID_LINE_ALPHA_DEFAULT,
 ) {
     init {
@@ -103,6 +108,7 @@ data class RadarGridConfig(
  * @param centerBackgroundColor Background color for center area
  * @param centerBackgroundRadius Radius of center background circle
  */
+@Stable
 data class RadarCenterConfig(
     val showCenterIcon: Boolean = false,
     val centerIconSize: Float = DEFAULT_CENTER_ICON_SIZE,
@@ -131,6 +137,7 @@ data class RadarCenterConfig(
  * @param scaleToFit Whether to scale the chart to fit available space
  * @param paddingFraction Padding around the chart as fraction of size
  */
+@Stable
 data class RadarChartConfig(
     val dataLineWidth: Float = DEFAULT_DATA_LINE_WIDTH,
     val showDataPoints: Boolean = true,

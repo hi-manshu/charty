@@ -1,7 +1,7 @@
 package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -16,23 +17,25 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.util.fastFlatMap
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartLegend
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
+import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
-import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -55,14 +58,15 @@ import com.himanshoe.charty.line.internal.stackedarea.stackedAreaChartClickHandl
 private data class StackedAreaDrawParams(
     val dataList: List<LineGroup>,
     val chartContext: ChartContext,
-    val colorList: List<androidx.compose.ui.graphics.Color>,
+    val colorList: List<Color>,
     val lineConfig: LineChartConfig,
     val fillAlpha: Float,
     val animationProgress: Float,
     val onAreaClick: ((StackedAreaPoint) -> Unit)?,
     val areaSegmentBounds: MutableList<Triple<Rect, Path, StackedAreaPoint>>,
     val crosshairBounds: MutableList<Pair<Offset, LineGroup>>?,
-    val crosshairManager: CrosshairManager?,
+    val crosshairManager: CrosshairManager<LineGroup>?,
+    val crosshairState: CrosshairState?,
     val tooltipState: TooltipState?,
     val textMeasurer: TextMeasurer,
     val interactionConfig: ChartInteractionConfig,
@@ -105,35 +109,42 @@ fun StackedAreaChart(
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
-    val (maxValue, colorList) = remember(dataList, colors) {
-        val allStackedValues = dataList.fastFlatMap { group ->
-            val cumulative = mutableListOf<Float>()
-            var sum = 0f
-            group.values.fastForEach { value -> sum += value; cumulative.add(sum) }
-            cumulative
+    val (maxValue, colorList) =
+        remember(dataList, colors) {
+            val allStackedValues =
+                dataList.fastFlatMap { group ->
+                    val cumulative = mutableListOf<Float>()
+                    var sum = 0f
+                    group.values.fastForEach { value ->
+                        sum += value
+                        cumulative.add(sum)
+                    }
+                    cumulative
+                }
+            calculateMaxValue(allStackedValues) to colors.value
         }
-        calculateMaxValue(allStackedValues) to colors.value
-    }
 
-    val animationProgress = remember { Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f) }
+    val animationProgress = remember { Animatable(if (lineConfig.animation.isAnimated) 0f else 1f) }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val areaSegmentBounds = remember { mutableListOf<Triple<Rect, Path, StackedAreaPoint>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, LineGroup>>() }
-    val crosshairManager = if (lineConfig.crosshairConfig != null) rememberCrosshairManager() else null
+    val (crosshairManager, animatedCrosshairState) =
+        rememberChartCrosshair<LineGroup>(lineConfig.crosshairConfig != null)
     val textMeasurer = rememberTextMeasurer()
 
     LaunchedEffect(lineConfig.animation) {
-        if (lineConfig.animation is Animation.Enabled) {
+        if (lineConfig.animation.isAnimated) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = lineConfig.animation.duration),
+                animationSpec = lineConfig.animation.toFloatSpec(),
             )
         }
     }
 
-    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-        generateLineGroupChartDescription(it, "stacked area")
-    }
+    val chartDescription =
+        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+            generateLineGroupChartDescription(it, "stacked area")
+        }
 
     syncInteractionDataSizes(
         viewPortState = interactionConfig.viewPortState,
@@ -142,48 +153,60 @@ fun StackedAreaChart(
         dataSize = dataList.size,
     )
 
-    val clickModifier = buildStackedAreaModifier(
-        crosshairManager = crosshairManager,
-        lineConfig = lineConfig,
-        dataList = dataList,
-        crosshairBounds = crosshairBounds,
-        areaSegmentBounds = areaSegmentBounds,
-        onAreaClick = onAreaClick,
-        onTooltipStateChange = { tooltipState = it },
-    )
-
-    val chartModifier = buildInteractionModifier(
-        base = modifier.then(clickModifier),
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
-
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(minValue = 0f, maxValue = maxValue, steps = 6, drawAxisAtZero = false),
-        config = scaffoldConfig,
-        contentDescription = chartDescription,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-        areaSegmentBounds.clear()
-        drawStackedAreaContent(
-            StackedAreaDrawParams(
-                dataList = dataList,
-                chartContext = chartContext,
-                colorList = colorList,
-                lineConfig = lineConfig,
-                fillAlpha = fillAlpha,
-                animationProgress = animationProgress.value,
-                onAreaClick = onAreaClick,
-                areaSegmentBounds = areaSegmentBounds,
-                crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
-                crosshairManager = crosshairManager,
-                tooltipState = tooltipState,
-                textMeasurer = textMeasurer,
-                interactionConfig = interactionConfig,
-            )
+    val clickModifier =
+        buildStackedAreaModifier(
+            crosshairManager = crosshairManager,
+            lineConfig = lineConfig,
+            dataList = dataList,
+            crosshairBounds = crosshairBounds,
+            areaSegmentBounds = areaSegmentBounds,
+            onAreaClick = onAreaClick,
+            onTooltipStateChange = { state, _ -> tooltipState = state },
         )
+
+    Column(modifier = modifier) {
+        val chartModifier =
+            buildInteractionModifier(
+                base = Modifier.weight(1f).then(clickModifier),
+                interactionConfig = interactionConfig,
+                dataList = dataList,
+            )
+
+        ChartScaffold(
+            modifier = chartModifier,
+            xLabels = dataList.getLabels(),
+            yAxisConfig = AxisConfig(minValue = 0f, maxValue = maxValue, steps = 6, drawAxisAtZero = false),
+            config = scaffoldConfig,
+            contentDescription = chartDescription,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
+            areaSegmentBounds.clear()
+            drawStackedAreaContent(
+                StackedAreaDrawParams(
+                    dataList = dataList,
+                    chartContext = chartContext,
+                    colorList = colorList,
+                    lineConfig = lineConfig,
+                    fillAlpha = fillAlpha,
+                    animationProgress = animationProgress.value,
+                    onAreaClick = onAreaClick,
+                    areaSegmentBounds = areaSegmentBounds,
+                    crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
+                    crosshairManager = crosshairManager,
+                    crosshairState = animatedCrosshairState,
+                    tooltipState = tooltipState,
+                    textMeasurer = textMeasurer,
+                    interactionConfig = interactionConfig,
+                ),
+            )
+        }
+        if (lineConfig.legendLabels.isNotEmpty()) {
+            ChartLegend(
+                labels = lineConfig.legendLabels,
+                colors = colorList,
+                textStyle = lineConfig.legendTextStyle,
+            )
+        }
     }
 }
 
@@ -229,11 +252,12 @@ private fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
                 fillAlpha = fillAlpha,
                 animationProgress = animationProgress,
                 dataList = dataList,
-                onSegmentBoundsCalculated = if (onAreaClick != null) {
-                    { bounds -> areaSegmentBounds.add(bounds) }
-                } else {
-                    null
-                },
+                onSegmentBoundsCalculated =
+                    if (onAreaClick != null) {
+                        { bounds -> areaSegmentBounds.add(bounds) }
+                    } else {
+                        null
+                    },
             ),
         )
     }
@@ -252,7 +276,7 @@ private fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
     }
     drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
 
-    params.crosshairManager?.state?.let { state ->
+    params.crosshairState?.let { state ->
         lineConfig.crosshairConfig?.let { config ->
             val dotColor = ChartyColor.Solid(colorList.firstOrNull() ?: Color.Transparent)
             drawLineChartCrosshair(state, config, chartContext, textMeasurer, dotColor)
@@ -261,27 +285,30 @@ private fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
 }
 
 private fun buildStackedAreaModifier(
-    crosshairManager: CrosshairManager?,
+    crosshairManager: CrosshairManager<LineGroup>?,
     lineConfig: LineChartConfig,
     dataList: List<LineGroup>,
     crosshairBounds: MutableList<Pair<Offset, LineGroup>>,
     areaSegmentBounds: MutableList<Triple<Rect, Path, StackedAreaPoint>>,
     onAreaClick: ((StackedAreaPoint) -> Unit)?,
-    onTooltipStateChange: (TooltipState?) -> Unit,
-): Modifier = when {
-    crosshairManager != null -> Modifier.chartCrosshairHandler(
-        dataList = dataList,
-        pointBounds = crosshairBounds,
-        onCrosshairUpdate = crosshairManager::update,
-        labelFormatter = { group -> "${group.label}: ${group.values.sum()}" },
-        dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
-    )
-    onAreaClick != null -> Modifier.stackedAreaChartClickHandler(
-        dataList = dataList,
-        lineConfig = lineConfig,
-        areaSegmentBounds = areaSegmentBounds,
-        onAreaClick = onAreaClick,
-        onTooltipStateChange = onTooltipStateChange,
-    )
-    else -> Modifier
-}
+    onTooltipStateChange: (TooltipState?, StackedAreaPoint?) -> Unit,
+): Modifier =
+    when {
+        crosshairManager != null ->
+            Modifier.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = crosshairBounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = { group -> "${group.label}: ${group.values.sum()}" },
+                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+            )
+        onAreaClick != null ->
+            Modifier.stackedAreaChartClickHandler(
+                dataList = dataList,
+                lineConfig = lineConfig,
+                areaSegmentBounds = areaSegmentBounds,
+                onAreaClick = onAreaClick,
+                onTooltipStateChange = onTooltipStateChange,
+            )
+        else -> Modifier
+    }

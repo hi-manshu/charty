@@ -14,4 +14,3 @@ internal object LineChartConstants {
     const val TOOLTIP_LINE_ALPHA = 0.1f
     const val TOOLTIP_LINE_WIDTH = 1.5f
 }
-

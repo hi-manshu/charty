@@ -58,28 +58,37 @@ chartyv3/
 │   └── src/commonMain/kotlin/com/himanshoe/charty/
 │       ├── bar/                     # BarChart, HorizontalBarChart, StackedBarChart,
 │       │   │                        # StackedHorizontalBarChart, GroupedHorizontalBarChart,
-│       │   │                        # NormalizedHorizontalBarChart, MosiacBarChart, SpanChart
+│       │   │                        # NormalizedHorizontalBarChart, MosaicBarChart, SpanChart,
+│       │   │                        # WavyChart, BubbleBarChart, ComparisonBarChart,
+│       │   │                        # LollipopBarChart, WaterfallChart
 │       │   ├── config/              # BarChartConfig, StackedBarChartConfig,
 │       │   │                        # StackedHorizontalBarChartConfig,
 │       │   │                        # GroupedHorizontalBarChartConfig,
-│       │   │                        # NormalizedHorizontalBarChartConfig, …
+│       │   │                        # NormalizedHorizontalBarChartConfig,
+│       │   │                        # WavyChartConfig, …
 │       │   ├── data/                # BarData, BarGroup, SpanData
 │       │   └── internal/            # Private drawing helpers (NOT public API)
-│       ├── block/                   # BlockBarChart
+│       ├── block/                   # BlockBar
+│       ├── calendar/                # CalendarHeatmapChart
+│       ├── candlestick/             # CandlestickChart
 │       ├── circular/                # CircularProgressIndicator
 │       ├── color/                   # ChartyColor (Solid / Gradient), ChartyColors palette
 │       ├── combo/                   # ComboChart (bar + line)
 │       ├── common/                  # ChartContext, ChartScaffold, ChartOrientation,
+│       │   │                        # ChartLegend
+│       │   ├── accessibility/       # ChartAccessibility — screen-reader description generators
 │       │   ├── animation/           # rememberChartAnimation
 │       │   ├── axis/                # AxisConfig, DrawAxisAndLabels, LabelRotation
 │       │   ├── config/              # Animation, ChartScaffoldConfig, ReferenceLineConfig,
-│       │   │                        # CornerRadius
+│       │   │                        # CornerRadius, ChartInteractionConfig
 │       │   ├── constants/           # ChartConstants (shared magic numbers)
 │       │   ├── data/                # ChartDataPoint, getLabels/getValues helpers
 │       │   ├── draw/                # ReferenceLineDrawer, ChartDrawUtils
 │       │   ├── ext/                 # DrawScopeExtensions
-│       │   ├── gesture/             # GestureUtils, ChartGestureModifiers
+│       │   ├── gesture/             # GestureUtils, ChartGestureModifiers,
+│       │   │                        # ChartCrosshairConfig, CrosshairManager
 │       │   ├── tooltip/             # TooltipConfig, TooltipDrawer, TooltipManager
+│       │   ├── viewport/            # ViewPortState (zoom/pan)
 │       │   └── util/                # ValueCalculations
 │       ├── line/                    # LineChart, AreaChart, MultilineChart,
 │       │   │                        # StackedAreaChart
@@ -120,21 +129,28 @@ chartyv3/
 
 | Composable | File | Description |
 |---|---|---|
-| `BarChart` | `bar/BarChart.kt` | Vertical bar chart with optional negative-value support |
-| `HorizontalBarChart` | `bar/HorizontalBarChart.kt` | Horizontal bar chart |
-| `StackedBarChart` | `bar/StackedBarChart.kt` | Stacked vertical bars (absolute values) |
-| `StackedHorizontalBarChart` | `bar/StackedHorizontalBarChart.kt` | Stacked horizontal bars — horizontal counterpart to `StackedBarChart`, ideal for long category labels |
-| `GroupedHorizontalBarChart` | `bar/GroupedHorizontalBarChart.kt` | Multiple side-by-side horizontal bars per row; full negative/positive value support |
-| `NormalizedHorizontalBarChart` | `bar/NormalizedHorizontalBarChart.kt` | 100%-normalised horizontal bars; horizontal counterpart to `MosiacBarChart` |
-| `MosiacBarChart` | `bar/MosiacBarChart.kt` | 100%-normalised stacked bar chart |
+| `BarChart` | `bar/BarChart.kt` | Vertical bar chart; negative values, data labels, tooltips |
+| `HorizontalBarChart` | `bar/HorizontalBarChart.kt` | Horizontal bar chart; negative values, data labels |
+| `StackedBarChart` | `bar/StackedBarChart.kt` | Stacked vertical bars (absolute values); data labels |
+| `StackedHorizontalBarChart` | `bar/StackedHorizontalBarChart.kt` | Stacked horizontal bars; horizontal counterpart to `StackedBarChart` |
+| `GroupedHorizontalBarChart` | `bar/GroupedHorizontalBarChart.kt` | Side-by-side horizontal bars per row; full negative/positive support |
+| `NormalizedHorizontalBarChart` | `bar/NormalizedHorizontalBarChart.kt` | 100%-normalised horizontal bars; horizontal counterpart to `MosaicBarChart` |
+| `MosaicBarChart` | `bar/MosaicBarChart.kt` | 100%-normalised stacked vertical bar chart |
 | `SpanChart` | `bar/SpanChart.kt` | Horizontal range / Gantt-style bars |
-| `LineChart` | `line/LineChart.kt` | Single-series line with smooth/straight mode |
+| `WavyChart` | `bar/WavyChart.kt` | Animated sine-wave bars; crosshair support |
+| `BubbleBarChart` | `bar/BubbleBarChart.kt` | Bar chart with bubble markers at data points |
+| `ComparisonBarChart` | `bar/ComparisonBarChart.kt` | Back-to-back bars for direct comparison |
+| `LollipopBarChart` | `bar/LollipopBarChart.kt` | Stem + circle (lollipop) chart |
+| `WaterfallChart` | `bar/WaterfallChart.kt` | Cumulative running-total with positive/negative segments |
+| `LineChart` | `line/LineChart.kt` | Single-series line; smooth/straight, crosshair |
 | `AreaChart` | `line/AreaChart.kt` | Filled area below the line |
-| `MultilineChart` | `line/MultilineChart.kt` | Multiple line series on the same axes |
-| `StackedAreaChart` | `line/StackedAreaChart.kt` | Stacked filled area series |
-| `ComboChart` | `combo/ComboChart.kt` | Bars + line overlay on shared y-axis |
-| `PointChart` | `point/PointChart.kt` | Scatter / dot plot |
-| `BubbleChart` | `point/BubbleChart.kt` | Scatter with size-encoded third dimension |
+| `MultilineChart` | `line/MultilineChart.kt` | Multiple line series; per-series color, gradient fill, legend, crosshair |
+| `StackedAreaChart` | `line/StackedAreaChart.kt` | Stacked filled area series; legend, crosshair |
+| `ComboChart` | `combo/ComboChart.kt` | Bars + line overlay on shared y-axis; crosshair |
+| `PointChart` | `point/PointChart.kt` | Scatter / dot plot; crosshair |
+| `BubbleChart` | `point/BubbleChart.kt` | Scatter with size-encoded third dimension; crosshair |
+| `CandlestickChart` | `candlestick/CandlestickChart.kt` | OHLC candlestick chart for financial data |
+| `CalendarHeatmapChart` | `calendar/CalendarHeatmapChart.kt` | GitHub-style contribution heatmap grid |
 
 ### Non-Cartesian Charts
 
@@ -144,7 +160,7 @@ chartyv3/
 | `RadarChart` | `radar/RadarChart.kt` | Single-dataset spider/web chart |
 | `MultipleRadarChart` | `radar/MultipleRadarChart.kt` | Overlapping radar datasets with legend |
 | `CircularProgressIndicator` | `circular/CircularProgressIndicator.kt` | Concentric activity rings |
-| `BlockBarChart` | `block/BlockBar.kt` | Horizontal segmented proportion bar |
+| `BlockBar` | `block/BlockBar.kt` | Horizontal segmented proportion bar |
 
 ---
 
@@ -155,9 +171,11 @@ chartyv3/
 ```kotlin
 data class ChartContext(
     val left: Float, val top: Float, val right: Float, val bottom: Float,
-    val width: Float, val height: Float,
     val minValue: Float, val maxValue: Float,
-)
+) {
+    val width: Float get() = right - left   // computed — do not pass explicitly
+    val height: Float get() = bottom - top  // computed — do not pass explicitly
+}
 ```
 
 Utility functions:
@@ -214,13 +232,15 @@ data class ChartScaffoldConfig(
 
 ### `ReferenceLineConfig`
 
-A chart-agnostic overlay for drawing horizontal or vertical reference/target lines. Supported by `BarChart`, `LineChart`, `AreaChart`, `PointChart`, `ComboChart`.
+A chart-agnostic overlay for drawing horizontal or vertical reference/target lines. Supported by `BarChart`, `HorizontalBarChart`, `StackedBarChart`, `StackedHorizontalBarChart`, `GroupedHorizontalBarChart`, `LineChart`, `AreaChart`, `PointChart`, `ComboChart`.
 
 ---
 
 ## How to Add a New Chart
 
-Follow these steps to add a `CandlestickChart` as an example.
+Follow these steps to add a hypothetical `GaugeChart` as an example.
+The code snippets below use `CandlestickChart` naming for illustration — refer to
+the real `candlestick/` package for a complete working implementation.
 
 ### 1. Create the data class
 
@@ -524,10 +544,7 @@ The following are concrete improvement areas and feature ideas, ordered roughly 
 
 | Chart | Notes |
 |---|---|
-| **Candlestick / OHLC** | Financial data; needs `open`, `high`, `low`, `close` per point |
-| **Waterfall Chart** | Running total with positive/negative segments |
 | **Histogram** | Auto-bin continuous data into ranges |
-| **Heatmap** | 2-D grid with colour intensity |
 | **Gauge / Dial** | Single-value arc (0–100%) |
 | **Treemap** | Hierarchical area decomposition |
 | **Funnel Chart** | Conversion funnel stages |
@@ -535,15 +552,13 @@ The following are concrete improvement areas and feature ideas, ordered roughly 
 
 ### Enhancements to Existing Charts
 
-- **Zoom & Pan** — pinch-to-zoom and drag-to-pan on Cartesian charts via `transformable` modifier.
-- **Legend Component** — a reusable `ChartLegend` composable that can be attached to any chart.
-- **Data Labels on Bars** — configurable value labels displayed above/inside bar segments.
+- **Lambda `@Stable` fix** — config classes like `LineChartConfig` carry lambda properties (`tooltipFormatter`, `dataLabelFormatter`). Kotlin lambda equality is reference-based, so two identical-looking configs are never `==`, undermining `@Stable`. Fix: move default lambdas to top-level `val`s so callers share the same reference.
 - **Dual Y-axis** — independent left and right value axes (useful for `ComboChart`).
 - **Threshold Bands** — colour-coded horizontal regions (e.g. green/yellow/red zones).
-- **Negative Stacked Bars** — currently stacked bars only support positive values.
+- **Negative Stacked Bars** — `StackedBarChart` and `StackedHorizontalBarChart` currently require positive values; add `BELOW_AXIS` mode.
 - **Log Scale Axis** — logarithmic y-axis option for charts with wide value ranges.
 - **Date/Time X-Axis** — built-in `kotlinx-datetime` integration for time-series labels.
-- **Accessibility** — `semantics` descriptors on chart composables for screen readers.
+- **Gradient fill draw order** — `MultilineChart` with `showGradientFill = true` currently interleaves fill-N and line-N. A two-pass approach (all fills, then all lines) would prevent later fills from obscuring earlier lines.
 
 ### API & DX Improvements
 
@@ -551,7 +566,6 @@ The following are concrete improvement areas and feature ideas, ordered roughly 
 - **Snapshot testing** — golden-image tests for each chart using Paparazzi (Android) or `compose-ui-test` snapshots.
 - **Screenshot documentation** — auto-generate chart gallery from the sample app for the documentation site.
 - **Compose Previews** — `@Preview` annotations on each chart with sample data for IDE previewing.
-- **KSP annotation processor** — optional code-generation for type-safe data binding.
 
 ### Infrastructure
 

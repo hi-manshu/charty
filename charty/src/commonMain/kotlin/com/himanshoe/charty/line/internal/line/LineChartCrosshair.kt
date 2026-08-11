@@ -16,6 +16,7 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 
 private val CROSSHAIR_DASH_INTERVALS = floatArrayOf(8f, 4f)
+private val CROSSHAIR_DASH_EFFECT = PathEffect.dashPathEffect(CROSSHAIR_DASH_INTERVALS)
 private const val DOT_OUTER_PADDING = 2f
 
 /**
@@ -29,6 +30,8 @@ private const val DOT_OUTER_PADDING = 2f
  * @param chartContext The chart's coordinate context.
  * @param textMeasurer Required for measuring and drawing the label text.
  * @param chartColor The chart's colour — used to fill the highlight dot.
+ * @param drawLabel When `false`, the value label bubble is suppressed (lines and dot are still
+ *   drawn). Used when a custom composable crosshair label replaces the canvas one.
  */
 @OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawLineChartCrosshair(
@@ -37,8 +40,9 @@ internal fun DrawScope.drawLineChartCrosshair(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
     chartColor: ChartyColor,
+    drawLabel: Boolean = true,
 ) {
-    val dashEffect = PathEffect.dashPathEffect(CROSSHAIR_DASH_INTERVALS)
+    val dashEffect = CROSSHAIR_DASH_EFFECT
 
     drawLine(
         brush = Brush.verticalGradient(config.verticalLineColor.value),
@@ -69,14 +73,15 @@ internal fun DrawScope.drawLineChartCrosshair(
         center = Offset(state.x, state.y),
     )
 
-    if (config.showLabel) {
-        val tooltipState = TooltipState(
-            content = state.label,
-            x = state.x - config.dotRadius,
-            y = state.y,
-            barWidth = config.dotRadius * 2f,
-            position = TooltipPosition.ABOVE,
-        )
+    if (config.showLabel && drawLabel) {
+        val tooltipState =
+            TooltipState(
+                content = state.label,
+                x = state.x - config.dotRadius,
+                y = state.y,
+                barWidth = config.dotRadius * 2f,
+                position = TooltipPosition.ABOVE,
+            )
         drawTooltip(
             tooltipState = tooltipState,
             config = config.tooltipConfig,

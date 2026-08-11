@@ -4,15 +4,14 @@ package com.himanshoe.charty.common.ext
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.LabelRotation
-import com.himanshoe.charty.common.axis.formatAxisLabel
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
 private const val VERTICAL_CHART_LEFT_PADDING_WITH_LABELS = 60f
@@ -54,11 +53,12 @@ private fun calculateVerticalChartBounds(
         if (showLabels) VERTICAL_CHART_LEFT_PADDING_WITH_LABELS else VERTICAL_CHART_LEFT_PADDING_WITHOUT_LABELS
     val rightPadding = VERTICAL_CHART_RIGHT_PADDING
     val topPadding = VERTICAL_CHART_TOP_PADDING
-    val bottomPadding = if (showLabels && hasXLabels) {
-        VERTICAL_CHART_BOTTOM_PADDING_WITH_LABELS
-    } else {
-        VERTICAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS
-    }
+    val bottomPadding =
+        if (showLabels && hasXLabels) {
+            VERTICAL_CHART_BOTTOM_PADDING_WITH_LABELS
+        } else {
+            VERTICAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS
+        }
 
     val right = size.width - rightPadding
     val bottom = size.height - bottomPadding
@@ -150,7 +150,7 @@ internal fun DrawScope.drawVerticalChartAxes(
         }
 
         if (config.showLabels) {
-            val textLayout = textMeasurer.measure(AnnotatedString(formatAxisLabel(value)), labelStyle)
+            val textLayout = textMeasurer.measure(AnnotatedString(yAxisConfig.valueFormatter(value)), labelStyle)
             val labelX = bounds.left - textLayout.size.width - LABEL_OFFSET
             val labelY = y - textLayout.size.height / CENTER_DIVISOR
             val topLeft = Offset(labelX, labelY)
@@ -171,10 +171,11 @@ internal fun DrawScope.drawVerticalChartAxes(
             val centerX = bounds.left + labelWidth * (index + POSITION_OFFSET)
             drawText(
                 textLayoutResult = textLayout,
-                topLeft = Offset(
-                    centerX - textLayout.size.width / CENTER_DIVISOR,
-                    bounds.bottom + LABEL_OFFSET,
-                ),
+                topLeft =
+                    Offset(
+                        centerX - textLayout.size.width / CENTER_DIVISOR,
+                        bounds.bottom + LABEL_OFFSET,
+                    ),
             )
         }
     }
@@ -270,13 +271,14 @@ internal fun DrawScope.drawHorizontalChartAxes(
         }
 
         if (config.showLabels) {
-            val textLayout = textMeasurer.measure(AnnotatedString(formatAxisLabel(value)), labelStyle)
+            val textLayout = textMeasurer.measure(AnnotatedString(yAxisConfig.valueFormatter(value)), labelStyle)
             drawText(
                 textLayoutResult = textLayout,
-                topLeft = Offset(
-                    x - textLayout.size.width / CENTER_DIVISOR,
-                    bounds.bottom + LABEL_OFFSET,
-                ),
+                topLeft =
+                    Offset(
+                        x - textLayout.size.width / CENTER_DIVISOR,
+                        bounds.bottom + LABEL_OFFSET,
+                    ),
             )
         }
     }

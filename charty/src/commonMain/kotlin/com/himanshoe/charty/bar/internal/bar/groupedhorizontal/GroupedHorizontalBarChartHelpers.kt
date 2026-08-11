@@ -17,12 +17,13 @@ internal fun createGroupedHorizontalAxisConfig(
     maxValue: Float,
     steps: Int,
     drawAxisAtZero: Boolean,
-): AxisConfig = AxisConfig(
-    minValue = minValue,
-    maxValue = maxValue,
-    steps = steps,
-    drawAxisAtZero = drawAxisAtZero,
-)
+): AxisConfig =
+    AxisConfig(
+        minValue = minValue,
+        maxValue = maxValue,
+        steps = steps,
+        drawAxisAtZero = drawAxisAtZero,
+    )
 
 /**
  * Computes the x-coordinate of the value baseline.
@@ -36,12 +37,11 @@ internal fun calculateGroupedHorizontalBaselineX(
     minValue: Float,
     maxValue: Float,
     chartContext: ChartContext,
-): Float {
-    return if (drawAxisAtZero) {
+): Float =
+    if (drawAxisAtZero) {
         val range = maxValue - minValue
         val zeroNormalized = (0f - minValue) / range
         chartContext.left + (zeroNormalized * chartContext.width)
     } else {
         chartContext.left
     }
-}

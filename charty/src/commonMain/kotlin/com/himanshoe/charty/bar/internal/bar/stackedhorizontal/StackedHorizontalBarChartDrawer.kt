@@ -47,55 +47,57 @@ internal fun DrawScope.drawStackedHorizontalBars(params: StackedHorizontalBarDra
     val availableWidth = params.chartContext.width
 
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
-        val centeredBarY = params.chartContext.top +
-            (rowHeight * groupIndex) +
-            (rowHeight - barThickness) / 2f
+        val centeredBarY =
+            params.chartContext.top +
+                (rowHeight * groupIndex) +
+                (rowHeight - barThickness) / 2f
 
-        // Scale the full bar width by animationProgress so all segments grow together.
         val effectiveWidth = availableWidth * params.animationProgress
         var cumulativeValue = 0f
         val lastSegmentIndex = barGroup.values.size - 1
 
         barGroup.values.fastForEachIndexed { segmentIndex, value ->
-            val startX = params.chartContext.left +
-                (cumulativeValue / params.maxTotal) * effectiveWidth
+            val startX =
+                params.chartContext.left +
+                    (cumulativeValue / params.maxTotal) * effectiveWidth
             val segmentWidth = (value / params.maxTotal) * effectiveWidth
 
-            // Advance cumulative tracker before drawing so corner-radius logic
-            // can still reference lastSegmentIndex without mutation ordering issues.
             cumulativeValue += value
 
             if (segmentWidth <= 0f) return@fastForEachIndexed
 
-            if (params.onSegmentClick != null) {
+            if (params.recordBounds) {
                 params.segmentBounds.add(
                     Rect(
                         left = startX,
                         top = centeredBarY,
                         right = startX + segmentWidth,
                         bottom = centeredBarY + barThickness,
-                    ) to StackedHorizontalBarSegment(
-                        barGroup = barGroup,
-                        segmentIndex = segmentIndex,
-                        segmentValue = value,
-                    ),
+                    ) to
+                        StackedHorizontalBarSegment(
+                            barGroup = barGroup,
+                            segmentIndex = segmentIndex,
+                            segmentValue = value,
+                        ),
                 )
             }
 
-            val segmentColor = if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
-                barGroup.colors[segmentIndex]
-            } else {
-                ChartyColor.Solid(params.colorList[segmentIndex % params.colorList.size])
-            }
+            val segmentColor =
+                if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
+                    barGroup.colors[segmentIndex]
+                } else {
+                    ChartyColor.Solid(params.colorList[segmentIndex % params.colorList.size])
+                }
 
             val isLastSegment = segmentIndex == lastSegmentIndex
             val cornerRadius = if (isLastSegment) params.config.rightCornerRadius.value else 0f
 
-            val brush = Brush.horizontalGradient(
-                colors = segmentColor.value,
-                startX = startX,
-                endX = startX + segmentWidth,
-            )
+            val brush =
+                Brush.horizontalGradient(
+                    colors = segmentColor.value,
+                    startX = startX,
+                    endX = startX + segmentWidth,
+                )
 
             drawStackedHorizontalSegment(
                 brush = brush,
@@ -120,35 +122,36 @@ private fun DrawScope.drawStackedHorizontalSegment(
     cornerRadius: Float,
     isLastSegment: Boolean,
 ) {
-    val path = Path().apply {
-        if (isLastSegment && cornerRadius > 0f) {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                ),
-            )
-        } else {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero,
-                ),
-            )
+    val path =
+        Path().apply {
+            if (isLastSegment && cornerRadius > 0f) {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
+                )
+            } else {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
+                )
+            }
         }
-    }
     drawPath(path, brush)
 }
 

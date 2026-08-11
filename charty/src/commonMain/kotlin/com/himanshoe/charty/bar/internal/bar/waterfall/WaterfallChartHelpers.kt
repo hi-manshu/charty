@@ -24,4 +24,3 @@ internal fun calculateWaterfallRange(cumulativeValues: List<Float>): Pair<Float,
     val maxValue = (cumulativeValues.maxOrNull() ?: 0f).coerceAtLeast(0f)
     return minValue to maxValue
 }
-

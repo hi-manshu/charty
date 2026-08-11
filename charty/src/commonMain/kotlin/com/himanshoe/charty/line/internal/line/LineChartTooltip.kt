@@ -23,10 +23,13 @@ internal fun DrawScope.drawLineChartTooltip(
     lineConfig: LineChartConfig,
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
+    drawBubble: Boolean = true,
 ) {
-    val clickedPosition = pointBounds.fastFirstOrNull { (_, data) ->
-        lineConfig.tooltipFormatter(data) == tooltipState.content
-    }?.first
+    val clickedPosition =
+        pointBounds
+            .fastFirstOrNull { (_, data) ->
+                lineConfig.tooltipFormatter(data) == tooltipState.content
+            }?.first
 
     clickedPosition?.let { position ->
         drawLine(
@@ -48,13 +51,14 @@ internal fun DrawScope.drawLineChartTooltip(
         )
     }
 
-    drawTooltip(
-        tooltipState = tooltipState,
-        config = lineConfig.tooltipConfig,
-        textMeasurer = textMeasurer,
-        chartWidth = chartContext.right,
-        chartTop = chartContext.top,
-        chartBottom = chartContext.bottom,
-    )
+    if (drawBubble) {
+        drawTooltip(
+            tooltipState = tooltipState,
+            config = lineConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
+    }
 }
-

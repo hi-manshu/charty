@@ -14,11 +14,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.WavyChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
@@ -30,9 +30,13 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
+import com.himanshoe.charty.common.gesture.chartCrosshairHandler
+import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.updateInteractionBounds
+import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -62,6 +66,7 @@ private data class WaveDrawContext(
  * @param color Color for the wave lines.
  * @param wavyConfig Configuration for wave appearance and animation.
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels.
+ * @param crosshairConfig When non-null, enables a draggable crosshair snapping to the nearest bar.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
 @OptIn(ExperimentalTextApi::class)
@@ -72,6 +77,7 @@ fun WavyChart(
     color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     wavyConfig: WavyChartConfig = WavyChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    crosshairConfig: ChartCrosshairConfig? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
     val fullDataList = remember(data) { data() }
@@ -80,6 +86,9 @@ fun WavyChart(
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val textMeasurer = rememberTextMeasurer()
+    val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
+    val (crosshairManager, animatedCrosshairState) =
+        rememberChartCrosshair<BarData>(crosshairConfig != null)
 
     syncInteractionDataSizes(
         viewPortState = interactionConfig.viewPortState,
@@ -88,14 +97,15 @@ fun WavyChart(
         dataSize = dataList.size,
     )
 
-    val (minValue, maxValue) = remember(dataList) {
-        val values = dataList.fastMap { it.value }
-        val rawMin = values.minOrNull() ?: 0f
-        val rawMax = values.maxOrNull() ?: 0f
-        val minVal = min(rawMin, 0f)
-        val maxVal = max(rawMax, if (minVal < 0f) 0f else rawMin)
-        minVal to maxVal
-    }
+    val (minValue, maxValue) =
+        remember(dataList) {
+            val values = dataList.fastMap { it.value }
+            val rawMin = values.minOrNull() ?: 0f
+            val rawMax = values.maxOrNull() ?: 0f
+            val minVal = min(rawMin, 0f)
+            val maxVal = max(rawMax, if (minVal < 0f) 0f else rawMin)
+            minVal to maxVal
+        }
 
     val infinite = rememberInfiniteTransition(label = "wavy-chart")
     val basePhase by infinite.animateFloat(
@@ -115,24 +125,48 @@ fun WavyChart(
 
     val strokeWidthPx = wavyConfig.strokeWidthDp.dp.value
 
-    val chartModifier = buildInteractionModifier(
-        base = modifier,
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
+    val gestureBase =
+        if (crosshairManager != null) {
+            Modifier.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = crosshairBounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = { bar -> "${bar.label}: ${bar.value}" },
+                dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
+            )
+        } else {
+            Modifier
+        }
+    val chartModifier =
+        buildInteractionModifier(
+            base = modifier.then(gestureBase),
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+        )
 
     ChartScaffold(
         modifier = chartModifier,
         xLabels = dataList.fastMap { it.label },
         yAxisConfig = AxisConfig(minValue = minValue, maxValue = maxValue, steps = 5, drawAxisAtZero = minValue < 0f),
         config = scaffoldConfig,
-        contentDescription = interactionConfig.accessibilityDescription
-            ?: "Wavy chart, ${fullDataList.size} data points.",
+        contentDescription =
+            interactionConfig.accessibilityDescription
+                ?: "Wavy chart, ${fullDataList.size} data points.",
     ) { chartContext ->
         updateInteractionBounds(interactionConfig, chartContext)
 
         val barCount = dataList.size
         if (barCount == 0) return@ChartScaffold
+
+        crosshairBounds.clear()
+        if (crosshairManager != null) {
+            val barSpacing = chartContext.width / (barCount * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
+            dataList.fastForEachIndexed { index, barData ->
+                val xCenter = chartContext.left + barSpacing * (1 + index * 2)
+                val y = chartContext.convertValueToYPosition(barData.value)
+                crosshairBounds.add(Offset(xCenter, y) to barData)
+            }
+        }
 
         drawWavyBars(
             dataList = dataList,
@@ -145,6 +179,12 @@ fun WavyChart(
         )
 
         drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+
+        animatedCrosshairState?.let { state ->
+            crosshairConfig?.let { cfg ->
+                drawLineChartCrosshair(state, cfg, chartContext, textMeasurer, color)
+            }
+        }
     }
 }
 
@@ -160,16 +200,17 @@ private fun DrawScope.drawWavyBars(
     val barCount = dataList.size
     val barSpacing = chartContext.width / (barCount * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
     val barWidth = barSpacing * wavyConfig.barWidthFraction.coerceIn(MIN_BAR_WIDTH_FRACTION, 1f)
-    val waveCtx = WaveDrawContext(
-        barSpacing = barSpacing,
-        baselineY = if (minValue < 0f) chartContext.convertValueToYPosition(0f) else chartContext.bottom,
-        waveAmplitude = barWidth * wavyConfig.waveAmplitudeFractionOfBarWidth,
-        segments = wavyConfig.waveSegments.coerceAtLeast(MIN_WAVE_SEGMENTS),
-        basePhase = basePhase,
-        strokeWidthPx = strokeWidthPx,
-        wavyConfig = wavyConfig,
-        color = color,
-    )
+    val waveCtx =
+        WaveDrawContext(
+            barSpacing = barSpacing,
+            baselineY = if (minValue < 0f) chartContext.convertValueToYPosition(0f) else chartContext.bottom,
+            waveAmplitude = barWidth * wavyConfig.waveAmplitudeFractionOfBarWidth,
+            segments = wavyConfig.waveSegments.coerceAtLeast(MIN_WAVE_SEGMENTS),
+            basePhase = basePhase,
+            strokeWidthPx = strokeWidthPx,
+            wavyConfig = wavyConfig,
+            color = color,
+        )
     dataList.fastForEachIndexed { index, barData ->
         drawSingleWave(index, barData, chartContext, waveCtx)
     }

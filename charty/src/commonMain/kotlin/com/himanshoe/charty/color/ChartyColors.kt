@@ -27,9 +27,6 @@ import androidx.compose.ui.graphics.Color
  * )
  */
 object ChartyColors {
-
-    // ==================== Primary Colors ====================
-
     /**
      * The primary blue color, often used as the default for most charts.
      * Hex: #2196F3 (Material Blue 500)
@@ -90,8 +87,6 @@ object ChartyColors {
      */
     val Amber = Color(0xFFFFC107)
 
-    // ==================== Default Configurations ====================
-
     /**
      * The default solid color, used when no specific color is provided. It defaults to [Blue].
      */
@@ -100,113 +95,121 @@ object ChartyColors {
     /**
      * Default gradient - Used for stacked and multi-value charts
      */
-    val DefaultGradient = ChartyColor.Gradient(
-        listOf(Blue, Green, Orange),
-    )
+    val DefaultGradient =
+        ChartyColor.Gradient(
+            listOf(Blue, Green, Orange),
+        )
 
     /**
      * Default multiline colors - Used for multiline and comparison charts
      */
-    val DefaultMultiline = ChartyColor.Gradient(
-        listOf(Pink, Blue, Green),
-    )
-
-    // ==================== Pre-defined Color Palettes ====================
+    val DefaultMultiline =
+        ChartyColor.Gradient(
+            listOf(Pink, Blue, Green),
+        )
 
     /**
      * Modern palette - Contemporary and vibrant colors
      */
-    val ModernPalette = ChartyColor.Gradient(
-        listOf(Blue, Cyan, Purple, Pink, Orange),
-    )
+    val ModernPalette =
+        ChartyColor.Gradient(
+            listOf(Blue, Cyan, Purple, Pink, Orange),
+        )
 
     /**
      * Warm palette - Warm and energetic colors
      */
-    val WarmPalette = ChartyColor.Gradient(
-        listOf(Red, Orange, Amber, Pink),
-    )
+    val WarmPalette =
+        ChartyColor.Gradient(
+            listOf(Red, Orange, Amber, Pink),
+        )
 
     /**
      * Cool palette - Cool and calming colors
      */
-    val CoolPalette = ChartyColor.Gradient(
-        listOf(Blue, Cyan, Teal, Indigo),
-    )
+    val CoolPalette =
+        ChartyColor.Gradient(
+            listOf(Blue, Cyan, Teal, Indigo),
+        )
 
     /**
      * Nature palette - Natural and organic colors
      */
-    val NaturePalette = ChartyColor.Gradient(
-        listOf(Green, Teal, Cyan, Blue),
-    )
+    val NaturePalette =
+        ChartyColor.Gradient(
+            listOf(Green, Teal, Cyan, Blue),
+        )
 
     /**
      * Vibrant palette - High contrast and energetic colors
      */
-    val VibrantPalette = ChartyColor.Gradient(
-        listOf(Red, Orange, Amber, Green, Cyan, Blue, Purple, Pink),
-    )
+    val VibrantPalette =
+        ChartyColor.Gradient(
+            listOf(Red, Orange, Amber, Green, Cyan, Blue, Purple, Pink),
+        )
 
     /**
      * Pastel palette - Soft and muted colors
      */
-    val PastelPalette = ChartyColor.Gradient(
-        listOf(
-            Color(0xFFBBDEFB), // Light Blue
-            Color(0xFFC8E6C9), // Light Green
-            Color(0xFFFFCCBC), // Light Orange
-            Color(0xFFF8BBD0), // Light Pink
-            Color(0xFFE1BEE7), // Light Purple
-        ),
-    )
+    val PastelPalette =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFFBBDEFB),
+                Color(0xFFC8E6C9),
+                Color(0xFFFFCCBC),
+                Color(0xFFF8BBD0),
+                Color(0xFFE1BEE7),
+            ),
+        )
 
     /**
      * Dark palette - Deep and rich colors
      */
-    val DarkPalette = ChartyColor.Gradient(
-        listOf(
-            Color(0xFF1976D2), // Dark Blue
-            Color(0xFF388E3C), // Dark Green
-            Color(0xFFF57C00), // Dark Orange
-            Color(0xFFC2185B), // Dark Pink
-            Color(0xFF7B1FA2), // Dark Purple
-        ),
-    )
+    val DarkPalette =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFF1976D2),
+                Color(0xFF388E3C),
+                Color(0xFFF57C00),
+                Color(0xFFC2185B),
+                Color(0xFF7B1FA2),
+            ),
+        )
 
     /**
      * Monochrome Blue palette - Different shades of blue
      */
-    val MonochromeBlue = ChartyColor.Gradient(
-        listOf(
-            Color(0xFF0D47A1), // Blue 900
-            Color(0xFF1976D2), // Blue 700
-            Color(0xFF2196F3), // Blue 500
-            Color(0xFF42A5F5), // Blue 400
-            Color(0xFF90CAF9), // Blue 200
-        ),
-    )
+    val MonochromeBlue =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFF0D47A1),
+                Color(0xFF1976D2),
+                Color(0xFF2196F3),
+                Color(0xFF42A5F5),
+                Color(0xFF90CAF9),
+            ),
+        )
 
     /**
      * Business palette - Professional and corporate colors
      */
-    val BusinessPalette = ChartyColor.Gradient(
-        listOf(
-            Color(0xFF1E88E5), // Corporate Blue
-            Color(0xFF43A047), // Growth Green
-            Color(0xFFFB8C00), // Warning Orange
-            Color(0xFF424242), // Professional Grey
-        ),
-    )
+    val BusinessPalette =
+        ChartyColor.Gradient(
+            listOf(
+                Color(0xFF1E88E5),
+                Color(0xFF43A047),
+                Color(0xFFFB8C00),
+                Color(0xFF424242),
+            ),
+        )
 
     /**
      * Gradient palette for financial data - Red to Green
      */
-    val FinancialGradient = ChartyColor.Gradient(
-        listOf(Red, Orange, Amber, Green),
-    )
-
-    // ==================== Utility Colors ====================
+    val FinancialGradient =
+        ChartyColor.Gradient(
+            listOf(Red, Orange, Amber, Green),
+        )
 
     /**
      * Light Gray - For subtle backgrounds and borders
@@ -233,8 +236,6 @@ object ChartyColors {
      */
     val Black = Color(0xFF000000)
 
-    // ==================== Transparent Variants ====================
-
     /**
      * Semi-transparent Blue - For overlays and highlights
      */
@@ -255,4 +256,3 @@ object ChartyColors {
      */
     val RedAlpha30 = Red.copy(alpha = 0.3f)
 }
-

@@ -18,7 +18,7 @@ internal fun Modifier.stackedAreaChartClickHandler(
     lineConfig: LineChartConfig,
     areaSegmentBounds: List<Triple<Rect, Path, StackedAreaPoint>>,
     onAreaClick: (StackedAreaPoint) -> Unit,
-    onTooltipStateChange: (TooltipState?) -> Unit,
+    onTooltipStateChange: (TooltipState?, StackedAreaPoint?) -> Unit,
 ): Modifier {
     val bounds = areaSegmentBounds.fastMap { (rect, _, point) -> rect to point }
 
@@ -38,6 +38,3 @@ internal fun Modifier.stackedAreaChartClickHandler(
         },
     )
 }
-
-
-

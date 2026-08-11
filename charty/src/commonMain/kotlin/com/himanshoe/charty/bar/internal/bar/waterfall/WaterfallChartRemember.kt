@@ -8,10 +8,7 @@ import com.himanshoe.charty.bar.data.BarData
  * Remember cumulative values for waterfall chart
  */
 @Composable
-internal fun rememberCumulativeValues(items: List<BarData>): List<Float> {
-    return remember(items) {
+internal fun rememberCumulativeValues(items: List<BarData>): List<Float> =
+    remember(items) {
         calculateCumulativeValues(items)
     }
-}
-
-

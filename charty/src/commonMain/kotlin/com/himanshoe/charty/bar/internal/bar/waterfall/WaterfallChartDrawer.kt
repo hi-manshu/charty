@@ -10,7 +10,6 @@ import com.himanshoe.charty.bar.config.WaterfallChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.ChartContext
 
-
 /**
  * Calculate parameters for drawing a waterfall bar
  */
@@ -41,12 +40,13 @@ internal fun calculateWaterfallBarParams(
     val chartyColor = bar.color ?: baseColor
     val brush = Brush.verticalGradient(chartyColor.value)
 
-    val bounds = Rect(
-        left = barX,
-        top = animatedTop,
-        right = barX + barWidth,
-        bottom = animatedTop + animatedHeight,
-    )
+    val bounds =
+        Rect(
+            left = barX,
+            top = animatedTop,
+            right = barX + barWidth,
+            bottom = animatedTop + animatedHeight,
+        )
 
     return WaterfallBarDrawParams(
         x = barX,
@@ -69,20 +69,20 @@ internal fun DrawScope.drawWaterfallBar(
     height: Float,
     cornerRadius: Float,
 ) {
-    val path = Path().apply {
-        addRoundRect(
-            RoundRect(
-                left = x,
-                top = y,
-                right = x + width,
-                bottom = y + height,
-                topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                bottomLeftCornerRadius = CornerRadius.Zero,
-                bottomRightCornerRadius = CornerRadius.Zero,
-            ),
-        )
-    }
+    val path =
+        Path().apply {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius.Zero,
+                ),
+            )
+        }
     drawPath(path = path, brush = brush)
 }
-

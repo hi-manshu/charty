@@ -52,7 +52,6 @@ internal fun DrawScope.drawLollipops(
         val stemBrush = createStemBrush(chartyColor, baselineY, barValueY)
         val circleColor = getCircleColor(circleChartyColor, index)
 
-        // Draw stem
         drawLine(
             brush = stemBrush,
             start = Offset(centerX, baselineY),
@@ -60,7 +59,6 @@ internal fun DrawScope.drawLollipops(
             strokeWidth = config.stemThickness,
         )
 
-        // Draw circle
         drawLollipopCircle(
             color = circleColor,
             center = Offset(centerX, animatedTopY),
@@ -104,12 +102,12 @@ internal fun DrawScope.drawTooltipHighlightIfNeeded(
     chartContext: ChartContext,
 ) {
     tooltipState?.let { state ->
-        val clickedPosition = Offset(
-            state.x + config.circleRadius,
-            state.y,
-        )
+        val clickedPosition =
+            Offset(
+                state.x + config.circleRadius,
+                state.y,
+            )
 
-        // Draw vertical highlight line
         drawLine(
             color = Color.Black.copy(alpha = HIGHLIGHT_LINE_ALPHA),
             start = Offset(clickedPosition.x, chartContext.top),
@@ -117,7 +115,6 @@ internal fun DrawScope.drawTooltipHighlightIfNeeded(
             strokeWidth = HIGHLIGHT_LINE_WIDTH,
         )
 
-        // Draw highlight circles
         drawCircle(
             color = Color.White,
             radius = config.circleRadius + CIRCLE_HIGHLIGHT_OUTER_PADDING,
@@ -152,4 +149,3 @@ internal fun DrawScope.drawTooltipIfNeeded(
         )
     }
 }
-

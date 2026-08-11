@@ -3,12 +3,16 @@ package com.himanshoe.charty.common.accessibility
 import androidx.compose.ui.util.fastFlatMap
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.block.data.BlockData
 import com.himanshoe.charty.candlestick.data.CandleData
+import com.himanshoe.charty.circular.data.CircularRingData
+import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.pie.data.PieData
 import com.himanshoe.charty.point.data.BubbleData
 import com.himanshoe.charty.point.data.PointData
+import com.himanshoe.charty.radar.data.RadarDataSet
 
 /**
  * Generates a human-readable accessibility description for a line or area chart.
@@ -68,7 +72,7 @@ fun generateBarChartDescription(
  * Generates a human-readable accessibility description for a grouped or stacked bar chart.
  *
  * Example output:
- * `"Grouped bar chart, 3 groups, 2 series each."`
+ * `"Grouped bar chart, 3 groups, 2 series each. Range: 10 to 90."`
  *
  * @param data The list of [BarGroup] items displayed by the chart.
  * @param chartTypeName A human-readable name for the chart type (e.g. "grouped bar", "stacked bar").
@@ -143,7 +147,7 @@ fun generateBubbleChartDescription(data: List<BubbleData>): String {
  * Generates a human-readable accessibility description for a multiline or stacked area chart.
  *
  * Example output:
- * `"Multiline chart, 4 data points, 3 series."`
+ * `"Multiline chart, 4 data points, 3 series. Range: 5 to 80."`
  *
  * @param data The list of [LineGroup] items displayed by the chart.
  * @param chartTypeName A human-readable name for the chart type (e.g. "multiline", "stacked area").
@@ -215,6 +219,99 @@ fun generateCandlestickChartDescription(data: List<CandleData>): String {
         append("Candlestick chart, ${data.size} candles. ")
         append("Price range: ${minLow.toReadableString()} to ${maxHigh.toReadableString()}. ")
         latest?.let { append("Latest close: ${it.close.toReadableString()}.") }
+    }
+}
+
+/**
+ * Generates a human-readable accessibility description for a combo (bar + line) chart.
+ *
+ * Example output:
+ * `"Combo chart, 6 data points. Highest bar: 200 at Jun. Highest line: 180 at Jun."`
+ *
+ * @param data The list of [ComboChartData] items displayed by the chart.
+ * @return A descriptive string suitable for use as a `contentDescription`.
+ */
+fun generateComboChartDescription(data: List<ComboChartData>): String {
+    if (data.isEmpty()) return "Empty combo chart."
+    val topBar = data.maxByOrNull { it.barValue }
+    val topLine = data.maxByOrNull { it.lineValue }
+    return buildString {
+        append("Combo chart, ${data.size} data point${if (data.size == 1) "" else "s"}. ")
+        topBar?.let { append("Highest bar: ${it.barValue.toReadableString()} at ${it.label}. ") }
+        topLine?.let { append("Highest line: ${it.lineValue.toReadableString()} at ${it.label}.") }
+    }
+}
+
+/**
+ * Generates a human-readable accessibility description for a radar chart.
+ *
+ * Example output (multiple datasets):
+ * `"Radar chart, 2 datasets, 5 axes each. Dataset: Player 1. Dataset: Player 2."`
+ *
+ * Example output (single dataset):
+ * `"Radar chart, 1 dataset, 5 axes each. Strongest axis: Speed (80%)."`
+ *
+ * @param data The list of [RadarDataSet] items displayed by the chart.
+ * @param chartTypeName A human-readable name for the chart type (e.g. "Radar", "Multiple radar").
+ * @return A descriptive string suitable for use as a `contentDescription`.
+ */
+fun generateRadarChartDescription(
+    data: List<RadarDataSet>,
+    chartTypeName: String = "Radar",
+): String {
+    if (data.isEmpty()) return "Empty $chartTypeName chart."
+    val axisCount = data.firstOrNull()?.axes?.size ?: 0
+    return buildString {
+        append("$chartTypeName chart, ${data.size} dataset${if (data.size == 1) "" else "s"}")
+        if (axisCount > 0) append(", $axisCount axes each")
+        append(". ")
+        if (data.size == 1) {
+            val strongest = data.first().axes.maxByOrNull { it.getNormalizedValue() }
+            strongest?.let { append("Strongest axis: ${it.label} (${(it.getNormalizedValue() * 100).toInt()}%).") }
+        } else {
+            data.forEach { append("Dataset: ${it.label}. ") }
+        }
+    }
+}
+
+/**
+ * Generates a human-readable accessibility description for a circular progress indicator.
+ *
+ * Example output:
+ * `"Circular progress indicator, 3 rings. Move: 75%. Exercise: 83%. Stand: 100%."`
+ *
+ * @param data The list of [CircularRingData] rings displayed by the chart.
+ * @return A descriptive string suitable for use as a `contentDescription`.
+ */
+fun generateCircularProgressDescription(data: List<CircularRingData>): String {
+    if (data.isEmpty()) return "Empty circular progress indicator."
+    return buildString {
+        append("Circular progress indicator, ${data.size} ring${if (data.size == 1) "" else "s"}. ")
+        data.forEach { ring ->
+            append("${ring.label}: ${ring.calculatePercentage().toInt()}%. ")
+        }
+    }.trimEnd()
+}
+
+/**
+ * Generates a human-readable accessibility description for a block bar chart.
+ *
+ * Example output:
+ * `"Block bar chart, 4 segments. Largest segment: 45% of total."`
+ *
+ * @param data The list of [BlockData] segments displayed by the chart.
+ * @return A descriptive string suitable for use as a `contentDescription`.
+ */
+fun generateBlockBarDescription(data: List<BlockData>): String {
+    if (data.isEmpty()) return "Empty block bar chart."
+    val total = data.sumOf { it.value.toDouble() }.toFloat()
+    val largest = data.maxByOrNull { it.value }
+    return buildString {
+        append("Block bar chart, ${data.size} segment${if (data.size == 1) "" else "s"}. ")
+        largest?.let {
+            val pct = if (total > 0f) ((it.value / total) * 100).toInt() else 0
+            append("Largest segment: $pct% of total.")
+        }
     }
 }
 

@@ -77,38 +77,42 @@ internal fun DrawScope.drawCell(
     shape: CellShape,
 ) {
     when (shape) {
-        is CellShape.Square -> drawRect(
-            color = color,
-            topLeft = topLeft,
-            size = Size(cellSizePx, cellSizePx),
-            alpha = alpha,
-        )
+        is CellShape.Square ->
+            drawRect(
+                color = color,
+                topLeft = topLeft,
+                size = Size(cellSizePx, cellSizePx),
+                alpha = alpha,
+            )
 
-        is CellShape.RoundedSquare -> drawRoundRect(
-            color = color,
-            topLeft = topLeft,
-            size = Size(cellSizePx, cellSizePx),
-            cornerRadius = CornerRadius(shape.cornerRadius),
-            alpha = alpha,
-        )
+        is CellShape.RoundedSquare ->
+            drawRoundRect(
+                color = color,
+                topLeft = topLeft,
+                size = Size(cellSizePx, cellSizePx),
+                cornerRadius = CornerRadius(shape.cornerRadius),
+                alpha = alpha,
+            )
 
-        is CellShape.Circle -> drawCircle(
-            color = color,
-            radius = cellSizePx / 2f,
-            center = Offset(topLeft.x + cellSizePx / 2f, topLeft.y + cellSizePx / 2f),
-            alpha = alpha,
-        )
+        is CellShape.Circle ->
+            drawCircle(
+                color = color,
+                radius = cellSizePx / 2f,
+                center = Offset(topLeft.x + cellSizePx / 2f, topLeft.y + cellSizePx / 2f),
+                alpha = alpha,
+            )
 
         is CellShape.Diamond -> {
             val cx = topLeft.x + cellSizePx / 2f
             val cy = topLeft.y + cellSizePx / 2f
-            val path = Path().apply {
-                moveTo(cx, topLeft.y)
-                lineTo(topLeft.x + cellSizePx, cy)
-                lineTo(cx, topLeft.y + cellSizePx)
-                lineTo(topLeft.x, cy)
-                close()
-            }
+            val path =
+                Path().apply {
+                    moveTo(cx, topLeft.y)
+                    lineTo(topLeft.x + cellSizePx, cy)
+                    lineTo(cx, topLeft.y + cellSizePx)
+                    lineTo(topLeft.x, cy)
+                    close()
+                }
             drawPath(path = path, color = color, alpha = alpha)
         }
     }
@@ -159,11 +163,12 @@ internal fun DrawScope.drawCalendarGrid(
             val cellTop = topPadding + dayIndex * cellStridePx
 
             val gridCell = gridLayout.cellMap[weekIndex to dayIndex]
-            val color = if (gridCell != null) {
-                config.resolveColor(gridCell.calendarData.value, maxValue)
-            } else {
-                config.emptyColor
-            }
+            val color =
+                if (gridCell != null) {
+                    config.resolveColor(gridCell.calendarData.value, maxValue)
+                } else {
+                    config.emptyColor
+                }
 
             drawCell(Offset(cellLeft, cellTop), cellSizePx, color, cellAlpha, config.cellShape)
 

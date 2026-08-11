@@ -16,8 +16,9 @@ internal fun createSmoothAreaPath(
 
         val firstPoint = cumulativePositions[0]
         val control1X = startX + (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
-        val control2X = startX + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
-            (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
+        val control2X =
+            startX + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
+                (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
         val control2Y = firstPoint.y
 
         moveTo(startX, baselineY)
@@ -26,11 +27,13 @@ internal fun createSmoothAreaPath(
         for (i in 0 until cumulativePositions.size - 1) {
             val current = cumulativePositions[i]
             val next = cumulativePositions[i + 1]
-            val controlPoint1X = current.x + (next.x - current.x) /
-                StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
+            val controlPoint1X =
+                current.x + (next.x - current.x) /
+                    StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
             val controlPoint1Y = current.y
-            val controlPoint2X = current.x + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
-                (next.x - current.x) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
+            val controlPoint2X =
+                current.x + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
+                    (next.x - current.x) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
             val controlPoint2Y = next.y
 
             cubicTo(
@@ -87,8 +90,9 @@ internal fun createSmoothLinePath(
 
         val firstPoint = cumulativePositions[0]
         val control1X = startX + (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
-        val control2X = startX + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
-            (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
+        val control2X =
+            startX + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
+                (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
         val control2Y = firstPoint.y
 
         moveTo(startX, baselineY)
@@ -97,11 +101,13 @@ internal fun createSmoothLinePath(
         for (i in 0 until cumulativePositions.size - 1) {
             val current = cumulativePositions[i]
             val next = cumulativePositions[i + 1]
-            val controlPoint1X = current.x + (next.x - current.x) /
-                StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
+            val controlPoint1X =
+                current.x + (next.x - current.x) /
+                    StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
             val controlPoint1Y = current.y
-            val controlPoint2X = current.x + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
-                (next.x - current.x) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
+            val controlPoint2X =
+                current.x + StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
+                    (next.x - current.x) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
             val controlPoint2Y = next.y
 
             cubicTo(
@@ -136,4 +142,3 @@ internal fun createStraightLinePath(
         }
     }
 }
-

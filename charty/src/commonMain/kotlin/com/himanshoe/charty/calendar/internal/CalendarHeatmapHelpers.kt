@@ -7,7 +7,6 @@ import com.himanshoe.charty.calendar.config.calendarMonthName
 import com.himanshoe.charty.calendar.data.CalendarData
 import kotlin.math.roundToInt
 
-// ── Gregorian ↔ Julian Day Number constants ──────────────────────────────────
 private const val JDN_MONTH_ADJUST = 14
 private const val JDN_MONTH_BASE = 12
 private const val JDN_YEAR_SHIFT = 4800
@@ -19,31 +18,30 @@ private const val JDN_100_YEAR_CYCLE = 100
 private const val JDN_400_YEAR_CYCLE = 400
 private const val JDN_EPOCH_OFFSET = 32045
 
-// ── jdnToGregorian-specific constants ────────────────────────────────────────
 private const val JDN_REVERSE_OFFSET = 32044
 private const val JDN_400Y_DAYS = 146097
 private const val JDN_4Y_DAYS = 1461
 
-// ── Algorithm literal constants ───────────────────────────────────────────────
-// These are algorithm-intrinsic offsets that appear inside the JDN formulas.
 private const val JDN_ALGO_OFFSET_2 = 2
 private const val JDN_ALGO_OFFSET_3 = 3
 private const val JDN_MONTH_TENS_DIVISOR = 10
 private const val JDN_MONTH_ADJUST_M = 3
 private const val PREV_YEAR_MONTH_THRESHOLD = 3
 
-// ── Sakamoto day-of-week constants ───────────────────────────────────────────
 private val SAKAMOTO_TABLE = intArrayOf(0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4)
 private const val DAYS_PER_WEEK = 7
 
-// ── computeGridLayout constants ───────────────────────────────────────────────
 private const val MONTH_KEY_BASE = 100L
 
 /**
  * Converts a proleptic Gregorian date to its Julian Day Number (JDN).
  * Uses the standard astronomical algorithm valid for all dates after 1 March 200 AD.
  */
-internal fun gregorianToJdn(year: Int, month: Int, day: Int): Long {
+internal fun gregorianToJdn(
+    year: Int,
+    month: Int,
+    day: Int,
+): Long {
     val a = (JDN_MONTH_ADJUST - month) / JDN_MONTH_BASE
     val y = year + JDN_YEAR_SHIFT - a
     val m = month + JDN_MONTH_BASE * a - JDN_MONTH_ADJUST_M
@@ -72,10 +70,16 @@ internal fun jdnToGregorian(jdn: Long): Triple<Int, Int, Int> {
  * Returns the day of the week using Sakamoto's algorithm.
  * Result: 0 = Sunday, 1 = Monday, …, 6 = Saturday.
  */
-internal fun dayOfWeek(year: Int, month: Int, day: Int): Int {
+internal fun dayOfWeek(
+    year: Int,
+    month: Int,
+    day: Int,
+): Int {
     val y = if (month < PREV_YEAR_MONTH_THRESHOLD) year - 1 else year
-    return (y + y / JDN_4_YEAR_CYCLE - y / JDN_100_YEAR_CYCLE +
-        y / JDN_400_YEAR_CYCLE + SAKAMOTO_TABLE[month - 1] + day) % DAYS_PER_WEEK
+    return (
+        y + y / JDN_4_YEAR_CYCLE - y / JDN_100_YEAR_CYCLE +
+            y / JDN_400_YEAR_CYCLE + SAKAMOTO_TABLE[month - 1] + day
+    ) % DAYS_PER_WEEK
 }
 
 /** A single cell in the rendered grid that has data attached to it. */
@@ -199,11 +203,15 @@ internal fun computeGridLayout(
  * Maps a [value] to one of [CalendarHeatmapConfig.intensityColors] using linear interpolation
  * across the color buckets. Values ≤ 0 return [CalendarHeatmapConfig.emptyColor].
  */
-internal fun CalendarHeatmapConfig.resolveColor(value: Float, maxValue: Float): Color {
+internal fun CalendarHeatmapConfig.resolveColor(
+    value: Float,
+    maxValue: Float,
+): Color {
     if (value <= 0f || maxValue <= 0f) return emptyColor
     val ratio = (value / maxValue).coerceIn(0f, 1f)
-    val index = (ratio * (intensityColors.size - 1))
-        .roundToInt()
-        .coerceIn(0, intensityColors.size - 1)
+    val index =
+        (ratio * (intensityColors.size - 1))
+            .roundToInt()
+            .coerceIn(0, intensityColors.size - 1)
     return intensityColors[index]
 }

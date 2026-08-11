@@ -10,4 +10,3 @@ internal object CircularProgressConstants {
     const val SHADOW_LAYERS = 4
     const val SHADOW_BASE_ALPHA = 0.15f
 }
-

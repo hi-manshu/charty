@@ -1,5 +1,7 @@
 package com.himanshoe.charty.combo.data
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Data class representing a combined bar and line chart entry
  *
@@ -7,6 +9,7 @@ package com.himanshoe.charty.combo.data
  * @param barValue The value for the bar visualization
  * @param lineValue The value for the line visualization
  */
+@Immutable
 data class ComboChartData(
     val label: String,
     val barValue: Float,

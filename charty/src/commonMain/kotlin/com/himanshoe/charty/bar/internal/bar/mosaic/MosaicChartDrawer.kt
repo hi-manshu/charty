@@ -1,4 +1,4 @@
-package com.himanshoe.charty.bar.internal.bar.mosiac
+package com.himanshoe.charty.bar.internal.bar.mosaic
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEachIndexed
-import com.himanshoe.charty.bar.config.MosiacBarChartConfig
-import com.himanshoe.charty.bar.config.MosiacBarSegment
+import com.himanshoe.charty.bar.config.MosaicBarChartConfig
+import com.himanshoe.charty.bar.config.MosaicBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.ChartContext
 
@@ -16,22 +16,23 @@ private const val MAX_PERCENTAGE = 100f
 private const val MIN_PERCENTAGE = 0f
 
 /**
- * Draws all mosiac bars on the chart.
+ * Draws all mosaic bars on the chart.
  */
-internal fun DrawScope.drawMosiacBars(
+internal fun DrawScope.drawMosaicBars(
     groups: List<BarGroup>,
     chartContext: ChartContext,
-    config: MosiacBarChartConfig,
+    config: MosaicBarChartConfig,
     animationProgress: Float,
-    onSegmentClick: ((MosiacBarSegment) -> Unit)?,
-    onSegmentBoundCalculated: (Pair<Rect, MosiacBarSegment>) -> Unit,
+    onSegmentClick: ((MosaicBarSegment) -> Unit)?,
+    onSegmentBoundCalculated: (Pair<Rect, MosaicBarSegment>) -> Unit,
+    recordBounds: Boolean = onSegmentClick != null,
 ) {
     groups.fastForEachIndexed { groupIndex, group ->
         val barX = chartContext.calculateBarLeftPosition(groupIndex, groups.size, config.barWidthFraction)
         val barWidth = chartContext.calculateBarWidth(groups.size, config.barWidthFraction)
         val total = group.values.sum().takeIf { it > 0f } ?: return@fastForEachIndexed
 
-        drawMosiacBarSegments(
+        drawMosaicBarSegments(
             group = group,
             barX = barX,
             barWidth = barWidth,
@@ -39,16 +40,16 @@ internal fun DrawScope.drawMosiacBars(
             chartBottom = chartContext.bottom,
             total = total,
             animationProgress = animationProgress,
-            onSegmentClick = onSegmentClick,
+            recordBounds = recordBounds,
             onSegmentBoundCalculated = onSegmentBoundCalculated,
         )
     }
 }
 
 /**
- * Draws segments for a single mosiac bar.
+ * Draws segments for a single mosaic bar.
  */
-private fun DrawScope.drawMosiacBarSegments(
+private fun DrawScope.drawMosaicBarSegments(
     group: BarGroup,
     barX: Float,
     barWidth: Float,
@@ -56,8 +57,8 @@ private fun DrawScope.drawMosiacBarSegments(
     chartBottom: Float,
     total: Float,
     animationProgress: Float,
-    onSegmentClick: ((MosiacBarSegment) -> Unit)?,
-    onSegmentBoundCalculated: (Pair<Rect, MosiacBarSegment>) -> Unit,
+    recordBounds: Boolean,
+    onSegmentBoundCalculated: (Pair<Rect, MosaicBarSegment>) -> Unit,
 ) {
     var currentTop = chartBottom
 
@@ -67,33 +68,36 @@ private fun DrawScope.drawMosiacBarSegments(
         val animatedHeight = fullHeight * animationProgress
         val top = currentTop - animatedHeight
 
-        if (onSegmentClick != null && animatedHeight > 0) {
+        if (recordBounds && animatedHeight > 0) {
             onSegmentBoundCalculated(
                 Rect(
                     left = barX,
                     top = top,
                     right = barX + barWidth,
                     bottom = currentTop,
-                ) to MosiacBarSegment(
-                    barGroup = group,
-                    segmentIndex = segmentIndex,
-                    segmentValue = value,
-                    segmentPercentage = fraction * MAX_PERCENTAGE,
-                ),
+                ) to
+                    MosaicBarSegment(
+                        barGroup = group,
+                        segmentIndex = segmentIndex,
+                        segmentValue = value,
+                        segmentPercentage = fraction * MAX_PERCENTAGE,
+                    ),
             )
         }
 
-        val chartyColor = group.colors?.getOrNull(segmentIndex)
-            ?: defaultMosiacColors[segmentIndex % defaultMosiacColors.size]
+        val chartyColor =
+            group.colors?.getOrNull(segmentIndex)
+                ?: defaultMosaicColors[segmentIndex % defaultMosaicColors.size]
 
-        val segmentBrush = Brush.verticalGradient(
-            colors = chartyColor.value,
-            startY = top,
-            endY = currentTop,
-        )
+        val segmentBrush =
+            Brush.verticalGradient(
+                colors = chartyColor.value,
+                startY = top,
+                endY = currentTop,
+            )
 
         val isTop = segmentIndex == group.values.lastIndex
-        drawMosiacSegment(
+        drawMosaicSegment(
             brush = segmentBrush,
             x = barX,
             y = top,
@@ -107,9 +111,9 @@ private fun DrawScope.drawMosiacBarSegments(
 }
 
 /**
- * Draws a single mosiac segment with rounded corners at the top.
+ * Draws a single mosaic segment with rounded corners at the top.
  */
-private fun DrawScope.drawMosiacSegment(
+private fun DrawScope.drawMosaicSegment(
     brush: Brush,
     x: Float,
     y: Float,
@@ -117,20 +121,20 @@ private fun DrawScope.drawMosiacSegment(
     height: Float,
     cornerRadius: CornerRadius,
 ) {
-    val path = Path().apply {
-        addRoundRect(
-            RoundRect(
-                left = x,
-                top = y,
-                right = x + width,
-                bottom = y + height,
-                topLeftCornerRadius = cornerRadius,
-                topRightCornerRadius = cornerRadius,
-                bottomLeftCornerRadius = CornerRadius.Zero,
-                bottomRightCornerRadius = CornerRadius.Zero,
-            ),
-        )
-    }
+    val path =
+        Path().apply {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = cornerRadius,
+                    topRightCornerRadius = cornerRadius,
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius.Zero,
+                ),
+            )
+        }
     drawPath(path, brush)
 }
-

@@ -12,4 +12,3 @@ internal object MultilineChartConstants {
     const val ANIMATION_PROGRESS_MULTIPLIER = 1.2f
     const val SERIES_INDEX_OFFSET = 1
 }
-

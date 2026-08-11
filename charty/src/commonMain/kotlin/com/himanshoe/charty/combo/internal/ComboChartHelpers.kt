@@ -11,16 +11,13 @@ import com.himanshoe.charty.common.ChartContext
 /**
  * Calculate positions for line points
  */
-internal fun ChartContext.calculateLinePointPositions(
-    dataList: List<ComboChartData>,
-): List<Offset> {
-    return dataList.fastMapIndexed { index, comboData ->
+internal fun ChartContext.calculateLinePointPositions(dataList: List<ComboChartData>): List<Offset> =
+    dataList.fastMapIndexed { index, comboData ->
         Offset(
             x = calculateCenteredXPosition(index, dataList.size),
             y = convertValueToYPosition(comboData.lineValue),
         )
     }
-}
 
 /**
  * Add hit areas for point interaction
@@ -60,8 +57,8 @@ internal fun calculateAnimatedBarDimensions(
     baselineY: Float,
     isNegative: Boolean,
     animationProgress: Float,
-): BarDimensions {
-    return if (isNegative) {
+): BarDimensions =
+    if (isNegative) {
         val fullBarHeight = barValueY - baselineY
         BarDimensions(
             top = baselineY,
@@ -75,5 +72,3 @@ internal fun calculateAnimatedBarDimensions(
             height = animatedBarHeight,
         )
     }
-}
-

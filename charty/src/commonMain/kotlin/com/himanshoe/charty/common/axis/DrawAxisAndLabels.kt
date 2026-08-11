@@ -11,7 +11,6 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.ext.drawHorizontalChartAxes
 import com.himanshoe.charty.common.ext.drawVerticalChartAxes
 
-
 /**
  * An internal composable function responsible for drawing the axis lines, grid lines, and labels for a chart.
  *

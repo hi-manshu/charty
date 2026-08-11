@@ -26,35 +26,45 @@ internal fun DrawScope.drawComparisonBars(params: ComparisonBarDrawParams) {
         val barWidth = groupWidth / group.values.size * COMPARISON_BAR_WIDTH_FRACTION
 
         group.values.fastForEachIndexed { barIndex, value ->
-            val barX = calculateComparisonBarX(
-                chartContext = params.chartContext,
-                groupWidth = groupWidth,
-                groupIndex = groupIndex,
-                barWidth = barWidth,
-                barIndex = barIndex,
-            )
+            val barX =
+                calculateComparisonBarX(
+                    chartContext = params.chartContext,
+                    groupWidth = groupWidth,
+                    groupIndex = groupIndex,
+                    barWidth = barWidth,
+                    barIndex = barIndex,
+                )
 
             val barValueY = params.chartContext.convertValueToYPosition(value)
             val isNegative = value < 0f
 
-            val (barTop, barHeight) = calculateComparisonBarDimensions(
-                value = value,
-                baselineY = params.baselineY,
-                barValueY = barValueY,
-            )
+            val (rawBarTop, rawBarHeight) =
+                calculateComparisonBarDimensions(
+                    value = value,
+                    baselineY = params.baselineY,
+                    barValueY = barValueY,
+                )
+            val barHeight = rawBarHeight * params.animationProgress
+            val barTop =
+                if (isNegative) {
+                    rawBarTop
+                } else {
+                    params.baselineY - barHeight
+                }
 
-            if (params.onBarClick != null) {
+            if (params.recordBounds) {
                 params.barBounds.add(
                     Rect(
                         left = barX,
                         top = barTop,
                         right = barX + barWidth,
                         bottom = barTop + barHeight,
-                    ) to ComparisonBarSegment(
-                        barGroup = group,
-                        barIndex = barIndex,
-                        barValue = value,
-                    ),
+                    ) to
+                        ComparisonBarSegment(
+                            barGroup = group,
+                            barIndex = barIndex,
+                            barValue = value,
+                        ),
                 )
             }
 
@@ -93,21 +103,22 @@ private fun createComparisonBarBrush(
     barChartyColor: ChartyColor,
     barTop: Float,
     barHeight: Float,
-): Brush {
-    return when (barChartyColor) {
-        is ChartyColor.Solid -> Brush.verticalGradient(
-            colors = listOf(barChartyColor.color, barChartyColor.color),
-            startY = barTop,
-            endY = barTop + barHeight,
-        )
+): Brush =
+    when (barChartyColor) {
+        is ChartyColor.Solid ->
+            Brush.verticalGradient(
+                colors = listOf(barChartyColor.color, barChartyColor.color),
+                startY = barTop,
+                endY = barTop + barHeight,
+            )
 
-        is ChartyColor.Gradient -> Brush.verticalGradient(
-            colors = barChartyColor.colors,
-            startY = barTop,
-            endY = barTop + barHeight,
-        )
+        is ChartyColor.Gradient ->
+            Brush.verticalGradient(
+                colors = barChartyColor.colors,
+                startY = barTop,
+                endY = barTop + barHeight,
+            )
     }
-}
 
 /**
  * Helper function to draw a comparison bar with rounded corners and gradient support
@@ -122,35 +133,36 @@ private fun DrawScope.drawComparisonRoundedBar(
     isBelowAxisMode: Boolean,
     cornerRadius: Float,
 ) {
-    val path = Path().apply {
-        if (isNegative && isBelowAxisMode) {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                ),
-            )
-        } else {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero,
-                ),
-            )
+    val path =
+        Path().apply {
+            if (isNegative && isBelowAxisMode) {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
+                )
+            } else {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
+                )
+            }
         }
-    }
     drawPath(path, brush)
 }
 
@@ -182,4 +194,3 @@ internal fun DrawScope.drawComparisonTooltipIfNeeded(
         chartContext = chartContext,
     )
 }
-

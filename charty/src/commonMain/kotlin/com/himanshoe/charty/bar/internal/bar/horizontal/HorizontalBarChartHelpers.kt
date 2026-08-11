@@ -7,29 +7,27 @@ internal fun createHorizontalAxisConfig(
     minValue: Float,
     maxValue: Float,
     drawAxisAtZero: Boolean,
-): AxisConfig {
-    return AxisConfig(
+): AxisConfig =
+    AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
         steps = HORIZONTAL_DEFAULT_AXIS_STEPS,
         drawAxisAtZero = drawAxisAtZero,
     )
-}
 
 internal fun calculateHorizontalBaselineX(
     drawAxisAtZero: Boolean,
     minValue: Float,
     maxValue: Float,
     chartContext: ChartContext,
-): Float {
-    return if (drawAxisAtZero) {
+): Float =
+    if (drawAxisAtZero) {
         val range = maxValue - minValue
         val zeroNormalized = (0f - minValue) / range
         chartContext.left + (zeroNormalized * chartContext.width)
     } else {
         chartContext.left
     }
-}
 
 internal fun calculateHorizontalBarDimensions(
     isNegative: Boolean,
@@ -37,8 +35,8 @@ internal fun calculateHorizontalBarDimensions(
     baselineX: Float,
     barValueX: Float,
     animationProgress: Float,
-): Pair<Float, Float> {
-    return if (isNegative && isBelowAxisMode) {
+): Pair<Float, Float> =
+    if (isNegative && isBelowAxisMode) {
         val fullBarWidth = baselineX - barValueX
         val barWidth = fullBarWidth * animationProgress
         val barLeft = barValueX
@@ -49,5 +47,3 @@ internal fun calculateHorizontalBarDimensions(
         val barLeft = baselineX
         barLeft to barWidth
     }
-}
-

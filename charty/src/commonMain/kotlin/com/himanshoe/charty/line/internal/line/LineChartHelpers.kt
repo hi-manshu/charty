@@ -8,14 +8,10 @@ import com.himanshoe.charty.line.data.LineData
 /**
  * Calculate point positions for all data points
  */
-internal fun ChartContext.calculatePointPositions(
-    dataList: List<LineData>,
-): List<Offset> {
-    return dataList.fastMapIndexed { index, point ->
+internal fun ChartContext.calculatePointPositions(dataList: List<LineData>): List<Offset> =
+    dataList.fastMapIndexed { index, point ->
         Offset(
             x = calculateCenteredXPosition(index, dataList.size),
             y = convertValueToYPosition(point.value),
         )
     }
-}
-

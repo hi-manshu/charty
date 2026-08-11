@@ -1,5 +1,6 @@
 package com.himanshoe.charty.bar.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
@@ -21,6 +22,7 @@ private const val DEFAULT_NEGATIVE_COLOR = 0xFFD64C66
  * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
+@Stable
 data class WaterfallChartConfig(
     val barWidthFraction: Float = 0.6f,
     val cornerRadius: CornerRadius = CornerRadius.Medium,

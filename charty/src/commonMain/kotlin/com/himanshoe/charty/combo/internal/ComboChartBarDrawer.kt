@@ -19,35 +19,35 @@ internal fun DrawScope.drawRoundedBar(
     isBelowAxisMode: Boolean,
     cornerRadius: Float,
 ) {
-    val path = Path().apply {
-        if (isNegative && isBelowAxisMode) {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                ),
-            )
-        } else {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero,
-                ),
-            )
+    val path =
+        Path().apply {
+            if (isNegative && isBelowAxisMode) {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
+                )
+            } else {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
+                )
+            }
         }
-    }
     drawPath(path, brush)
 }
-

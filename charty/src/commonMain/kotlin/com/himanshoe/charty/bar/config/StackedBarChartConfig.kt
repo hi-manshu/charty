@@ -2,6 +2,10 @@ package com.himanshoe.charty.bar.config
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
@@ -33,6 +37,9 @@ data class StackedBarSegment(
  * @param referenceLine Optional configuration for a reference line (e.g., target or average line) shared across all bars
  * @param tooltipConfig Configuration for tooltip appearance when a segment is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @param showDataLabels Whether to show the stacked total above each bar
+ * @param dataLabelFormatter Formats the total value for the data label text
+ * @param dataLabelStyle Text style for data labels
  */
 @Stable
 data class StackedBarChartConfig(
@@ -46,6 +53,17 @@ data class StackedBarChartConfig(
     val tooltipFormatter: (StackedBarSegment) -> String = { segment ->
         "${segment.barGroup.label} [${segment.segmentIndex}]: ${segment.segmentValue}"
     },
+    val showDataLabels: Boolean = false,
+    val dataLabelFormatter: (BarGroup) -> String = { group ->
+        val total = group.values.sum()
+        if (total == total.toLong().toFloat()) total.toLong().toString() else total.toString()
+    },
+    val dataLabelStyle: TextStyle =
+        TextStyle(
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.DarkGray,
+        ),
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }

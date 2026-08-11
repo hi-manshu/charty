@@ -14,7 +14,8 @@ internal data class ComparisonBarDrawParams(
     val chartContext: ChartContext,
     val comparisonConfig: ComparisonBarChartConfig,
     val baselineY: Float,
+    val animationProgress: Float,
     val onBarClick: ((ComparisonBarSegment) -> Unit)?,
     val barBounds: MutableList<Pair<Rect, ComparisonBarSegment>>,
+    val recordBounds: Boolean = onBarClick != null,
 )
-

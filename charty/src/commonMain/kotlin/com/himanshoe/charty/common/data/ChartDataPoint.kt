@@ -45,9 +45,7 @@ fun <T : ChartDataPoint> List<T>.getLabels(): List<String> = map { it.label }
  * @param stepSize The step size used for rounding the minimum value.
  * @return The calculated minimum value.
  */
-fun <T : ChartDataPoint> List<T>.calculateMinValue(stepSize: Int = 10): Float {
-    return calculateMinValue(getValues(), stepSize)
-}
+fun <T : ChartDataPoint> List<T>.calculateMinValue(stepSize: Int = 10): Float = calculateMinValue(getValues(), stepSize)
 
 /**
  * Calculates the maximum value in a list of [ChartDataPoint]s, with nice rounding.
@@ -55,9 +53,7 @@ fun <T : ChartDataPoint> List<T>.calculateMinValue(stepSize: Int = 10): Float {
  * @param stepSize The step size used for rounding the maximum value.
  * @return The calculated maximum value.
  */
-fun <T : ChartDataPoint> List<T>.calculateMaxValue(stepSize: Int = 10): Float {
-    return calculateMaxValue(getValues(), stepSize)
-}
+fun <T : ChartDataPoint> List<T>.calculateMaxValue(stepSize: Int = 10): Float = calculateMaxValue(getValues(), stepSize)
 
 /**
  * Calculates both the minimum and maximum values in a list of [ChartDataPoint]s, with nice rounding.
@@ -65,7 +61,5 @@ fun <T : ChartDataPoint> List<T>.calculateMaxValue(stepSize: Int = 10): Float {
  * @param stepSize The step size used for rounding the values.
  * @return A [Pair] containing the calculated minimum and maximum values.
  */
-fun <T : ChartDataPoint> List<T>.calculateMinMaxValue(stepSize: Int = 10): Pair<Float, Float> {
-    return calculateMinMaxValue(getValues(), stepSize)
-}
-
+fun <T : ChartDataPoint> List<T>.calculateMinMaxValue(stepSize: Int = 10): Pair<Float, Float> =
+    calculateMinMaxValue(getValues(), stepSize)

@@ -20,15 +20,17 @@ internal fun DrawScope.drawSpans(params: SpanDrawParams) {
 
         val startNormalized = (span.startValue - params.minValue) / range
         val endNormalized = (span.endValue - params.minValue) / range
-        val startX = params.chartContext.left +
-            params.axisOffset + (startNormalized * (params.chartContext.width - params.axisOffset))
-        val endX = params.chartContext.left +
-            params.axisOffset + (endNormalized * (params.chartContext.width - params.axisOffset))
+        val startX =
+            params.chartContext.left +
+                params.axisOffset + (startNormalized * (params.chartContext.width - params.axisOffset))
+        val endX =
+            params.chartContext.left +
+                params.axisOffset + (endNormalized * (params.chartContext.width - params.axisOffset))
 
         val fullSpanWidth = endX - startX
         val animatedSpanWidth = fullSpanWidth * params.animationProgress
 
-        if (params.onSpanClick != null && animatedSpanWidth > 0) {
+        if (params.recordBounds && animatedSpanWidth > 0) {
             params.onSpanBoundCalculated(
                 Rect(
                     left = startX,
@@ -39,11 +41,12 @@ internal fun DrawScope.drawSpans(params: SpanDrawParams) {
             )
         }
 
-        val brush = Brush.horizontalGradient(
-            colors = spanChartyColor.value,
-            startX = startX,
-            endX = endX,
-        )
+        val brush =
+            Brush.horizontalGradient(
+                colors = spanChartyColor.value,
+                startX = startX,
+                endX = endX,
+            )
 
         drawRoundedSpan(
             brush = brush,
@@ -56,7 +59,6 @@ internal fun DrawScope.drawSpans(params: SpanDrawParams) {
     }
 }
 
-
 /**
  * Helper function to draw a span (horizontal bar) with fully rounded corners
  */
@@ -68,20 +70,20 @@ internal fun DrawScope.drawRoundedSpan(
     height: Float,
     cornerRadius: Float,
 ) {
-    val path = Path().apply {
-        addRoundRect(
-            RoundRect(
-                left = x,
-                top = y,
-                right = x + width,
-                bottom = y + height,
-                topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-            ),
-        )
-    }
+    val path =
+        Path().apply {
+            addRoundRect(
+                RoundRect(
+                    left = x,
+                    top = y,
+                    right = x + width,
+                    bottom = y + height,
+                    topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                ),
+            )
+        }
     drawPath(path, brush)
 }
-

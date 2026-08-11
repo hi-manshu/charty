@@ -39,8 +39,8 @@ internal fun Modifier.lineChartInteractionHandler(
     lineConfig: LineChartConfig,
     pointBounds: List<Pair<Offset, LineData>>,
     onPointClick: ((LineData) -> Unit)?,
-    onTooltipStateChange: (TooltipState?) -> Unit,
-    crosshairManager: CrosshairManager?,
+    onTooltipStateChange: (TooltipState?, LineData?) -> Unit,
+    crosshairManager: CrosshairManager<LineData>?,
     brushSelectionState: BrushSelectionState?,
     onRangeSelect: ((startIndex: Int, endIndex: Int) -> Unit)?,
 ): Modifier {
@@ -48,41 +48,44 @@ internal fun Modifier.lineChartInteractionHandler(
 
     when {
         crosshairManager != null -> {
-            result = result.chartCrosshairHandler(
-                dataList = dataList,
-                pointBounds = pointBounds,
-                onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = lineConfig.tooltipFormatter,
-                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
-            )
+            result =
+                result.chartCrosshairHandler(
+                    dataList = dataList,
+                    pointBounds = pointBounds,
+                    onCrosshairUpdate = crosshairManager::update,
+                    labelFormatter = lineConfig.tooltipFormatter,
+                    dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+                )
         }
 
         onPointClick != null -> {
-            result = result.pointChartClickHandler(
-                dataList = dataList,
-                pointBounds = pointBounds,
-                tapRadius = lineConfig.pointRadius * LineChartConstants.TAP_RADIUS_MULTIPLIER,
-                onPointClick = onPointClick,
-                onTooltipStateChange = onTooltipStateChange,
-                createTooltipContent = { lineData, position ->
-                    createPointTooltipState(
-                        content = lineConfig.tooltipFormatter(lineData),
-                        position = position,
-                        pointRadius = lineConfig.pointRadius,
-                        tooltipPosition = lineConfig.tooltipPosition,
-                        pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
-                    )
-                },
-            )
+            result =
+                result.pointChartClickHandler(
+                    dataList = dataList,
+                    pointBounds = pointBounds,
+                    tapRadius = lineConfig.pointRadius * LineChartConstants.TAP_RADIUS_MULTIPLIER,
+                    onPointClick = onPointClick,
+                    onTooltipStateChange = onTooltipStateChange,
+                    createTooltipContent = { lineData, position ->
+                        createPointTooltipState(
+                            content = lineConfig.tooltipFormatter(lineData),
+                            position = position,
+                            pointRadius = lineConfig.pointRadius,
+                            tooltipPosition = lineConfig.tooltipPosition,
+                            pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
+                        )
+                    },
+                )
         }
     }
 
     if (brushSelectionState != null) {
-        result = result.chartBrushSelectionHandler(
-            dataList = dataList,
-            brushState = brushSelectionState,
-            onRangeSelect = onRangeSelect,
-        )
+        result =
+            result.chartBrushSelectionHandler(
+                dataList = dataList,
+                brushState = brushSelectionState,
+                onRangeSelect = onRangeSelect,
+            )
     }
 
     return result

@@ -12,6 +12,7 @@ import androidx.compose.ui.util.fastFilter
 import com.himanshoe.charty.block.config.BlockBarChartConfig
 import com.himanshoe.charty.block.data.BlockData
 import com.himanshoe.charty.block.internal.drawBlockBar
+import com.himanshoe.charty.common.accessibility.generateBlockBarDescription
 
 /**
  * A composable function that displays a block bar chart.
@@ -52,24 +53,27 @@ fun BlockBarChart(
     accessibilityDescription: String? = null,
 ) {
     val blocks = remember(data) { data().fastFilter { it.value > 0f } }
-    val chartDescription = remember(blocks, accessibilityDescription) {
-        when (accessibilityDescription) {
-            "" -> null
-            null -> "Block bar chart, ${blocks.size} segments."
-            else -> accessibilityDescription
+    val chartDescription =
+        remember(blocks, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null -> generateBlockBarDescription(blocks)
+                else -> accessibilityDescription
+            }
         }
-    }
-    val semanticsModifier = if (chartDescription != null) {
-        Modifier.semantics { contentDescription = chartDescription }
-    } else {
-        Modifier
-    }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
 
     Canvas(
-        modifier = modifier
-            .then(semanticsModifier)
-            .fillMaxWidth()
-            .height(blockBarConfig.barHeight),
+        modifier =
+            modifier
+                .then(semanticsModifier)
+                .fillMaxWidth()
+                .height(blockBarConfig.barHeight),
     ) {
         drawBlockBar(
             blocks = blocks,

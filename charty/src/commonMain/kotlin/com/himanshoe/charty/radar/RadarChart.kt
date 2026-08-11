@@ -6,13 +6,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -21,6 +21,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.accessibility.generateRadarChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.config.RadarGridStyle
@@ -94,18 +95,20 @@ fun RadarChart(
         "All datasets must have the same number of axes"
     }
 
-    val chartDescription = remember(dataSets, accessibilityDescription) {
-        when (accessibilityDescription) {
-            "" -> null
-            null -> "Radar chart, ${dataSets.size} datasets."
-            else -> accessibilityDescription
+    val chartDescription =
+        remember(dataSets, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null -> generateRadarChartDescription(dataSets)
+                else -> accessibilityDescription
+            }
         }
-    }
-    val semanticsModifier = if (chartDescription != null) {
-        Modifier.semantics { contentDescription = chartDescription }
-    } else {
-        Modifier
-    }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
     val animationProgress = rememberChartAnimation(config.animation)
     val textMeasurer = rememberTextMeasurer()
     val axisLabels = remember(dataSets) { dataSets.first().axes.fastMap { it.label } }
@@ -128,7 +131,6 @@ fun RadarChart(
                 )
             }
 
-            // Draw axis lines
             if (config.gridConfig.showAxisLines) {
                 drawAxisLines(
                     center = Offset(centerX, centerY),
@@ -140,7 +142,6 @@ fun RadarChart(
                 )
             }
 
-            // Draw data sets
             dataSets.fastForEachIndexed { _, dataSet ->
                 drawRadarDataSet(
                     center = Offset(centerX, centerY),
@@ -151,7 +152,6 @@ fun RadarChart(
                 )
             }
 
-            // Draw labels
             if (config.labelConfig.showLabels) {
                 drawAxisLabels(
                     center = Offset(centerX, centerY),
@@ -164,7 +164,6 @@ fun RadarChart(
                 )
             }
 
-            // Draw center background
             if (config.centerConfig.centerBackgroundRadius > 0f) {
                 drawCircle(
                     color = config.centerConfig.centerBackgroundColor,
@@ -302,12 +301,12 @@ private fun DrawScope.drawRadarDataSet(
         }
     }
     path.close()
-    val dataColor = when (dataSet.color) {
-        is ChartyColor.Solid -> dataSet.color.color
-        is ChartyColor.Gradient -> dataSet.color.colors.first()
-    }
+    val dataColor =
+        when (dataSet.color) {
+            is ChartyColor.Solid -> dataSet.color.color
+            is ChartyColor.Gradient -> dataSet.color.colors.first()
+        }
 
-    // Draw filled polygon
     drawPath(
         path = path,
         color = dataColor.copy(alpha = dataSet.fillAlpha * animationProgress),
@@ -352,10 +351,11 @@ private fun DrawScope.drawAxisLabels(
         val angle = (startAngle + (FULL_CIRCLE_DEGREES * index / numberOfAxes)) * DEGREES_TO_RADIANS
         val x = center.x + labelDistance * cos(angle)
         val y = center.y + labelDistance * sin(angle)
-        val textLayoutResult = textMeasurer.measure(
-            text = label,
-            style = textStyle,
-        )
+        val textLayoutResult =
+            textMeasurer.measure(
+                text = label,
+                style = textStyle,
+            )
         val textX = x - textLayoutResult.size.width / 2f
         val textY = y - textLayoutResult.size.height / 2f
 

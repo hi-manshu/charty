@@ -7,26 +7,24 @@ internal fun createComparisonAxisConfig(
     minValue: Float,
     maxValue: Float,
     isBelowAxisMode: Boolean,
-): AxisConfig {
-    return AxisConfig(
+): AxisConfig =
+    AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
         steps = COMPARISON_DEFAULT_AXIS_STEPS,
         drawAxisAtZero = isBelowAxisMode,
     )
-}
 
 internal fun calculateComparisonBaselineY(
     minValue: Float,
     isBelowAxisMode: Boolean,
     chartContext: ChartContext,
-): Float {
-    return if (minValue < 0f && isBelowAxisMode) {
+): Float =
+    if (minValue < 0f && isBelowAxisMode) {
         chartContext.convertValueToYPosition(0f)
     } else {
         chartContext.bottom
     }
-}
 
 internal fun calculateComparisonBarX(
     chartContext: ChartContext,
@@ -34,12 +32,11 @@ internal fun calculateComparisonBarX(
     groupIndex: Int,
     barWidth: Float,
     barIndex: Int,
-): Float {
-    return chartContext.left +
+): Float =
+    chartContext.left +
         groupWidth * groupIndex +
         barWidth * barIndex +
         groupWidth * COMPARISON_GROUP_PADDING_FRACTION
-}
 
 internal fun calculateComparisonBarDimensions(
     value: Float,
@@ -58,4 +55,3 @@ internal fun calculateComparisonBarDimensions(
         barTop to barHeight
     }
 }
-

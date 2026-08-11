@@ -17,9 +17,9 @@ internal fun Modifier.multilineChartClickHandler(
     lineConfig: LineChartConfig,
     pointBounds: List<Pair<Offset, MultilinePoint>>,
     onPointClick: (MultilinePoint) -> Unit,
-    onTooltipStateChange: (TooltipState?) -> Unit,
-): Modifier {
-    return this.pointChartClickHandler(
+    onTooltipStateChange: (TooltipState?, MultilinePoint?) -> Unit,
+): Modifier =
+    this.pointChartClickHandler(
         dataList = dataList,
         pointBounds = pointBounds,
         tapRadius = lineConfig.pointRadius * MultilineChartConstants.TAP_RADIUS_MULTIPLIER,
@@ -27,11 +27,12 @@ internal fun Modifier.multilineChartClickHandler(
         onTooltipStateChange = onTooltipStateChange,
         createTooltipContent = { point, position ->
             createPointTooltipState(
-                content = point.lineGroup.label +
-                    " Line ${
-                        point.seriesIndex +
-                            MultilineChartConstants.SERIES_INDEX_OFFSET
-                    }: ${point.value}",
+                content =
+                    point.lineGroup.label +
+                        " Line ${
+                            point.seriesIndex +
+                                MultilineChartConstants.SERIES_INDEX_OFFSET
+                        }: ${point.value}",
                 position = position,
                 pointRadius = lineConfig.pointRadius,
                 tooltipPosition = lineConfig.tooltipPosition,
@@ -39,5 +40,3 @@ internal fun Modifier.multilineChartClickHandler(
             )
         },
     )
-}
-

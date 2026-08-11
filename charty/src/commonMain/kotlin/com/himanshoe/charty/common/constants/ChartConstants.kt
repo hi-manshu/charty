@@ -6,7 +6,6 @@ package com.himanshoe.charty.common.constants
  * Centralizing these values improves maintainability and ensures consistency throughout the library.
  */
 object ChartConstants {
-
     /**
      * The multiplier for the tap radius relative to an item's radius.
      * This is used to make tap targets larger than the visual elements, improving user experience.
@@ -58,8 +57,6 @@ object ChartConstants {
      */
     const val DEFAULT_STEP_SIZE = 10
 
-    // ===== Layout Constants =====
-
     /**
      * A common divisor used for center calculations.
      */
@@ -70,4 +67,3 @@ object ChartConstants {
      */
     const val MIN_EDGE_MARGIN = 8f
 }
-

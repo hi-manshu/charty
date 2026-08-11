@@ -1,5 +1,6 @@
 package com.himanshoe.charty.line.data
 
+import androidx.compose.runtime.Immutable
 import com.himanshoe.charty.common.data.ChartDataPoint
 
 /**
@@ -8,6 +9,7 @@ import com.himanshoe.charty.common.data.ChartDataPoint
  * @param label The label for this point (displayed on X-axis)
  * @param value The Y-value of the point
  */
+@Immutable
 data class LineData(
     override val label: String,
     override val value: Float,

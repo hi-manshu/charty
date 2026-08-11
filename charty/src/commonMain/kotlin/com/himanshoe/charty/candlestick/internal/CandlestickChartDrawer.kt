@@ -33,7 +33,6 @@ internal fun DrawScope.drawCandlestick(params: CandlestickDrawParams) {
             }
         }
 
-        // Draw body
         if (cornerRadius > 0f) {
             drawRoundRect(
                 brush = brush,
@@ -50,4 +49,3 @@ internal fun DrawScope.drawCandlestick(params: CandlestickDrawParams) {
         }
     }
 }
-

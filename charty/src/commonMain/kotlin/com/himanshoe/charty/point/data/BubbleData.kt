@@ -1,5 +1,7 @@
 package com.himanshoe.charty.point.data
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Data class for Bubble Chart points
  *
@@ -8,6 +10,7 @@ package com.himanshoe.charty.point.data
  * @param yValue The Y-axis value
  * @param size The size/magnitude of the bubble (will be normalized for rendering)
  */
+@Immutable
 data class BubbleData(
     val label: String,
     val xValue: Float? = null,

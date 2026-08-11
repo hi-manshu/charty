@@ -51,11 +51,11 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
         val groupTotal = barGroup.values.fastFilter { it > 0f }.sum()
         if (groupTotal == 0f) return@fastForEachIndexed
 
-        val centeredBarY = params.chartContext.top +
-            (rowHeight * groupIndex) +
-            (rowHeight - barThickness) / 2f
+        val centeredBarY =
+            params.chartContext.top +
+                (rowHeight * groupIndex) +
+                (rowHeight - barThickness) / 2f
 
-        // Scale the entire bar width by animationProgress so all segments grow together.
         val effectiveWidth = availableWidth * params.animationProgress
         var cumulativeFraction = 0f
         val lastActiveIndex = barGroup.values.indexOfLast { it > 0f }
@@ -72,36 +72,39 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
 
             if (segmentWidth <= 0f) return@fastForEachIndexed
 
-            if (params.onSegmentClick != null) {
+            if (params.recordBounds) {
                 params.segmentBounds.add(
                     Rect(
                         left = startX,
                         top = centeredBarY,
                         right = startX + segmentWidth,
                         bottom = centeredBarY + barThickness,
-                    ) to NormalizedHorizontalBarSegment(
-                        barGroup = barGroup,
-                        segmentIndex = segmentIndex,
-                        segmentValue = value,
-                        segmentPercentage = segmentPercentage,
-                    ),
+                    ) to
+                        NormalizedHorizontalBarSegment(
+                            barGroup = barGroup,
+                            segmentIndex = segmentIndex,
+                            segmentValue = value,
+                            segmentPercentage = segmentPercentage,
+                        ),
                 )
             }
 
-            val segmentColor = if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
-                barGroup.colors[segmentIndex]
-            } else {
-                ChartyColor.Solid(params.colorList[segmentIndex % params.colorList.size])
-            }
+            val segmentColor =
+                if (barGroup.colors != null && segmentIndex < barGroup.colors.size) {
+                    barGroup.colors[segmentIndex]
+                } else {
+                    ChartyColor.Solid(params.colorList[segmentIndex % params.colorList.size])
+                }
 
             val isLastSegment = segmentIndex == lastActiveIndex
             val cornerRadius = if (isLastSegment) params.config.rightCornerRadius.value else 0f
 
-            val brush = Brush.horizontalGradient(
-                colors = segmentColor.value,
-                startX = startX,
-                endX = startX + segmentWidth,
-            )
+            val brush =
+                Brush.horizontalGradient(
+                    colors = segmentColor.value,
+                    startX = startX,
+                    endX = startX + segmentWidth,
+                )
 
             drawNormalizedHorizontalSegment(
                 brush = brush,
@@ -126,35 +129,36 @@ private fun DrawScope.drawNormalizedHorizontalSegment(
     cornerRadius: Float,
     isLastSegment: Boolean,
 ) {
-    val path = Path().apply {
-        if (isLastSegment && cornerRadius > 0f) {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                ),
-            )
-        } else {
-            addRoundRect(
-                RoundRect(
-                    left = x,
-                    top = y,
-                    right = x + width,
-                    bottom = y + height,
-                    topLeftCornerRadius = CornerRadius.Zero,
-                    topRightCornerRadius = CornerRadius.Zero,
-                    bottomLeftCornerRadius = CornerRadius.Zero,
-                    bottomRightCornerRadius = CornerRadius.Zero,
-                ),
-            )
+    val path =
+        Path().apply {
+            if (isLastSegment && cornerRadius > 0f) {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    ),
+                )
+            } else {
+                addRoundRect(
+                    RoundRect(
+                        left = x,
+                        top = y,
+                        right = x + width,
+                        bottom = y + height,
+                        topLeftCornerRadius = CornerRadius.Zero,
+                        topRightCornerRadius = CornerRadius.Zero,
+                        bottomLeftCornerRadius = CornerRadius.Zero,
+                        bottomRightCornerRadius = CornerRadius.Zero,
+                    ),
+                )
+            }
         }
-    }
     drawPath(path, brush)
 }
 

@@ -30,4 +30,3 @@ internal data class AreaChartDrawParams(
     val chartContext: ChartContext,
     val onBarBoundCalculated: (Pair<Offset, LineData>) -> Unit,
 )
-

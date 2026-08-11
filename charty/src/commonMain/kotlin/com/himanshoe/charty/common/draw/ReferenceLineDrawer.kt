@@ -124,26 +124,28 @@ private fun calculateVerticalLabelY(
     labelPosition: ReferenceLineLabelPosition,
     chartContext: ChartContext,
     textHeight: Float,
-): Float = when (labelPosition) {
-    ReferenceLineLabelPosition.START -> chartContext.bottom - textHeight
-    ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
-        chartContext.top + (chartContext.height - textHeight) / CENTER_DIVISOR
+): Float =
+    when (labelPosition) {
+        ReferenceLineLabelPosition.START -> chartContext.bottom - textHeight
+        ReferenceLineLabelPosition.CENTER, ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.BELOW ->
+            chartContext.top + (chartContext.height - textHeight) / CENTER_DIVISOR
 
-    ReferenceLineLabelPosition.END -> chartContext.top
-}
+        ReferenceLineLabelPosition.END -> chartContext.top
+    }
 
 private fun calculateVerticalLabelX(
     labelPosition: ReferenceLineLabelPosition,
     x: Float,
     textWidth: Float,
     labelOffset: Float,
-): Float = when (labelPosition) {
-    ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
-        x - textWidth - labelOffset
+): Float =
+    when (labelPosition) {
+        ReferenceLineLabelPosition.ABOVE, ReferenceLineLabelPosition.START, ReferenceLineLabelPosition.END ->
+            x - textWidth - labelOffset
 
-    ReferenceLineLabelPosition.BELOW -> x + labelOffset
-    ReferenceLineLabelPosition.CENTER -> x - textWidth / CENTER_DIVISOR
-}
+        ReferenceLineLabelPosition.BELOW -> x + labelOffset
+        ReferenceLineLabelPosition.CENTER -> x - textWidth / CENTER_DIVISOR
+    }
 
 private fun DrawScope.drawVerticalLineWithLabel(
     x: Float,
@@ -160,11 +162,12 @@ private fun DrawScope.drawVerticalLineWithLabel(
         pathEffect = pathEffect,
     )
 
-    val labelText = when {
-        config.label != null -> config.label
-        config.showValueInLabelWhenNoText -> formatAxisLabel(config.value)
-        else -> null
-    } ?: return
+    val labelText =
+        when {
+            config.label != null -> config.label
+            config.showValueInLabelWhenNoText -> formatAxisLabel(config.value)
+            else -> null
+        } ?: return
 
     val textLayoutResult = textMeasurer.measure(labelText, config.labelTextStyle)
     val textWidth = textLayoutResult.size.width.toFloat()
@@ -187,13 +190,14 @@ private fun DrawScope.drawVerticalReferenceLine(
     val normalized = (config.value - chartContext.minValue) / range
     val x = chartContext.left + normalized * chartContext.width
 
-    val pathEffect = when (config.strokeStyle) {
-        ReferenceLineStrokeStyle.SOLID -> null
-        ReferenceLineStrokeStyle.DASHED -> {
-            val intervals = config.dashIntervals ?: floatArrayOf(DEFAULT_DASH_INTERVAL, DEFAULT_DASH_INTERVAL)
-            PathEffect.dashPathEffect(intervals, DASH_PHASE_OFFSET)
+    val pathEffect =
+        when (config.strokeStyle) {
+            ReferenceLineStrokeStyle.SOLID -> null
+            ReferenceLineStrokeStyle.DASHED -> {
+                val intervals = config.dashIntervals ?: floatArrayOf(DEFAULT_DASH_INTERVAL, DEFAULT_DASH_INTERVAL)
+                PathEffect.dashPathEffect(intervals, DASH_PHASE_OFFSET)
+            }
         }
-    }
 
     drawVerticalLineWithLabel(x, chartContext, config, textMeasurer, pathEffect)
 }

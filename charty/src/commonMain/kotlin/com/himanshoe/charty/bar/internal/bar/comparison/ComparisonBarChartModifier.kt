@@ -9,6 +9,7 @@ import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.gesture.createRectangularTooltipState
 import com.himanshoe.charty.common.gesture.findClickedItemWithBounds
+import com.himanshoe.charty.common.gesture.rectangularChartScrubHandler
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 internal fun createComparisonChartModifier(
@@ -17,27 +18,39 @@ internal fun createComparisonChartModifier(
     dataList: List<BarGroup>,
     comparisonConfig: ComparisonBarChartConfig,
     barBounds: List<Pair<Rect, ComparisonBarSegment>>,
-    onTooltipUpdate: (TooltipState?) -> Unit,
+    onTooltipUpdate: (TooltipState?, ComparisonBarSegment?) -> Unit,
+    enableScrub: Boolean = false,
 ): Modifier {
-    return if (onBarClick != null) {
-        modifier.pointerInput(dataList, comparisonConfig, onBarClick) {
-            detectTapGestures { offset ->
-                val clickedBar = findClickedItemWithBounds(offset, barBounds)
+    val tooltipContentBuilder = { segment: ComparisonBarSegment, rect: Rect ->
+        createRectangularTooltipState(
+            content = comparisonConfig.tooltipFormatter(segment),
+            rect = rect,
+            position = comparisonConfig.tooltipPosition,
+        )
+    }
+    val clickModifier =
+        if (onBarClick != null) {
+            modifier.pointerInput(dataList, comparisonConfig, onBarClick) {
+                detectTapGestures { offset ->
+                    val clickedBar = findClickedItemWithBounds(offset, barBounds)
 
-                clickedBar?.let { (rect, segment) ->
-                    onBarClick.invoke(segment)
-                    onTooltipUpdate(
-                        createRectangularTooltipState(
-                            content = comparisonConfig.tooltipFormatter(segment),
-                            rect = rect,
-                            position = comparisonConfig.tooltipPosition,
-                        ),
-                    )
-                } ?: onTooltipUpdate(null)
+                    clickedBar?.let { (rect, segment) ->
+                        onBarClick.invoke(segment)
+                        onTooltipUpdate(tooltipContentBuilder(segment, rect), segment)
+                    } ?: onTooltipUpdate(null, null)
+                }
             }
+        } else {
+            modifier
         }
+    return if (enableScrub) {
+        clickModifier.rectangularChartScrubHandler(
+            dataList = dataList,
+            bounds = barBounds,
+            onTooltipStateChange = onTooltipUpdate,
+            createTooltipContent = tooltipContentBuilder,
+        )
     } else {
-        modifier
+        clickModifier
     }
 }
-

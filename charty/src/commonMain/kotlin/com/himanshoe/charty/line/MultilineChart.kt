@@ -1,7 +1,7 @@
 package com.himanshoe.charty.line
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,17 +20,20 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartLegend
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
+import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
-import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -58,7 +61,8 @@ private data class MultilineDrawParams(
     val pointBounds: MutableList<Pair<Offset, MultilinePoint>>,
     val crosshairBounds: MutableList<Pair<Offset, MultilinePoint>>,
     val onPointClick: ((MultilinePoint) -> Unit)?,
-    val crosshairManager: CrosshairManager?,
+    val crosshairManager: CrosshairManager<MultilinePoint>?,
+    val crosshairState: CrosshairState?,
     val tooltipState: TooltipState?,
     val textMeasurer: TextMeasurer,
     val interactionConfig: ChartInteractionConfig,
@@ -98,25 +102,27 @@ fun MultilineChart(
         }
 
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = remember { Animatable(if (lineConfig.animation is Animation.Enabled) 0f else 1f) }
+    val animationProgress = remember { Animatable(if (lineConfig.animation.isAnimated) 0f else 1f) }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
-    val crosshairManager = if (lineConfig.crosshairConfig != null) rememberCrosshairManager() else null
+    val (crosshairManager, animatedCrosshairState) =
+        rememberChartCrosshair<MultilinePoint>(lineConfig.crosshairConfig != null)
     val textMeasurer = rememberTextMeasurer()
 
     LaunchedEffect(lineConfig.animation) {
-        if (lineConfig.animation is Animation.Enabled) {
+        if (lineConfig.animation.isAnimated) {
             animationProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = lineConfig.animation.duration),
+                animationSpec = lineConfig.animation.toFloatSpec(),
             )
         }
     }
 
-    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-        generateLineGroupChartDescription(it, "multiline")
-    }
+    val chartDescription =
+        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+            generateLineGroupChartDescription(it, "multiline")
+        }
 
     syncInteractionDataSizes(
         viewPortState = interactionConfig.viewPortState,
@@ -125,40 +131,57 @@ fun MultilineChart(
         dataSize = dataList.size,
     )
 
-    ChartScaffold(
-        modifier = buildMultilineModifier(
-            base = modifier,
-            crosshairManager = crosshairManager,
-            dataList = dataList,
-            lineConfig = lineConfig,
-            pointBounds = pointBounds,
-            crosshairBounds = crosshairBounds,
-            onPointClick = onPointClick,
-            onTooltipStateChange = { tooltipState = it },
-            interactionConfig = interactionConfig,
-        ),
-        xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(minValue = minValue, maxValue = maxValue, steps = 6, drawAxisAtZero = isBelowAxisMode),
-        config = scaffoldConfig,
-        contentDescription = chartDescription,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-        drawMultilineContent(
-            MultilineDrawParams(
-                dataList = dataList,
-                chartContext = chartContext,
-                colorList = colorList,
-                lineConfig = lineConfig,
-                animationProgress = animationProgress.value,
-                pointBounds = pointBounds,
-                crosshairBounds = crosshairBounds,
-                onPointClick = onPointClick,
-                crosshairManager = crosshairManager,
-                tooltipState = tooltipState,
-                textMeasurer = textMeasurer,
-                interactionConfig = interactionConfig,
+    Column(modifier = modifier) {
+        ChartScaffold(
+            modifier =
+                buildMultilineModifier(
+                    base = Modifier.weight(1f),
+                    crosshairManager = crosshairManager,
+                    dataList = dataList,
+                    lineConfig = lineConfig,
+                    pointBounds = pointBounds,
+                    crosshairBounds = crosshairBounds,
+                    onPointClick = onPointClick,
+                    onTooltipStateChange = { state, _ -> tooltipState = state },
+                    interactionConfig = interactionConfig,
+                ),
+            xLabels = dataList.getLabels(),
+            yAxisConfig =
+                AxisConfig(
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    steps = 6,
+                    drawAxisAtZero = isBelowAxisMode,
+                ),
+            config = scaffoldConfig,
+            contentDescription = chartDescription,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
+            drawMultilineContent(
+                MultilineDrawParams(
+                    dataList = dataList,
+                    chartContext = chartContext,
+                    colorList = colorList,
+                    lineConfig = lineConfig,
+                    animationProgress = animationProgress.value,
+                    pointBounds = pointBounds,
+                    crosshairBounds = crosshairBounds,
+                    onPointClick = onPointClick,
+                    crosshairManager = crosshairManager,
+                    crosshairState = animatedCrosshairState,
+                    tooltipState = tooltipState,
+                    textMeasurer = textMeasurer,
+                    interactionConfig = interactionConfig,
+                ),
             )
-        )
+        }
+        if (lineConfig.legendLabels.isNotEmpty()) {
+            ChartLegend(
+                labels = lineConfig.legendLabels,
+                colors = colorList,
+                textStyle = lineConfig.legendTextStyle,
+            )
+        }
     }
 }
 
@@ -166,7 +189,11 @@ fun MultilineChart(
 private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
     p.pointBounds.clear()
     p.crosshairBounds.clear()
-    val seriesCount = p.dataList.getOrNull(0)?.values?.size ?: 0
+    val seriesCount =
+        p.dataList
+            .getOrNull(0)
+            ?.values
+            ?.size ?: 0
 
     if (p.crosshairManager != null) {
         p.chartContext.calculateSeriesPointPositions(p.dataList, 0).fastForEachIndexed { index, pos ->
@@ -201,7 +228,7 @@ private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
     }
     drawInteractionOverlays(p.interactionConfig, p.chartContext, p.dataList.size, p.textMeasurer)
 
-    p.crosshairManager?.state?.let { state ->
+    p.crosshairState?.let { state ->
         p.lineConfig.crosshairConfig?.let { config ->
             drawMultilineChartCrosshair(
                 state = state,
@@ -217,33 +244,38 @@ private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
 
 private fun buildMultilineModifier(
     base: Modifier,
-    crosshairManager: CrosshairManager?,
+    crosshairManager: CrosshairManager<MultilinePoint>?,
     dataList: List<LineGroup>,
     lineConfig: LineChartConfig,
     pointBounds: MutableList<Pair<Offset, MultilinePoint>>,
     crosshairBounds: MutableList<Pair<Offset, MultilinePoint>>,
     onPointClick: ((MultilinePoint) -> Unit)?,
-    onTooltipStateChange: (TooltipState?) -> Unit,
+    onTooltipStateChange: (TooltipState?, MultilinePoint?) -> Unit,
     interactionConfig: ChartInteractionConfig,
 ): Modifier {
-    val mod: Modifier = when {
-        crosshairManager != null -> Modifier.chartCrosshairHandler(
-            dataList = dataList,
-            pointBounds = crosshairBounds,
-            onCrosshairUpdate = crosshairManager::update,
-            labelFormatter = { point ->
-                point.lineGroup.values.mapIndexed { i, v -> "L${i + 1}: $v" }.joinToString("  ")
-            },
-            dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
-        )
-        onPointClick != null -> Modifier.multilineChartClickHandler(
-            dataList = dataList,
-            lineConfig = lineConfig,
-            pointBounds = pointBounds,
-            onPointClick = onPointClick,
-            onTooltipStateChange = onTooltipStateChange,
-        )
-        else -> Modifier
-    }
+    val mod: Modifier =
+        when {
+            crosshairManager != null ->
+                Modifier.chartCrosshairHandler(
+                    dataList = dataList,
+                    pointBounds = crosshairBounds,
+                    onCrosshairUpdate = crosshairManager::update,
+                    labelFormatter = { point ->
+                        point.lineGroup.values
+                            .mapIndexed { i, v -> "L${i + 1}: $v" }
+                            .joinToString("  ")
+                    },
+                    dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+                )
+            onPointClick != null ->
+                Modifier.multilineChartClickHandler(
+                    dataList = dataList,
+                    lineConfig = lineConfig,
+                    pointBounds = pointBounds,
+                    onPointClick = onPointClick,
+                    onTooltipStateChange = onTooltipStateChange,
+                )
+            else -> Modifier
+        }
     return buildInteractionModifier(base = base.then(mod), interactionConfig = interactionConfig, dataList = dataList)
 }

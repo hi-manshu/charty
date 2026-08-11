@@ -24,4 +24,5 @@ internal data class StackedHorizontalBarDrawParams(
     val animationProgress: Float,
     val onSegmentClick: ((StackedHorizontalBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, StackedHorizontalBarSegment>>,
+    val recordBounds: Boolean = onSegmentClick != null,
 )

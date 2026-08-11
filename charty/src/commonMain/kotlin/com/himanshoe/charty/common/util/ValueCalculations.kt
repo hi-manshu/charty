@@ -81,8 +81,25 @@ fun calculateMinMaxWithPadding(
 fun calculateMinMaxValue(
     values: List<Float>,
     stepSize: Int = 10,
-): Pair<Float, Float> {
-    return calculateMinValue(values, stepSize) to calculateMaxValue(values, stepSize)
+): Pair<Float, Float> = calculateMinValue(values, stepSize) to calculateMaxValue(values, stepSize)
+
+/**
+ * Computes the `(min, max)` value range for a chart whose bars grow from a zero baseline.
+ *
+ * Applies the shared rule used by the bar-family charts: the maximum is "nice"-rounded via
+ * [calculateMaxValue], and the minimum is clamped to `0f` unless the data actually goes negative
+ * (in which case the "nice"-rounded [calculateMinValue] is used). Centralizing this keeps the
+ * baseline behaviour identical across `BarChart`, `HorizontalBarChart`, `BubbleBarChart`,
+ * `ComparisonBarChart`, and any future bar variant.
+ *
+ * @param values The flattened data values.
+ * @return A [Pair] of `(min, max)` for the value axis.
+ */
+internal fun baselineValueRange(values: List<Float>): Pair<Float, Float> {
+    val calculatedMin = calculateMinValue(values)
+    val calculatedMax = calculateMaxValue(values)
+    val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+    return finalMin to calculatedMax
 }
 
 /**
@@ -94,12 +111,13 @@ internal fun niceAxisStep(roughStep: Float): Float {
     val exponent = floor(log10(roughStep)).toInt()
     val magnitude = NICE_FACTOR_10.pow(exponent)
     val normalized = roughStep / magnitude
-    val niceFraction = when {
-        normalized <= NICE_STEP_UPPER_1 -> 1f
-        normalized <= NICE_STEP_UPPER_2 -> NICE_FACTOR_2
-        normalized <= NICE_STEP_UPPER_5 -> NICE_FACTOR_5
-        else -> NICE_FACTOR_10
-    }
+    val niceFraction =
+        when {
+            normalized <= NICE_STEP_UPPER_1 -> 1f
+            normalized <= NICE_STEP_UPPER_2 -> NICE_FACTOR_2
+            normalized <= NICE_STEP_UPPER_5 -> NICE_FACTOR_5
+            else -> NICE_FACTOR_10
+        }
     return niceFraction * magnitude
 }
 
@@ -133,4 +151,3 @@ internal fun calculateNiceAxisRange(
     val actualSteps = ((niceMax - niceMin) / step + NICE_RANGE_ROUND_HALF).toInt().coerceAtLeast(1)
     return Triple(niceMin, niceMax, actualSteps)
 }
-

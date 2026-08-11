@@ -17,29 +17,30 @@ import kotlin.math.max
  * Drawing functions for BubbleBarChart
  */
 
-internal fun DrawScope.drawBubbleBars(
-    params: BubbleBarDrawParams,
-) {
+internal fun DrawScope.drawBubbleBars(params: BubbleBarDrawParams) {
     params.dataList.fastForEachIndexed { index, bar ->
-        val barX = params.chartContext.calculateBarLeftPosition(
-            index,
-            params.dataList.size,
-            params.bubbleConfig.barWidthFraction,
-        )
-        val barWidth = params.chartContext.calculateBarWidth(
-            params.dataList.size,
-            params.bubbleConfig.barWidthFraction,
-        )
+        val barX =
+            params.chartContext.calculateBarLeftPosition(
+                index,
+                params.dataList.size,
+                params.bubbleConfig.barWidthFraction,
+            )
+        val barWidth =
+            params.chartContext.calculateBarWidth(
+                params.dataList.size,
+                params.bubbleConfig.barWidthFraction,
+            )
         val barValueY = params.chartContext.convertValueToYPosition(bar.value)
 
-        val (barTop, barHeight) = calculateBubbleBarDimensions(
-            barValue = bar.value,
-            baselineY = params.baselineY,
-            barValueY = barValueY,
-            animationProgress = params.animationProgress,
-        )
+        val (barTop, barHeight) =
+            calculateBubbleBarDimensions(
+                barValue = bar.value,
+                baselineY = params.baselineY,
+                barValueY = barValueY,
+                animationProgress = params.animationProgress,
+            )
 
-        if (params.onBarClick != null) {
+        if (params.recordBounds) {
             params.barBounds.add(
                 Rect(
                     left = barX,
@@ -65,9 +66,7 @@ internal fun DrawScope.drawBubbleBars(
 }
 
 @OptIn(ExperimentalTextApi::class)
-internal fun DrawScope.drawReferenceLineIfNeeded(
-    params: BubbleBarDrawParams,
-) {
+internal fun DrawScope.drawReferenceLineIfNeeded(params: BubbleBarDrawParams) {
     params.bubbleConfig.referenceLine?.let { referenceLineConfig ->
         drawReferenceLine(
             chartContext = params.chartContext,
@@ -116,17 +115,18 @@ private fun DrawScope.drawBubbleBar(
 
         if (bubbleY < y - bubbleRadius) break
 
-        val bubbleColor = when (color) {
-            is ChartyColor.Solid -> color.color
-            is ChartyColor.Gradient -> {
-                val colors = color.colors
-                val ratio = i.toFloat() / bubbleCount.coerceAtLeast(1)
-                val scaledRatio = ratio * (colors.size - 1)
-                val index = scaledRatio.toInt().coerceIn(0, colors.size - 2)
-                val localRatio = scaledRatio - index
-                lerp(colors[index], colors[index + 1], localRatio)
+        val bubbleColor =
+            when (color) {
+                is ChartyColor.Solid -> color.color
+                is ChartyColor.Gradient -> {
+                    val colors = color.colors
+                    val ratio = i.toFloat() / bubbleCount.coerceAtLeast(1)
+                    val scaledRatio = ratio * (colors.size - 1)
+                    val index = scaledRatio.toInt().coerceIn(0, colors.size - 2)
+                    val localRatio = scaledRatio - index
+                    lerp(colors[index], colors[index + 1], localRatio)
+                }
             }
-        }
 
         drawCircle(
             color = bubbleColor,
@@ -135,4 +135,3 @@ private fun DrawScope.drawBubbleBar(
         )
     }
 }
-

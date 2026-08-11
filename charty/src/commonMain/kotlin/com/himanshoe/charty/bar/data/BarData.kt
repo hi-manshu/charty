@@ -1,5 +1,6 @@
 package com.himanshoe.charty.bar.data
 
+import androidx.compose.runtime.Immutable
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.data.ChartDataPoint
 
@@ -10,6 +11,7 @@ import com.himanshoe.charty.common.data.ChartDataPoint
  * @param value The value of the bar (determines height)
  * @param color Optional color for this specific bar. If null, uses the chart's default color scheme
  */
+@Immutable
 data class BarData(
     override val label: String,
     override val value: Float,

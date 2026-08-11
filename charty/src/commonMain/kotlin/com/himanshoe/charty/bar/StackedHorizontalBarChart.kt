@@ -1,21 +1,25 @@
 package com.himanshoe.charty.bar
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.StackedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.StackedHorizontalBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.rememberStackedMaxTotal
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.StackedHorizontalBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.createStackedHorizontalAxisConfig
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.createStackedHorizontalBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.drawStackedHorizontalBars
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.drawStackedHorizontalReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.drawStackedHorizontalTooltipIfNeeded
-import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.rememberStackedHorizontalMaxTotal
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
@@ -24,13 +28,13 @@ import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
-import androidx.compose.ui.util.fastAll
-import androidx.compose.ui.util.fastMap
 
 /**
  * A composable that displays a **stacked horizontal bar chart**.
@@ -48,6 +52,9 @@ import androidx.compose.ui.util.fastMap
  * @param scaffoldConfig Chart scaffold configuration controlling axes, grid lines, and labels.
  * @param onSegmentClick Optional callback invoked when a segment is tapped.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
+ *   provided, it replaces the default canvas tooltip and is invoked with the tapped
+ *   [StackedHorizontalBarSegment].
  *
  * Example usage:
  * ```kotlin
@@ -72,6 +79,7 @@ fun StackedHorizontalBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onSegmentClick: ((StackedHorizontalBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltipContent: (@Composable (StackedHorizontalBarSegment) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Stacked horizontal bar chart data cannot be empty" }
@@ -82,7 +90,7 @@ fun StackedHorizontalBarChart(
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
-    val (maxTotal, colorList) = rememberStackedHorizontalMaxTotal(dataList, colors)
+    val (maxTotal, colorList) = rememberStackedMaxTotal(dataList, colors)
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, StackedHorizontalBarSegment>()
     val textMeasurer = rememberTextMeasurer()
@@ -94,49 +102,68 @@ fun StackedHorizontalBarChart(
         dataList.size,
     )
 
-    val clickModifier = createStackedHorizontalBarChartModifier(
-        dataList = dataList,
-        config = config,
-        onSegmentClick = onSegmentClick,
-        segmentBounds = tooltipManager.bounds,
-        onTooltipStateChange = tooltipManager::updateTooltip,
-    )
-
-    val chartModifier = buildInteractionModifier(
-        base = modifier.then(clickModifier),
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
-
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.fastMap { it.label },
-        yAxisConfig = createStackedHorizontalAxisConfig(maxTotal),
-        config = scaffoldConfig,
-        orientation = ChartOrientation.HORIZONTAL,
-        contentDescription = interactionConfig.accessibilityDescription
-            ?: "Stacked horizontal bar chart, ${fullDataList.size} data points.",
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
-
-        tooltipManager.clearBounds()
-
-        drawStackedHorizontalBars(
-            StackedHorizontalBarDrawParams(
-                dataList = dataList,
-                chartContext = chartContext,
-                config = config,
-                colorList = colorList,
-                maxTotal = maxTotal,
-                animationProgress = animationProgress.value,
-                onSegmentClick = onSegmentClick,
-                segmentBounds = tooltipManager.bounds,
-            ),
+    val clickModifier =
+        createStackedHorizontalBarChartModifier(
+            dataList = dataList,
+            config = config,
+            onSegmentClick = onSegmentClick,
+            segmentBounds = tooltipManager.bounds,
+            onTooltipStateChange = tooltipManager::updateTooltip,
+            enableScrub = interactionConfig.dragTooltipActive,
         )
 
-        drawStackedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
-        drawStackedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+    val chartModifier =
+        buildInteractionModifier(
+            base = modifier.then(clickModifier),
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+        )
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.fastMap { it.label },
+            yAxisConfig = createStackedHorizontalAxisConfig(maxTotal),
+            config = scaffoldConfig,
+            orientation = ChartOrientation.HORIZONTAL,
+            contentDescription =
+                interactionConfig.accessibilityDescription
+                    ?: "Stacked horizontal bar chart, ${fullDataList.size} data points.",
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
+
+            tooltipManager.clearBounds()
+
+            drawStackedHorizontalBars(
+                StackedHorizontalBarDrawParams(
+                    dataList = dataList,
+                    chartContext = chartContext,
+                    config = config,
+                    colorList = colorList,
+                    maxTotal = maxTotal,
+                    animationProgress = animationProgress.value,
+                    onSegmentClick = onSegmentClick,
+                    segmentBounds = tooltipManager.bounds,
+                    recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
+                ),
+            )
+
+            drawStackedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
+            if (tooltipContent == null) {
+                drawStackedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+            }
+
+            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        }
+
+        if (tooltipContent != null) {
+            ChartTooltipOverlay(
+                item = tooltipManager.selectedItem,
+                anchor = tooltipManager.tooltipState,
+                config = config.tooltipConfig,
+                modifier = Modifier.matchParentSize(),
+                content = tooltipContent,
+            )
+        }
     }
 }

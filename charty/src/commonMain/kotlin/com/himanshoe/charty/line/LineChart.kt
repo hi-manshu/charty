@@ -1,15 +1,21 @@
 package com.himanshoe.charty.line
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
+import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
@@ -21,11 +27,16 @@ import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
+import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
-import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
@@ -50,6 +61,11 @@ import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
  * @param scaffoldConfig Axes and label configuration for the chart scaffold.
  * @param onPointClick Invoked when the user taps a data point.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
+ *   provided, it replaces the default canvas tooltip and is invoked with the tapped [LineData].
+ * @param crosshairContent An optional composable slot for rendering a custom crosshair label. When
+ *   provided (and a crosshair is configured via [lineConfig]), it replaces the default canvas
+ *   crosshair label and is invoked with the [LineData] under the dragging finger.
  *
  * Example:
  * ```kotlin
@@ -70,27 +86,32 @@ fun LineChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     onPointClick: ((LineData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltipContent: (@Composable (LineData) -> Unit)? = null,
+    crosshairContent: (@Composable (LineData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Line chart data cannot be empty" }
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
-    val (minValue, maxValue) = remember(dataList, lineConfig.negativeValuesDrawMode) {
-        val values = dataList.getValues()
-        calculateMinValue(values) to calculateMaxValue(values)
-    }
+    val (minValue, maxValue) =
+        remember(dataList, lineConfig.negativeValuesDrawMode) {
+            val values = dataList.getValues()
+            calculateMinValue(values) to calculateMaxValue(values)
+        }
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(lineConfig.animation)
 
     val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
 
-    val crosshairManager = if (lineConfig.crosshairConfig != null) rememberCrosshairManager() else null
+    val (crosshairManager, animatedCrosshairState) =
+        rememberChartCrosshair<LineData>(lineConfig.crosshairConfig != null)
 
-    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-        generateLineChartDescription(it, minValue, maxValue)
-    }
+    val chartDescription =
+        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+            generateLineChartDescription(it, minValue, maxValue)
+        }
 
     syncInteractionDataSizes(
         viewPortState = interactionConfig.viewPortState,
@@ -99,89 +120,157 @@ fun LineChart(
         dataSize = dataList.size,
     )
 
-    val interactionModifier = Modifier.lineChartInteractionHandler(
-        dataList = dataList,
-        lineConfig = lineConfig,
-        pointBounds = tooltipManager.bounds,
-        onPointClick = onPointClick,
-        onTooltipStateChange = tooltipManager::updateTooltip,
-        crosshairManager = crosshairManager,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        onRangeSelect = interactionConfig.onRangeSelect,
-    )
+    val interactionModifier =
+        Modifier.lineChartInteractionHandler(
+            dataList = dataList,
+            lineConfig = lineConfig,
+            pointBounds = tooltipManager.bounds,
+            onPointClick = onPointClick,
+            onTooltipStateChange = tooltipManager::updateTooltip,
+            crosshairManager = crosshairManager,
+            brushSelectionState = interactionConfig.brushSelectionState,
+            onRangeSelect = interactionConfig.onRangeSelect,
+        )
 
     val zoomModifier = interactionConfig.viewPortState?.let { Modifier.chartZoomAndPan(it) } ?: Modifier
 
-    ChartScaffold(
-        modifier = modifier.then(interactionModifier).then(zoomModifier),
-        xLabels = dataList.getLabels(),
-        yAxisConfig = AxisConfig(
-            minValue = minValue,
-            maxValue = maxValue,
-            steps = 6,
-            drawAxisAtZero = isBelowAxisMode,
-        ),
-        config = scaffoldConfig,
-        contentDescription = chartDescription,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
+    Box(modifier = modifier.then(interactionModifier).then(zoomModifier)) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.getLabels(),
+            yAxisConfig =
+                AxisConfig(
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    steps = 6,
+                    drawAxisAtZero = isBelowAxisMode,
+                ),
+            config = scaffoldConfig,
+            contentDescription = chartDescription,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
 
-        tooltipManager.clearBounds()
+            tooltipManager.clearBounds()
 
-        val pointPositions = chartContext.calculatePointPositions(dataList)
+            val pointPositions = chartContext.calculatePointPositions(dataList)
 
-        if (onPointClick != null || crosshairManager != null) {
-            pointPositions.fastForEachIndexed { index, position ->
-                tooltipManager.bounds.add(position to dataList[index])
+            if (onPointClick != null || crosshairManager != null) {
+                pointPositions.fastForEachIndexed { index, position ->
+                    tooltipManager.bounds.add(position to dataList[index])
+                }
             }
-        }
 
-        drawLineContent(
-            pointPositions = pointPositions,
-            color = color,
-            lineConfig = lineConfig,
-            animationProgress = animationProgress.value,
-        )
+            drawLineContent(
+                pointPositions = pointPositions,
+                color = color,
+                lineConfig = lineConfig,
+                animationProgress = animationProgress.value,
+            )
 
-        lineConfig.referenceLine?.let { referenceLineConfig ->
-            drawReferenceLine(
+            lineConfig.referenceLine?.let { referenceLineConfig ->
+                drawReferenceLine(
+                    chartContext = chartContext,
+                    orientation = ChartOrientation.VERTICAL,
+                    config = referenceLineConfig,
+                    textMeasurer = textMeasurer,
+                )
+            }
+
+            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+
+            drawLineCrosshairAndTooltip(
+                crosshairState = animatedCrosshairState,
+                tooltipManager = tooltipManager,
+                lineConfig = lineConfig,
                 chartContext = chartContext,
-                orientation = ChartOrientation.VERTICAL,
-                config = referenceLineConfig,
                 textMeasurer = textMeasurer,
+                color = color,
+                drawBubble = tooltipContent == null,
+                drawCrosshairLabel = crosshairContent == null,
             )
         }
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        LineChartOverlays(
+            tooltipManager = tooltipManager,
+            crosshairManager = crosshairManager,
+            animatedCrosshairState = animatedCrosshairState,
+            lineConfig = lineConfig,
+            tooltipContent = tooltipContent,
+            crosshairContent = crosshairContent,
+        )
+    }
+}
 
-        crosshairManager?.state?.let { crosshairState ->
-            lineConfig.crosshairConfig?.let { crosshairConfig ->
-                drawLineChartCrosshair(
-                    state = crosshairState,
-                    config = crosshairConfig,
-                    chartContext = chartContext,
-                    textMeasurer = textMeasurer,
-                    chartColor = color,
-                )
-            }
+@Composable
+private fun BoxScope.LineChartOverlays(
+    tooltipManager: TooltipManager<Offset, LineData>,
+    crosshairManager: CrosshairManager<LineData>?,
+    animatedCrosshairState: CrosshairState?,
+    lineConfig: LineChartConfig,
+    tooltipContent: (@Composable (LineData) -> Unit)?,
+    crosshairContent: (@Composable (LineData) -> Unit)?,
+) {
+    if (tooltipContent != null) {
+        ChartTooltipOverlay(
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            config = lineConfig.tooltipConfig,
+            modifier = Modifier.matchParentSize(),
+            content = tooltipContent,
+        )
+    }
+
+    if (crosshairContent != null && crosshairManager != null) {
+        ChartCrosshairOverlay(
+            item = crosshairManager.selectedItem,
+            state = animatedCrosshairState,
+            config = lineConfig.crosshairConfig?.tooltipConfig ?: lineConfig.tooltipConfig,
+            modifier = Modifier.matchParentSize(),
+            content = crosshairContent,
+        )
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawLineCrosshairAndTooltip(
+    crosshairState: CrosshairState?,
+    tooltipManager: TooltipManager<Offset, LineData>,
+    lineConfig: LineChartConfig,
+    chartContext: ChartContext,
+    textMeasurer: TextMeasurer,
+    color: ChartyColor,
+    drawBubble: Boolean,
+    drawCrosshairLabel: Boolean,
+) {
+    crosshairState?.let { resolvedState ->
+        lineConfig.crosshairConfig?.let { crosshairConfig ->
+            drawLineChartCrosshair(
+                state = resolvedState,
+                config = crosshairConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+                chartColor = color,
+                drawLabel = drawCrosshairLabel,
+            )
         }
+    }
 
-        if (crosshairManager == null) {
-            tooltipManager.tooltipState?.let { state ->
-                drawLineChartTooltip(
-                    tooltipState = state,
-                    pointBounds = tooltipManager.bounds,
-                    color = color,
-                    lineConfig = lineConfig,
-                    chartContext = chartContext,
-                    textMeasurer = textMeasurer,
-                )
-            }
+    if (lineConfig.crosshairConfig == null) {
+        tooltipManager.tooltipState?.let { state ->
+            drawLineChartTooltip(
+                tooltipState = state,
+                pointBounds = tooltipManager.bounds,
+                color = color,
+                lineConfig = lineConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+                drawBubble = drawBubble,
+            )
         }
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawLineContent(
+private fun DrawScope.drawLineContent(
     pointPositions: List<Offset>,
     color: ChartyColor,
     lineConfig: LineChartConfig,

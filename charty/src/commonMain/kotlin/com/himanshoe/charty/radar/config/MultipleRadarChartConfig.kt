@@ -1,5 +1,6 @@
 package com.himanshoe.charty.radar.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 
@@ -25,6 +26,7 @@ private const val DEFAULT_STAGGER_DELAY = 0.15f
  * @param blendMode Blend mode for overlapping areas (NORMAL, ADDITIVE, MULTIPLY)
  * @param maxDataSets Maximum number of datasets to display (0 = unlimited)
  */
+@Stable
 data class MultipleRadarChartConfig(
     val radarConfig: RadarChartConfig = RadarChartConfig(),
     val showLegend: Boolean = false,

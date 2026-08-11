@@ -16,9 +16,9 @@ internal fun Modifier.comboChartClickHandler(
     comboConfig: ComboChartConfig,
     dataBounds: List<Pair<Rect, ComboChartData>>,
     onDataClick: (ComboChartData) -> Unit,
-    onTooltipStateChange: (TooltipState?) -> Unit,
-): Modifier {
-    return this.rectangularChartClickHandler(
+    onTooltipStateChange: (TooltipState?, ComboChartData?) -> Unit,
+): Modifier =
+    this.rectangularChartClickHandler(
         dataList = dataList,
         bounds = dataBounds,
         onItemClick = onDataClick,
@@ -31,5 +31,3 @@ internal fun Modifier.comboChartClickHandler(
             )
         },
     )
-}
-

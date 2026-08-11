@@ -85,13 +85,11 @@ fun DrawScope.drawHighlightedPoint(
     outerRadiusAddition: Float = 3f,
     innerRadiusAddition: Float = 2f,
 ) {
-    // Draw outer white circle
     drawCircle(
         color = Color.White,
         radius = pointRadius + outerRadiusAddition,
         center = center,
     )
-    // Draw inner colored circle
     drawCircle(
         brush = colorBrush,
         radius = pointRadius + innerRadiusAddition,
@@ -163,18 +161,17 @@ fun DrawScope.drawCircleWithOutline(
     outlineColor: Color,
     outlineWidth: Float = 2f,
 ) {
-    // Draw filled circle
     drawCircle(
         brush = fillBrush,
         radius = radius,
         center = center,
     )
-    // Draw outline
     drawCircle(
         color = outlineColor,
         radius = radius,
         center = center,
-        style = androidx.compose.ui.graphics.drawscope.Stroke(width = outlineWidth),
+        style =
+            androidx.compose.ui.graphics.drawscope
+                .Stroke(width = outlineWidth),
     )
 }
-

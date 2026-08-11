@@ -30,10 +30,11 @@ internal fun DrawScope.drawRingBackground(
         useCenter = false,
         topLeft = topLeft,
         size = size,
-        style = Stroke(
-            width = strokeWidth,
-            cap = config.strokeCap,
-        ),
+        style =
+            Stroke(
+                width = strokeWidth,
+                cap = config.strokeCap,
+            ),
     )
 }
 
@@ -51,13 +52,15 @@ internal fun DrawScope.drawRingProgress(
 ) {
     val topLeft = Offset(center.x - radius, center.y - radius)
     val size = Size(radius * CircularProgressConstants.TWO, radius * CircularProgressConstants.TWO)
-    val sweepAngle = ((progress / ring.maxValue) * CircularProgressConstants.FULL_CIRCLE_DEGREES)
-        .coerceIn(0f, CircularProgressConstants.FULL_CIRCLE_DEGREES)
-    val actualSweepAngle = if (config.ringDirection == RingDirection.CLOCKWISE) {
-        sweepAngle
-    } else {
-        -sweepAngle
-    }
+    val sweepAngle =
+        ((progress / ring.maxValue) * CircularProgressConstants.FULL_CIRCLE_DEGREES)
+            .coerceIn(0f, CircularProgressConstants.FULL_CIRCLE_DEGREES)
+    val actualSweepAngle =
+        if (config.ringDirection == RingDirection.CLOCKWISE) {
+            sweepAngle
+        } else {
+            -sweepAngle
+        }
 
     if (sweepAngle > 0f) {
         if (config.enableShadows && ring.shadowColor != null && ring.shadowRadius > 0f) {
@@ -78,10 +81,11 @@ internal fun DrawScope.drawRingProgress(
             useCenter = false,
             topLeft = topLeft,
             size = size,
-            style = Stroke(
-                width = strokeWidth,
-                cap = config.strokeCap,
-            ),
+            style =
+                Stroke(
+                    width = strokeWidth,
+                    cap = config.strokeCap,
+                ),
         )
     }
 }
@@ -107,17 +111,18 @@ private fun DrawScope.drawRingShadow(
             startAngle = config.startAngleDegrees + rotationAngle,
             sweepAngle = actualSweepAngle,
             useCenter = false,
-            topLeft = Offset(
-                topLeft.x - shadowExpand / CircularProgressConstants.TWO,
-                topLeft.y - shadowExpand / CircularProgressConstants.TWO,
-            ),
+            topLeft =
+                Offset(
+                    topLeft.x - shadowExpand / CircularProgressConstants.TWO,
+                    topLeft.y - shadowExpand / CircularProgressConstants.TWO,
+                ),
             size = Size(size.width + shadowExpand, size.height + shadowExpand),
-            style = Stroke(
-                width = strokeWidth + shadowExpand,
-                cap = config.strokeCap,
-            ),
+            style =
+                Stroke(
+                    width = strokeWidth + shadowExpand,
+                    cap = config.strokeCap,
+                ),
             blendMode = BlendMode.Multiply,
         )
     }
 }
-

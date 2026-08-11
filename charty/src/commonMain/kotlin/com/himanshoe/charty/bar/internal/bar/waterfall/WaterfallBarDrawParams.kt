@@ -14,4 +14,3 @@ internal data class WaterfallBarDrawParams(
     val brush: Brush,
     val bounds: Rect,
 )
-

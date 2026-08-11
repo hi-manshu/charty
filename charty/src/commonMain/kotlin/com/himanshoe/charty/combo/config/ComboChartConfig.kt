@@ -1,5 +1,6 @@
 package com.himanshoe.charty.combo.config
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.StrokeCap
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.combo.data.ComboChartData
@@ -29,6 +30,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param crosshairConfig When non-null, enables a draggable crosshair snapping to line points.
  *   Enabling this replaces tap-to-tooltip interaction.
  */
+@Stable
 data class ComboChartConfig(
     val barWidthFraction: Float = 0.6f,
     val barCornerRadius: CornerRadius = CornerRadius.Medium,

@@ -1,5 +1,8 @@
 package com.himanshoe.charty.point
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,9 +25,11 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
+import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
-import com.himanshoe.charty.common.gesture.rememberCrosshairManager
+import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -43,8 +48,6 @@ import com.himanshoe.charty.point.data.BubbleData
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param minBubbleRadius The minimum radius for a bubble in pixels.
  * @param onBubbleClick A lambda function invoked when a bubble is clicked.
- * @param crosshairConfig When non-null, enables a draggable crosshair snapping to the nearest bubble.
- *   Enabling this replaces tap-to-click interaction.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  *
  * Example usage:
@@ -70,19 +73,21 @@ fun BubbleChart(
     scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
     minBubbleRadius: Float = 10f,
     onBubbleClick: ((BubbleData) -> Unit)? = null,
-    crosshairConfig: ChartCrosshairConfig? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    crosshairContent: (@Composable (BubbleData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Bubble chart data cannot be empty" }
     require(minBubbleRadius > 0f) { "Minimum bubble radius must be positive" }
     require(config.pointRadius > minBubbleRadius) { "Max radius must be greater than min radius" }
+    val crosshairConfig = config.crosshairConfig
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
-    val crosshairManager: CrosshairManager? = if (crosshairConfig != null) rememberCrosshairManager() else null
+    val (crosshairManager, animatedCrosshairState) =
+        rememberChartCrosshair<BubbleData>(config.crosshairConfig != null)
     val sizeInfo = remember(dataList) { calculateBubbleSizeInfo(dataList) }
     val textMeasurer = rememberTextMeasurer()
 
@@ -90,9 +95,10 @@ fun BubbleChart(
 
     val animationProgress = rememberChartAnimation(config.animation)
 
-    val chartDescription = rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-        generateBubbleChartDescription(it)
-    }
+    val chartDescription =
+        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
+            generateBubbleChartDescription(it)
+        }
 
     syncInteractionDataSizes(
         viewPortState = interactionConfig.viewPortState,
@@ -101,63 +107,115 @@ fun BubbleChart(
         dataSize = dataList.size,
     )
 
-    val gestureBase = when {
-        crosshairManager != null -> Modifier.chartCrosshairHandler(
+    val gestureBase =
+        when {
+            crosshairManager != null ->
+                Modifier.chartCrosshairHandler(
+                    dataList = dataList,
+                    pointBounds = crosshairBounds,
+                    onCrosshairUpdate = crosshairManager::update,
+                    labelFormatter = { bubble -> "${bubble.label}: ${bubble.yValue}" },
+                    dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
+                )
+            else -> createBubbleClickModifier(dataList, bubbleBounds, onBubbleClick)
+        }
+    val chartModifier =
+        buildInteractionModifier(
+            base = modifier.then(gestureBase),
+            interactionConfig = interactionConfig,
             dataList = dataList,
-            pointBounds = crosshairBounds,
-            onCrosshairUpdate = crosshairManager::update,
-            labelFormatter = { bubble -> "${bubble.label}: ${bubble.yValue}" },
-            dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
         )
-        else -> createBubbleClickModifier(dataList, bubbleBounds, onBubbleClick)
-    }
-    val chartModifier = buildInteractionModifier(
-        base = modifier.then(gestureBase),
-        interactionConfig = interactionConfig,
-        dataList = dataList,
-    )
 
-    ChartScaffold(
-        modifier = chartModifier,
-        xLabels = dataList.fastMap { it.label },
-        yAxisConfig = AxisConfig(
-            minValue = sizeInfo.minValue,
-            maxValue = sizeInfo.maxValue,
-            steps = 6,
-            drawAxisAtZero = isBelowAxisMode,
-        ),
-        config = scaffoldConfig,
-        contentDescription = chartDescription,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.fastMap { it.label },
+            yAxisConfig =
+                AxisConfig(
+                    minValue = sizeInfo.minValue,
+                    maxValue = sizeInfo.maxValue,
+                    steps = 6,
+                    drawAxisAtZero = isBelowAxisMode,
+                ),
+            config = scaffoldConfig,
+            contentDescription = chartDescription,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig, chartContext)
 
-        bubbleBounds.clear()
-        crosshairBounds.clear()
-        if (crosshairManager != null) {
-            dataList.fastForEachIndexed { index, bubble ->
-                val x = chartContext.calculateCenteredXPosition(index, dataList.size)
-                crosshairBounds.add(Offset(x, chartContext.convertValueToYPosition(bubble.yValue)) to bubble)
+            bubbleBounds.clear()
+            crosshairBounds.clear()
+            if (crosshairManager != null) {
+                dataList.fastForEachIndexed { index, bubble ->
+                    val x = chartContext.calculateCenteredXPosition(index, dataList.size)
+                    crosshairBounds.add(Offset(x, chartContext.convertValueToYPosition(bubble.yValue)) to bubble)
+                }
             }
+
+            drawAllBubbles(
+                dataList = dataList,
+                chartContext = chartContext,
+                sizeInfo = sizeInfo,
+                minBubbleRadius = minBubbleRadius,
+                config = config,
+                color = color,
+                animationProgress = animationProgress.value,
+                onBubbleClick = if (crosshairManager == null) onBubbleClick else null,
+                bubbleBounds = bubbleBounds,
+            )
+
+            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+
+            drawBubbleCrosshair(
+                crosshairState = animatedCrosshairState,
+                crosshairConfig = crosshairConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+                color = color,
+                drawLabel = crosshairContent == null,
+            )
         }
 
-        drawAllBubbles(
-            dataList = dataList,
-            chartContext = chartContext,
-            sizeInfo = sizeInfo,
-            minBubbleRadius = minBubbleRadius,
+        BubbleChartOverlay(
+            crosshairManager = crosshairManager,
+            animatedCrosshairState = animatedCrosshairState,
+            crosshairConfig = crosshairConfig,
             config = config,
-            color = color,
-            animationProgress = animationProgress.value,
-            onBubbleClick = if (crosshairManager == null) onBubbleClick else null,
-            bubbleBounds = bubbleBounds,
+            crosshairContent = crosshairContent,
         )
+    }
+}
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+@Composable
+private fun BoxScope.BubbleChartOverlay(
+    crosshairManager: CrosshairManager<BubbleData>?,
+    animatedCrosshairState: CrosshairState?,
+    crosshairConfig: ChartCrosshairConfig?,
+    config: PointChartConfig,
+    crosshairContent: (@Composable (BubbleData) -> Unit)?,
+) {
+    if (crosshairContent != null && crosshairManager != null) {
+        ChartCrosshairOverlay(
+            item = crosshairManager.selectedItem,
+            state = animatedCrosshairState,
+            config = crosshairConfig?.tooltipConfig ?: config.tooltipConfig,
+            modifier = Modifier.matchParentSize(),
+            content = crosshairContent,
+        )
+    }
+}
 
-        crosshairManager?.state?.let { state ->
-            crosshairConfig?.let { cfg ->
-                drawLineChartCrosshair(state, cfg, chartContext, textMeasurer, color)
-            }
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawBubbleCrosshair(
+    crosshairState: CrosshairState?,
+    crosshairConfig: ChartCrosshairConfig?,
+    chartContext: ChartContext,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    color: ChartyColor,
+    drawLabel: Boolean,
+) {
+    crosshairState?.let { state ->
+        crosshairConfig?.let { cfg ->
+            drawLineChartCrosshair(state, cfg, chartContext, textMeasurer, color, drawLabel = drawLabel)
         }
     }
 }
@@ -180,18 +238,20 @@ private fun DrawScope.drawAllBubbles(
         val bubbleX = chartContext.calculateCenteredXPosition(index, dataList.size)
         val bubbleY = chartContext.convertValueToYPosition(bubble.yValue)
 
-        val bubbleRadius = calculateBubbleRadius(
-            bubble.size,
-            sizeInfo.minSize,
-            sizeInfo.sizeRange,
-            minBubbleRadius,
-            config.pointRadius,
-        )
+        val bubbleRadius =
+            calculateBubbleRadius(
+                bubble.size,
+                sizeInfo.minSize,
+                sizeInfo.sizeRange,
+                minBubbleRadius,
+                config.pointRadius,
+            )
 
-        val bubbleColor = when (color) {
-            is ChartyColor.Solid -> color.color
-            is ChartyColor.Gradient -> color.colors[index % color.colors.size]
-        }
+        val bubbleColor =
+            when (color) {
+                is ChartyColor.Solid -> color.color
+                is ChartyColor.Gradient -> color.colors[index % color.colors.size]
+            }
 
         if (bubbleAnimationProgress > 0f) {
             val center = Offset(bubbleX, bubbleY)

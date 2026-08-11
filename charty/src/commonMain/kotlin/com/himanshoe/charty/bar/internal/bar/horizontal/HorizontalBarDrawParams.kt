@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar.internal.bar.horizontal
 
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
@@ -21,5 +22,6 @@ internal data class HorizontalBarDrawParams(
     val maxValue: Float,
     val onBarClick: ((BarData) -> Unit)?,
     val onBarBoundCalculated: (Pair<Rect, BarData>) -> Unit,
+    val textMeasurer: TextMeasurer? = null,
+    val recordBounds: Boolean = onBarClick != null,
 )
-

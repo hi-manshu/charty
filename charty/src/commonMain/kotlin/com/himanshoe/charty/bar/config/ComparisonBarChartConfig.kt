@@ -1,6 +1,8 @@
 package com.himanshoe.charty.bar.config
 
+import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
@@ -13,6 +15,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @param barIndex The index of the clicked bar within the group
  * @param barValue The value of the clicked bar
  */
+@Stable
 data class ComparisonBarSegment(
     val barGroup: BarGroup,
     val barIndex: Int,
@@ -24,13 +27,16 @@ data class ComparisonBarSegment(
  *
  * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @param cornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
+ * @param animation Animation configuration (Disabled or Enabled with duration)
  * @param referenceLine Optional reference line configuration
  * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  */
+@Stable
 data class ComparisonBarChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val cornerRadius: CornerRadius = CornerRadius.Medium,
+    val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
