@@ -32,6 +32,7 @@ import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.point.config.PointChartConfig
@@ -68,7 +69,7 @@ fun BubbleChart(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     config: PointChartConfig = PointChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     minBubbleRadius: Float = 10f,
     onBubbleClick: ((BubbleData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),

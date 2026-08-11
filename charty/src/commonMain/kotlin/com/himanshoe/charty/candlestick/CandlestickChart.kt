@@ -29,6 +29,7 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
@@ -61,7 +62,7 @@ fun CandlestickChart(
     bullishColor: ChartyColor = ChartyColor.Solid(Color(CandlestickChartConstants.DEFAULT_BULLISH_COLOR)),
     bearishColor: ChartyColor = ChartyColor.Solid(Color(CandlestickChartConstants.DEFAULT_BEARISH_COLOR)),
     candlestickConfig: CandlestickChartConfig = CandlestickChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
     val fullDataList = remember(data) { data() }

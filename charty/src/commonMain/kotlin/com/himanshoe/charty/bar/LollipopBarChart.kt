@@ -26,6 +26,7 @@ import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -65,7 +66,7 @@ fun LollipopBarChart(
     modifier: Modifier = Modifier,
     colors: ChartyColor = ChartyColor.Solid(Color(DEFAULT_COLOR_HEX)),
     config: LollipopBarChartConfig = LollipopBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltipContent: (@Composable (BarData) -> Unit)? = null,

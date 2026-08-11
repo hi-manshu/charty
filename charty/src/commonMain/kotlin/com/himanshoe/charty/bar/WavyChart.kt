@@ -40,6 +40,7 @@ import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
@@ -98,7 +99,7 @@ fun WavyChart(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     wavyConfig: WavyChartConfig = WavyChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     crosshairConfig: ChartCrosshairConfig? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshairContent: (@Composable (BarData) -> Unit)? = null,

@@ -42,6 +42,7 @@ import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -107,7 +108,7 @@ fun MultilineChart(
     modifier: Modifier = Modifier,
     colors: ChartyColor = ChartyColors.DefaultMultiline,
     lineConfig: LineChartConfig = LineChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onPointClick: ((MultilinePoint) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshairContent: (@Composable (MultilinePoint) -> Unit)? = null,

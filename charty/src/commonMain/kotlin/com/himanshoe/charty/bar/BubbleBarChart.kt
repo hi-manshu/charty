@@ -31,6 +31,7 @@ import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -65,7 +66,7 @@ fun BubbleBarChart(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
     bubbleConfig: BubbleBarChartConfig = BubbleBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {

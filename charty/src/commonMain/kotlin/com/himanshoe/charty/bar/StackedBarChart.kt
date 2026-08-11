@@ -32,6 +32,7 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -77,7 +78,7 @@ fun StackedBarChart(
     modifier: Modifier = Modifier,
     colors: ChartyColor = ChartyColors.DefaultGradient,
     stackedConfig: StackedBarChartConfig = StackedBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onSegmentClick: ((StackedBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltipContent: (@Composable (StackedBarSegment) -> Unit)? = null,

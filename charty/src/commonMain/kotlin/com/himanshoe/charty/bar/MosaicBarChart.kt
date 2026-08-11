@@ -24,6 +24,7 @@ import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
@@ -62,7 +63,7 @@ fun MosaicBarChart(
     data: () -> List<BarGroup>,
     modifier: Modifier = Modifier,
     config: MosaicBarChartConfig = MosaicBarChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onSegmentClick: ((MosaicBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltipContent: (@Composable (MosaicBarSegment) -> Unit)? = null,

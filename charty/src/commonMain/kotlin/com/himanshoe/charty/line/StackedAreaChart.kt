@@ -44,6 +44,7 @@ import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -129,7 +130,7 @@ fun StackedAreaChart(
             ),
         ),
     lineConfig: LineChartConfig = LineChartConfig(),
-    scaffoldConfig: ChartScaffoldConfig = ChartScaffoldConfig(),
+    scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     fillAlpha: Float = 0.7f,
     onAreaClick: ((StackedAreaPoint) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
