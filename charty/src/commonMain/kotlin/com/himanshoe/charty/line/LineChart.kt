@@ -43,7 +43,7 @@ import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberVisibleData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -114,7 +114,7 @@ fun LineChart(
     val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList = rememberVisibleData(fullDataList, interactionConfig, lineConfig.downsampleThreshold) { it.value }
 
     val (minValue, maxValue) =
         rememberLineValueRange(

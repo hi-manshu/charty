@@ -11,6 +11,7 @@ import com.himanshoe.charty.common.annotation.drawChartAnnotation
 import com.himanshoe.charty.common.brush.BrushSelectionState
 import com.himanshoe.charty.common.brush.drawBrushSelection
 import com.himanshoe.charty.common.config.ChartInteractionConfig
+import com.himanshoe.charty.common.downsample.lttbDownsample
 import com.himanshoe.charty.common.draw.drawScrollEdgeFades
 import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
@@ -33,6 +34,50 @@ internal fun <T> rememberWindowedData(
             fullDataList.subList(range.first, range.last + 1)
         }
     }
+
+/**
+ * Remembers an LTTB-downsampled view of [dataList] when it exceeds [threshold] points, so charts stay
+ * at interactive frame rates on large series. When [threshold] is `null` or the list is already within
+ * budget, [dataList] is returned unchanged. See [lttbDownsample].
+ *
+ * @param dataList The (already windowed) points to draw.
+ * @param threshold Maximum points to render; `null` disables downsampling.
+ * @param value Extracts the y-value used to preserve the line's shape.
+ */
+@Composable
+internal fun <T> rememberDownsampledData(
+    dataList: List<T>,
+    threshold: Int?,
+    value: (T) -> Float,
+): List<T> =
+    remember(dataList, threshold) {
+        if (threshold == null || dataList.size <= threshold) {
+            dataList
+        } else {
+            lttbDownsample(data = dataList, threshold = threshold, value = value)
+        }
+    }
+
+/**
+ * Remembers the points a chart should actually draw: the viewport window of [fullDataList], then an
+ * LTTB downsample to [downsampleThreshold] points when the window is larger. This is the single entry
+ * point charts use so hit-testing and drawing share the exact same list.
+ *
+ * @param fullDataList The complete series.
+ * @param interactionConfig Supplies the viewport (windowing) state.
+ * @param downsampleThreshold Maximum points to render; `null` disables downsampling.
+ * @param value Extracts the y-value used to preserve the line's shape when downsampling.
+ */
+@Composable
+internal fun <T> rememberVisibleData(
+    fullDataList: List<T>,
+    interactionConfig: ChartInteractionConfig,
+    downsampleThreshold: Int?,
+    value: (T) -> Float,
+): List<T> {
+    val windowed = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    return rememberDownsampledData(windowed, downsampleThreshold, value)
+}
 
 /**
  * Remembers an auto-generated or caller-supplied chart accessibility description.

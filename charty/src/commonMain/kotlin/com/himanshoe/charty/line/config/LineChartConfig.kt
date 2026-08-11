@@ -17,6 +17,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.line.data.LineData
 
 private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
+private const val MIN_DOWNSAMPLE_THRESHOLD = 3
 
 /**
  * Configuration for [com.himanshoe.charty.line.LineChart],
@@ -68,6 +69,10 @@ private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
  *   [showGradientFill] is `true`.
  * @property fillAlpha Opacity of the filled area under the line in the range `[0, 1]`. Used by
  *   [com.himanshoe.charty.line.AreaChart] for its area fill. Has no effect on other chart types.
+ * @property downsampleThreshold When set, the visible series is reduced to at most this many points
+ *   with the shape-preserving LTTB algorithm before drawing, keeping large series (tens of thousands
+ *   of points) at interactive frame rates. `null` (the default) draws every point. Must be `>= 3`.
+ *   Applies to [com.himanshoe.charty.line.LineChart] and [com.himanshoe.charty.line.AreaChart].
  */
 @Stable
 data class LineChartConfig(
@@ -98,6 +103,7 @@ data class LineChartConfig(
     val showGradientFill: Boolean = false,
     val gradientFillAlpha: Float = 0.3f,
     val fillAlpha: Float = 0.3f,
+    val downsampleThreshold: Int? = null,
 ) {
     init {
         require(lineWidth > 0) { "Line width must be greater than 0" }
@@ -105,5 +111,8 @@ data class LineChartConfig(
         require(pointAlpha in 0f..1f) { "Point alpha must be between 0 and 1" }
         require(gradientFillAlpha in 0f..1f) { "gradientFillAlpha must be between 0 and 1" }
         require(fillAlpha in 0f..1f) { "fillAlpha must be between 0 and 1" }
+        require(downsampleThreshold == null || downsampleThreshold >= MIN_DOWNSAMPLE_THRESHOLD) {
+            "downsampleThreshold must be null or >= $MIN_DOWNSAMPLE_THRESHOLD"
+        }
     }
 }

@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlin.math.sin
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -1786,6 +1787,37 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             pointConfig =
                                 PointChartConfig(
                                     pointRadius = 8f,
+                                ),
+                        )
+                    }
+                }
+
+                // Large-dataset performance (LTTB downsampling)
+                item {
+                    ChartCard(
+                        title = "50,000 points (LTTB downsampling)",
+                        description = "A 50k-point series rendered smoothly by reducing it to 800 shape-preserving points via lineConfig.downsampleThreshold. Turn it off and the same data would stutter.",
+                    ) {
+                        val bigSeries =
+                            remember {
+                                List(50_000) { i ->
+                                    val noise = if (i % 500 == 0) 40f else 0f
+                                    LineData(
+                                        label = i.toString(),
+                                        value = 50f + 40f * sin(i / 250f) + noise,
+                                    )
+                                }
+                            }
+                        LineChart(
+                            modifier = Modifier.fillMaxWidth().height(250.dp),
+                            data = { bigSeries },
+                            color = ChartyColor.Solid(Color(0xFF3F51B5)),
+                            lineConfig =
+                                LineChartConfig(
+                                    lineWidth = 2f,
+                                    showPoints = false,
+                                    animation = Animation.Disabled,
+                                    downsampleThreshold = 800,
                                 ),
                         )
                     }
