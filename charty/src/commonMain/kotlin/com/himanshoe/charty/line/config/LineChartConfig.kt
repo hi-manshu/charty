@@ -7,6 +7,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
@@ -29,6 +30,7 @@ import com.himanshoe.charty.line.data.LineData
  * @property negativeValuesDrawMode Controls how bars below zero are rendered.
  * @property animation Entry animation played when the chart first appears.
  * @property referenceLine Optional horizontal or vertical reference line drawn across the chart.
+ * @property referenceBand Optional shaded value region drawn behind the data (see [ReferenceBandConfig]).
  * @property tooltipConfig Appearance of the tooltip bubble shown on tap. Only used when
  *   [crosshairConfig] is `null`; the crosshair has its own label config.
  * @property tooltipPosition Preferred placement of the tap tooltip relative to the tapped point.
@@ -58,6 +60,7 @@ data class LineChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
+    val referenceBand: ReferenceBandConfig? = null,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (LineData) -> String = { lineData ->

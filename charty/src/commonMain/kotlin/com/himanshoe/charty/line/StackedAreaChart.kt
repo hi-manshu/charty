@@ -25,6 +25,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartLegend
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
@@ -33,6 +34,7 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
@@ -273,6 +275,10 @@ private fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
     val baselineY = chartContext.bottom
     val startX = chartContext.left
     val seriesCount = dataList.getOrNull(0)?.values?.size ?: 0
+
+    lineConfig.referenceBand?.let { band ->
+        drawReferenceBand(chartContext, ChartOrientation.VERTICAL, band, textMeasurer)
+    }
 
     params.crosshairBounds?.let { bounds ->
         bounds.clear()

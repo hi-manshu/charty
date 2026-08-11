@@ -23,6 +23,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartLegend
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
@@ -31,6 +32,7 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
@@ -236,6 +238,9 @@ private fun BoxScope.MultilineChartOverlays(
 private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
     p.pointBounds.clear()
     p.crosshairBounds.clear()
+    p.lineConfig.referenceBand?.let { band ->
+        drawReferenceBand(p.chartContext, ChartOrientation.VERTICAL, band, p.textMeasurer)
+    }
     val seriesCount =
         p.dataList
             .getOrNull(0)

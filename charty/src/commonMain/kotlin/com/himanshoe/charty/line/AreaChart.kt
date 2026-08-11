@@ -19,6 +19,7 @@ import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -27,6 +28,7 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
@@ -168,6 +170,9 @@ fun AreaChart(
         ) { chartContext ->
             updateInteractionBounds(interactionConfig, chartContext)
             tooltipManager.clearBounds()
+            lineConfig.referenceBand?.let { band ->
+                drawReferenceBand(chartContext, ChartOrientation.VERTICAL, band, textMeasurer)
+            }
             val pointPositions = calculatePointPositions(dataList, chartContext) { tooltipManager.bounds.add(it) }
             val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
             drawAreaChart(

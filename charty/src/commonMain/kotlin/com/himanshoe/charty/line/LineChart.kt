@@ -24,6 +24,7 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
@@ -149,6 +150,10 @@ fun LineChart(
             updateInteractionBounds(interactionConfig, chartContext)
 
             tooltipManager.clearBounds()
+
+            lineConfig.referenceBand?.let { band ->
+                drawReferenceBand(chartContext, ChartOrientation.VERTICAL, band, textMeasurer)
+            }
 
             val pointPositions = chartContext.calculatePointPositions(dataList)
 
