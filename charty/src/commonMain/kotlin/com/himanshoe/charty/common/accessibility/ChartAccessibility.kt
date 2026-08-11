@@ -4,6 +4,7 @@ import androidx.compose.ui.util.fastFlatMap
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.block.data.BlockData
+import com.himanshoe.charty.calendar.data.CalendarData
 import com.himanshoe.charty.candlestick.data.CandleData
 import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.combo.data.ComboChartData
@@ -341,6 +342,26 @@ fun generateBlockBarDescription(data: List<BlockData>): String {
         largest?.let {
             val pct = if (total > 0f) ((it.value / total) * 100).toInt() else 0
             append("Largest segment: $pct% of total.")
+        }
+    }
+}
+
+/**
+ * Builds a screen-reader description for a calendar heatmap: the number of days with data and the
+ * busiest day (by value).
+ *
+ * @param data The calendar entries shown in the heatmap.
+ * @return A localized-English sentence describing the heatmap.
+ */
+fun generateCalendarHeatmapDescription(data: List<CalendarData>): String {
+    if (data.isEmpty()) {
+        return "Empty calendar heatmap."
+    }
+    val busiest = data.maxByOrNull { it.value }
+    return buildString {
+        append("Calendar heatmap, ${data.size} day${if (data.size == 1) "" else "s"} with data. ")
+        busiest?.let {
+            append("Busiest day: ${it.year}-${it.month}-${it.day} at ${it.value.toReadableString()}.")
         }
     }
 }

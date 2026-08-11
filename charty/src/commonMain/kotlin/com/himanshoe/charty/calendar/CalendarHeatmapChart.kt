@@ -17,6 +17,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -28,6 +30,7 @@ import com.himanshoe.charty.calendar.internal.computeGridLayout
 import com.himanshoe.charty.calendar.internal.drawCalendarGrid
 import com.himanshoe.charty.calendar.internal.drawDayLabels
 import com.himanshoe.charty.calendar.internal.drawMonthLabels
+import com.himanshoe.charty.common.accessibility.generateCalendarHeatmapDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -145,7 +148,10 @@ fun CalendarHeatmapChart(
     val cellBounds = remember { mutableListOf<Pair<Rect, CalendarData>>() }
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
 
-    val outerModifier = if (scrollEnabled) modifier.horizontalScroll(scrollState) else modifier
+    val chartDescription = remember(dataList) { generateCalendarHeatmapDescription(dataList) }
+    val outerModifier =
+        (if (scrollEnabled) modifier.horizontalScroll(scrollState) else modifier)
+            .semantics { contentDescription = chartDescription }
 
     Box(modifier = outerModifier) {
         if (gridLayout.totalWeeks == 0) {
