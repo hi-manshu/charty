@@ -31,7 +31,9 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -56,10 +58,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param onBarClick A lambda function invoked when a bar segment is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped
- *   [ComparisonBarSegment]. When `null`, the built-in tooltip configured via
- *   [comparisonConfig] is drawn instead.
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun ComparisonBarChart(
@@ -69,7 +69,7 @@ fun ComparisonBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((ComparisonBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (ComparisonBarSegment) -> Unit)? = null,
+    tooltip: ChartTooltip<ComparisonBarSegment> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
@@ -151,7 +151,7 @@ fun ComparisonBarChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
             )
-            if (tooltipContent == null) {
+            if (tooltip.isCanvas()) {
                 drawComparisonTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     comparisonConfig = comparisonConfig,
@@ -168,14 +168,11 @@ fun ComparisonBarChart(
             )
         }
 
-        if (tooltipContent != null) {
-            ChartTooltipOverlay(
-                item = tooltipManager.selectedItem,
-                anchor = tooltipManager.tooltipState,
-                config = comparisonConfig.tooltipConfig,
-                modifier = Modifier.matchParentSize(),
-                content = tooltipContent,
-            )
-        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }

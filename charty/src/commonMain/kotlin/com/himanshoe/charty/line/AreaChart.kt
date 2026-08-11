@@ -43,10 +43,12 @@ import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -104,8 +106,8 @@ private data class AreaChartDrawParams(
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param onPointClick A lambda function invoked when a point on the line is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped [LineData].
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun AreaChart(
@@ -122,7 +124,7 @@ fun AreaChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onPointClick: ((LineData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (LineData) -> Unit)? = null,
+    tooltip: ChartTooltip<LineData> = ChartTooltip.canvas(),
     crosshairContent: (@Composable (LineData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
@@ -199,7 +201,7 @@ fun AreaChart(
                     chartContext,
                     color,
                 )
-                if (tooltipContent == null) {
+                if (tooltip.isCanvas()) {
                     drawTooltipIfNeeded(tooltipManager.tooltipState, lineConfig, textMeasurer, chartContext)
                 }
             }
@@ -228,7 +230,7 @@ fun AreaChart(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             lineConfig = lineConfig,
-            tooltipContent = tooltipContent,
+            tooltip = tooltip,
             crosshairContent = crosshairContent,
         )
     }
@@ -240,18 +242,15 @@ private fun BoxScope.AreaChartOverlays(
     crosshairManager: CrosshairManager<LineData>?,
     animatedCrosshairState: CrosshairState?,
     lineConfig: LineChartConfig,
-    tooltipContent: (@Composable (LineData) -> Unit)?,
+    tooltip: ChartTooltip<LineData>,
     crosshairContent: (@Composable (LineData) -> Unit)?,
 ) {
-    if (tooltipContent != null) {
-        ChartTooltipOverlay(
-            item = tooltipManager.selectedItem,
-            anchor = tooltipManager.tooltipState,
-            config = lineConfig.tooltipConfig,
-            modifier = Modifier.matchParentSize(),
-            content = tooltipContent,
-        )
-    }
+    ChartTooltipHost(
+        tooltip = tooltip,
+        item = tooltipManager.selectedItem,
+        anchor = tooltipManager.tooltipState,
+        modifier = Modifier.matchParentSize(),
+    )
 
     if (crosshairContent != null && crosshairManager != null) {
         ChartCrosshairOverlay(

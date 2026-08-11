@@ -34,7 +34,9 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -51,22 +53,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig Chart scaffold configuration controlling axes, grid lines, and labels.
  * @param onBarClick Optional callback invoked when a bar is tapped.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped
- *   [GroupedHorizontalBarEntry].
- *
- * Example usage:
- * ```kotlin
- * GroupedHorizontalBarChart(
- *     data = {
- *         listOf(
- *             BarGroup(label = "North", values = listOf(120f, 85f, 60f)),
- *             BarGroup(label = "South", values = listOf(95f, 110f, 75f)),
- *         )
- *     },
- *     colors = ChartyColors.ModernPalette,
- * )
- * ```
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun GroupedHorizontalBarChart(
@@ -77,7 +65,7 @@ fun GroupedHorizontalBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((GroupedHorizontalBarEntry) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (GroupedHorizontalBarEntry) -> Unit)? = null,
+    tooltip: ChartTooltip<GroupedHorizontalBarEntry> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Grouped horizontal bar chart data cannot be empty" }
@@ -172,7 +160,7 @@ fun GroupedHorizontalBarChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
             )
-            if (tooltipContent == null) {
+            if (tooltip.isCanvas()) {
                 drawGroupedHorizontalTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     config = config,
@@ -189,14 +177,11 @@ fun GroupedHorizontalBarChart(
             )
         }
 
-        if (tooltipContent != null) {
-            ChartTooltipOverlay(
-                item = tooltipManager.selectedItem,
-                anchor = tooltipManager.tooltipState,
-                config = config.tooltipConfig,
-                modifier = Modifier.matchParentSize(),
-                content = tooltipContent,
-            )
-        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }

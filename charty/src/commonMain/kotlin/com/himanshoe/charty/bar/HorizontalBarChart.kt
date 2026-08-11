@@ -34,7 +34,9 @@ import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -55,26 +57,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param onBarClick A lambda function invoked when a bar is clicked, providing the corresponding
  *   [BarData].
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped [BarData].
- *
- * Example usage:
- * ```kotlin
- * HorizontalBarChart(
- *     data = {
- *         listOf(
- *             BarData(label = "Category A", value = 100f),
- *             BarData(label = "Category B", value = 150f),
- *             BarData(label = "Category C", value = 120f)
- *         )
- *     },
- *     color = ChartyColor.Solid(Color(0xFF2196F3)),
- *     barConfig = BarChartConfig(
- *         barWidthFraction = 0.6f,
- *         cornerRadius = CornerRadius.Large
- *     )
- * )
- * ```
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun HorizontalBarChart(
@@ -85,7 +69,7 @@ fun HorizontalBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (BarData) -> Unit)? = null,
+    tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Horizontal bar chart data cannot be empty" }
@@ -189,7 +173,7 @@ fun HorizontalBarChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
             )
-            if (tooltipContent == null) {
+            if (tooltip.isCanvas()) {
                 drawHorizontalTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     barConfig = barConfig,
@@ -206,14 +190,11 @@ fun HorizontalBarChart(
             )
         }
 
-        if (tooltipContent != null) {
-            ChartTooltipOverlay(
-                item = tooltipManager.selectedItem,
-                anchor = tooltipManager.tooltipState,
-                config = barConfig.tooltipConfig,
-                modifier = Modifier.matchParentSize(),
-                content = tooltipContent,
-            )
-        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }

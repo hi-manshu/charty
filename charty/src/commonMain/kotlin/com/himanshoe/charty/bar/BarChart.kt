@@ -38,7 +38,9 @@ import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -77,9 +79,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig Styling for the chart scaffold — axes, grid, and labels.
  * @param onBarClick Called with the [BarData] of the tapped bar. Pass `null` to disable.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped [BarData].
- *   When `null`, the built-in tooltip configured via [barConfig] is drawn instead.
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun BarChart(
@@ -90,7 +91,7 @@ fun BarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (BarData) -> Unit)? = null,
+    tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Bar chart data cannot be empty" }
@@ -195,7 +196,7 @@ fun BarChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
             )
-            if (tooltipContent == null) {
+            if (tooltip.isCanvas()) {
                 drawBarTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     barConfig = barConfig,
@@ -212,15 +213,12 @@ fun BarChart(
             )
         }
 
-        if (tooltipContent != null) {
-            ChartTooltipOverlay(
-                item = tooltipManager.selectedItem,
-                anchor = tooltipManager.tooltipState,
-                config = barConfig.tooltipConfig,
-                modifier = Modifier.matchParentSize(),
-                content = tooltipContent,
-            )
-        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }
 

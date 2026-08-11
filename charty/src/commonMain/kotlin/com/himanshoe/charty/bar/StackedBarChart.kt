@@ -33,7 +33,9 @@ import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -69,8 +71,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels
  * @param onSegmentClick Called when a stacked segment is clicked, providing the [StackedBarSegment].
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped [StackedBarSegment].
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun StackedBarChart(
@@ -81,7 +83,7 @@ fun StackedBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onSegmentClick: ((StackedBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (StackedBarSegment) -> Unit)? = null,
+    tooltip: ChartTooltip<StackedBarSegment> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
@@ -162,7 +164,7 @@ fun StackedBarChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
             )
-            if (tooltipContent == null) {
+            if (tooltip.isCanvas()) {
                 drawStackedTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     stackedConfig = stackedConfig,
@@ -179,14 +181,11 @@ fun StackedBarChart(
             )
         }
 
-        if (tooltipContent != null) {
-            ChartTooltipOverlay(
-                item = tooltipManager.selectedItem,
-                anchor = tooltipManager.tooltipState,
-                config = stackedConfig.tooltipConfig,
-                modifier = Modifier.matchParentSize(),
-                content = tooltipContent,
-            )
-        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }

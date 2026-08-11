@@ -31,7 +31,9 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -49,22 +51,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig Chart scaffold configuration controlling axes, grid lines, and labels.
  * @param onSegmentClick Optional callback invoked when a segment is tapped.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped
- *   [NormalizedHorizontalBarSegment].
- *
- * Example usage:
- * ```kotlin
- * NormalizedHorizontalBarChart(
- *     data = {
- *         listOf(
- *             BarGroup(label = "Strongly Agree", values = listOf(40f, 35f, 15f, 10f)),
- *             BarGroup(label = "Agree", values = listOf(30f, 40f, 20f, 10f)),
- *         )
- *     },
- *     colors = ChartyColors.DefaultGradient,
- * )
- * ```
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun NormalizedHorizontalBarChart(
@@ -75,7 +63,7 @@ fun NormalizedHorizontalBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onSegmentClick: ((NormalizedHorizontalBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (NormalizedHorizontalBarSegment) -> Unit)? = null,
+    tooltip: ChartTooltip<NormalizedHorizontalBarSegment> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Normalized horizontal bar chart data cannot be empty" }
@@ -140,7 +128,7 @@ fun NormalizedHorizontalBarChart(
                 ),
             )
 
-            if (tooltipContent == null) {
+            if (tooltip.isCanvas()) {
                 drawNormalizedHorizontalTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     config = config,
@@ -157,14 +145,11 @@ fun NormalizedHorizontalBarChart(
             )
         }
 
-        if (tooltipContent != null) {
-            ChartTooltipOverlay(
-                item = tooltipManager.selectedItem,
-                anchor = tooltipManager.tooltipState,
-                config = config.tooltipConfig,
-                modifier = Modifier.matchParentSize(),
-                content = tooltipContent,
-            )
-        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }

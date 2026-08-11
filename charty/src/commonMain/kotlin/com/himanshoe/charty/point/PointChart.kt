@@ -47,10 +47,12 @@ import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
@@ -278,7 +280,7 @@ fun PointChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onPointClick: ((PointData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (PointData) -> Unit)? = null,
+    tooltip: ChartTooltip<PointData> = ChartTooltip.canvas(),
     crosshairContent: (@Composable (PointData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
@@ -377,7 +379,7 @@ fun PointChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
-                drawBubble = tooltipContent == null,
+                drawBubble = tooltip.isCanvas(),
                 drawCrosshairLabel = crosshairContent == null,
             )
 
@@ -395,7 +397,7 @@ fun PointChart(
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             pointConfig = pointConfig,
             crosshairConfig = pointConfig.crosshairConfig,
-            tooltipContent = tooltipContent,
+            tooltip = tooltip,
             crosshairContent = crosshairContent,
         )
     }
@@ -408,18 +410,15 @@ private fun BoxScope.PointChartOverlays(
     animatedCrosshairState: CrosshairState?,
     pointConfig: PointChartConfig,
     crosshairConfig: ChartCrosshairConfig?,
-    tooltipContent: (@Composable (PointData) -> Unit)?,
+    tooltip: ChartTooltip<PointData>,
     crosshairContent: (@Composable (PointData) -> Unit)?,
 ) {
-    if (tooltipContent != null) {
-        ChartTooltipOverlay(
-            item = tooltipManager.selectedItem,
-            anchor = tooltipManager.tooltipState,
-            config = pointConfig.tooltipConfig,
-            modifier = Modifier.matchParentSize(),
-            content = tooltipContent,
-        )
-    }
+    ChartTooltipHost(
+        tooltip = tooltip,
+        item = tooltipManager.selectedItem,
+        anchor = tooltipManager.tooltipState,
+        modifier = Modifier.matchParentSize(),
+    )
 
     if (crosshairContent != null && crosshairManager != null) {
         ChartCrosshairOverlay(

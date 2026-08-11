@@ -32,7 +32,9 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.ChartTooltipOverlay
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -52,22 +54,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig Chart scaffold configuration controlling axes, grid lines, and labels.
  * @param onSegmentClick Optional callback invoked when a segment is tapped.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
- *   provided, it replaces the default canvas tooltip and is invoked with the tapped
- *   [StackedHorizontalBarSegment].
- *
- * Example usage:
- * ```kotlin
- * StackedHorizontalBarChart(
- *     data = {
- *         listOf(
- *             BarGroup(label = "Q1", values = listOf(20f, 30f, 15f)),
- *             BarGroup(label = "Q2", values = listOf(25f, 35f, 20f)),
- *         )
- *     },
- *     colors = ChartyColors.DefaultGradient,
- * )
- * ```
+ * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
+ *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
 @Composable
 fun StackedHorizontalBarChart(
@@ -78,7 +66,7 @@ fun StackedHorizontalBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onSegmentClick: ((StackedHorizontalBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    tooltipContent: (@Composable (StackedHorizontalBarSegment) -> Unit)? = null,
+    tooltip: ChartTooltip<StackedHorizontalBarSegment> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Stacked horizontal bar chart data cannot be empty" }
@@ -152,7 +140,7 @@ fun StackedHorizontalBarChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
             )
-            if (tooltipContent == null) {
+            if (tooltip.isCanvas()) {
                 drawStackedHorizontalTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     config = config,
@@ -169,14 +157,11 @@ fun StackedHorizontalBarChart(
             )
         }
 
-        if (tooltipContent != null) {
-            ChartTooltipOverlay(
-                item = tooltipManager.selectedItem,
-                anchor = tooltipManager.tooltipState,
-                config = config.tooltipConfig,
-                modifier = Modifier.matchParentSize(),
-                content = tooltipContent,
-            )
-        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }
