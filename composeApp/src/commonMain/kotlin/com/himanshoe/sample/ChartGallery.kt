@@ -433,6 +433,22 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             LineData(label = "Thu", value = 70f),
             LineData(label = "Fri", value = 55f),
         )
+    val lineSigned =
+        listOf(
+            LineData(label = "Mon", value = 25f),
+            LineData(label = "Tue", value = -18f),
+            LineData(label = "Wed", value = 12f),
+            LineData(label = "Thu", value = -30f),
+            LineData(label = "Fri", value = 40f),
+        )
+    val pointsSigned =
+        listOf(
+            PointData(label = "A", value = 30f),
+            PointData(label = "B", value = -20f),
+            PointData(label = "C", value = 15f),
+            PointData(label = "D", value = -12f),
+            PointData(label = "E", value = 45f),
+        )
     val points =
         listOf(
             PointData(label = "A", value = 30f),
@@ -789,6 +805,21 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             blue,
             listOf(
                 ChartVariant("Straight") { LineChart(data = { line }, modifier = chartFill) },
+                ChartVariant("Negative values (below axis)") {
+                    LineChart(data = { lineSigned }, modifier = chartFill)
+                },
+                ChartVariant("Negative values (from min)") {
+                    LineChart(
+                        data = {
+                            lineSigned
+                        },
+                        lineConfig =
+                            LineChartConfig(
+                                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+                            ),
+                        modifier = chartFill,
+                    )
+                },
                 ChartVariant("Tap a point (onPointClick)") {
                     var selected by remember { mutableStateOf<String?>(null) }
                     SelectionColumn(hint = "Tap a point", selected = selected) { chartModifier ->
@@ -907,6 +938,9 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             blue,
             listOf(
                 ChartVariant("Default") { PointChart(data = { points }, modifier = chartFill) },
+                ChartVariant("Negative values (below axis)") {
+                    PointChart(data = { pointsSigned }, modifier = chartFill)
+                },
                 ChartVariant("Tap a point (onPointClick)") {
                     var selected by remember { mutableStateOf<String?>(null) }
                     SelectionColumn(hint = "Tap a point", selected = selected) { chartModifier ->
