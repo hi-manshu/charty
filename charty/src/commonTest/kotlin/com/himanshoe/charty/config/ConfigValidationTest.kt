@@ -8,7 +8,7 @@ import kotlin.test.assertFailsWith
 class ConfigValidationTest {
     @Test
     fun lineChartConfig_defaults_areValid() {
-        LineChartConfig() // must not throw
+        LineChartConfig()
     }
 
     @Test

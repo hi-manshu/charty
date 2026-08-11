@@ -5,9 +5,9 @@ import androidx.compose.runtime.Immutable
 /**
  * Data class representing a combined bar and line chart entry
  *
- * @param label The label for this data point (displayed on X-axis)
- * @param barValue The value for the bar visualization
- * @param lineValue The value for the line visualization
+ * @property label The label for this data point (displayed on X-axis)
+ * @property barValue The value for the bar visualization
+ * @property lineValue The value for the line visualization
  */
 @Immutable
 data class ComboChartData(

@@ -71,6 +71,19 @@ private data class MultilineDrawParams(
 /**
  * A composable function that displays a multiline chart.
  *
+ * Example:
+ * ```kotlin
+ * MultilineChart(
+ *     data = {
+ *         listOf(
+ *             LineGroup("Jan", listOf(20f, 12f)),
+ *             LineGroup("Feb", listOf(45f, 30f)),
+ *             LineGroup("Mar", listOf(30f, 25f)),
+ *         )
+ *     },
+ * )
+ * ```
+ *
  * @param data A lambda function that returns a list of [LineGroup].
  * @param modifier The modifier to be applied to the chart.
  * @param colors The color or color scheme for the lines.

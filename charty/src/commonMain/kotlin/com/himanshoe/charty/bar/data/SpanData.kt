@@ -6,10 +6,10 @@ import com.himanshoe.charty.color.ChartyColor
 /**
  * Data class representing a span (range) in a span chart
  *
- * @param label The label displayed on Y-axis for this span row
- * @param startValue The starting value of the span
- * @param endValue The ending value of the span
- * @param color Optional color for this specific span. If null, uses the chart's default color scheme
+ * @property label The label displayed on Y-axis for this span row
+ * @property startValue The starting value of the span
+ * @property endValue The ending value of the span
+ * @property color Optional color for this specific span. If null, uses the chart's default color scheme
  */
 @Immutable
 data class SpanData(

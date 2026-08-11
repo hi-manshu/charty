@@ -61,6 +61,20 @@ private data class WaveDrawContext(
 /**
  * Wavy Chart - Bar-like chart with animated sine wave lines for each bar.
  *
+ * Example:
+ * ```kotlin
+ * WavyChart(
+ *     data = {
+ *         listOf(
+ *             BarData("Mon", 20f),
+ *             BarData("Tue", 35f),
+ *             BarData("Wed", 28f),
+ *         )
+ *     },
+ *     color = ChartyColor.Solid(ChartyColors.Blue),
+ * )
+ * ```
+ *
  * @param data Lambda returning list of bar data to display.
  * @param modifier Modifier for the chart.
  * @param color Color for the wave lines.

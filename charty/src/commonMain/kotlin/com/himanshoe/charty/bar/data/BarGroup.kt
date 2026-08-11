@@ -6,9 +6,9 @@ import com.himanshoe.charty.color.ChartyColor
 /**
  * Data class representing a group of bars in a grouped bar chart
  *
- * @param label The label displayed on X-axis for this group
- * @param values The list of values for bars in this group
- * @param colors Optional list of colors for each value. If provided, must match the size of values.
+ * @property label The label displayed on X-axis for this group
+ * @property values The list of values for bars in this group
+ * @property colors Optional list of colors for each value. If provided, must match the size of values.
  *               If null, uses the chart's default color scheme
  */
 @Immutable

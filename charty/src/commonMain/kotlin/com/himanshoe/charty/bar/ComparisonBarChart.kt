@@ -38,6 +38,18 @@ import com.himanshoe.charty.common.updateInteractionBounds
 /**
  * A composable function that displays a comparison bar chart.
  *
+ * Example:
+ * ```kotlin
+ * ComparisonBarChart(
+ *     data = {
+ *         listOf(
+ *             BarGroup("Q1", listOf(120f, 90f)),
+ *             BarGroup("Q2", listOf(150f, 110f)),
+ *         )
+ *     },
+ * )
+ * ```
+ *
  * @param data A lambda function that returns a list of [BarGroup].
  * @param modifier The modifier to be applied to the chart.
  * @param comparisonConfig The configuration for the comparison bar chart.

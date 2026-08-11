@@ -36,15 +36,11 @@ private const val ZERO_VALUE = 0f
  * @return A formatted string representation of the value.
  */
 internal fun formatAxisLabel(value: Float): String {
-    // toLong (not toInt) avoids overflow for integer-valued magnitudes above Int.MAX_VALUE.
     if (value % MODULO_CHECK_ZERO == ZERO_VALUE) return value.toLong().toString()
 
     val rounded = round(value * ROUNDING_MULTIPLIER) / ROUNDING_MULTIPLIER
     val str = rounded.toString()
 
-    // Guard against platform scientific notation (e.g. "1.5E7"), which the slice logic would mangle
-    // into "1.5E" and which also renders differently on JVM vs JS/Wasm: fall back to the rounded
-    // integer form. Otherwise trim to at most two decimal places.
     return when {
         str.any { it == 'e' || it == 'E' } -> rounded.toLong().toString()
         else -> {

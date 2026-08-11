@@ -6,9 +6,9 @@ import com.himanshoe.charty.color.ChartyColor
 /**
  * Data class representing a single axis/dimension in a radar chart
  *
- * @param label The label for this axis (e.g., "Speed", "Power", "Defense")
- * @param value The value for this axis (should be between 0 and maxValue)
- * @param maxValue Maximum value for this axis (default: 100f)
+ * @property label The label for this axis (e.g., "Speed", "Power", "Defense")
+ * @property value The value for this axis (should be between 0 and maxValue)
+ * @property maxValue Maximum value for this axis (default: 100f)
  */
 @Immutable
 data class RadarAxisData(
@@ -37,10 +37,10 @@ data class RadarAxisData(
  * Data class representing a complete dataset for radar chart
  * (a polygon connecting all axis values)
  *
- * @param label Label for this dataset (e.g., "Player 1", "Model A")
- * @param axes List of axis data points
- * @param color Color for this dataset's polygon and line
- * @param fillAlpha Alpha transparency for the filled polygon (0.0 to 1.0)
+ * @property label Label for this dataset (e.g., "Player 1", "Model A")
+ * @property axes List of axis data points
+ * @property color Color for this dataset's polygon and line
+ * @property fillAlpha Alpha transparency for the filled polygon (0.0 to 1.0)
  */
 @Immutable
 data class RadarDataSet(

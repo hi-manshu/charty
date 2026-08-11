@@ -126,8 +126,6 @@ fun CircularProgressIndicator(
                         onRingClick = onRingClick,
                     ),
         ) {
-            // Read the infinite rotation State here, inside the Canvas draw lambda, so the
-            // perpetual animation invalidates draw only — not composition (deferred read).
             drawRingsContent(ringsList, config, animatedProgress, rotationAngle.value)
         }
         when {

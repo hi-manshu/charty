@@ -20,7 +20,6 @@ class ChartyColorTest {
 
     @Test
     fun gradient_rejectsEmptyColorList() {
-        // regression: an empty gradient previously crashed at ~47 draw sites via .first()/Brush
         assertFailsWith<IllegalArgumentException> { ChartyColor.Gradient(emptyList()) }
     }
 }

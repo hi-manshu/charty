@@ -6,12 +6,12 @@ import androidx.compose.runtime.Immutable
  * Data class representing a single candlestick in a candlestick chart
  * Commonly used for financial/stock market data visualization
  *
- * @param label The label displayed on X-axis (e.g., date/time)
- * @param open Opening price/value
- * @param high Highest price/value in the period
- * @param low Lowest price/value in the period
- * @param close Closing price/value
- * @param volume Optional volume data for this period
+ * @property label The label displayed on X-axis (e.g., date/time)
+ * @property open Opening price/value
+ * @property high Highest price/value in the period
+ * @property low Lowest price/value in the period
+ * @property close Closing price/value
+ * @property volume Optional volume data for this period
  */
 @Immutable
 data class CandleData(

@@ -7,9 +7,9 @@ import com.himanshoe.charty.common.data.ChartDataPoint
 /**
  * Data class representing a single bar in a bar chart
  *
- * @param label The label displayed on X-axis
- * @param value The value of the bar (determines height)
- * @param color Optional color for this specific bar. If null, uses the chart's default color scheme
+ * @property label The label displayed on X-axis
+ * @property value The value of the bar (determines height)
+ * @property color Optional color for this specific bar. If null, uses the chart's default color scheme
  */
 @Immutable
 data class BarData(

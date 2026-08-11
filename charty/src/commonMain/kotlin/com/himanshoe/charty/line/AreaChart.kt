@@ -78,6 +78,20 @@ private data class AreaChartDrawParams(
 /**
  * A composable function that displays an area chart.
  *
+ * Example:
+ * ```kotlin
+ * AreaChart(
+ *     data = {
+ *         listOf(
+ *             LineData("Jan", 20f),
+ *             LineData("Feb", 45f),
+ *             LineData("Mar", 30f),
+ *         )
+ *     },
+ *     color = ChartyColor.Solid(ChartyColors.Blue),
+ * )
+ * ```
+ *
  * @param data A lambda function that returns a list of [LineData] points to be displayed.
  * @param modifier The modifier to be applied to the chart.
  * @param color The color or color scheme for the filled area.

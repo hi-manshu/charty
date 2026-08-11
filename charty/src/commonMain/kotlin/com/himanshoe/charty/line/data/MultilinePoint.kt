@@ -5,10 +5,10 @@ import androidx.compose.runtime.Immutable
 /**
  * Represents a point in a multiline chart that was clicked
  *
- * @param lineGroup The line group containing this point
- * @param seriesIndex The index of the line series (0 = first line, 1 = second line, etc.)
- * @param dataIndex The index of the data point within the line
- * @param value The value at this point
+ * @property lineGroup The line group containing this point
+ * @property seriesIndex The index of the line series (0 = first line, 1 = second line, etc.)
+ * @property dataIndex The index of the data point within the line
+ * @property value The value at this point
  */
 @Immutable
 data class MultilinePoint(

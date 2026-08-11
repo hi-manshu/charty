@@ -72,6 +72,25 @@ private const val CLICK_TOLERANCE_MULTIPLIER = 2f
 /**
  * A composable function that displays a multiple radar chart, which can show overlapping datasets with an optional legend.
  *
+ * Example:
+ * ```kotlin
+ * MultipleRadarChart(
+ *     dataSets = {
+ *         listOf(
+ *             RadarDataSet(
+ *                 label = "Player 1",
+ *                 axes = listOf(
+ *                     RadarAxisData("Speed", 80f),
+ *                     RadarAxisData("Power", 60f),
+ *                     RadarAxisData("Defense", 70f),
+ *                 ),
+ *                 color = ChartyColor.Solid(ChartyColors.Blue),
+ *             ),
+ *         )
+ *     },
+ * )
+ * ```
+ *
  * @param dataSets A lambda function that provides the datasets to be rendered.
  * @param modifier The modifier to be applied to the composable root.
  * @param config The visual and behavioral configuration for the chart, defined by a [MultipleRadarChartConfig].

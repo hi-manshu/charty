@@ -75,6 +75,18 @@ private data class StackedAreaDrawParams(
 /**
  * A composable function that displays a stacked area chart.
  *
+ * Example:
+ * ```kotlin
+ * StackedAreaChart(
+ *     data = {
+ *         listOf(
+ *             LineGroup("Jan", listOf(10f, 20f, 5f)),
+ *             LineGroup("Feb", listOf(15f, 18f, 8f)),
+ *         )
+ *     },
+ * )
+ * ```
+ *
  * @param data A lambda function that returns a list of [LineGroup].
  * @param modifier The modifier to be applied to the chart.
  * @param colors The color or color scheme for the stacked areas.

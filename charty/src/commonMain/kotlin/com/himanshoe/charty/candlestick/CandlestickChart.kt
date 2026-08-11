@@ -35,6 +35,18 @@ import com.himanshoe.charty.common.updateInteractionBounds
 /**
  * A composable function that displays a candlestick chart.
  *
+ * Example:
+ * ```kotlin
+ * CandlestickChart(
+ *     data = {
+ *         listOf(
+ *             CandleData("Mon", open = 100f, high = 110f, low = 95f, close = 105f),
+ *             CandleData("Tue", open = 105f, high = 112f, low = 102f, close = 103f),
+ *         )
+ *     },
+ * )
+ * ```
+ *
  * @param data A lambda function that returns a list of [CandleData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
  * @param bullishColor The color for bullish candles.

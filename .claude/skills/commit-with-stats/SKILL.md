@@ -20,6 +20,9 @@ project convention for the Charty library. Follow every step; do not skip the ve
 5. **Public-API gate.** If the staged change touches public API under `charty/src`, the
    `public-api-guard` skill's three gates (KDoc, test, performance matrix) must pass first —
    see step 0.
+6. **Comment gate.** The staged diff must not add inline `//` comments that restate the code (see
+   the `code-comments` skill). Rationale belongs in KDoc, not inline. Check with the grep in that
+   skill and remove any noise comments before committing.
 
 ## Steps
 

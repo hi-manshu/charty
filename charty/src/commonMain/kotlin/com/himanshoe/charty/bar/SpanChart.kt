@@ -40,6 +40,18 @@ import com.himanshoe.charty.common.updateInteractionBounds
 /**
  * Span Chart - Display ranges/spans horizontally across categories
  *
+ * Example:
+ * ```kotlin
+ * SpanChart(
+ *     data = {
+ *         listOf(
+ *             SpanData("Task A", startValue = 1f, endValue = 5f),
+ *             SpanData("Task B", startValue = 3f, endValue = 8f),
+ *         )
+ *     },
+ * )
+ * ```
+ *
  * @param data Lambda returning list of span data to display
  * @param modifier Modifier for the chart
  * @param colors Color configuration

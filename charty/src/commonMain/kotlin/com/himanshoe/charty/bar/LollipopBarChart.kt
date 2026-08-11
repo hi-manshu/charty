@@ -36,6 +36,20 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
 /**
  * A composable function that displays a lollipop bar chart.
  *
+ * Example:
+ * ```kotlin
+ * LollipopBarChart(
+ *     data = {
+ *         listOf(
+ *             BarData("Jan", 40f),
+ *             BarData("Feb", 65f),
+ *             BarData("Mar", 50f),
+ *         )
+ *     },
+ *     colors = ChartyColor.Solid(ChartyColors.Blue),
+ * )
+ * ```
+ *
  * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
  * @param colors The color or color scheme for the stems and circles.

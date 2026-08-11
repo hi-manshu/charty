@@ -31,8 +31,6 @@ internal fun DrawScope.drawMosaicBars(
     groups.fastForEachIndexed { groupIndex, group ->
         val barX = chartContext.calculateBarLeftPosition(groupIndex, groups.size, config.barWidthFraction)
         val barWidth = chartContext.calculateBarWidth(groups.size, config.barWidthFraction)
-        // Normalize over positive values only (matching NormalizedHorizontalBarChart); a mixed-sign
-        // group otherwise understates the denominator and overflows the bar.
         val total =
             group.values
                 .fastFilter { it > 0f }
@@ -70,7 +68,7 @@ private fun DrawScope.drawMosaicBarSegments(
     var currentTop = chartBottom
 
     group.values.fastForEachIndexed { segmentIndex, value ->
-        if (value <= 0f) return@fastForEachIndexed // skip non-positive segments (part-to-whole)
+        if (value <= 0f) return@fastForEachIndexed
         val fraction = (value / total).coerceIn(MIN_PERCENTAGE, 1f)
         val fullHeight = chartHeight * fraction
         val animatedHeight = fullHeight * animationProgress

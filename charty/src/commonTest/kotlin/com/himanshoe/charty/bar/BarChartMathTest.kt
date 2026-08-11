@@ -12,8 +12,6 @@ import kotlin.test.assertTrue
 private const val TOL = 0.001f
 
 class BarChartMathTest {
-    // --- barValueRange: mode is honored (was previously ignored) ---
-
     @Test
     fun barValueRange_belowAxis_clampsPositiveMinToZero() {
         val (min, max) = barValueRange(listOf(15f, 65f), NegativeValuesDrawMode.BELOW_AXIS)
@@ -24,7 +22,7 @@ class BarChartMathTest {
     @Test
     fun barValueRange_fromMinValue_keepsRealMinForPositiveData() {
         val (min, max) = barValueRange(listOf(15f, 65f), NegativeValuesDrawMode.FROM_MIN_VALUE)
-        assertEquals(10f, min, TOL) // axis starts at the lowest value, not zero
+        assertEquals(10f, min, TOL)
         assertEquals(70f, max, TOL)
     }
 
@@ -35,8 +33,6 @@ class BarChartMathTest {
         assertEquals(-10f, below.first, TOL)
         assertEquals(-10f, fromMin.first, TOL)
     }
-
-    // --- calculateVerticalBarDimensions: negative bars never get negative height in FROM_MIN_VALUE ---
 
     @Test
     fun verticalBarDimensions_belowAxisNegative_drawsDownwardFromBaseline() {
@@ -54,7 +50,6 @@ class BarChartMathTest {
 
     @Test
     fun verticalBarDimensions_fromMinValueNegative_growsUpwardWithPositiveHeight() {
-        // regression: negative value in FROM_MIN_VALUE mode must NOT produce a negative height
         val (top, height) =
             calculateVerticalBarDimensions(
                 isNegative = true,
@@ -78,11 +73,9 @@ class BarChartMathTest {
                 barValueY = 40f,
                 animationProgress = 0.5f,
             )
-        assertEquals(70f, top, TOL) // 100 - 30
-        assertEquals(30f, height, TOL) // (100-40) * 0.5
+        assertEquals(70f, top, TOL)
+        assertEquals(30f, height, TOL)
     }
-
-    // --- calculateHorizontalBaselineX: zero-range guard ---
 
     @Test
     fun horizontalBaselineX_zeroRange_returnsLeft() {

@@ -5,10 +5,10 @@ import androidx.compose.runtime.Immutable
 /**
  * Data class for Bubble Chart points
  *
- * @param label The category or label for this bubble
- * @param xValue The X-axis value (optional, defaults to index position)
- * @param yValue The Y-axis value
- * @param size The size/magnitude of the bubble (will be normalized for rendering)
+ * @property label The category or label for this bubble
+ * @property xValue The X-axis value (optional, defaults to index position)
+ * @property yValue The Y-axis value
+ * @property size The size/magnitude of the bubble (will be normalized for rendering)
  */
 @Immutable
 data class BubbleData(

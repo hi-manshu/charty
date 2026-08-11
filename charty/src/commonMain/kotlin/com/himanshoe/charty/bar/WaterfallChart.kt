@@ -34,6 +34,20 @@ import com.himanshoe.charty.common.updateInteractionBounds
 /**
  * Waterfall Chart - visualizes cumulative effect of sequential gains/losses.
  *
+ * Example:
+ * ```kotlin
+ * WaterfallChart(
+ *     data = {
+ *         listOf(
+ *             BarData("Start", 100f),
+ *             BarData("Sales", 40f),
+ *             BarData("Costs", -30f),
+ *             BarData("End", 110f),
+ *         )
+ *     },
+ * )
+ * ```
+ *
  * @param data Lambda returning list of bar data to display
  * @param modifier Modifier for the chart
  * @param config Configuration for waterfall chart appearance

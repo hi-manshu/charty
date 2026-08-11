@@ -38,6 +38,20 @@ import com.himanshoe.charty.common.updateInteractionBounds
 /**
  * A composable function that displays a bubble bar chart.
  *
+ * Example:
+ * ```kotlin
+ * BubbleBarChart(
+ *     data = {
+ *         listOf(
+ *             BarData("Mon", 12f),
+ *             BarData("Tue", 18f),
+ *             BarData("Wed", 9f),
+ *         )
+ *     },
+ *     color = ChartyColor.Solid(ChartyColors.Blue),
+ * )
+ * ```
+ *
  * @param data A lambda function that returns a list of [BarData] to be displayed in the chart.
  * @param modifier The modifier to be applied to the chart.
  * @param color The color or color scheme for the bubbles.

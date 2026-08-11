@@ -22,8 +22,6 @@ private const val DEFAULT_DASH_INTERVAL = 10f
 private const val DASH_PHASE_OFFSET = 0f
 private const val CENTER_DIVISOR = 2f
 
-// Hoisted so the common (default-dash) case allocates no PathEffect per draw; reference lines can
-// redraw every frame during animations/crosshair drags.
 private val DEFAULT_DASH_PATH_EFFECT =
     PathEffect.dashPathEffect(floatArrayOf(DEFAULT_DASH_INTERVAL, DEFAULT_DASH_INTERVAL), DASH_PHASE_OFFSET)
 

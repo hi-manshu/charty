@@ -5,11 +5,11 @@ import androidx.compose.runtime.Immutable
 /**
  * Represents an area segment in a stacked area chart that was clicked
  *
- * @param lineGroup The line group containing this segment
- * @param seriesIndex The index of the area series (0 = bottom area, 1 = next area, etc.)
- * @param dataIndex The index of the data point within the area
- * @param value The value of this segment (not cumulative)
- * @param cumulativeValue The cumulative value at this point
+ * @property lineGroup The line group containing this segment
+ * @property seriesIndex The index of the area series (0 = bottom area, 1 = next area, etc.)
+ * @property dataIndex The index of the data point within the area
+ * @property value The value of this segment (not cumulative)
+ * @property cumulativeValue The cumulative value at this point
  */
 @Immutable
 data class StackedAreaPoint(

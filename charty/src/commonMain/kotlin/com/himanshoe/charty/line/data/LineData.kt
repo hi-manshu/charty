@@ -6,8 +6,8 @@ import com.himanshoe.charty.common.data.ChartDataPoint
 /**
  * Data class representing a point in a line chart
  *
- * @param label The label for this point (displayed on X-axis)
- * @param value The Y-value of the point
+ * @property label The label for this point (displayed on X-axis)
+ * @property value The Y-value of the point
  */
 @Immutable
 data class LineData(

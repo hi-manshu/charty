@@ -35,6 +35,19 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * Each bar represents a category whose segments are normalized to 100% of
  * the bar height, similar to a mosaic / 100% stacked bar chart.
  *
+ * Example:
+ * ```kotlin
+ * MosaicBarChart(
+ *     data = {
+ *         listOf(
+ *             BarGroup("2023", listOf(30f, 50f, 20f)),
+ *             BarGroup("2024", listOf(45f, 35f, 20f)),
+ *         )
+ *     },
+ *     config = MosaicBarChartConfig(),
+ * )
+ * ```
+ *
  * @param data Lambda returning list of bar groups to display
  * @param modifier Modifier for the chart
  * @param config Configuration for mosaic chart appearance

@@ -61,8 +61,6 @@ private data class PieChartContentParams(
     val sliceColors: List<ChartyColor>,
     val total: Float,
     val config: PieChartConfig,
-    // Held as Animatables (not their .value) so the entry + selection animations are read inside the
-    // Canvas draw lambda — a deferred read that invalidates draw only, not composition.
     val animationProgress: Animatable<Float, *>,
     val selectedSliceIndex: Int?,
     val selectedScale: Animatable<Float, *>,
