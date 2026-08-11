@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartOrientation
@@ -65,7 +64,6 @@ internal fun DrawScope.drawBubbleBars(params: BubbleBarDrawParams) {
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawReferenceLineIfNeeded(params: BubbleBarDrawParams) {
     params.bubbleConfig.referenceLine?.let { referenceLineConfig ->
         drawReferenceLine(
@@ -77,7 +75,6 @@ internal fun DrawScope.drawReferenceLineIfNeeded(params: BubbleBarDrawParams) {
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawTooltipIfNeeded(
     params: BubbleBarDrawParams,
     tooltipState: com.himanshoe.charty.common.tooltip.TooltipState?,

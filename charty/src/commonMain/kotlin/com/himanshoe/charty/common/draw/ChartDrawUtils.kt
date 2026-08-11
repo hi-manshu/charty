@@ -1,12 +1,9 @@
-@file:OptIn(ExperimentalTextApi::class)
-
 package com.himanshoe.charty.common.draw
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation

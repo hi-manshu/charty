@@ -17,7 +17,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -96,7 +95,6 @@ private const val DOW_FRI_MONDAY_START = 4
  * )
  * ```
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun CalendarHeatmapChart(
     data: () -> List<CalendarData>,

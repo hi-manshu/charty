@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -93,7 +92,6 @@ private data class WaveDrawContext(
  *   provided (and a crosshair is configured via [crosshairConfig]), it replaces the default canvas
  *   crosshair label and is invoked with the [BarData] under the dragging finger.
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun WavyChart(
     data: () -> List<BarData>,

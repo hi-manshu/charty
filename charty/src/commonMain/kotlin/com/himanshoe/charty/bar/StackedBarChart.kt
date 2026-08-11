@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastMap
@@ -72,7 +71,6 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
  *   provided, it replaces the default canvas tooltip and is invoked with the tapped [StackedBarSegment].
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun StackedBarChart(
     data: () -> List<BarGroup>,

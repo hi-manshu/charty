@@ -7,7 +7,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
@@ -52,7 +51,6 @@ internal data class BarDrawParams(
 /**
  * Draw the bars on the chart
  */
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawBars(params: BarDrawParams) {
     val dataList = params.dataList
     val chartContext = params.chartContext
@@ -125,7 +123,6 @@ internal fun DrawScope.drawBars(params: BarDrawParams) {
 /**
  * Draw the reference line if configured
  */
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawBarReferenceLineIfNeeded(
     barConfig: BarChartConfig,
     chartContext: ChartContext,
@@ -142,7 +139,6 @@ internal fun DrawScope.drawBarReferenceLineIfNeeded(
 /**
  * Draw the tooltip if the state is not null
  */
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawBarTooltipIfNeeded(
     tooltipState: TooltipState?,
     barConfig: BarChartConfig,

@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -76,7 +75,6 @@ import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
  * )
  * ```
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun LineChart(
     data: () -> List<LineData>,
@@ -231,7 +229,6 @@ private fun BoxScope.LineChartOverlays(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 private fun DrawScope.drawLineCrosshairAndTooltip(
     crosshairState: CrosshairState?,
     tooltipManager: TooltipManager<Offset, LineData>,

@@ -17,7 +17,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastFlatMap
@@ -115,7 +114,6 @@ private fun calculateStackedCumulativeValues(dataList: List<LineGroup>): List<Fl
  *   provided (and a crosshair is configured via [lineConfig]), it replaces the default canvas
  *   crosshair label and is invoked with the [LineGroup] under the dragging finger.
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun StackedAreaChart(
     data: () -> List<LineGroup>,

@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BarChartConfig
@@ -62,7 +61,6 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
  *   provided, it replaces the default canvas tooltip and is invoked with the tapped [SpanData].
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun SpanChart(
     data: () -> List<SpanData>,

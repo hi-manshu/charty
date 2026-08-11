@@ -6,7 +6,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
@@ -172,7 +171,6 @@ private fun DrawScope.drawGroupedHorizontalBar(
     drawPath(path, brush)
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawGroupedHorizontalReferenceLineIfNeeded(
     config: GroupedHorizontalBarChartConfig,
     chartContext: ChartContext,
@@ -186,7 +184,6 @@ internal fun DrawScope.drawGroupedHorizontalReferenceLineIfNeeded(
     )
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawGroupedHorizontalTooltipIfNeeded(
     tooltipState: TooltipState?,
     config: GroupedHorizontalBarChartConfig,

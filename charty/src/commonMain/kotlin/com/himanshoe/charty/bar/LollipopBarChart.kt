@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
@@ -60,7 +59,6 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
  * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
  *   provided, it replaces the default canvas tooltip and is invoked with the tapped [BarData].
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun LollipopBarChart(
     data: () -> List<BarData>,

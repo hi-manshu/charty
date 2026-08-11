@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastAll
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
@@ -61,7 +60,6 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *   [ComparisonBarSegment]. When `null`, the built-in tooltip configured via
  *   [comparisonConfig] is drawn instead.
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun ComparisonBarChart(
     data: () -> List<BarGroup>,

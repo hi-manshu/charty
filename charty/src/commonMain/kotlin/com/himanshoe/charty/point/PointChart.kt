@@ -10,7 +10,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastFirstOrNull
@@ -229,7 +228,6 @@ private fun DrawScope.drawTooltipHighlight(
  * )
  * ```
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun PointChart(
     data: () -> List<PointData>,
@@ -388,7 +386,6 @@ private fun BoxScope.PointChartOverlays(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 private fun DrawScope.drawPointTooltipAndCrosshair(
     crosshairState: CrosshairState?,
     tooltipManager: TooltipManager<Offset, PointData>,

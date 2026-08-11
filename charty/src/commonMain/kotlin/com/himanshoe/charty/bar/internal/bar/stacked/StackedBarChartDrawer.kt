@@ -7,7 +7,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
@@ -22,7 +21,6 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 
 private const val DATA_LABEL_PADDING = 4f
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawStackedBars(params: StackedBarDrawParams) {
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
         val barX =
@@ -151,7 +149,6 @@ private fun DrawScope.drawStackedSegment(
     drawPath(path, brush)
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawStackedReferenceLineIfNeeded(
     stackedConfig: StackedBarChartConfig,
     chartContext: ChartContext,
@@ -165,7 +162,6 @@ internal fun DrawScope.drawStackedReferenceLineIfNeeded(
     )
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawStackedTooltipIfNeeded(
     tooltipState: TooltipState?,
     stackedConfig: StackedBarChartConfig,

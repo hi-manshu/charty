@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
@@ -55,7 +54,6 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun CandlestickChart(
     data: () -> List<CandleData>,

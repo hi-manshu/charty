@@ -7,7 +7,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
@@ -20,7 +19,6 @@ import com.himanshoe.charty.common.tooltip.drawTooltip
 
 private const val DATA_LABEL_PADDING = 4f
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
     val range = params.maxValue - params.minValue
     if (range == 0f) return
@@ -95,7 +93,6 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawHorizontalReferenceLineIfNeeded(
     barConfig: BarChartConfig,
     chartContext: ChartContext,
@@ -111,7 +108,6 @@ internal fun DrawScope.drawHorizontalReferenceLineIfNeeded(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawHorizontalTooltipIfNeeded(
     tooltipState: TooltipState?,
     barConfig: BarChartConfig,

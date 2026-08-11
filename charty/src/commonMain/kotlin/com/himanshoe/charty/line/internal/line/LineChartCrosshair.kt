@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
@@ -33,7 +32,6 @@ private const val DOT_OUTER_PADDING = 2f
  * @param drawLabel When `false`, the value label bubble is suppressed (lines and dot are still
  *   drawn). Used when a custom composable crosshair label replaces the canvas one.
  */
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawLineChartCrosshair(
     state: CrosshairState,
     config: ChartCrosshairConfig,

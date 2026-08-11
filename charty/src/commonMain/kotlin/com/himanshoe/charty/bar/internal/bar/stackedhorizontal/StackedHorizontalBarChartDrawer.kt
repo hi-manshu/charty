@@ -6,7 +6,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.StackedHorizontalBarChartConfig
@@ -155,7 +154,6 @@ private fun DrawScope.drawStackedHorizontalSegment(
     drawPath(path, brush)
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawStackedHorizontalReferenceLineIfNeeded(
     config: StackedHorizontalBarChartConfig,
     chartContext: ChartContext,
@@ -169,7 +167,6 @@ internal fun DrawScope.drawStackedHorizontalReferenceLineIfNeeded(
     )
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawStackedHorizontalTooltipIfNeeded(
     tooltipState: TooltipState?,
     config: StackedHorizontalBarChartConfig,

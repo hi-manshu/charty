@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
@@ -102,7 +101,6 @@ private data class AreaChartDrawParams(
  * @param tooltipContent An optional composable slot for rendering a custom tooltip layout. When
  *   provided, it replaces the default canvas tooltip and is invoked with the tapped [LineData].
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun AreaChart(
     data: () -> List<LineData>,
@@ -438,7 +436,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipHighligh
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipIfNeeded(
     tooltipState: TooltipState?,
     lineConfig: LineChartConfig,

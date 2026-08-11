@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -116,7 +115,6 @@ private data class ComboDrawParams(
  * )
  * ```
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun ComboChart(
     data: () -> List<ComboChartData>,

@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
@@ -63,7 +62,6 @@ import com.himanshoe.charty.point.data.BubbleData
  * )
  * ```
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun BubbleChart(
     data: () -> List<BubbleData>,
@@ -204,7 +202,6 @@ private fun BoxScope.BubbleChartOverlay(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 private fun DrawScope.drawBubbleCrosshair(
     crosshairState: CrosshairState?,
     crosshairConfig: ChartCrosshairConfig?,

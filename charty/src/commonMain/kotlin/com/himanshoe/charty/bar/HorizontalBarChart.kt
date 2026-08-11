@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BarChartConfig
@@ -77,7 +76,6 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * )
  * ```
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun HorizontalBarChart(
     data: () -> List<BarData>,

@@ -6,7 +6,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
@@ -166,7 +165,6 @@ private fun DrawScope.drawComparisonRoundedBar(
     drawPath(path, brush)
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawComparisonReferenceLineIfNeeded(
     comparisonConfig: ComparisonBarChartConfig,
     chartContext: ChartContext,
@@ -180,7 +178,6 @@ internal fun DrawScope.drawComparisonReferenceLineIfNeeded(
     )
 }
 
-@OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawComparisonTooltipIfNeeded(
     tooltipState: TooltipState?,
     comparisonConfig: ComparisonBarChartConfig,

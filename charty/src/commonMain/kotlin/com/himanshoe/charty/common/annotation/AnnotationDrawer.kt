@@ -5,7 +5,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -29,7 +28,6 @@ private val DASH_EFFECT = PathEffect.dashPathEffect(DASH_INTERVALS)
  * @param totalItems The total number of data items in the chart (used to calculate x position).
  * @param textMeasurer A [TextMeasurer] for measuring and drawing the label text.
  */
-@OptIn(ExperimentalTextApi::class)
 fun DrawScope.drawChartAnnotation(
     annotation: ChartAnnotation,
     chartContext: ChartContext,

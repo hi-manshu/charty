@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
@@ -100,7 +99,6 @@ private data class MultilineDrawParams(
  *   provided (and a crosshair is configured via [lineConfig]), it replaces the default canvas
  *   crosshair label and is invoked with the [MultilinePoint] under the dragging finger.
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun MultilineChart(
     data: () -> List<LineGroup>,
@@ -235,7 +233,6 @@ private fun BoxScope.MultilineChartOverlays(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
     p.pointBounds.clear()
     p.crosshairBounds.clear()

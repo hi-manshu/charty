@@ -4,7 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -23,7 +22,6 @@ import com.himanshoe.charty.common.ext.drawVerticalChartAxes
  * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
  * @param leftLabelRotation The rotation for the labels on the left axis.
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 internal fun DrawAxisAndLabels(
     xLabels: List<String>,
