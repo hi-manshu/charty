@@ -1241,6 +1241,31 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         modifier = chartFill,
                     )
                 },
+                ChartVariant("Tap an axis (onAxisClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap an axis", selected = selected) { chartModifier ->
+                        RadarChart(
+                            data = {
+                                listOf(
+                                    RadarDataSet(
+                                        label = "Player",
+                                        axes =
+                                            listOf(
+                                                RadarAxisData(label = "Speed", value = 80f),
+                                                RadarAxisData(label = "Power", value = 65f),
+                                                RadarAxisData(label = "Skill", value = 90f),
+                                                RadarAxisData(label = "Stamina", value = 70f),
+                                                RadarAxisData(label = "Defense", value = 55f),
+                                            ),
+                                        color = ChartyColor.Solid(blue),
+                                    ),
+                                )
+                            },
+                            onAxisClick = { axis, _ -> selected = "${axis.label} = ${axis.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant("Warm profile") {
                     RadarChart(
                         data = {

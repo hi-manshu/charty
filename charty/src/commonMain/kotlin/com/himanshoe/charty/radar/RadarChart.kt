@@ -1,6 +1,7 @@
 package com.himanshoe.charty.radar
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -11,6 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextMeasurer
@@ -25,13 +27,17 @@ import com.himanshoe.charty.common.accessibility.generateRadarChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.config.RadarGridStyle
+import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
 import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
 private const val FULL_CIRCLE_DEGREES = 360f
+private const val HALF_CIRCLE_DEGREES = 180f
 private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
 
 /**
@@ -50,6 +56,8 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  * @param modifier The modifier to be applied to the chart.
  * @param config The configuration for the radar chart's appearance, defined by a [RadarChartConfig].
  * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an empty string to suppress it.
+ * @param onAxisClick Invoked with the [RadarAxisData] and index of the axis nearest the tap (a tap
+ *   anywhere along an axis selects it). Pass `null` (default) to disable click handling.
  *
  * Example usage:
  * ```kotlin
@@ -86,6 +94,7 @@ fun RadarChart(
     modifier: Modifier = Modifier,
     config: RadarChartConfig = RadarChartConfig(),
     accessibilityDescription: String? = null,
+    onAxisClick: ((axis: RadarAxisData, index: Int) -> Unit)? = null,
 ) {
     val dataSets = remember(data) { data() }
     require(dataSets.isNotEmpty()) { "Radar chart data cannot be empty" }
@@ -113,7 +122,26 @@ fun RadarChart(
     val textMeasurer = rememberTextMeasurer()
     val axisLabels = remember(dataSets) { dataSets.first().axes.fastMap { it.label } }
 
-    BoxWithConstraints(modifier = modifier.then(semanticsModifier)) {
+    val clickModifier =
+        if (onAxisClick != null) {
+            Modifier.pointerInput(dataSets, onAxisClick) {
+                detectTapGestures { offset ->
+                    val index =
+                        nearestRadarAxisIndex(
+                            offset = offset,
+                            width = size.width.toFloat(),
+                            height = size.height.toFloat(),
+                            startAngleDegrees = config.startAngleDegrees,
+                            numberOfAxes = numberOfAxes,
+                        )
+                    onAxisClick(dataSets.first().axes[index], index)
+                }
+            }
+        } else {
+            Modifier
+        }
+
+    BoxWithConstraints(modifier = modifier.then(semanticsModifier).then(clickModifier)) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val centerX = size.width / 2f
             val centerY = size.height / 2f
@@ -187,6 +215,33 @@ private fun DrawScope.drawCircularGrid(
         center = center,
         style = Stroke(width = gridLineWidth),
     )
+}
+
+/**
+ * Returns the index of the radar axis whose direction is closest to [offset] (measured from the
+ * chart centre), so a tap anywhere along an axis selects it — matching the vertex angle formula used
+ * when drawing (`startAngle + 360 * i / n`).
+ */
+internal fun nearestRadarAxisIndex(
+    offset: Offset,
+    width: Float,
+    height: Float,
+    startAngleDegrees: Float,
+    numberOfAxes: Int,
+): Int {
+    val tapAngle = atan2(offset.y - height / 2f, offset.x - width / 2f) / DEGREES_TO_RADIANS
+    var bestIndex = 0
+    var bestDelta = Float.MAX_VALUE
+    for (i in 0 until numberOfAxes) {
+        val axisAngle = startAngleDegrees + FULL_CIRCLE_DEGREES * i / numberOfAxes
+        val wrapped = (tapAngle - axisAngle) % FULL_CIRCLE_DEGREES + FULL_CIRCLE_DEGREES + HALF_CIRCLE_DEGREES
+        val delta = abs(wrapped % FULL_CIRCLE_DEGREES - HALF_CIRCLE_DEGREES)
+        if (delta < bestDelta) {
+            bestDelta = delta
+            bestIndex = i
+        }
+    }
+    return bestIndex
 }
 
 private fun DrawScope.drawPolygonGrid(
