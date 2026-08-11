@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapIndexed
@@ -31,6 +32,7 @@ import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.drawSelectionColumnIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
@@ -177,6 +179,18 @@ fun LineChart(
                     tooltipManager.bounds.add(position to dataList[index])
                 }
             }
+
+            drawSelectionColumnIfNeeded(
+                enabled = lineConfig.highlightSelectedColumn,
+                selectedX =
+                    tooltipManager.bounds
+                        .fastFirstOrNull { it.second == tooltipManager.selectedItem }
+                        ?.first
+                        ?.x,
+                columnWidth = lineConfig.selectionColumnWidth ?: (chartContext.width / dataList.size),
+                color = lineConfig.selectionColumnColor,
+                chartContext = chartContext,
+            )
 
             drawLineContent(
                 pointPositions = pointPositions,

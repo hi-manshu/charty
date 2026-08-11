@@ -1,7 +1,9 @@
 package com.himanshoe.charty.point.config
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
@@ -10,6 +12,8 @@ import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.point.data.PointData
+
+private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
 
 /**
  * Configuration for Point Chart appearance and behavior
@@ -29,6 +33,13 @@ import com.himanshoe.charty.point.data.PointData
  * @property crosshairConfig When non-null, enables a draggable crosshair that tracks the user's finger
  *   and snaps to the nearest point. When set, it replaces the standard tap-to-tooltip interaction.
  *   Applies to [com.himanshoe.charty.point.PointChart] and [com.himanshoe.charty.point.BubbleChart].
+ * @property highlightSelectedColumn When `true`, a translucent vertical band is drawn behind the
+ *   selected point's column while a tap selection is active. Toggle it off to disable the highlight.
+ * @property selectionColumnColor Fill of the selection-column highlight as a [ChartyColor] (solid or
+ *   gradient). Use a semi-transparent color — the alpha channel controls the opacity. Only used when
+ *   [highlightSelectedColumn] is `true`.
+ * @property selectionColumnWidth Width of the highlight band in pixels. When `null` (default) the
+ *   per-point column width is used. Only used when [highlightSelectedColumn] is `true`.
  */
 @Stable
 data class PointChartConfig(
@@ -46,6 +57,9 @@ data class PointChartConfig(
         "${pointData.label}: ${pointData.value}"
     },
     val crosshairConfig: ChartCrosshairConfig? = null,
+    val highlightSelectedColumn: Boolean = false,
+    val selectionColumnColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_SELECTION_COLUMN_ARGB)),
+    val selectionColumnWidth: Float? = null,
 ) {
     init {
         require(pointRadius > 0) { "Point radius must be greater than 0" }

@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
@@ -14,6 +15,8 @@ import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.line.data.LineData
+
+private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
 
 /**
  * Configuration for [com.himanshoe.charty.line.LineChart],
@@ -44,6 +47,13 @@ import com.himanshoe.charty.line.data.LineData
  * @property crosshairConfig When non-null, enables a draggable [ChartCrosshairConfig] that
  *   tracks the user's finger and snaps to the nearest data point. When set, it replaces the
  *   standard tap-to-tooltip interaction.
+ * @property highlightSelectedColumn When `true`, a translucent vertical band is drawn behind the
+ *   selected point's column while a tap selection is active. Toggle it off to disable the highlight.
+ * @property selectionColumnColor Fill of the selection-column highlight as a [ChartyColor] (solid or
+ *   gradient). Use a semi-transparent color — the alpha channel controls the opacity. Only used when
+ *   [highlightSelectedColumn] is `true`.
+ * @property selectionColumnWidth Width of the highlight band in pixels. When `null` (default) the
+ *   per-point column width is used. Only used when [highlightSelectedColumn] is `true`.
  * @property legendLabels Series labels shown in the legend below the chart. Pass an empty list
  *   (the default) to hide the legend. For [com.himanshoe.charty.line.MultilineChart] and
  *   [com.himanshoe.charty.line.StackedAreaChart], each entry maps to a series by index.
@@ -75,6 +85,9 @@ data class LineChartConfig(
         "${lineData.label}: ${lineData.value}"
     },
     val crosshairConfig: ChartCrosshairConfig? = null,
+    val highlightSelectedColumn: Boolean = false,
+    val selectionColumnColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_SELECTION_COLUMN_ARGB)),
+    val selectionColumnWidth: Float? = null,
     val legendLabels: List<String> = emptyList(),
     val legendTextStyle: TextStyle = TextStyle(fontSize = 12.sp, color = Color.Unspecified),
     val showGradientFill: Boolean = false,

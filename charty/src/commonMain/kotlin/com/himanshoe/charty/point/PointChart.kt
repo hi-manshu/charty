@@ -30,6 +30,7 @@ import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.drawSelectionColumnIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
@@ -109,12 +110,26 @@ private fun DrawScope.drawAllPoints(
     pointBounds: MutableList<Pair<Offset, PointData>>,
     addToBounds: Boolean,
     textMeasurer: TextMeasurer,
+    selectedItem: PointData?,
 ) {
     drawReferenceBandIfNeeded(
         referenceBandConfig = pointConfig.referenceBand,
         chartContext = chartContext,
         orientation = ChartOrientation.VERTICAL,
         textMeasurer = textMeasurer,
+    )
+    val selectedIndex = selectedItem?.let { dataList.indexOf(it) } ?: -1
+    drawSelectionColumnIfNeeded(
+        enabled = pointConfig.highlightSelectedColumn,
+        selectedX =
+            if (selectedIndex >= 0) {
+                chartContext.calculateCenteredXPosition(index = selectedIndex, totalItems = dataList.size)
+            } else {
+                null
+            },
+        columnWidth = pointConfig.selectionColumnWidth ?: (chartContext.width / dataList.size),
+        color = pointConfig.selectionColumnColor,
+        chartContext = chartContext,
     )
     dataList.fastForEachIndexed { index, point ->
         drawPointWithAnimation(
@@ -344,6 +359,7 @@ fun PointChart(
                 pointBounds = tooltipManager.bounds,
                 addToBounds = onPointClick != null || crosshairManager != null,
                 textMeasurer = textMeasurer,
+                selectedItem = tooltipManager.selectedItem,
             )
 
             drawReferenceLineIfNeeded(

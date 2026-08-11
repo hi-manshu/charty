@@ -825,6 +825,7 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                     SelectionColumn(hint = "Tap a point", selected = selected) { chartModifier ->
                         LineChart(
                             data = { line },
+                            lineConfig = LineChartConfig(highlightSelectedColumn = true),
                             onPointClick = { point -> selected = "${point.label} = ${point.value}" },
                             modifier = chartModifier,
                         )
@@ -946,6 +947,7 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                     SelectionColumn(hint = "Tap a point", selected = selected) { chartModifier ->
                         PointChart(
                             data = { points },
+                            pointConfig = PointChartConfig(highlightSelectedColumn = true),
                             onPointClick = { point -> selected = "${point.label} = ${point.value}" },
                             modifier = chartModifier,
                         )
