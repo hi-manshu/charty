@@ -46,7 +46,7 @@ import com.himanshoe.charty.common.gesture.createPointTooltipState
 import com.himanshoe.charty.common.gesture.pointChartClickHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberVisibleData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -296,7 +296,7 @@ fun PointChart(
     val effectiveCrosshairConfig = crosshair?.config ?: pointConfig.crosshairConfig
     val activeCrosshair = crosshair ?: pointConfig.crosshairConfig?.let { ChartCrosshair<PointData>(config = it) }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList = rememberVisibleData(fullDataList, interactionConfig, pointConfig.downsampleThreshold) { it.value }
 
     val (minValue, maxValue) =
         remember(dataList, pointConfig.negativeValuesDrawMode) {

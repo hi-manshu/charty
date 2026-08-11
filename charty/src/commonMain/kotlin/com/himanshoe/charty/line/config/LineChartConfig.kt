@@ -72,7 +72,10 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  * @property downsampleThreshold When set, the visible series is reduced to at most this many points
  *   with the shape-preserving LTTB algorithm before drawing, keeping large series (tens of thousands
  *   of points) at interactive frame rates. `null` (the default) draws every point. Must be `>= 3`.
- *   Applies to [com.himanshoe.charty.line.LineChart] and [com.himanshoe.charty.line.AreaChart].
+ *   Applies to [com.himanshoe.charty.line.LineChart], [com.himanshoe.charty.line.AreaChart],
+ *   [com.himanshoe.charty.line.MultilineChart], and [com.himanshoe.charty.line.StackedAreaChart].
+ *   For the multi-series charts, selection is driven by the per-x sum of all series so every series
+ *   keeps the same x-indices and stays aligned.
  */
 @Stable
 data class LineChartConfig(

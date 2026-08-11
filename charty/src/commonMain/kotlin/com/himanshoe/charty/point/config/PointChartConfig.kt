@@ -14,6 +14,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.point.data.PointData
 
 private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
+private const val MIN_DOWNSAMPLE_THRESHOLD = 3
 
 /**
  * Configuration for Point Chart appearance and behavior
@@ -40,6 +41,9 @@ private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
  *   [highlightSelectedColumn] is `true`.
  * @property selectionColumnWidth Width of the highlight band in pixels. When `null` (default) the
  *   per-point column width is used. Only used when [highlightSelectedColumn] is `true`.
+ * @property downsampleThreshold When set, the visible points are reduced to at most this many with
+ *   the shape-preserving LTTB algorithm before drawing, keeping large series (tens of thousands of
+ *   points) at interactive frame rates. `null` (the default) draws every point. Must be `>= 3`.
  */
 @Stable
 data class PointChartConfig(
@@ -60,9 +64,13 @@ data class PointChartConfig(
     val highlightSelectedColumn: Boolean = false,
     val selectionColumnColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_SELECTION_COLUMN_ARGB)),
     val selectionColumnWidth: Float? = null,
+    val downsampleThreshold: Int? = null,
 ) {
     init {
         require(pointRadius > 0) { "Point radius must be greater than 0" }
         require(pointAlpha in 0f..1f) { "Point alpha must be between 0 and 1" }
+        require(downsampleThreshold == null || downsampleThreshold >= MIN_DOWNSAMPLE_THRESHOLD) {
+            "downsampleThreshold must be null or >= $MIN_DOWNSAMPLE_THRESHOLD"
+        }
     }
 }
