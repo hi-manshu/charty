@@ -16,5 +16,5 @@ internal fun rememberBarValueRange(
     negativeValuesDrawMode: NegativeValuesDrawMode,
 ): Pair<Float, Float> =
     remember(dataList, negativeValuesDrawMode) {
-        barValueRange(dataList.getValues(), negativeValuesDrawMode)
+        barValueRange(values = dataList.getValues(), negativeValuesDrawMode = negativeValuesDrawMode)
     }

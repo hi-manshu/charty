@@ -60,8 +60,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * GroupedHorizontalBarChart(
  *     data = {
  *         listOf(
- *             BarGroup("North", listOf(120f, 85f, 60f)),
- *             BarGroup("South", listOf(95f, 110f, 75f)),
+ *             BarGroup(label = "North", values = listOf(120f, 85f, 60f)),
+ *             BarGroup(label = "South", values = listOf(95f, 110f, 75f)),
  *         )
  *     },
  *     colors = ChartyColors.ModernPalette,
@@ -83,7 +83,7 @@ fun GroupedHorizontalBarChart(
     require(fullDataList.isNotEmpty()) { "Grouped horizontal bar chart data cannot be empty" }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val state =
         rememberGroupedHorizontalState(
@@ -100,10 +100,10 @@ fun GroupedHorizontalBarChart(
     val textMeasurer = rememberTextMeasurer()
 
     syncInteractionDataSizes(
-        interactionConfig.viewPortState,
-        interactionConfig.brushSelectionState,
-        fullDataList.size,
-        dataList.size,
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
     )
 
     val clickModifier =
@@ -129,10 +129,10 @@ fun GroupedHorizontalBarChart(
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =
                 createGroupedHorizontalAxisConfig(
-                    state.minValue,
-                    state.maxValue,
-                    state.axisSteps,
-                    drawAxisAtZero,
+                    minValue = state.minValue,
+                    maxValue = state.maxValue,
+                    steps = state.axisSteps,
+                    drawAxisAtZero = drawAxisAtZero,
                 ),
             config = scaffoldConfig,
             orientation = ChartOrientation.HORIZONTAL,
@@ -140,7 +140,7 @@ fun GroupedHorizontalBarChart(
                 interactionConfig.accessibilityDescription
                     ?: "Grouped horizontal bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
             val baselineX =
@@ -167,12 +167,26 @@ fun GroupedHorizontalBarChart(
                 ),
             )
 
-            drawGroupedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
+            drawGroupedHorizontalReferenceLineIfNeeded(
+                config = config,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
             if (tooltipContent == null) {
-                drawGroupedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+                drawGroupedHorizontalTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    config = config,
+                    textMeasurer = textMeasurer,
+                    chartContext = chartContext,
+                )
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

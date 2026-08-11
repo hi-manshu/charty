@@ -41,8 +41,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * MosaicBarChart(
  *     data = {
  *         listOf(
- *             BarGroup("2023", listOf(30f, 50f, 20f)),
- *             BarGroup("2024", listOf(45f, 35f, 20f)),
+ *             BarGroup(label = "2023", values = listOf(30f, 50f, 20f)),
+ *             BarGroup(label = "2024", values = listOf(45f, 35f, 20f)),
  *         )
  *     },
  *     config = MosaicBarChartConfig(),
@@ -72,7 +72,7 @@ fun MosaicBarChart(
     require(fullDataList.isNotEmpty()) { "Mosaic bar chart data cannot be empty" }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, MosaicBarSegment>()
@@ -113,7 +113,7 @@ fun MosaicBarChart(
                 interactionConfig.accessibilityDescription
                     ?: "Mosaic bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -140,7 +140,12 @@ fun MosaicBarChart(
                 }
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

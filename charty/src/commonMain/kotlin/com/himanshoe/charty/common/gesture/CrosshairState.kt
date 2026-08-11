@@ -142,5 +142,5 @@ internal fun rememberAnimatedCrosshairState(
     state ?: return null
     val animatedX = animateFloatAsState(targetValue = state.x, animationSpec = animationSpec)
     val animatedY = animateFloatAsState(targetValue = state.y, animationSpec = animationSpec)
-    return AnimatedCrosshair(animatedX, animatedY, state.label)
+    return AnimatedCrosshair(animatedX = animatedX, animatedY = animatedY, label = state.label)
 }

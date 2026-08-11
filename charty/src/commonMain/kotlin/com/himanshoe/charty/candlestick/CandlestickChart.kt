@@ -68,7 +68,7 @@ fun CandlestickChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Candlestick chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (minValue, maxValue) =
         remember(dataList) {
@@ -111,7 +111,7 @@ fun CandlestickChart(
             interactionConfig.accessibilityDescription
                 ?: generateCandlestickChartDescription(fullDataList),
     ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
+        updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
         dataList.fastForEachIndexed { index, candle ->
             drawCandleBar(
@@ -126,7 +126,12 @@ fun CandlestickChart(
             )
         }
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        drawInteractionOverlays(
+            interactionConfig = interactionConfig,
+            chartContext = chartContext,
+            totalItems = dataList.size,
+            textMeasurer = textMeasurer,
+        )
     }
 }
 

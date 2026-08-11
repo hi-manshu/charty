@@ -108,7 +108,7 @@ fun CircularProgressIndicator(
         } else {
             Modifier
         }
-    val animatedProgress = rememberAnimatedProgress(ringsList, config.animation)
+    val animatedProgress = rememberAnimatedProgress(ringsList = ringsList, animation = config.animation)
     val rotationAngle = rememberRotationAngle(config)
 
     Box(
@@ -126,7 +126,12 @@ fun CircularProgressIndicator(
                         onRingClick = onRingClick,
                     ),
         ) {
-            drawRingsContent(ringsList, config, animatedProgress, rotationAngle.value)
+            drawRingsContent(
+                ringsList = ringsList,
+                config = config,
+                animatedProgress = animatedProgress,
+                rotationAngle = rotationAngle.value,
+            )
         }
         when {
             centerContent != null ->
@@ -198,7 +203,22 @@ private fun DrawScope.drawRingsContent(
             } else {
                 ring.progress
             }
-        drawRingBackground(center, ringRadius, ring, config, rotationAngle, strokeWidth)
-        drawRingProgress(center, ringRadius, ring, animProgress, config, rotationAngle, strokeWidth)
+        drawRingBackground(
+            center = center,
+            radius = ringRadius,
+            ring = ring,
+            config = config,
+            rotationAngle = rotationAngle,
+            strokeWidth = strokeWidth,
+        )
+        drawRingProgress(
+            center = center,
+            radius = ringRadius,
+            ring = ring,
+            progress = animProgress,
+            config = config,
+            rotationAngle = rotationAngle,
+            strokeWidth = strokeWidth,
+        )
     }
 }

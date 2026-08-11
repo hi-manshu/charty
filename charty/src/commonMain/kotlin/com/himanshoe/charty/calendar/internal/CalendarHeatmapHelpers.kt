@@ -123,7 +123,7 @@ private fun processGridCell(
     monthBoundaries: MutableList<Pair<Int, String>>,
 ) {
     lookup[jdn]?.let { data ->
-        cells.add(GridCell(weekIndex, dayIndex, data))
+        cells.add(GridCell(weekIndex = weekIndex, dayIndex = dayIndex, calendarData = data))
     }
     val (year, month, day) = jdnToGregorian(jdn)
     if (day == 1) {
@@ -151,7 +151,7 @@ internal fun computeGridLayout(
     visibleWeeks: Int?,
 ): GridLayout {
     if (dataList.isEmpty()) {
-        return GridLayout(emptyList(), emptyMap(), 0, emptyList())
+        return GridLayout(cells = emptyList(), cellMap = emptyMap(), totalWeeks = 0, monthBoundaries = emptyList())
     }
 
     val startOffset =
@@ -161,18 +161,18 @@ internal fun computeGridLayout(
             1
         }
 
-    val lookup = dataList.associateBy { gregorianToJdn(it.year, it.month, it.day) }
+    val lookup = dataList.associateBy { gregorianToJdn(year = it.year, month = it.month, day = it.day) }
 
     val minJdn = lookup.keys.min()
     val maxJdn = lookup.keys.max()
 
     val (minYear, minMonth, minDay) = jdnToGregorian(minJdn)
-    val minDow = dayOfWeek(minYear, minMonth, minDay)
+    val minDow = dayOfWeek(year = minYear, month = minMonth, day = minDay)
     val offsetToWeekStart = ((minDow - startOffset + DAYS_PER_WEEK) % DAYS_PER_WEEK).toLong()
     val gridStartJdn = minJdn - offsetToWeekStart
 
     val (maxYear, maxMonth, maxDay) = jdnToGregorian(maxJdn)
-    val maxDow = dayOfWeek(maxYear, maxMonth, maxDay)
+    val maxDow = dayOfWeek(year = maxYear, month = maxMonth, day = maxDay)
     val offsetToWeekEnd = ((startOffset + DAYS_PER_WEEK - 1 - maxDow + DAYS_PER_WEEK) % DAYS_PER_WEEK).toLong()
     val gridEndJdn = maxJdn + offsetToWeekEnd
 
@@ -199,7 +199,15 @@ internal fun computeGridLayout(
     for (weekIndex in 0 until effectiveTotalWeeks) {
         for (dayIndex in 0 until DAYS_PER_WEEK) {
             val jdn = effectiveStartJdn + weekIndex * DAYS_PER_WEEK.toLong() + dayIndex
-            processGridCell(jdn, weekIndex, dayIndex, lookup, cells, seenMonthKeys, monthBoundaries)
+            processGridCell(
+                jdn = jdn,
+                weekIndex = weekIndex,
+                dayIndex = dayIndex,
+                lookup = lookup,
+                cells = cells,
+                seenMonthKeys = seenMonthKeys,
+                monthBoundaries = monthBoundaries,
+            )
         }
     }
 

@@ -101,8 +101,21 @@ private fun resolveCrosshairOffset(
     gap: Float,
     minEdge: Float,
 ): IntOffset {
-    val x = resolveCrosshairX(state.x, contentSize.width.toFloat(), containerSize.width.toFloat(), minEdge)
-    val y = resolveCrosshairY(state.y, contentSize.height.toFloat(), containerSize.height.toFloat(), gap, minEdge)
+    val x =
+        resolveCrosshairX(
+            anchorX = state.x,
+            contentWidth = contentSize.width.toFloat(),
+            containerWidth = containerSize.width.toFloat(),
+            minEdge = minEdge,
+        )
+    val y =
+        resolveCrosshairY(
+            anchorY = state.y,
+            contentHeight = contentSize.height.toFloat(),
+            containerHeight = containerSize.height.toFloat(),
+            gap = gap,
+            minEdge = minEdge,
+        )
     return IntOffset(x.roundToInt(), y.roundToInt())
 }
 

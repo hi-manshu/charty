@@ -18,8 +18,8 @@ private const val DEGREES_IN_CIRCLE = 360f
  *
  * Usage:
  * ```kotlin
- * val slice1 = PieData("Product A", 45.5f)
- * val slice2 = PieData("Product B", 30.0f, ChartyColor.Solid(Color.Blue))
+ * val slice1 = PieData(label = "Product A", value = 45.5f)
+ * val slice2 = PieData(label = "Product B", value = 30.0f, color = ChartyColor.Solid(Color.Blue))
  * val slice3 = PieData("Product C", 24.5f, metadata = mapOf("category" to "Electronics"))
  * ```
  */

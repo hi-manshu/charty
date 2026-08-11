@@ -59,11 +59,11 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  *             RadarDataSet(
  *                 label = "Player 1",
  *                 axes = listOf(
- *                     RadarAxisData("Speed", 80f),
- *                     RadarAxisData("Power", 90f),
- *                     RadarAxisData("Defense", 70f),
- *                     RadarAxisData("Skill", 85f),
- *                     RadarAxisData("Stamina", 75f)
+ *                     RadarAxisData(label = "Speed", value = 80f),
+ *                     RadarAxisData(label = "Power", value = 90f),
+ *                     RadarAxisData(label = "Defense", value = 70f),
+ *                     RadarAxisData(label = "Skill", value = 85f),
+ *                     RadarAxisData(label = "Stamina", value = 75f)
  *                 ),
  *                 color = ChartyColor.Solid(Color.Cyan),
  *                 fillAlpha = 0.3f
@@ -236,11 +236,23 @@ private fun DrawScope.drawRadarGrid(
 
         when (gridStyle) {
             RadarGridStyle.CIRCULAR -> {
-                drawCircularGrid(center, radius, gridLineWidth, gridLineColor)
+                drawCircularGrid(
+                    center = center,
+                    radius = radius,
+                    gridLineWidth = gridLineWidth,
+                    gridLineColor = gridLineColor,
+                )
             }
 
             RadarGridStyle.POLYGON -> {
-                drawPolygonGrid(center, radius, numberOfAxes, gridLineWidth, gridLineColor, startAngle)
+                drawPolygonGrid(
+                    center = center,
+                    radius = radius,
+                    numberOfAxes = numberOfAxes,
+                    gridLineWidth = gridLineWidth,
+                    gridLineColor = gridLineColor,
+                    startAngle = startAngle,
+                )
             }
         }
     }

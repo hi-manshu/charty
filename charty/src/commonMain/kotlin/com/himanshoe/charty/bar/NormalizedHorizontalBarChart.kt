@@ -58,8 +58,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * NormalizedHorizontalBarChart(
  *     data = {
  *         listOf(
- *             BarGroup("Strongly Agree", listOf(40f, 35f, 15f, 10f)),
- *             BarGroup("Agree",          listOf(30f, 40f, 20f, 10f)),
+ *             BarGroup(label = "Strongly Agree", values = listOf(40f, 35f, 15f, 10f)),
+ *             BarGroup(label = "Agree", values = listOf(30f, 40f, 20f, 10f)),
  *         )
  *     },
  *     colors = ChartyColors.DefaultGradient,
@@ -81,9 +81,9 @@ fun NormalizedHorizontalBarChart(
     require(fullDataList.isNotEmpty()) { "Normalized horizontal bar chart data cannot be empty" }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
-    val colorList = rememberNormalizedHorizontalColors(dataList, colors)
+    val colorList = rememberNormalizedHorizontalColors(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, NormalizedHorizontalBarSegment>()
     val textMeasurer = rememberTextMeasurer()
@@ -123,7 +123,7 @@ fun NormalizedHorizontalBarChart(
                 interactionConfig.accessibilityDescription
                     ?: "Normalized horizontal bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -141,10 +141,20 @@ fun NormalizedHorizontalBarChart(
             )
 
             if (tooltipContent == null) {
-                drawNormalizedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+                drawNormalizedHorizontalTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    config = config,
+                    textMeasurer = textMeasurer,
+                    chartContext = chartContext,
+                )
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

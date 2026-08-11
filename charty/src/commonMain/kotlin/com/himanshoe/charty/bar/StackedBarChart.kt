@@ -49,9 +49,9 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * StackedBarChart(
  *     data = {
  *         listOf(
- *             BarGroup("Q1", listOf(20f, 30f, 15f)),
- *             BarGroup("Q2", listOf(25f, 35f, 20f)),
- *             BarGroup("Q3", listOf(30f, 25f, 25f))
+ *             BarGroup(label = "Q1", values = listOf(20f, 30f, 15f)),
+ *             BarGroup(label = "Q2", values = listOf(25f, 35f, 20f)),
+ *             BarGroup(label = "Q3", values = listOf(30f, 25f, 25f))
  *         )
  *     },
  *     colors = ChartyColors.DefaultGradient,
@@ -90,23 +90,23 @@ fun StackedBarChart(
         "Stacked bar chart does not support negative values"
     }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
-    val (maxTotal, colorList) = rememberStackedMaxTotal(dataList, colors)
+    val (maxTotal, colorList) = rememberStackedMaxTotal(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(stackedConfig.animation)
     val tooltipManager = rememberTooltipManager<Rect, StackedBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateBarGroupChartDescription(it, "stacked bar")
+            generateBarGroupChartDescription(data = it, chartTypeName = "stacked bar")
         }
 
     syncInteractionDataSizes(
-        interactionConfig.viewPortState,
-        interactionConfig.brushSelectionState,
-        fullDataList.size,
-        dataList.size,
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
     )
 
     val clickModifier =
@@ -139,7 +139,7 @@ fun StackedBarChart(
             config = scaffoldConfig,
             contentDescription = chartDescription,
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -157,12 +157,26 @@ fun StackedBarChart(
                 ),
             )
 
-            drawStackedReferenceLineIfNeeded(stackedConfig, chartContext, textMeasurer)
+            drawStackedReferenceLineIfNeeded(
+                stackedConfig = stackedConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
             if (tooltipContent == null) {
-                drawStackedTooltipIfNeeded(tooltipManager.tooltipState, stackedConfig, textMeasurer, chartContext)
+                drawStackedTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    stackedConfig = stackedConfig,
+                    textMeasurer = textMeasurer,
+                    chartContext = chartContext,
+                )
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

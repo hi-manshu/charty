@@ -83,9 +83,9 @@ private data class MultilineDrawParams(
  * MultilineChart(
  *     data = {
  *         listOf(
- *             LineGroup("Jan", listOf(20f, 12f)),
- *             LineGroup("Feb", listOf(45f, 30f)),
- *             LineGroup("Mar", listOf(30f, 25f)),
+ *             LineGroup(label = "Jan", values = listOf(20f, 12f)),
+ *             LineGroup(label = "Feb", values = listOf(45f, 30f)),
+ *             LineGroup(label = "Mar", values = listOf(30f, 25f)),
  *         )
  *     },
  * )
@@ -116,7 +116,7 @@ fun MultilineChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Multiline chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (minValue, maxValue, colorList) =
         remember(dataList, colors, lineConfig.negativeValuesDrawMode) {
@@ -144,7 +144,7 @@ fun MultilineChart(
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateLineGroupChartDescription(it, "multiline")
+            generateLineGroupChartDescription(data = it, chartTypeName = "multiline")
         }
 
     syncInteractionDataSizes(
@@ -180,7 +180,7 @@ fun MultilineChart(
                 config = scaffoldConfig,
                 contentDescription = chartDescription,
             ) { chartContext ->
-                updateInteractionBounds(interactionConfig, chartContext)
+                updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
                 drawMultilineContent(
                     MultilineDrawParams(
                         dataList = dataList,
@@ -256,7 +256,16 @@ private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
     if (p.crosshairManager != null) {
         p.chartContext.calculateSeriesPointPositions(p.dataList, 0).fastForEachIndexed { index, pos ->
             val group = p.dataList.getOrNull(index) ?: return@fastForEachIndexed
-            p.crosshairBounds.add(pos to MultilinePoint(group, 0, index, group.values.getOrNull(0) ?: 0f))
+            p.crosshairBounds.add(
+                pos to
+                    MultilinePoint(
+                        lineGroup = group,
+                        seriesIndex = 0,
+                        dataIndex = index,
+                        value =
+                            group.values.getOrNull(0) ?: 0f,
+                    ),
+            )
         }
     }
 
@@ -285,7 +294,12 @@ private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
             )
         }
     }
-    drawInteractionOverlays(p.interactionConfig, p.chartContext, p.dataList.size, p.textMeasurer)
+    drawInteractionOverlays(
+        interactionConfig = p.interactionConfig,
+        chartContext = p.chartContext,
+        totalItems = p.dataList.size,
+        textMeasurer = p.textMeasurer,
+    )
 
     p.crosshairState?.let { state ->
         p.lineConfig.crosshairConfig?.let { config ->

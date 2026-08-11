@@ -87,8 +87,8 @@ private const val DOW_FRI_MONDAY_START = 4
  * CalendarHeatmapChart(
  *     data = {
  *         listOf(
- *             CalendarData(2024, 1, 1, 3f),
- *             CalendarData(2024, 6, 15, 7f),
+ *             CalendarData(year = 2024, month = 1, day = 1, value = 3f),
+ *             CalendarData(year = 2024, month = 6, day = 15, value = 7f),
  *         )
  *     },
  *     config = CalendarHeatmapConfig(cellShape = CellShape.Circle),
@@ -114,7 +114,7 @@ fun CalendarHeatmapChart(
 
     val gridLayout =
         remember(dataList, config.weekStartDay, visibleWeeks) {
-            computeGridLayout(dataList, config.weekStartDay, visibleWeeks)
+            computeGridLayout(dataList = dataList, weekStartDay = config.weekStartDay, visibleWeeks = visibleWeeks)
         }
     val maxValue = remember(dataList) { dataList.maxOfOrNull { it.value }?.coerceAtLeast(1f) ?: 1f }
     val animationProgress = rememberChartAnimation(config.animation)
@@ -122,8 +122,9 @@ fun CalendarHeatmapChart(
     val currentConfig by rememberUpdatedState(config)
     val currentOnDayClick by rememberUpdatedState(onDayClick)
 
-    val measuredMonthLabels = rememberMeasuredMonthLabels(config, gridLayout, textMeasurer)
-    val measuredDayLabelRows = rememberMeasuredDayLabelRows(config, textMeasurer)
+    val measuredMonthLabels =
+        rememberMeasuredMonthLabels(config = config, gridLayout = gridLayout, textMeasurer = textMeasurer)
+    val measuredDayLabelRows = rememberMeasuredDayLabelRows(config = config, textMeasurer = textMeasurer)
 
     val cellSizePx = remember(config.cellSize, density) { with(density) { config.cellSize.toPx() } }
     val cellStridePx =

@@ -61,13 +61,28 @@ fun DrawScope.drawReferenceLine(
     if (!config.isEnabled) {
         return
     }
-    if (!referenceValueWithinRange(config.value, chartContext.minValue, chartContext.maxValue)) {
+    if (!referenceValueWithinRange(
+            value = config.value,
+            minValue = chartContext.minValue,
+            maxValue = chartContext.maxValue,
+        )
+    ) {
         return
     }
 
     when (orientation) {
-        ChartOrientation.VERTICAL -> drawHorizontalReferenceLine(chartContext, config, textMeasurer)
-        ChartOrientation.HORIZONTAL -> drawVerticalReferenceLine(chartContext, config, textMeasurer)
+        ChartOrientation.VERTICAL ->
+            drawHorizontalReferenceLine(
+                chartContext = chartContext,
+                config = config,
+                textMeasurer = textMeasurer,
+            )
+        ChartOrientation.HORIZONTAL ->
+            drawVerticalReferenceLine(
+                chartContext = chartContext,
+                config = config,
+                textMeasurer = textMeasurer,
+            )
     }
 }
 
@@ -183,8 +198,19 @@ private fun DrawScope.drawVerticalLineWithLabel(
     val textWidth = textLayoutResult.size.width.toFloat()
     val textHeight = textLayoutResult.size.height.toFloat()
 
-    val y = calculateVerticalLabelY(config.labelPosition, chartContext, textHeight)
-    val xText = calculateVerticalLabelX(config.labelPosition, x, textWidth, config.labelOffset)
+    val y =
+        calculateVerticalLabelY(
+            labelPosition = config.labelPosition,
+            chartContext = chartContext,
+            textHeight = textHeight,
+        )
+    val xText =
+        calculateVerticalLabelX(
+            labelPosition = config.labelPosition,
+            x = x,
+            textWidth = textWidth,
+            labelOffset = config.labelOffset,
+        )
 
     drawText(textLayoutResult, topLeft = Offset(xText, y))
 }
@@ -204,5 +230,11 @@ private fun DrawScope.drawVerticalReferenceLine(
 
     val pathEffect = referenceLinePathEffect(config)
 
-    drawVerticalLineWithLabel(x, chartContext, config, textMeasurer, pathEffect)
+    drawVerticalLineWithLabel(
+        x = x,
+        chartContext = chartContext,
+        config = config,
+        textMeasurer = textMeasurer,
+        pathEffect = pathEffect,
+    )
 }

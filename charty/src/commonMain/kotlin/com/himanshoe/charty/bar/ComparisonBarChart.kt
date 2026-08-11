@@ -43,8 +43,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * ComparisonBarChart(
  *     data = {
  *         listOf(
- *             BarGroup("Q1", listOf(120f, 90f)),
- *             BarGroup("Q2", listOf(150f, 110f)),
+ *             BarGroup(label = "Q1", values = listOf(120f, 90f)),
+ *             BarGroup(label = "Q2", values = listOf(150f, 110f)),
  *         )
  *     },
  * )
@@ -75,7 +75,7 @@ fun ComparisonBarChart(
     require(fullDataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each comparison group must have at least one value" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberComparisonChartValues(dataList)
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -112,16 +112,26 @@ fun ComparisonBarChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
-            yAxisConfig = createComparisonAxisConfig(minValue, maxValue, isBelowAxisMode),
+            yAxisConfig =
+                createComparisonAxisConfig(
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    isBelowAxisMode = isBelowAxisMode,
+                ),
             config = scaffoldConfig,
             contentDescription =
                 interactionConfig.accessibilityDescription
                     ?: "Comparison bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
-            val baselineY = calculateComparisonBaselineY(minValue, isBelowAxisMode, chartContext)
+            val baselineY =
+                calculateComparisonBaselineY(
+                    minValue = minValue,
+                    isBelowAxisMode = isBelowAxisMode,
+                    chartContext = chartContext,
+                )
 
             drawComparisonBars(
                 ComparisonBarDrawParams(
@@ -136,12 +146,26 @@ fun ComparisonBarChart(
                 ),
             )
 
-            drawComparisonReferenceLineIfNeeded(comparisonConfig, chartContext, textMeasurer)
+            drawComparisonReferenceLineIfNeeded(
+                comparisonConfig = comparisonConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
             if (tooltipContent == null) {
-                drawComparisonTooltipIfNeeded(tooltipManager.tooltipState, comparisonConfig, textMeasurer, chartContext)
+                drawComparisonTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    comparisonConfig = comparisonConfig,
+                    textMeasurer = textMeasurer,
+                    chartContext = chartContext,
+                )
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

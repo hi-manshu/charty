@@ -34,7 +34,12 @@ internal fun DrawScope.drawLineSeries(
     if (pointPositions.isNotEmpty()) {
         val seriesColor = colorList[seriesIndex % colorList.size]
         if (lineConfig.showGradientFill) {
-            val fillPath = createAreaPath(pointPositions, chartContext.bottom, lineConfig.smoothCurve)
+            val fillPath =
+                createAreaPath(
+                    pointPositions = pointPositions,
+                    baselineY = chartContext.bottom,
+                    smoothCurve = lineConfig.smoothCurve,
+                )
             val fillBrush =
                 createAreaBrush(
                     color = ChartyColor.Solid(seriesColor),

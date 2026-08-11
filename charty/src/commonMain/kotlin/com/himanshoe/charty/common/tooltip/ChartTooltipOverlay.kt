@@ -99,8 +99,21 @@ private fun resolveTooltipOffset(
     offsetY: Float,
     minEdge: Float,
 ): IntOffset {
-    val x = resolveTooltipX(anchor, tooltipSize.width.toFloat(), containerSize.width.toFloat(), minEdge)
-    val y = resolveTooltipY(anchor, tooltipSize.height.toFloat(), containerSize.height.toFloat(), offsetY, minEdge)
+    val x =
+        resolveTooltipX(
+            anchor = anchor,
+            tooltipWidth = tooltipSize.width.toFloat(),
+            containerWidth = containerSize.width.toFloat(),
+            minEdge = minEdge,
+        )
+    val y =
+        resolveTooltipY(
+            anchor = anchor,
+            tooltipHeight = tooltipSize.height.toFloat(),
+            containerHeight = containerSize.height.toFloat(),
+            offsetY = offsetY,
+            minEdge = minEdge,
+        )
     return IntOffset(x.roundToInt(), y.roundToInt())
 }
 

@@ -81,7 +81,7 @@ internal fun ChartContext.calculateSeriesPointPositions(
     dataList.fastMapIndexed { index, group ->
         val value = group.values.getOrNull(seriesIndex) ?: 0f
         Offset(
-            x = calculateCenteredXPosition(index, dataList.size),
+            x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
             y = convertValueToYPosition(value),
         )
     }

@@ -78,7 +78,7 @@ fun rememberAnimatedValues(
                 ) {
                     targetValues
                 } else {
-                    lerpValues(startValues, targetValues, progress.value)
+                    lerpValues(from = startValues, to = targetValues, fraction = progress.value)
                 }
         }
     }

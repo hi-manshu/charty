@@ -129,7 +129,7 @@ internal fun DrawScope.drawVerticalChartAxes(
             strokeWidth = config.axisThickness,
         )
 
-        val xAxisY = calculateHorizontalAxisPosition(yAxisConfig, bounds)
+        val xAxisY = calculateHorizontalAxisPosition(yAxisConfig = yAxisConfig, chartBounds = bounds)
         drawLine(
             color = config.axisColor,
             start = Offset(bounds.left, xAxisY),
@@ -160,7 +160,12 @@ internal fun DrawScope.drawVerticalChartAxes(
 
             if (leftLabelRotation.degrees != ZERO_VALUE) {
                 val pivot = Offset(bounds.left - LABEL_OFFSET, y)
-                drawRotatedText(textLayout, topLeft, leftLabelRotation.degrees, pivot)
+                drawRotatedText(
+                    textLayout = textLayout,
+                    topLeft = topLeft,
+                    rotation = leftLabelRotation.degrees,
+                    pivot = pivot,
+                )
             } else {
                 drawText(textLayoutResult = textLayout, topLeft = topLeft)
             }
@@ -291,8 +296,8 @@ internal fun DrawScope.drawHorizontalChartAxes(
     labelStyle: TextStyle,
     leftLabelRotation: LabelRotation,
 ) {
-    val bounds = calculateHorizontalChartBounds(size, config.showLabels)
-    val baselineX = calculateVerticalAxisPosition(yAxisConfig, bounds)
+    val bounds = calculateHorizontalChartBounds(size = size, showLabels = config.showLabels)
+    val baselineX = calculateVerticalAxisPosition(yAxisConfig = yAxisConfig, chartBounds = bounds)
     val valueRange = yAxisConfig.maxValue - yAxisConfig.minValue
     val steps = yAxisConfig.steps.coerceAtLeast(MIN_STEPS)
 

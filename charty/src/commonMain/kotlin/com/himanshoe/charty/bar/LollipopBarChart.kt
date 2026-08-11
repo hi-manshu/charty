@@ -41,9 +41,9 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
  * LollipopBarChart(
  *     data = {
  *         listOf(
- *             BarData("Jan", 40f),
- *             BarData("Feb", 65f),
- *             BarData("Mar", 50f),
+ *             BarData(label = "Jan", value = 40f),
+ *             BarData(label = "Feb", value = 65f),
+ *             BarData(label = "Mar", value = 50f),
  *         )
  *     },
  *     colors = ChartyColor.Solid(ChartyColors.Blue),
@@ -74,7 +74,7 @@ fun LollipopBarChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Lollipop bar chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberLollipopValueRange(dataList)
     val animationProgress = rememberLollipopAnimation(config.animation)
@@ -115,7 +115,7 @@ fun LollipopBarChart(
                 interactionConfig.accessibilityDescription
                     ?: "Lollipop chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -134,7 +134,12 @@ fun LollipopBarChart(
                 drawTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

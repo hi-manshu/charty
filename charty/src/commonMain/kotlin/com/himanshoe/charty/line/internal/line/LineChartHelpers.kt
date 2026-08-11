@@ -11,7 +11,7 @@ import com.himanshoe.charty.line.data.LineData
 internal fun ChartContext.calculatePointPositions(dataList: List<LineData>): List<Offset> =
     dataList.fastMapIndexed { index, point ->
         Offset(
-            x = calculateCenteredXPosition(index, dataList.size),
+            x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
             y = convertValueToYPosition(point.value),
         )
     }

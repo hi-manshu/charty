@@ -67,8 +67,9 @@ internal fun DrawScope.drawComparisonBars(params: ComparisonBarDrawParams) {
                 )
             }
 
-            val barChartyColor = getComparisonBarColor(group, barIndex)
-            val barBrush = createComparisonBarBrush(barChartyColor, barTop, barHeight)
+            val barChartyColor = getComparisonBarColor(group = group, barIndex = barIndex)
+            val barBrush =
+                createComparisonBarBrush(barChartyColor = barChartyColor, barTop = barTop, barHeight = barHeight)
 
             drawComparisonRoundedBar(
                 brush = barBrush,

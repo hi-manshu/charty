@@ -109,9 +109,9 @@ private data class PieSliceDrawParams(
  * PieChart(
  *     data = {
  *         listOf(
- *             PieData("Product A", 45f),
- *             PieData("Product B", 30f),
- *             PieData("Product C", 25f)
+ *             PieData(label = "Product A", value = 45f),
+ *             PieData(label = "Product B", value = 30f),
+ *             PieData(label = "Product C", value = 25f)
  *         )
  *     },
  *     color = ChartyColor.Gradient(
@@ -190,7 +190,7 @@ fun PieChart(
     require(total > 0f) { "Total of all pie slices must be positive" }
     val sliceColors =
         remember(dataList, color) {
-            generateSliceColors(dataList, color)
+            generateSliceColors(dataList = dataList, color = color)
         }
     val animationProgress = rememberChartAnimation(config.animation)
     var selectedSliceIndex by remember { mutableStateOf<Int?>(null) }

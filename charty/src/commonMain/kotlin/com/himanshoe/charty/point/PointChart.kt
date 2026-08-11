@@ -246,8 +246,8 @@ private fun DrawScope.drawTooltipHighlight(
  * PointChart(
  *     data = {
  *         listOf(
- *             PointData("Mon", 30f),
- *             PointData("Tue", 55f),
+ *             PointData(label = "Mon", value = 30f),
+ *             PointData(label = "Tue", value = 55f),
  *         )
  *     },
  *     color = ChartyColor.Solid(ChartyColors.Blue),
@@ -269,7 +269,7 @@ fun PointChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Point chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (minValue, maxValue) =
         remember(dataList, pointConfig.negativeValuesDrawMode) {
@@ -294,7 +294,7 @@ fun PointChart(
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generatePointChartDescription(it, minValue, maxValue)
+            generatePointChartDescription(data = it, minValue = minValue, maxValue = maxValue)
         }
 
     syncInteractionDataSizes(
@@ -331,7 +331,7 @@ fun PointChart(
             config = scaffoldConfig,
             contentDescription = chartDescription,
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -365,7 +365,12 @@ fun PointChart(
                 drawCrosshairLabel = crosshairContent == null,
             )
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         PointChartOverlays(

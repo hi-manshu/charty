@@ -59,11 +59,12 @@ internal fun calculateBubbleSizeInfo(dataList: List<BubbleData>): BubbleSizeInfo
     val min = sizes.minOrNull() ?: 0f
     val max = sizes.maxOrNull() ?: 1f
     return BubbleSizeInfo(
-        calculateMinValue(yValues),
-        calculateMaxValue(yValues),
-        min,
-        max,
-        max - min,
+        minValue = calculateMinValue(yValues),
+        maxValue = calculateMaxValue(yValues),
+        minSize = min,
+        maxSize = max,
+        sizeRange =
+            max - min,
     )
 }
 

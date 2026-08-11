@@ -18,7 +18,7 @@ internal fun ChartContext.calculateCumulativePositions(
             cumulativeValue += group.values.getOrNull(i) ?: 0f
         }
         Offset(
-            x = calculateCenteredXPosition(index, dataList.size),
+            x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
             y = convertValueToYPosition(cumulativeValue),
         )
     }
@@ -38,14 +38,14 @@ internal fun ChartContext.calculateLowerPositions(
                 cumulativeValue += group.values.getOrNull(i) ?: 0f
             }
             Offset(
-                x = calculateCenteredXPosition(index, dataList.size),
+                x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
                 y = convertValueToYPosition(cumulativeValue),
             )
         }
     } else {
         dataList.fastMapIndexed { index, _ ->
             Offset(
-                x = calculateCenteredXPosition(index, dataList.size),
+                x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
                 y = baselineY,
             )
         }

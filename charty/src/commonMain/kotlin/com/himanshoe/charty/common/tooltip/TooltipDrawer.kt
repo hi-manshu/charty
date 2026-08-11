@@ -98,10 +98,10 @@ private fun calculateTooltipPosition(
     val barCenterX = tooltipState.x + (tooltipState.barWidth / CENTER_DIVISOR)
     val tooltipX =
         calculateTooltipX(
-            barCenterX,
-            dimensions.width,
-            chartWidth,
-            dimensions.minEdgeDistance,
+            barCenterX = barCenterX,
+            tooltipWidth = dimensions.width,
+            chartWidth = chartWidth,
+            minEdgeDistance = dimensions.minEdgeDistance,
         )
 
     val totalOffset =
@@ -117,14 +117,14 @@ private fun calculateTooltipPosition(
 
     val finalPosition =
         determineTooltipPosition(
-            tooltipState.position,
-            tooltipAboveY,
-            tooltipBelowY,
-            dimensions.height,
-            chartTop,
-            chartBottom,
-            dimensions.minEdgeDistance,
-            tooltipState.y,
+            requestedPosition = tooltipState.position,
+            tooltipAboveY = tooltipAboveY,
+            tooltipBelowY = tooltipBelowY,
+            tooltipHeight = dimensions.height,
+            chartTop = chartTop,
+            chartBottom = chartBottom,
+            minEdgeDistance = dimensions.minEdgeDistance,
+            barY = tooltipState.y,
         )
 
     val tooltipY =
@@ -266,14 +266,20 @@ internal fun DrawScope.drawTooltip(
         )
 
     if (config.elevation.value > ELEVATION_THRESHOLD) {
-        drawTooltipShadow(tooltipOffset, dimensions, config)
+        drawTooltipShadow(tooltipOffset = tooltipOffset, dimensions = dimensions, config = config)
     }
 
-    val tooltipPath = createTooltipBackgroundPath(tooltipOffset, dimensions)
+    val tooltipPath = createTooltipBackgroundPath(tooltipOffset = tooltipOffset, dimensions = dimensions)
     drawPath(tooltipPath, config.backgroundColor)
 
     if (config.showArrow) {
-        drawArrowWithBorder(tooltipState, tooltipOffset, dimensions, finalPosition, config)
+        drawArrowWithBorder(
+            tooltipState = tooltipState,
+            tooltipOffset = tooltipOffset,
+            dimensions = dimensions,
+            finalPosition = finalPosition,
+            config = config,
+        )
     }
 
     config.borderColor?.let { borderColor ->

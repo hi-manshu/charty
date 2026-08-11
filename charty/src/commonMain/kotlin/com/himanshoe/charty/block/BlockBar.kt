@@ -36,9 +36,9 @@ import com.himanshoe.charty.common.accessibility.generateBlockBarDescription
  * BlockBarChart(
  *     data = {
  *         listOf(
- *             BlockData(1f, ChartyColor.Solid(Color(0xFFFF6B81))),
- *             BlockData(2f, ChartyColor.Solid(Color(0xFFFFE066))),
- *             BlockData(5f, ChartyColor.Solid(Color(0xFF5BE37D))),
+ *             BlockData(value = 1f, color = ChartyColor.Solid(Color(0xFFFF6B81))),
+ *             BlockData(value = 2f, color = ChartyColor.Solid(Color(0xFFFFE066))),
+ *             BlockData(value = 5f, color = ChartyColor.Solid(Color(0xFF5BE37D))),
  *         )
  *     },
  *     modifier = Modifier.fillMaxWidth()

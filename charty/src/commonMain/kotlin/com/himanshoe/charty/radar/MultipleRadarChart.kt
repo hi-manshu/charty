@@ -80,9 +80,9 @@ private const val CLICK_TOLERANCE_MULTIPLIER = 2f
  *             RadarDataSet(
  *                 label = "Player 1",
  *                 axes = listOf(
- *                     RadarAxisData("Speed", 80f),
- *                     RadarAxisData("Power", 60f),
- *                     RadarAxisData("Defense", 70f),
+ *                     RadarAxisData(label = "Speed", value = 80f),
+ *                     RadarAxisData(label = "Power", value = 60f),
+ *                     RadarAxisData(label = "Defense", value = 70f),
  *                 ),
  *                 color = ChartyColor.Solid(ChartyColors.Blue),
  *             ),
@@ -112,7 +112,7 @@ fun MultipleRadarChart(
         remember(dataSetsList, accessibilityDescription) {
             when (accessibilityDescription) {
                 "" -> null
-                null -> generateRadarChartDescription(dataSetsList, "Multiple radar")
+                null -> generateRadarChartDescription(data = dataSetsList, chartTypeName = "Multiple radar")
                 else -> accessibilityDescription
             }
         }
@@ -264,10 +264,10 @@ private fun CreateVerticalLegendLayout(
     Column(modifier = modifier) {
         if (legendFirst) {
             Legend(
-                dataSetsList,
-                Modifier.padding(bottom = LEGEND_PADDING.dp),
-                config.legendTextStyle,
-                onDataSetClick,
+                dataSets = dataSetsList,
+                modifier = Modifier.padding(bottom = LEGEND_PADDING.dp),
+                legendTextStyle = config.legendTextStyle,
+                onDataSetClick = onDataSetClick,
             )
             RadarChartContent(
                 dataSetsList = dataSetsList,
@@ -285,10 +285,10 @@ private fun CreateVerticalLegendLayout(
                 onDataSetClick = onDataSetClick,
             )
             Legend(
-                dataSetsList,
-                Modifier.padding(top = LEGEND_PADDING.dp),
-                config.legendTextStyle,
-                onDataSetClick,
+                dataSets = dataSetsList,
+                modifier = Modifier.padding(top = LEGEND_PADDING.dp),
+                legendTextStyle = config.legendTextStyle,
+                onDataSetClick = onDataSetClick,
             )
         }
     }
@@ -309,10 +309,10 @@ private fun CreateHorizontalLegendLayout(
     Row(modifier = modifier) {
         if (legendFirst) {
             Legend(
-                dataSetsList,
-                Modifier.padding(end = LEGEND_PADDING.dp),
-                config.legendTextStyle,
-                onDataSetClick,
+                dataSets = dataSetsList,
+                modifier = Modifier.padding(end = LEGEND_PADDING.dp),
+                legendTextStyle = config.legendTextStyle,
+                onDataSetClick = onDataSetClick,
             )
             RadarChartContent(
                 dataSetsList = dataSetsList,
@@ -330,10 +330,10 @@ private fun CreateHorizontalLegendLayout(
                 onDataSetClick = onDataSetClick,
             )
             Legend(
-                dataSetsList,
-                Modifier.padding(start = LEGEND_PADDING.dp),
-                config.legendTextStyle,
-                onDataSetClick,
+                dataSets = dataSetsList,
+                modifier = Modifier.padding(start = LEGEND_PADDING.dp),
+                legendTextStyle = config.legendTextStyle,
+                onDataSetClick = onDataSetClick,
             )
         }
     }
@@ -360,12 +360,13 @@ private fun CreateOverlayLegendLayout(
             onDataSetClick = onDataSetClick,
         )
         Legend(
-            dataSetsList,
-            Modifier
-                .align(alignment)
-                .padding(LEGEND_PADDING.dp),
-            config.legendTextStyle,
-            onDataSetClick,
+            dataSets = dataSetsList,
+            modifier =
+                Modifier
+                    .align(alignment)
+                    .padding(LEGEND_PADDING.dp),
+            legendTextStyle = config.legendTextStyle,
+            onDataSetClick = onDataSetClick,
         )
     }
 }
@@ -449,11 +450,11 @@ private fun RadarChartContent(
                             Modifier.pointerInput(dataSetsList, dataPointPositions) {
                                 detectTapGestures { offset ->
                                     handleDataPointClick(
-                                        offset,
-                                        dataPointPositions,
-                                        dataSetsList,
-                                        config,
-                                        onDataSetClick,
+                                        clickOffset = offset,
+                                        dataPointPositions = dataPointPositions,
+                                        dataSetsList = dataSetsList,
+                                        config = config,
+                                        onDataSetClick = onDataSetClick,
                                     )
                                 }
                             }

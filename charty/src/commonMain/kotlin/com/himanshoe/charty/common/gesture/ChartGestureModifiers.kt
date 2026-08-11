@@ -46,7 +46,7 @@ fun <T, D> Modifier.rectangularChartClickHandler(
         this.pointerInput(dataList, onItemClick) {
             val hitSlop = RectangularTapHitSlop.toPx()
             detectTapGestures { offset ->
-                val clickedItem = findClickedItemWithBounds(offset, bounds, hitSlop)
+                val clickedItem = findClickedItemWithBounds(offset = offset, bounds = bounds, hitSlop = hitSlop)
                 clickedItem?.let { (rect, data) ->
                     onItemClick.invoke(data)
                     onTooltipStateChange(createTooltipContent(data, rect), data)
@@ -81,7 +81,7 @@ fun <T, D> Modifier.pointChartClickHandler(
 ): Modifier =
     this.pointerInput(dataList, onPointClick) {
         detectTapGestures { offset ->
-            val nearestPoint = findNearestPoint(offset, pointBounds, tapRadius)
+            val nearestPoint = findNearestPoint(offset = offset, pointBounds = pointBounds, tapRadius = tapRadius)
             nearestPoint?.let { (position, data) ->
                 onPointClick.invoke(data)
                 onTooltipStateChange(createTooltipContent(data, position), data)
@@ -162,7 +162,7 @@ fun <T, D> Modifier.chartCrosshairHandler(
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
             down.consume()
-            findNearestPointByX(down.position.x, pointBounds)?.let { (position, data) ->
+            findNearestPointByX(xOffset = down.position.x, pointBounds = pointBounds)?.let { (position, data) ->
                 onCrosshairUpdate(CrosshairState(x = position.x, y = position.y, label = labelFormatter(data)), data)
             }
             var isPressed = true
@@ -173,7 +173,10 @@ fun <T, D> Modifier.chartCrosshairHandler(
                     if (primary.positionChanged()) {
                         primary.consume()
                     }
-                    findNearestPointByX(primary.position.x, pointBounds)?.let { (position, data) ->
+                    findNearestPointByX(
+                        xOffset = primary.position.x,
+                        pointBounds = pointBounds,
+                    )?.let { (position, data) ->
                         onCrosshairUpdate(
                             CrosshairState(x = position.x, y = position.y, label = labelFormatter(data)),
                             data,
@@ -215,7 +218,7 @@ fun <T, D> Modifier.rectangularChartScrubHandler(
     this.pointerInput(dataList) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
-            findItemByX(down.position, bounds)?.let { (rect, data) ->
+            findItemByX(position = down.position, bounds = bounds)?.let { (rect, data) ->
                 onTooltipStateChange(createTooltipContent(data, rect), data)
             }
             var isPressed = true
@@ -226,7 +229,7 @@ fun <T, D> Modifier.rectangularChartScrubHandler(
                     if (primary.positionChanged()) {
                         primary.consume()
                     }
-                    findItemByX(primary.position, bounds)?.let { (rect, data) ->
+                    findItemByX(position = primary.position, bounds = bounds)?.let { (rect, data) ->
                         onTooltipStateChange(createTooltipContent(data, rect), data)
                     }
                 } else {

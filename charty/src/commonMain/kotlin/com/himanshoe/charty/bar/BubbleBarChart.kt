@@ -42,9 +42,9 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * BubbleBarChart(
  *     data = {
  *         listOf(
- *             BarData("Mon", 12f),
- *             BarData("Tue", 18f),
- *             BarData("Wed", 9f),
+ *             BarData(label = "Mon", value = 12f),
+ *             BarData(label = "Tue", value = 18f),
+ *             BarData(label = "Wed", value = 9f),
  *         )
  *     },
  *     color = ChartyColor.Solid(ChartyColors.Blue),
@@ -72,9 +72,13 @@ fun BubbleBarChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Bubble bar chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
-    val (minValue, maxValue) = rememberValueRange(dataList, bubbleConfig.negativeValuesDrawMode)
+    val (minValue, maxValue) =
+        rememberValueRange(
+            dataList = dataList,
+            negativeValuesDrawMode = bubbleConfig.negativeValuesDrawMode,
+        )
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
     val animationProgress = rememberChartAnimation(bubbleConfig.animation)
@@ -117,7 +121,7 @@ fun BubbleBarChart(
             interactionConfig.accessibilityDescription
                 ?: "Bubble bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
-        updateInteractionBounds(interactionConfig, chartContext)
+        updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
         barBounds.clear()
         val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
@@ -140,6 +144,11 @@ fun BubbleBarChart(
         drawReferenceLineIfNeeded(drawParams)
         drawTooltipIfNeeded(drawParams, tooltipState)
 
-        drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+        drawInteractionOverlays(
+            interactionConfig = interactionConfig,
+            chartContext = chartContext,
+            totalItems = dataList.size,
+            textMeasurer = textMeasurer,
+        )
     }
 }

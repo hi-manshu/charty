@@ -86,9 +86,9 @@ private data class AreaChartDrawParams(
  * AreaChart(
  *     data = {
  *         listOf(
- *             LineData("Jan", 20f),
- *             LineData("Feb", 45f),
- *             LineData("Mar", 30f),
+ *             LineData(label = "Jan", value = 20f),
+ *             LineData(label = "Feb", value = 45f),
+ *             LineData(label = "Mar", value = 30f),
  *         )
  *     },
  *     color = ChartyColor.Solid(ChartyColors.Blue),
@@ -127,7 +127,7 @@ fun AreaChart(
     require(fullDataList.isNotEmpty()) { "Area chart data cannot be empty" }
     val fillAlpha = lineConfig.fillAlpha
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (minValue, maxValue) = rememberAreaValueRange(dataList, lineConfig.negativeValuesDrawMode)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -140,7 +140,7 @@ fun AreaChart(
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateLineChartDescription(it, minValue, maxValue)
+            generateLineChartDescription(data = it, minValue = minValue, maxValue = maxValue)
         }
 
     syncInteractionDataSizes(
@@ -170,7 +170,7 @@ fun AreaChart(
             config = scaffoldConfig,
             contentDescription = chartDescription,
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
             tooltipManager.clearBounds()
             val pointPositions = calculatePointPositions(dataList, chartContext) { tooltipManager.bounds.add(it) }
             val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
@@ -201,7 +201,12 @@ fun AreaChart(
                     drawTooltipIfNeeded(tooltipManager.tooltipState, lineConfig, textMeasurer, chartContext)
                 }
             }
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
             animatedCrosshairState?.resolve()?.let { crosshairState ->
                 lineConfig.crosshairConfig?.let { crosshairConfig ->
                     drawLineChartCrosshair(
@@ -370,15 +375,20 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(param
     val endX = params.pointPositions.last().x
     val clipRight = startX + (endX - startX) * params.animationProgress
 
-    val areaPath = createAreaPath(params.pointPositions, params.baselineY, params.config.smoothCurve)
+    val areaPath =
+        createAreaPath(
+            pointPositions = params.pointPositions,
+            baselineY = params.baselineY,
+            smoothCurve = params.config.smoothCurve,
+        )
     val areaBrush =
         createAreaBrush(
-            params.color,
-            params.fillAlpha,
-            params.chartContext.top,
-            params.chartContext.bottom,
+            color = params.color,
+            fillAlpha = params.fillAlpha,
+            chartTop = params.chartContext.top,
+            chartBottom = params.chartContext.bottom,
         )
-    val linePath = createLinePath(params.pointPositions, params.config.smoothCurve)
+    val linePath = createLinePath(pointPositions = params.pointPositions, smoothCurve = params.config.smoothCurve)
     val lineBrush = createLineBrush(params.color)
 
     clipRect(right = clipRight) {
@@ -392,7 +402,12 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(param
     }
 
     if (params.config.showPoints) {
-        drawAreaPoints(params.pointPositions, lineBrush, params.config, params.animationProgress)
+        drawAreaPoints(
+            pointPositions = params.pointPositions,
+            lineBrush = lineBrush,
+            config = params.config,
+            animationProgress = params.animationProgress,
+        )
     }
 }
 

@@ -80,7 +80,7 @@ fun BubbleChart(
     require(config.pointRadius > minBubbleRadius) { "Max radius must be greater than min radius" }
     val crosshairConfig = config.crosshairConfig
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
@@ -115,7 +115,12 @@ fun BubbleChart(
                     labelFormatter = { bubble -> "${bubble.label}: ${bubble.yValue}" },
                     dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
                 )
-            else -> createBubbleClickModifier(dataList, bubbleBounds, onBubbleClick)
+            else ->
+                createBubbleClickModifier(
+                    dataList = dataList,
+                    bubbleBounds = bubbleBounds,
+                    onBubbleClick = onBubbleClick,
+                )
         }
     val chartModifier =
         buildInteractionModifier(
@@ -138,7 +143,7 @@ fun BubbleChart(
             config = scaffoldConfig,
             contentDescription = chartDescription,
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             bubbleBounds.clear()
             crosshairBounds.clear()
@@ -162,7 +167,12 @@ fun BubbleChart(
                 bubbleBounds = bubbleBounds,
             )
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
 
             drawBubbleCrosshair(
                 crosshairState = animatedCrosshairState?.resolve(),
@@ -238,11 +248,11 @@ private fun DrawScope.drawAllBubbles(
 
         val bubbleRadius =
             calculateBubbleRadius(
-                bubble.size,
-                sizeInfo.minSize,
-                sizeInfo.sizeRange,
-                minBubbleRadius,
-                config.pointRadius,
+                bubbleSize = bubble.size,
+                minSize = sizeInfo.minSize,
+                sizeRange = sizeInfo.sizeRange,
+                minBubbleRadius = minBubbleRadius,
+                maxBubbleRadius = config.pointRadius,
             )
 
         val bubbleColor =
@@ -256,7 +266,7 @@ private fun DrawScope.drawAllBubbles(
             val animatedRadius = bubbleRadius * bubbleAnimationProgress
 
             if (onBubbleClick != null) {
-                bubbleBounds.add(BubbleBounds(center, animatedRadius, bubble))
+                bubbleBounds.add(BubbleBounds(center = center, radius = animatedRadius, data = bubble))
             }
 
             drawCircle(

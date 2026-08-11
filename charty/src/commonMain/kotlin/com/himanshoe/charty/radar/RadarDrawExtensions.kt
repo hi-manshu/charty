@@ -54,7 +54,7 @@ internal fun DrawScope.drawPolygonalGridLine(
     gridLineColor: ChartyColor,
     startAngle: Float,
 ) {
-    val path = createPolygonPath(center, radius, numberOfAxes, startAngle)
+    val path = createPolygonPath(center = center, radius = radius, numberOfAxes = numberOfAxes, startAngle = startAngle)
     drawPath(
         path = path,
         brush = Brush.linearGradient(gridLineColor.value),
@@ -109,11 +109,23 @@ internal fun DrawScope.drawGridLevel(
 ) {
     when (gridStyle) {
         RadarGridStyle.CIRCULAR -> {
-            drawCircularGridLine(center, radius, gridLineWidth, gridLineColor)
+            drawCircularGridLine(
+                center = center,
+                radius = radius,
+                gridLineWidth = gridLineWidth,
+                gridLineColor = gridLineColor,
+            )
         }
 
         RadarGridStyle.POLYGON -> {
-            drawPolygonalGridLine(center, radius, numberOfAxes, gridLineWidth, gridLineColor, startAngle)
+            drawPolygonalGridLine(
+                center = center,
+                radius = radius,
+                numberOfAxes = numberOfAxes,
+                gridLineWidth = gridLineWidth,
+                gridLineColor = gridLineColor,
+                startAngle = startAngle,
+            )
         }
     }
 }

@@ -98,8 +98,8 @@ private fun calculateStackedCumulativeValues(dataList: List<LineGroup>): List<Fl
  * StackedAreaChart(
  *     data = {
  *         listOf(
- *             LineGroup("Jan", listOf(10f, 20f, 5f)),
- *             LineGroup("Feb", listOf(15f, 18f, 8f)),
+ *             LineGroup(label = "Jan", values = listOf(10f, 20f, 5f)),
+ *             LineGroup(label = "Feb", values = listOf(15f, 18f, 8f)),
  *         )
  *     },
  * )
@@ -140,7 +140,7 @@ fun StackedAreaChart(
     require(fullDataList.isNotEmpty()) { "Stacked area chart data cannot be empty" }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (maxValue, colorList) =
         remember(dataList, colors) {
@@ -166,7 +166,7 @@ fun StackedAreaChart(
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateLineGroupChartDescription(it, "stacked area")
+            generateLineGroupChartDescription(data = it, chartTypeName = "stacked area")
         }
 
     syncInteractionDataSizes(
@@ -203,7 +203,7 @@ fun StackedAreaChart(
                 config = scaffoldConfig,
                 contentDescription = chartDescription,
             ) { chartContext ->
-                updateInteractionBounds(interactionConfig, chartContext)
+                updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
                 areaSegmentBounds.clear()
                 drawStackedAreaContent(
                     StackedAreaDrawParams(
@@ -335,7 +335,12 @@ private fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
             )
         }
     }
-    drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+    drawInteractionOverlays(
+        interactionConfig = interactionConfig,
+        chartContext = chartContext,
+        totalItems = dataList.size,
+        textMeasurer = textMeasurer,
+    )
 
     params.crosshairState?.let { state ->
         lineConfig.crosshairConfig?.let { config ->

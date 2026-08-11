@@ -32,7 +32,7 @@ internal fun createComparisonChartModifier(
         if (onBarClick != null) {
             modifier.pointerInput(dataList, comparisonConfig, onBarClick) {
                 detectTapGestures { offset ->
-                    val clickedBar = findClickedItemWithBounds(offset, barBounds)
+                    val clickedBar = findClickedItemWithBounds(offset = offset, bounds = barBounds)
 
                     clickedBar?.let { (rect, segment) ->
                         onBarClick.invoke(segment)

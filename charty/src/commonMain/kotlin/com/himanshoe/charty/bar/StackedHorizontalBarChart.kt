@@ -61,8 +61,8 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * StackedHorizontalBarChart(
  *     data = {
  *         listOf(
- *             BarGroup("Q1", listOf(20f, 30f, 15f)),
- *             BarGroup("Q2", listOf(25f, 35f, 20f)),
+ *             BarGroup(label = "Q1", values = listOf(20f, 30f, 15f)),
+ *             BarGroup(label = "Q2", values = listOf(25f, 35f, 20f)),
  *         )
  *     },
  *     colors = ChartyColors.DefaultGradient,
@@ -87,18 +87,18 @@ fun StackedHorizontalBarChart(
         "Stacked horizontal bar chart does not support negative values"
     }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
-    val (maxTotal, colorList) = rememberStackedMaxTotal(dataList, colors)
+    val (maxTotal, colorList) = rememberStackedMaxTotal(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, StackedHorizontalBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
     syncInteractionDataSizes(
-        interactionConfig.viewPortState,
-        interactionConfig.brushSelectionState,
-        fullDataList.size,
-        dataList.size,
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
     )
 
     val clickModifier =
@@ -129,7 +129,7 @@ fun StackedHorizontalBarChart(
                 interactionConfig.accessibilityDescription
                     ?: "Stacked horizontal bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -147,12 +147,26 @@ fun StackedHorizontalBarChart(
                 ),
             )
 
-            drawStackedHorizontalReferenceLineIfNeeded(config, chartContext, textMeasurer)
+            drawStackedHorizontalReferenceLineIfNeeded(
+                config = config,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
             if (tooltipContent == null) {
-                drawStackedHorizontalTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+                drawStackedHorizontalTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    config = config,
+                    textMeasurer = textMeasurer,
+                    chartContext = chartContext,
+                )
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

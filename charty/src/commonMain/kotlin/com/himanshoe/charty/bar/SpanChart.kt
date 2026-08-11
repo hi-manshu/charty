@@ -83,9 +83,9 @@ fun SpanChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Span chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
-    val (minValue, maxValue) = rememberSpanValueRange(dataList, colors)
+    val (minValue, maxValue) = rememberSpanValueRange(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(barConfig.animation)
     val tooltipManager = rememberTooltipManager<Rect, SpanData>()
     val textMeasurer = rememberTextMeasurer()
@@ -126,7 +126,7 @@ fun SpanChart(
                 interactionConfig.accessibilityDescription
                     ?: "Span chart, ${fullDataList.size} spans.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
             val axisOffset = calculateAxisOffset(scaffoldConfig)
@@ -156,7 +156,12 @@ fun SpanChart(
                 )
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

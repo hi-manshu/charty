@@ -133,7 +133,7 @@ fun ComboChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Combo chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val (minValue, maxValue) =
         remember(dataList, comboConfig.negativeValuesDrawMode, comboConfig.secondaryAxisForLine) {
@@ -164,10 +164,10 @@ fun ComboChart(
         }
 
     syncInteractionDataSizes(
-        interactionConfig.viewPortState,
-        interactionConfig.brushSelectionState,
-        fullDataList.size,
-        dataList.size,
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
     )
 
     val clickModifier =
@@ -203,7 +203,7 @@ fun ComboChart(
             contentDescription = chartDescription,
             secondaryYAxisConfig = secondaryLineRange.toSecondaryAxisConfig(),
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
             dataBounds.clear()
             drawComboContent(
                 ComboDrawParams(
@@ -317,7 +317,12 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
             )
         }
     }
-    drawInteractionOverlays(p.interactionConfig, p.chartContext, p.dataList.size, p.textMeasurer)
+    drawInteractionOverlays(
+        interactionConfig = p.interactionConfig,
+        chartContext = p.chartContext,
+        totalItems = p.dataList.size,
+        textMeasurer = p.textMeasurer,
+    )
     p.crosshairState?.let { state ->
         p.comboConfig.crosshairConfig?.let { config ->
             drawLineChartCrosshair(

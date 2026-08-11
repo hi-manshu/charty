@@ -72,9 +72,9 @@ private data class WaveDrawContext(
  * WavyChart(
  *     data = {
  *         listOf(
- *             BarData("Mon", 20f),
- *             BarData("Tue", 35f),
- *             BarData("Wed", 28f),
+ *             BarData(label = "Mon", value = 20f),
+ *             BarData(label = "Tue", value = 35f),
+ *             BarData(label = "Wed", value = 28f),
  *         )
  *     },
  *     color = ChartyColor.Solid(ChartyColors.Blue),
@@ -106,7 +106,7 @@ fun WavyChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Wavy chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val textMeasurer = rememberTextMeasurer()
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
@@ -168,14 +168,19 @@ fun WavyChart(
                 interactionConfig.accessibilityDescription
                     ?: "Wavy chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             val barCount = dataList.size
             if (barCount == 0) {
                 return@ChartScaffold
             }
 
-            populateWavyCrosshairBounds(chartContext, dataList, crosshairManager, crosshairBounds)
+            populateWavyCrosshairBounds(
+                chartContext = chartContext,
+                dataList = dataList,
+                crosshairManager = crosshairManager,
+                crosshairBounds = crosshairBounds,
+            )
 
             drawWavyBars(
                 dataList = dataList,
@@ -187,7 +192,12 @@ fun WavyChart(
                 strokeWidthPx = strokeWidthPx,
             )
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
 
             animatedCrosshairState?.resolve()?.let { state ->
                 crosshairConfig?.let { cfg ->
@@ -302,7 +312,7 @@ private fun DrawScope.drawWavyBars(
             color = color,
         )
     dataList.fastForEachIndexed { index, barData ->
-        drawSingleWave(index, barData, chartContext, waveCtx)
+        drawSingleWave(index = index, barData = barData, chartContext = chartContext, waveCtx = waveCtx)
     }
 }
 

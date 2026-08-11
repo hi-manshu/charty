@@ -172,7 +172,13 @@ internal fun DrawScope.drawCalendarGrid(
                     config.emptyColor
                 }
 
-            drawCell(Offset(cellLeft, cellTop), cellSizePx, color, cellAlpha, config.cellShape)
+            drawCell(
+                topLeft = Offset(cellLeft, cellTop),
+                cellSizePx = cellSizePx,
+                color = color,
+                alpha = cellAlpha,
+                shape = config.cellShape,
+            )
 
             if (gridCell != null && cellAlpha > 0f) {
                 cellBoundsOutput.add(

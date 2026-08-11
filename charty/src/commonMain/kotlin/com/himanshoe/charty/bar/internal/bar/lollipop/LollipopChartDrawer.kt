@@ -48,8 +48,8 @@ internal fun DrawScope.drawLollipops(
         val chartyColor = bar.color ?: colors
         val circleChartyColor = config.circleColor ?: chartyColor
 
-        val stemBrush = createStemBrush(chartyColor, baselineY, barValueY)
-        val circleColor = getCircleColor(circleChartyColor, index)
+        val stemBrush = createStemBrush(chartyColor = chartyColor, baselineY = baselineY, barValueY = barValueY)
+        val circleColor = getCircleColor(circleChartyColor = circleChartyColor, index = index)
 
         drawLine(
             brush = stemBrush,

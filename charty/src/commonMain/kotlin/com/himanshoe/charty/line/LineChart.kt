@@ -98,12 +98,21 @@ fun LineChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Line chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
-    val (minValue, maxValue) = rememberLineValueRange(dataList, lineConfig.negativeValuesDrawMode)
+    val (minValue, maxValue) =
+        rememberLineValueRange(
+            dataList = dataList,
+            negativeValuesDrawMode = lineConfig.negativeValuesDrawMode,
+        )
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(lineConfig.animation)
-    val displayList = rememberAnimatedLineData(dataList, lineConfig.animation, lineConfig.animateValueChanges)
+    val displayList =
+        rememberAnimatedLineData(
+            dataList = dataList,
+            animation = lineConfig.animation,
+            enabled = lineConfig.animateValueChanges,
+        )
 
     val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
@@ -113,7 +122,7 @@ fun LineChart(
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateLineChartDescription(it, minValue, maxValue)
+            generateLineChartDescription(data = it, minValue = minValue, maxValue = maxValue)
         }
 
     syncInteractionDataSizes(
@@ -122,7 +131,11 @@ fun LineChart(
         fullDataSize = fullDataList.size,
         dataSize = dataList.size,
     )
-    AutoScrollToLatestEffect(interactionConfig.viewPortState, fullDataList.size, interactionConfig.autoScrollToLatest)
+    AutoScrollToLatestEffect(
+        viewPortState = interactionConfig.viewPortState,
+        fullDataSize = fullDataList.size,
+        enabled = interactionConfig.autoScrollToLatest,
+    )
 
     val interactionModifier =
         Modifier.lineChartInteractionHandler(
@@ -146,7 +159,7 @@ fun LineChart(
             config = scaffoldConfig,
             contentDescription = chartDescription,
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -182,7 +195,12 @@ fun LineChart(
                 textMeasurer = textMeasurer,
             )
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
 
             drawLineCrosshairAndTooltip(
                 crosshairState = animatedCrosshairState?.resolve(),

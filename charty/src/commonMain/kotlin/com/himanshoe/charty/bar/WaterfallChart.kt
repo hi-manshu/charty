@@ -40,10 +40,10 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * WaterfallChart(
  *     data = {
  *         listOf(
- *             BarData("Start", 100f),
- *             BarData("Sales", 40f),
- *             BarData("Costs", -30f),
- *             BarData("End", 110f),
+ *             BarData(label = "Start", value = 100f),
+ *             BarData(label = "Sales", value = 40f),
+ *             BarData(label = "Costs", value = -30f),
+ *             BarData(label = "End", value = 110f),
  *         )
  *     },
  * )
@@ -71,7 +71,7 @@ fun WaterfallChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Waterfall chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val cumulativeValues = rememberCumulativeValues(dataList)
     val (minValue, maxValue) =
@@ -123,7 +123,7 @@ fun WaterfallChart(
                 interactionConfig.accessibilityDescription
                     ?: "Waterfall chart, ${fullDataList.size} data points.",
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
 
@@ -166,7 +166,12 @@ fun WaterfallChart(
                 }
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

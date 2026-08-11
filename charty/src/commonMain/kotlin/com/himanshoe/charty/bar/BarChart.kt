@@ -54,9 +54,9 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * BarChart(
  *     data = {
  *         listOf(
- *             BarData("Jan", 100f),
- *             BarData("Feb", 150f),
- *             BarData("Mar", 120f)
+ *             BarData(label = "Jan", value = 100f),
+ *             BarData(label = "Feb", value = 150f),
+ *             BarData(label = "Mar", value = 120f)
  *         )
  *     },
  *     color = ChartyColor.Solid(ChartyColors.Blue),
@@ -95,25 +95,34 @@ fun BarChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Bar chart data cannot be empty" }
 
-    val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
+    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
-    val (minValue, maxValue) = rememberBarValueRange(dataList, barConfig.negativeValuesDrawMode)
+    val (minValue, maxValue) =
+        rememberBarValueRange(
+            dataList = dataList,
+            negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
+        )
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(barConfig.animation)
-    val displayList = rememberAnimatedBarData(dataList, barConfig.animation, barConfig.animateValueChanges)
+    val displayList =
+        rememberAnimatedBarData(
+            dataList = dataList,
+            animation = barConfig.animation,
+            enabled = barConfig.animateValueChanges,
+        )
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateBarChartDescription(it, minValue, maxValue)
+            generateBarChartDescription(data = it, minValue = minValue, maxValue = maxValue)
         }
 
     syncInteractionDataSizes(
-        interactionConfig.viewPortState,
-        interactionConfig.brushSelectionState,
-        fullDataList.size,
-        dataList.size,
+        viewPortState = interactionConfig.viewPortState,
+        brushSelectionState = interactionConfig.brushSelectionState,
+        fullDataSize = fullDataList.size,
+        dataSize = dataList.size,
     )
 
     val clickModifier =
@@ -138,15 +147,25 @@ fun BarChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
-            yAxisConfig = createBarAxisConfig(minValue, maxValue, isBelowAxisMode),
+            yAxisConfig =
+                createBarAxisConfig(
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    isBelowAxisMode = isBelowAxisMode,
+                ),
             config = scaffoldConfig,
             leftLabelRotation = scaffoldConfig.leftLabelRotation,
             contentDescription = chartDescription,
         ) { chartContext ->
-            updateInteractionBounds(interactionConfig, chartContext)
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
-            val baselineY = calculateBarBaselineY(minValue, isBelowAxisMode, chartContext)
+            val baselineY =
+                calculateBarBaselineY(
+                    minValue = minValue,
+                    isBelowAxisMode = isBelowAxisMode,
+                    chartContext = chartContext,
+                )
 
             barConfig.referenceBand?.let { band ->
                 drawReferenceBand(
@@ -171,12 +190,26 @@ fun BarChart(
                 ),
             )
 
-            drawBarReferenceLineIfNeeded(barConfig, chartContext, textMeasurer)
+            drawBarReferenceLineIfNeeded(
+                barConfig = barConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
             if (tooltipContent == null) {
-                drawBarTooltipIfNeeded(tooltipManager.tooltipState, barConfig, textMeasurer, chartContext)
+                drawBarTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    barConfig = barConfig,
+                    textMeasurer = textMeasurer,
+                    chartContext = chartContext,
+                )
             }
 
-            drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
+                chartContext = chartContext,
+                totalItems = dataList.size,
+                textMeasurer = textMeasurer,
+            )
         }
 
         if (tooltipContent != null) {

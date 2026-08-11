@@ -56,7 +56,12 @@ internal fun rememberGroupedHorizontalState(
                 rawMax
             }
 
-        val (niceMin, niceMax, steps) = calculateNiceAxisRange(axisMin, axisMax, GROUPED_HORIZONTAL_DEFAULT_AXIS_STEPS)
+        val (niceMin, niceMax, steps) =
+            calculateNiceAxisRange(
+                rawMin = axisMin,
+                rawMax = axisMax,
+                targetSteps = GROUPED_HORIZONTAL_DEFAULT_AXIS_STEPS,
+            )
 
         GroupedHorizontalState(
             minValue = niceMin,

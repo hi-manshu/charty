@@ -40,7 +40,7 @@ data class ChartAxisConfig(
             val top = ceil(maxValue / safeStep).toInt() * safeStep
             val steps = (top / safeStep)
             val yLabels = (0..steps).map { value -> (value * safeStep).toString() }
-            return ChartAxisConfig(xAxisLabels, yLabels)
+            return ChartAxisConfig(xAxisLabels = xAxisLabels, yAxisLabels = yLabels)
         }
     }
 }
