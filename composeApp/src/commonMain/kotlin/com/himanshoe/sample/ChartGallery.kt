@@ -577,6 +577,14 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         )
                     }
                 },
+                ChartVariant("Tooltip: pill (compose)") {
+                    BarChart(
+                        data = { bars },
+                        onBarClick = {},
+                        tooltip = ChartTooltip.compose { PillTooltip() },
+                        modifier = chartFill,
+                    )
+                },
             ),
         ),
         ChartDemo(
@@ -987,6 +995,14 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         )
                     }
                 },
+                ChartVariant("Tooltip: pill (compose)") {
+                    AreaChart(
+                        data = { line },
+                        onPointClick = {},
+                        tooltip = ChartTooltip.compose { PillTooltip() },
+                        modifier = chartFill,
+                    )
+                },
             ),
         ),
         ChartDemo(
@@ -1044,6 +1060,14 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                             modifier = chartModifier,
                         )
                     }
+                },
+                ChartVariant("Tooltip: pill (compose)") {
+                    PointChart(
+                        data = { points },
+                        onPointClick = {},
+                        tooltip = ChartTooltip.compose { PillTooltip() },
+                        modifier = chartFill,
+                    )
                 },
                 ChartVariant("Value labels") {
                     PointChart(
