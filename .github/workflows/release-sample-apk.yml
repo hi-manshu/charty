@@ -1,0 +1,56 @@
+name: Attach Sample APK to Release
+
+# When a GitHub Release is published, build the sample app's Android APK and
+# upload it as an asset on that release (which already carries its tag), so the
+# release/tag ships with an installable demo of the charts.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write # Needed to upload assets onto the release
+
+jobs:
+  build-and-attach-apk:
+    name: Build & attach sample APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Build sample debug APK
+        run: ./gradlew :composeApp:assembleDebug --stacktrace
+
+      - name: Rename APK with release tag
+        id: apk
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          SRC=$(find composeApp/build/outputs/apk/debug -name '*.apk' | head -1)
+          if [ -z "$SRC" ]; then
+            echo "❌ No APK produced under composeApp/build/outputs/apk/debug"
+            exit 1
+          fi
+          DEST="charty-sample-${TAG}.apk"
+          cp "$SRC" "$DEST"
+          echo "path=$DEST" >> "$GITHUB_OUTPUT"
+          echo "✅ Prepared $DEST from $SRC"
+
+      - name: Upload APK to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: ${{ steps.apk.outputs.path }}
