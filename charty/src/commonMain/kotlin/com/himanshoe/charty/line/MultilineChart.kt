@@ -35,7 +35,8 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
+import com.himanshoe.charty.common.gesture.ChartCrosshair
+import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
@@ -101,9 +102,8 @@ private data class MultilineDrawParams(
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param onPointClick A lambda function invoked when a point is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param crosshairContent An optional composable slot for rendering a custom crosshair label. When
- *   provided (and a crosshair is configured via [lineConfig]), it replaces the default canvas
- *   crosshair label and is invoked with the [MultilinePoint] under the dragging finger.
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it.
  */
 @Composable
 fun MultilineChart(
@@ -115,13 +115,15 @@ fun MultilineChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onPointClick: ((MultilinePoint) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    crosshairContent: (@Composable (MultilinePoint) -> Unit)? = null,
+    crosshair: ChartCrosshair<MultilinePoint>? = null,
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
+    val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
+    val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<MultilinePoint>(config = it) }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
@@ -137,7 +139,7 @@ fun MultilineChart(
     val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<MultilinePoint>(lineConfig.crosshairConfig != null)
+        rememberChartCrosshair<MultilinePoint>(effectiveLineConfig.crosshairConfig != null)
     val textMeasurer = rememberTextMeasurer()
 
     LaunchedEffect(lineConfig.animation) {
@@ -169,7 +171,7 @@ fun MultilineChart(
                         base = Modifier.fillMaxSize(),
                         crosshairManager = crosshairManager,
                         dataList = dataList,
-                        lineConfig = lineConfig,
+                        lineConfig = effectiveLineConfig,
                         pointBounds = pointBounds,
                         crosshairBounds = crosshairBounds,
                         onPointClick = onPointClick,
@@ -193,7 +195,7 @@ fun MultilineChart(
                         dataList = dataList,
                         chartContext = chartContext,
                         colorList = colorList,
-                        lineConfig = lineConfig,
+                        lineConfig = effectiveLineConfig,
                         animationProgress = animationProgress.value,
                         pointBounds = pointBounds,
                         crosshairBounds = crosshairBounds,
@@ -203,7 +205,7 @@ fun MultilineChart(
                         tooltipState = tooltipState,
                         textMeasurer = textMeasurer,
                         interactionConfig = interactionConfig,
-                        drawCrosshairLabel = crosshairContent == null,
+                        drawCrosshairLabel = false,
                     ),
                 )
             }
@@ -211,8 +213,7 @@ fun MultilineChart(
             MultilineChartOverlays(
                 crosshairManager = crosshairManager,
                 animatedCrosshairState = animatedCrosshairState?.resolve(),
-                lineConfig = lineConfig,
-                crosshairContent = crosshairContent,
+                crosshair = activeCrosshair,
             )
         }
         if (lineConfig.legendLabels.isNotEmpty()) {
@@ -229,16 +230,14 @@ fun MultilineChart(
 private fun BoxScope.MultilineChartOverlays(
     crosshairManager: CrosshairManager<MultilinePoint>?,
     animatedCrosshairState: CrosshairState?,
-    lineConfig: LineChartConfig,
-    crosshairContent: (@Composable (MultilinePoint) -> Unit)?,
+    crosshair: ChartCrosshair<MultilinePoint>?,
 ) {
-    if (crosshairContent != null && crosshairManager != null) {
-        ChartCrosshairOverlay(
-            item = crosshairManager.selectedItem,
+    if (crosshair != null) {
+        ChartCrosshairHost(
+            crosshair = crosshair,
+            item = crosshairManager?.selectedItem,
             state = animatedCrosshairState,
-            config = lineConfig.crosshairConfig?.tooltipConfig ?: lineConfig.tooltipConfig,
             modifier = Modifier.matchParentSize(),
-            content = crosshairContent,
         )
     }
 }

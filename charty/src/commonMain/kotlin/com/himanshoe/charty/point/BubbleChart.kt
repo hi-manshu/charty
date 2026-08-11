@@ -23,8 +23,9 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
-import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
+import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
@@ -76,7 +77,7 @@ fun BubbleChart(
     minBubbleRadius: Float = 10f,
     onBubbleClick: ((BubbleData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    crosshairContent: (@Composable (BubbleData) -> Unit)? = null,
+    crosshair: ChartCrosshair<BubbleData>? = null,
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
@@ -85,14 +86,15 @@ fun BubbleChart(
     }
     require(minBubbleRadius > 0f) { "Minimum bubble radius must be positive" }
     require(config.pointRadius > minBubbleRadius) { "Max radius must be greater than min radius" }
-    val crosshairConfig = config.crosshairConfig
+    val crosshairConfig = crosshair?.config ?: config.crosshairConfig
+    val activeCrosshair = crosshair ?: config.crosshairConfig?.let { ChartCrosshair<BubbleData>(config = it) }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<BubbleData>(config.crosshairConfig != null)
+        rememberChartCrosshair<BubbleData>(crosshairConfig != null)
     val sizeInfo = remember(dataList) { calculateBubbleSizeInfo(dataList) }
     val textMeasurer = rememberTextMeasurer()
 
@@ -187,16 +189,14 @@ fun BubbleChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
-                drawLabel = crosshairContent == null,
+                drawLabel = false,
             )
         }
 
         BubbleChartOverlay(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
-            crosshairConfig = crosshairConfig,
-            config = config,
-            crosshairContent = crosshairContent,
+            crosshair = activeCrosshair,
         )
     }
 }
@@ -205,17 +205,14 @@ fun BubbleChart(
 private fun BoxScope.BubbleChartOverlay(
     crosshairManager: CrosshairManager<BubbleData>?,
     animatedCrosshairState: CrosshairState?,
-    crosshairConfig: ChartCrosshairConfig?,
-    config: PointChartConfig,
-    crosshairContent: (@Composable (BubbleData) -> Unit)?,
+    crosshair: ChartCrosshair<BubbleData>?,
 ) {
-    if (crosshairContent != null && crosshairManager != null) {
-        ChartCrosshairOverlay(
-            item = crosshairManager.selectedItem,
+    if (crosshair != null) {
+        ChartCrosshairHost(
+            crosshair = crosshair,
+            item = crosshairManager?.selectedItem,
             state = animatedCrosshairState,
-            config = crosshairConfig?.tooltipConfig ?: config.tooltipConfig,
             modifier = Modifier.matchParentSize(),
-            content = crosshairContent,
         )
     }
 }

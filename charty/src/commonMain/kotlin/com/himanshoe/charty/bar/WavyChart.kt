@@ -32,8 +32,8 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
-import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
+import com.himanshoe.charty.common.gesture.ChartCrosshair
+import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
@@ -41,7 +41,6 @@ import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import kotlin.math.PI
@@ -89,11 +88,10 @@ private data class WaveDrawContext(
  * @param color Color for the wave lines.
  * @param wavyConfig Configuration for wave appearance and animation.
  * @param scaffoldConfig Chart styling configuration for axis, grid, and labels.
- * @param crosshairConfig When non-null, enables a draggable crosshair snapping to the nearest bar.
+
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param crosshairContent An optional composable slot for rendering a custom crosshair label. When
- *   provided (and a crosshair is configured via [crosshairConfig]), it replaces the default canvas
- *   crosshair label and is invoked with the [BarData] under the dragging finger.
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   guide line that snaps to the nearest bar, with a built-in or custom label drawn over it.
  */
 @Composable
 fun WavyChart(
@@ -103,15 +101,15 @@ fun WavyChart(
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     wavyConfig: WavyChartConfig = WavyChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
-    crosshairConfig: ChartCrosshairConfig? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    crosshairContent: (@Composable (BarData) -> Unit)? = null,
+    crosshair: ChartCrosshair<BarData>? = null,
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
+    val crosshairConfig = crosshair?.config
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
@@ -214,8 +212,7 @@ fun WavyChart(
                         chartContext,
                         textMeasurer,
                         color,
-                        drawLabel =
-                            crosshairContent == null,
+                        drawLabel = false,
                     )
                 }
             }
@@ -224,8 +221,7 @@ fun WavyChart(
         WavyChartOverlays(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
-            crosshairConfig = crosshairConfig,
-            crosshairContent = crosshairContent,
+            crosshair = crosshair,
         )
     }
 }
@@ -234,16 +230,14 @@ fun WavyChart(
 private fun BoxScope.WavyChartOverlays(
     crosshairManager: CrosshairManager<BarData>?,
     animatedCrosshairState: CrosshairState?,
-    crosshairConfig: ChartCrosshairConfig?,
-    crosshairContent: (@Composable (BarData) -> Unit)?,
+    crosshair: ChartCrosshair<BarData>?,
 ) {
-    if (crosshairContent != null && crosshairManager != null) {
-        ChartCrosshairOverlay(
-            item = crosshairManager.selectedItem,
+    if (crosshair != null) {
+        ChartCrosshairHost(
+            crosshair = crosshair,
+            item = crosshairManager?.selectedItem,
             state = animatedCrosshairState,
-            config = crosshairConfig?.tooltipConfig ?: TooltipConfig(),
             modifier = Modifier.matchParentSize(),
-            content = crosshairContent,
         )
     }
 }

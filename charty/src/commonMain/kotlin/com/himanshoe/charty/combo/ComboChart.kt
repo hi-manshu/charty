@@ -39,7 +39,8 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
+import com.himanshoe.charty.common.gesture.ChartCrosshair
+import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
@@ -95,31 +96,8 @@ private data class ComboDrawParams(
  * @param onDataClick A lambda function invoked when a data point (bar or line point) is clicked,
  *   providing the corresponding [ComboChartData].
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param crosshairContent An optional composable slot for rendering a custom crosshair label. When
- *   provided (and a crosshair is configured via [comboConfig]), it replaces the default canvas
- *   crosshair label and is invoked with the [ComboChartData] under the dragging finger.
- *
- * Example usage:
- * ```kotlin
- * ComboChart(
- *     data = {
- *         listOf(
- *             ComboChartData("Jan", barValue = 100f, lineValue = 80f),
- *             ComboChartData("Feb", barValue = 150f, lineValue = 120f),
- *             ComboChartData("Mar", barValue = 120f, lineValue = 140f),
- *             ComboChartData("Apr", barValue = 180f, lineValue = 160f)
- *         )
- *     },
- *     barColor = ChartyColor.Solid(Color(0xFF2196F3)),
- *     lineColor = ChartyColor.Solid(Color(0xFFF44336)),
- *     comboConfig = ComboChartConfig(
- *         barWidthFraction = 0.6f,
- *         lineWidth = 3f,
- *         showPoints = true,
- *         animation = Animation.Enabled()
- *     )
- * )
- * ```
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it.
  */
 @Composable
 fun ComboChart(
@@ -132,13 +110,15 @@ fun ComboChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onDataClick: ((ComboChartData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    crosshairContent: (@Composable (ComboChartData) -> Unit)? = null,
+    crosshair: ChartCrosshair<ComboChartData>? = null,
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
+    val effectiveComboConfig = crosshair?.let { comboConfig.copy(crosshairConfig = it.config) } ?: comboConfig
+    val activeCrosshair = crosshair ?: comboConfig.crosshairConfig?.let { ChartCrosshair<ComboChartData>(config = it) }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
@@ -162,7 +142,7 @@ fun ComboChart(
     val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, ComboChartData>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<ComboChartData>(comboConfig.crosshairConfig != null)
+        rememberChartCrosshair<ComboChartData>(effectiveComboConfig.crosshairConfig != null)
     val textMeasurer = rememberTextMeasurer()
 
     val chartDescription =
@@ -180,7 +160,7 @@ fun ComboChart(
     val clickModifier =
         buildComboModifier(
             crosshairManager = crosshairManager,
-            comboConfig = comboConfig,
+            comboConfig = effectiveComboConfig,
             dataList = dataList,
             crosshairBounds = crosshairBounds,
             dataBounds = dataBounds,
@@ -216,7 +196,7 @@ fun ComboChart(
                 ComboDrawParams(
                     dataList = dataList,
                     chartContext = chartContext,
-                    comboConfig = comboConfig,
+                    comboConfig = effectiveComboConfig,
                     barColor = barColor,
                     lineColor = lineColor,
                     minValue = minValue,
@@ -232,7 +212,7 @@ fun ComboChart(
                     tooltipState = tooltipState,
                     textMeasurer = textMeasurer,
                     interactionConfig = interactionConfig,
-                    drawCrosshairLabel = crosshairContent == null,
+                    drawCrosshairLabel = false,
                 ),
             )
         }
@@ -240,8 +220,7 @@ fun ComboChart(
         ComboChartOverlays(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
-            comboConfig = comboConfig,
-            crosshairContent = crosshairContent,
+            crosshair = activeCrosshair,
         )
     }
 }
@@ -250,16 +229,14 @@ fun ComboChart(
 private fun BoxScope.ComboChartOverlays(
     crosshairManager: CrosshairManager<ComboChartData>?,
     animatedCrosshairState: CrosshairState?,
-    comboConfig: ComboChartConfig,
-    crosshairContent: (@Composable (ComboChartData) -> Unit)?,
+    crosshair: ChartCrosshair<ComboChartData>?,
 ) {
-    if (crosshairContent != null && crosshairManager != null) {
-        ChartCrosshairOverlay(
-            item = crosshairManager.selectedItem,
+    if (crosshair != null) {
+        ChartCrosshairHost(
+            crosshair = crosshair,
+            item = crosshairManager?.selectedItem,
             state = animatedCrosshairState,
-            config = comboConfig.crosshairConfig?.tooltipConfig ?: comboConfig.tooltipConfig,
             modifier = Modifier.matchParentSize(),
-            content = crosshairContent,
         )
     }
 }

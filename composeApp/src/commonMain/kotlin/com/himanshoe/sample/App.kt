@@ -100,6 +100,7 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
 import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPadding
@@ -3762,8 +3763,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
 
                 item {
                     ChartCard(
-                        title = "Multiline Crosshair",
-                        description = "Drag to snap the crosshair to the nearest x-position. Each series gets its own dot and the label shows all values.",
+                        title = "Multiline Crosshair (custom label)",
+                        description = "Drag to snap the unified crosshair to the nearest x. The label is your own composable, drawn over the line.",
                     ) {
                         MultilineChart(
                             modifier = Modifier.fillMaxWidth().height(260.dp).padding(16.dp),
@@ -3791,11 +3792,30 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                     smoothCurve = true,
                                     showPoints = true,
                                     animation = Animation.Enabled(duration = 1000),
-                                    crosshairConfig =
+                                ),
+                            crosshair =
+                                ChartCrosshair(
+                                    config =
                                         ChartCrosshairConfig(
                                             verticalLineColor = ChartyColor.Solid(Color(0xFF607D8B).copy(alpha = 0.7f)),
                                             dotRadius = 8f,
                                         ),
+                                    label = {
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .background(
+                                                        color = Color(0xFF263238),
+                                                        shape = RoundedCornerShape(8.dp),
+                                                    ).padding(horizontal = 10.dp, vertical = 6.dp),
+                                        ) {
+                                            Text(
+                                                text = "${data.lineGroup.label}: ${data.lineGroup.values.joinToString(" / ") { it.toInt().toString() }}",
+                                                color = Color.White,
+                                                fontSize = 12.sp,
+                                            )
+                                        }
+                                    },
                                 ),
                         )
                     }
