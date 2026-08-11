@@ -28,7 +28,8 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
-import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
@@ -105,7 +106,14 @@ private fun DrawScope.drawAllPoints(
     color: ChartyColor,
     pointBounds: MutableList<Pair<Offset, PointData>>,
     addToBounds: Boolean,
+    textMeasurer: TextMeasurer,
 ) {
+    drawReferenceBandIfNeeded(
+        referenceBandConfig = pointConfig.referenceBand,
+        chartContext = chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = textMeasurer,
+    )
     dataList.fastForEachIndexed { index, point ->
         drawPointWithAnimation(
             point = point,
@@ -317,16 +325,15 @@ fun PointChart(
                 color = color,
                 pointBounds = tooltipManager.bounds,
                 addToBounds = onPointClick != null || crosshairManager != null,
+                textMeasurer = textMeasurer,
             )
 
-            pointConfig.referenceLine?.let { referenceLineConfig ->
-                drawReferenceLine(
-                    chartContext = chartContext,
-                    orientation = ChartOrientation.VERTICAL,
-                    config = referenceLineConfig,
-                    textMeasurer = textMeasurer,
-                )
-            }
+            drawReferenceLineIfNeeded(
+                referenceLineConfig = pointConfig.referenceLine,
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                textMeasurer = textMeasurer,
+            )
 
             drawPointTooltipAndCrosshair(
                 crosshairState = animatedCrosshairState?.resolve(),

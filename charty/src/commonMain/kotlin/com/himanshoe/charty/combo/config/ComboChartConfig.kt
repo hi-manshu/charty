@@ -6,6 +6,7 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
@@ -25,6 +26,7 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @property animation Animation configuration (Disabled or Enabled with duration)
  * @property referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
+ * @property referenceBand Optional shaded value region drawn behind the combo data (see [ReferenceBandConfig])
  * @property tooltipConfig Configuration for tooltip appearance when a data point is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
@@ -44,6 +46,7 @@ data class ComboChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
+    val referenceBand: ReferenceBandConfig? = null,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (ComboChartData) -> String = { data ->

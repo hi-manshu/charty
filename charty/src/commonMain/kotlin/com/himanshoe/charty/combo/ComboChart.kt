@@ -33,6 +33,7 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
@@ -259,6 +260,12 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
         } else {
             p.chartContext.bottom
         }
+    drawReferenceBandIfNeeded(
+        referenceBandConfig = p.comboConfig.referenceBand,
+        chartContext = p.chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = p.textMeasurer,
+    )
     drawComboBars(
         dataList = p.dataList,
         chartContext = p.chartContext,
