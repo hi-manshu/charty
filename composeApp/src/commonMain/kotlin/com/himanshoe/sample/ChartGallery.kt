@@ -510,7 +510,7 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                             BarChartConfig(
                                 referenceBand =
                                     ReferenceBandConfig(
-                                        lowValue = 100f,
+                                        lowValue = 200f,
                                         highValue = 180f,
                                         fill = ChartyColor.Solid(green),
                                         label = "Healthy",
@@ -619,6 +619,19 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             purple,
             listOf(
                 ChartVariant("Default") { GroupedHorizontalBarChart(data = { groups }, modifier = chartFill) },
+                ChartVariant("Tap a bar (onBarClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a bar", selected = selected) { chartModifier ->
+                        GroupedHorizontalBarChart(
+                            data = { groups },
+                            onBarClick = { entry ->
+                                selected =
+                                    "${entry.barGroup.label} · #${entry.barIndex} = ${entry.barValue}"
+                            },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant(
                     "Custom palette",
                 ) { GroupedHorizontalBarChart(data = { groups }, colors = palette, modifier = chartFill) },
@@ -689,6 +702,16 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             blue,
             listOf(
                 ChartVariant("Default") { BubbleBarChart(data = { bars }, modifier = chartFill) },
+                ChartVariant("Tap to select (onBarClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a bubble bar", selected = selected) { chartModifier ->
+                        BubbleBarChart(
+                            data = { bars },
+                            onBarClick = { bar -> selected = "${bar.label} = ${bar.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant(
                     "Gradient",
                 ) { BubbleBarChart(data = { bars }, color = blueGradient, modifier = chartFill) },
@@ -701,6 +724,16 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             green,
             listOf(
                 ChartVariant("Default") { WaterfallChart(data = { bars }, modifier = chartFill) },
+                ChartVariant("Tap to select (onBarClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a step", selected = selected) { chartModifier ->
+                        WaterfallChart(
+                            data = { bars },
+                            onBarClick = { bar -> selected = "${bar.label} = ${bar.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant("With ups and downs") { WaterfallChart(data = { barsSigned }, modifier = chartFill) },
             ),
         ),
@@ -820,6 +853,16 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                 ChartVariant(
                     "Warm gradient",
                 ) { AreaChart(data = { line }, color = warmGradient, modifier = chartFill) },
+                ChartVariant("Tap a point (onPointClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a point", selected = selected) { chartModifier ->
+                        AreaChart(
+                            data = { line },
+                            onPointClick = { point -> selected = "${point.label} = ${point.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
             ),
         ),
         ChartDemo(
