@@ -83,6 +83,8 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.PillTooltip
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
@@ -834,6 +836,48 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                             modifier = chartModifier,
                         )
                     }
+                },
+                ChartVariant("Tooltip: canvas (default)") {
+                    LineChart(data = { line }, onPointClick = {}, tooltip = ChartTooltip.canvas(), modifier = chartFill)
+                },
+                ChartVariant("Tooltip: pill (compose preset)") {
+                    LineChart(
+                        data = { line },
+                        onPointClick = {},
+                        tooltip = ChartTooltip.compose { PillTooltip() },
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Tooltip: fully custom") {
+                    LineChart(
+                        data = { line },
+                        onPointClick = {},
+                        tooltip =
+                            ChartTooltip.compose {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = Color(0xFF212121),
+                                    shadowElevation = 6.dp,
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    ) {
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .size(
+                                                        8.dp,
+                                                    ).clip(CircleShape)
+                                                    .background(Color(0xFF43A047)),
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(text = text, color = Color.White, fontWeight = FontWeight.SemiBold)
+                                    }
+                                }
+                            },
+                        modifier = chartFill,
+                    )
                 },
                 ChartVariant("Smooth curve") {
                     LineChart(
