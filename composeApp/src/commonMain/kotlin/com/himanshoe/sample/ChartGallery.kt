@@ -373,6 +373,30 @@ private fun GalleryTopBar(
 
 private val chartFill: Modifier = Modifier.fillMaxSize()
 
+/**
+ * Wraps a clickable chart with a live selection label above it, so tap variants in the gallery show
+ * the callback firing. [chart] receives the modifier to apply to the chart.
+ */
+@Composable
+private fun SelectionColumn(
+    hint: String,
+    selected: String?,
+    chart: @Composable (Modifier) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = selected ?: hint,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            chart(Modifier.fillMaxSize())
+        }
+    }
+}
+
 private fun buildGalleryDemos(): List<ChartDemo> {
     val blue = ChartyColors.Blue
     val green = ChartyColors.Green
@@ -519,6 +543,16 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         modifier = chartFill,
                     )
                 },
+                ChartVariant("Tap to select (onBarClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a bar", selected = selected) { chartModifier ->
+                        BarChart(
+                            data = { bars },
+                            onBarClick = { bar -> selected = "${bar.label} = ${bar.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
             ),
         ),
         ChartDemo(
@@ -528,6 +562,16 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             green,
             listOf(
                 ChartVariant("Default") { HorizontalBarChart(data = { bars }, modifier = chartFill) },
+                ChartVariant("Tap to select (onBarClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a bar", selected = selected) { chartModifier ->
+                        HorizontalBarChart(
+                            data = { bars },
+                            onBarClick = { bar -> selected = "${bar.label} = ${bar.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant(
                     "Gradient",
                 ) { HorizontalBarChart(data = { bars }, color = coolGradient, modifier = chartFill) },
@@ -550,6 +594,19 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             orange,
             listOf(
                 ChartVariant("Default") { StackedBarChart(data = { groups }, modifier = chartFill) },
+                ChartVariant("Tap a segment (onSegmentClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a segment", selected = selected) { chartModifier ->
+                        StackedBarChart(
+                            data = { groups },
+                            onSegmentClick = { seg ->
+                                selected =
+                                    "${seg.barGroup.label} · #${seg.segmentIndex} = ${seg.segmentValue}"
+                            },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant(
                     "Custom palette",
                 ) { StackedBarChart(data = { groups }, colors = palette, modifier = chartFill) },
@@ -699,6 +756,16 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             blue,
             listOf(
                 ChartVariant("Straight") { LineChart(data = { line }, modifier = chartFill) },
+                ChartVariant("Tap a point (onPointClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a point", selected = selected) { chartModifier ->
+                        LineChart(
+                            data = { line },
+                            onPointClick = { point -> selected = "${point.label} = ${point.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant("Smooth curve") {
                     LineChart(data = { line }, lineConfig = LineChartConfig(smoothCurve = true), modifier = chartFill)
                 },
@@ -797,6 +864,16 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             blue,
             listOf(
                 ChartVariant("Default") { PointChart(data = { points }, modifier = chartFill) },
+                ChartVariant("Tap a point (onPointClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a point", selected = selected) { chartModifier ->
+                        PointChart(
+                            data = { points },
+                            onPointClick = { point -> selected = "${point.label} = ${point.value}" },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant("Value labels") {
                     PointChart(
                         data = { points },
@@ -854,6 +931,26 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         modifier = chartFill,
                     )
                 },
+                ChartVariant("Tap a bubble (onBubbleClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a bubble", selected = selected) { chartModifier ->
+                        BubbleChart(
+                            data = {
+                                listOf(
+                                    BubbleData("A", yValue = 30f, size = 120f),
+                                    BubbleData("B", yValue = 60f, size = 220f),
+                                    BubbleData("C", yValue = 45f, size = 160f),
+                                    BubbleData("D", yValue = 80f, size = 90f),
+                                )
+                            },
+                            onBubbleClick = { bubble ->
+                                selected =
+                                    "${bubble.label} = ${bubble.yValue} (size ${bubble.size})"
+                            },
+                            modifier = chartModifier,
+                        )
+                    }
+                },
             ),
         ),
         ChartDemo(
@@ -888,6 +985,23 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         comboConfig = ComboChartConfig(secondaryAxisForLine = true),
                         modifier = chartFill,
                     )
+                },
+                ChartVariant("Tap a column (onDataClick)") {
+                    var selected by remember { mutableStateOf<String?>(null) }
+                    SelectionColumn(hint = "Tap a column", selected = selected) { chartModifier ->
+                        ComboChart(
+                            data = {
+                                listOf(
+                                    ComboChartData(label = "Jan", barValue = 120f, lineValue = 40f),
+                                    ComboChartData(label = "Feb", barValue = 180f, lineValue = 65f),
+                                    ComboChartData(label = "Mar", barValue = 90f, lineValue = 55f),
+                                    ComboChartData(label = "Apr", barValue = 210f, lineValue = 80f),
+                                )
+                            },
+                            onDataClick = { d -> selected = "${d.label}: bar ${d.barValue}, line ${d.lineValue}" },
+                            modifier = chartModifier,
+                        )
+                    }
                 },
             ),
         ),
