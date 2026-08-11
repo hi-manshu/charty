@@ -138,7 +138,7 @@ import com.himanshoe.charty.radar.data.RadarDataSet
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
-fun App(modifier: Modifier = Modifier) {
+fun AllChartsShowcase(modifier: Modifier = Modifier) {
     MaterialTheme {
         Column(
             modifier = modifier.fillMaxSize(),
