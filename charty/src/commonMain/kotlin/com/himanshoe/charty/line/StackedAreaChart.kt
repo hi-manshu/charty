@@ -277,7 +277,12 @@ private fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
     val seriesCount = dataList.getOrNull(0)?.values?.size ?: 0
 
     lineConfig.referenceBand?.let { band ->
-        drawReferenceBand(chartContext, ChartOrientation.VERTICAL, band, textMeasurer)
+        drawReferenceBand(
+            chartContext = chartContext,
+            orientation = ChartOrientation.VERTICAL,
+            config = band,
+            textMeasurer = textMeasurer,
+        )
     }
 
     params.crosshairBounds?.let { bounds ->

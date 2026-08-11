@@ -23,6 +23,9 @@ project convention for the Charty library. Follow every step; do not skip the ve
 6. **Comment gate.** The staged diff must not add inline `//` comments that restate the code (see
    the `code-comments` skill). Rationale belongs in KDoc, not inline. Check with the grep in that
    skill and remove any noise comments before committing.
+7. **Named-arguments gate.** New/changed calls with 2+ value arguments must pass them by name (see
+   the `named-arguments` skill), outside its listed exemptions. Name the multi-arg calls in the code
+   you touched before committing.
 
 ## Steps
 

@@ -54,15 +54,31 @@ fun DrawScope.drawReferenceBand(
 ) {
     if (!config.isEnabled) return
     val (low, high) =
-        resolveBandValueBounds(config.lowValue, config.highValue, chartContext.minValue, chartContext.maxValue)
-            ?: return
+        resolveBandValueBounds(
+            lowValue = config.lowValue,
+            highValue = config.highValue,
+            minValue = chartContext.minValue,
+            maxValue = chartContext.maxValue,
+        ) ?: return
 
     when (orientation) {
         ChartOrientation.VERTICAL ->
-            drawVerticalReferenceBand(chartContext, config, low, high, textMeasurer)
+            drawVerticalReferenceBand(
+                chartContext = chartContext,
+                config = config,
+                low = low,
+                high = high,
+                textMeasurer = textMeasurer,
+            )
 
         ChartOrientation.HORIZONTAL ->
-            drawHorizontalReferenceBand(chartContext, config, low, high, textMeasurer)
+            drawHorizontalReferenceBand(
+                chartContext = chartContext,
+                config = config,
+                low = low,
+                high = high,
+                textMeasurer = textMeasurer,
+            )
     }
 }
 
@@ -77,30 +93,33 @@ private fun DrawScope.drawVerticalReferenceBand(
     val yLow = chartContext.convertValueToYPosition(low)
     drawRect(
         brush = config.fill.toBandBrush(),
-        topLeft = Offset(chartContext.left, yHigh),
-        size = Size(chartContext.width, yLow - yHigh),
+        topLeft = Offset(x = chartContext.left, y = yHigh),
+        size = Size(width = chartContext.width, height = yLow - yHigh),
         alpha = config.fillAlpha,
     )
     config.borderColor?.let { borderColor ->
         val effect = config.borderStyle.toBandPathEffect()
         drawLine(
-            borderColor,
-            Offset(chartContext.left, yHigh),
-            Offset(chartContext.right, yHigh),
-            config.borderWidth,
+            color = borderColor,
+            start = Offset(x = chartContext.left, y = yHigh),
+            end = Offset(x = chartContext.right, y = yHigh),
+            strokeWidth = config.borderWidth,
             pathEffect = effect,
         )
         drawLine(
-            borderColor,
-            Offset(chartContext.left, yLow),
-            Offset(chartContext.right, yLow),
-            config.borderWidth,
+            color = borderColor,
+            start = Offset(x = chartContext.left, y = yLow),
+            end = Offset(x = chartContext.right, y = yLow),
+            strokeWidth = config.borderWidth,
             pathEffect = effect,
         )
     }
     config.label?.let { label ->
-        val layout = textMeasurer.measure(label, config.labelTextStyle)
-        drawText(layout, topLeft = Offset(chartContext.left + BAND_LABEL_PADDING, yHigh + BAND_LABEL_PADDING))
+        val layout = textMeasurer.measure(text = label, style = config.labelTextStyle)
+        drawText(
+            textLayoutResult = layout,
+            topLeft = Offset(x = chartContext.left + BAND_LABEL_PADDING, y = yHigh + BAND_LABEL_PADDING),
+        )
     }
 }
 
@@ -116,30 +135,33 @@ private fun DrawScope.drawHorizontalReferenceBand(
     val xHigh = chartContext.left + ((high - chartContext.minValue) / range) * chartContext.width
     drawRect(
         brush = config.fill.toBandBrush(),
-        topLeft = Offset(xLow, chartContext.top),
-        size = Size(xHigh - xLow, chartContext.height),
+        topLeft = Offset(x = xLow, y = chartContext.top),
+        size = Size(width = xHigh - xLow, height = chartContext.height),
         alpha = config.fillAlpha,
     )
     config.borderColor?.let { borderColor ->
         val effect = config.borderStyle.toBandPathEffect()
         drawLine(
-            borderColor,
-            Offset(xLow, chartContext.top),
-            Offset(xLow, chartContext.bottom),
-            config.borderWidth,
+            color = borderColor,
+            start = Offset(x = xLow, y = chartContext.top),
+            end = Offset(x = xLow, y = chartContext.bottom),
+            strokeWidth = config.borderWidth,
             pathEffect = effect,
         )
         drawLine(
-            borderColor,
-            Offset(xHigh, chartContext.top),
-            Offset(xHigh, chartContext.bottom),
-            config.borderWidth,
+            color = borderColor,
+            start = Offset(x = xHigh, y = chartContext.top),
+            end = Offset(x = xHigh, y = chartContext.bottom),
+            strokeWidth = config.borderWidth,
             pathEffect = effect,
         )
     }
     config.label?.let { label ->
-        val layout = textMeasurer.measure(label, config.labelTextStyle)
-        drawText(layout, topLeft = Offset(xHigh + BAND_LABEL_PADDING, chartContext.top + BAND_LABEL_PADDING))
+        val layout = textMeasurer.measure(text = label, style = config.labelTextStyle)
+        drawText(
+            textLayoutResult = layout,
+            topLeft = Offset(x = xHigh + BAND_LABEL_PADDING, y = chartContext.top + BAND_LABEL_PADDING),
+        )
     }
 }
 

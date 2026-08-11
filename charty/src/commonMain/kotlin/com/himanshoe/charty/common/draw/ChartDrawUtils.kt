@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -32,6 +33,31 @@ fun DrawScope.drawReferenceLineIfNeeded(
 ) {
     referenceLineConfig?.let { config ->
         drawReferenceLine(
+            chartContext = chartContext,
+            orientation = orientation,
+            config = config,
+            textMeasurer = textMeasurer,
+        )
+    }
+}
+
+/**
+ * Draws a reference band on the chart if a [ReferenceBandConfig] is provided. Call before the data
+ * so the band renders behind it.
+ *
+ * @param referenceBandConfig The band configuration. If `null`, nothing is drawn.
+ * @param chartContext The context of the chart, providing dimensions and value range.
+ * @param orientation The orientation of the value axis.
+ * @param textMeasurer A [TextMeasurer] used for the optional label.
+ */
+fun DrawScope.drawReferenceBandIfNeeded(
+    referenceBandConfig: ReferenceBandConfig?,
+    chartContext: ChartContext,
+    orientation: ChartOrientation,
+    textMeasurer: TextMeasurer,
+) {
+    referenceBandConfig?.let { config ->
+        drawReferenceBand(
             chartContext = chartContext,
             orientation = orientation,
             config = config,

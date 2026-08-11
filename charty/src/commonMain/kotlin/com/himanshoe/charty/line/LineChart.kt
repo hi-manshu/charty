@@ -24,8 +24,8 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
-import com.himanshoe.charty.common.draw.drawReferenceBand
-import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
@@ -151,9 +151,12 @@ fun LineChart(
 
             tooltipManager.clearBounds()
 
-            lineConfig.referenceBand?.let { band ->
-                drawReferenceBand(chartContext, ChartOrientation.VERTICAL, band, textMeasurer)
-            }
+            drawReferenceBandIfNeeded(
+                referenceBandConfig = lineConfig.referenceBand,
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                textMeasurer = textMeasurer,
+            )
 
             val pointPositions = chartContext.calculatePointPositions(dataList)
 
@@ -170,14 +173,12 @@ fun LineChart(
                 animationProgress = animationProgress.value,
             )
 
-            lineConfig.referenceLine?.let { referenceLineConfig ->
-                drawReferenceLine(
-                    chartContext = chartContext,
-                    orientation = ChartOrientation.VERTICAL,
-                    config = referenceLineConfig,
-                    textMeasurer = textMeasurer,
-                )
-            }
+            drawReferenceLineIfNeeded(
+                referenceLineConfig = lineConfig.referenceLine,
+                chartContext = chartContext,
+                orientation = ChartOrientation.VERTICAL,
+                textMeasurer = textMeasurer,
+            )
 
             drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
 

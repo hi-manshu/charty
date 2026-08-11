@@ -239,7 +239,12 @@ private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
     p.pointBounds.clear()
     p.crosshairBounds.clear()
     p.lineConfig.referenceBand?.let { band ->
-        drawReferenceBand(p.chartContext, ChartOrientation.VERTICAL, band, p.textMeasurer)
+        drawReferenceBand(
+            chartContext = p.chartContext,
+            orientation = ChartOrientation.VERTICAL,
+            config = band,
+            textMeasurer = p.textMeasurer,
+        )
     }
     val seriesCount =
         p.dataList

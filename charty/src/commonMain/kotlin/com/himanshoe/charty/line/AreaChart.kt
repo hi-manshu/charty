@@ -28,7 +28,7 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
-import com.himanshoe.charty.common.draw.drawReferenceBand
+import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
@@ -73,6 +73,7 @@ private data class AreaChartDrawParams(
     val fillAlpha: Float,
     val animationProgress: Float,
     val chartContext: com.himanshoe.charty.common.ChartContext,
+    val textMeasurer: androidx.compose.ui.text.TextMeasurer,
     val onBarBoundCalculated: (Pair<Offset, LineData>) -> Unit,
 )
 
@@ -170,9 +171,6 @@ fun AreaChart(
         ) { chartContext ->
             updateInteractionBounds(interactionConfig, chartContext)
             tooltipManager.clearBounds()
-            lineConfig.referenceBand?.let { band ->
-                drawReferenceBand(chartContext, ChartOrientation.VERTICAL, band, textMeasurer)
-            }
             val pointPositions = calculatePointPositions(dataList, chartContext) { tooltipManager.bounds.add(it) }
             val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
             drawAreaChart(
@@ -186,6 +184,7 @@ fun AreaChart(
                         fillAlpha = fillAlpha,
                         animationProgress = animationProgress.value,
                         chartContext = chartContext,
+                        textMeasurer = textMeasurer,
                         onBarBoundCalculated = { if (onPointClick != null) tooltipManager.bounds.add(it) },
                     ),
             )
@@ -356,6 +355,13 @@ private fun calculateBaselineY(
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(params: AreaChartDrawParams) {
     if (params.pointPositions.isEmpty()) return
+
+    drawReferenceBandIfNeeded(
+        referenceBandConfig = params.config.referenceBand,
+        chartContext = params.chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = params.textMeasurer,
+    )
 
     val startX = params.pointPositions.first().x
     val endX = params.pointPositions.last().x

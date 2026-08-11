@@ -144,7 +144,12 @@ fun BarChart(
             val baselineY = calculateBarBaselineY(minValue, isBelowAxisMode, chartContext)
 
             barConfig.referenceBand?.let { band ->
-                drawReferenceBand(chartContext, ChartOrientation.VERTICAL, band, textMeasurer)
+                drawReferenceBand(
+                    chartContext = chartContext,
+                    orientation = ChartOrientation.VERTICAL,
+                    config = band,
+                    textMeasurer = textMeasurer,
+                )
             }
 
             drawBars(
