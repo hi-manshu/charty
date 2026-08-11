@@ -3,6 +3,7 @@ package com.himanshoe.charty.point.config
 import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
@@ -20,6 +21,8 @@ import com.himanshoe.charty.point.data.PointData
  * @property animation Animation configuration (Disabled or Enabled with duration)
  * @property referenceLine Optional reference line configuration for reusable target/avg line support
  * @property referenceBand Optional shaded value region drawn behind the points (see [ReferenceBandConfig])
+ * @property markers Persistent markers pinned to specific points, always drawn regardless of touch
+ *   (see [PersistentMarker]). Empty (the default) draws none.
  * @property tooltipConfig Configuration for tooltip appearance when a point is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Function to format tooltip content from PointData
@@ -36,6 +39,7 @@ data class PointChartConfig(
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
+    val markers: List<PersistentMarker> = emptyList(),
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (PointData) -> String = { pointData ->

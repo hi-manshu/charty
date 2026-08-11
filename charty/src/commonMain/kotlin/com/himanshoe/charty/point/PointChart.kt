@@ -28,8 +28,10 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
@@ -125,6 +127,22 @@ private fun DrawScope.drawAllPoints(
             color = color,
             pointBounds = pointBounds,
             addToBounds = addToBounds,
+        )
+    }
+    if (pointConfig.markers.isNotEmpty()) {
+        val markerPositions =
+            List(dataList.size) { index ->
+                Offset(
+                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
+                    y = chartContext.convertValueToYPosition(dataList[index].value),
+                )
+            }
+        drawPersistentMarkers(
+            chartContext = chartContext,
+            markers = pointConfig.markers,
+            pointPositions = markerPositions,
+            valueLabelFor = { index -> formatMarkerValue(dataList[index].value) },
+            textMeasurer = textMeasurer,
         )
     }
 }

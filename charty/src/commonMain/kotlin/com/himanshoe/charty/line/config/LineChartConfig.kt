@@ -7,6 +7,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
@@ -34,6 +35,8 @@ import com.himanshoe.charty.line.data.LineData
  *   Has no effect if [animation] is [Animation.Disabled].
  * @property referenceLine Optional horizontal or vertical reference line drawn across the chart.
  * @property referenceBand Optional shaded value region drawn behind the data (see [ReferenceBandConfig]).
+ * @property markers Persistent markers pinned to specific points, always drawn regardless of touch
+ *   (see [PersistentMarker]). Empty (the default) draws none.
  * @property tooltipConfig Appearance of the tooltip bubble shown on tap. Only used when
  *   [crosshairConfig] is `null`; the crosshair has its own label config.
  * @property tooltipPosition Preferred placement of the tap tooltip relative to the tapped point.
@@ -65,6 +68,7 @@ data class LineChartConfig(
     val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
+    val markers: List<PersistentMarker> = emptyList(),
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (LineData) -> String = { lineData ->

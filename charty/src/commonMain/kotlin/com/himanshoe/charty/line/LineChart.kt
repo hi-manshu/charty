@@ -28,8 +28,10 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
@@ -172,6 +174,9 @@ fun LineChart(
                 color = color,
                 lineConfig = lineConfig,
                 animationProgress = animationProgress.value,
+                chartContext = chartContext,
+                dataList = dataList,
+                textMeasurer = textMeasurer,
             )
 
             drawReferenceLineIfNeeded(
@@ -279,6 +284,9 @@ private fun DrawScope.drawLineContent(
     color: ChartyColor,
     lineConfig: LineChartConfig,
     animationProgress: Float,
+    chartContext: ChartContext,
+    dataList: List<LineData>,
+    textMeasurer: TextMeasurer,
 ) {
     if (lineConfig.smoothCurve) {
         drawSmoothLine(
@@ -304,6 +312,14 @@ private fun DrawScope.drawLineContent(
             animationProgress = animationProgress,
         )
     }
+
+    drawPersistentMarkers(
+        chartContext = chartContext,
+        markers = lineConfig.markers,
+        pointPositions = pointPositions,
+        valueLabelFor = { index -> formatMarkerValue(dataList[index].value) },
+        textMeasurer = textMeasurer,
+    )
 }
 
 /**
