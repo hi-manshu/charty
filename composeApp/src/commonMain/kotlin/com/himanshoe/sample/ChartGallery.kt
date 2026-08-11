@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -159,7 +160,7 @@ private fun GalleryHomeScreen(
     onOpen: (ChartDemo) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().statusBarsPadding(),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -357,7 +358,8 @@ private fun GalleryTopBar(
                     Brush.horizontalGradient(
                         listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary),
                     ),
-                ).padding(horizontal = 12.dp, vertical = 14.dp),
+                ).statusBarsPadding()
+                .padding(horizontal = 12.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
