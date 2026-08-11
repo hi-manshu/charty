@@ -105,7 +105,7 @@ internal fun DrawScope.drawLinePoints(
     animationProgress: Float,
 ) {
     pointPositions.fastForEachIndexed { index, position ->
-        val pointProgress = index.toFloat() / (pointPositions.size - 1)
+        val pointProgress = index.toFloat() / (pointPositions.size - 1).coerceAtLeast(1)
         if (pointProgress <= animationProgress) {
             drawCircle(
                 brush = Brush.linearGradient(lineColor.value),

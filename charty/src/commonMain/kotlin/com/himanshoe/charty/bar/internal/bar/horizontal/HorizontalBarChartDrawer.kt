@@ -23,6 +23,7 @@ private const val DATA_LABEL_PADDING = 4f
 @OptIn(ExperimentalTextApi::class)
 internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
     val range = params.maxValue - params.minValue
+    if (range == 0f) return // all-equal (e.g. all-zero) data: nothing meaningful to scale
 
     params.dataList.fastForEachIndexed { index, bar ->
         val barHeight = params.chartContext.height / params.dataList.size

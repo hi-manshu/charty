@@ -68,14 +68,16 @@ internal fun DrawScope.drawBars(params: BarDrawParams) {
         val barWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
         val barValueY = chartContext.convertValueToYPosition(bar.value)
         val isNegative = bar.value < 0f
+        val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
         val (barTop, barHeight) =
-            if (isNegative) {
-                baselineY to (barValueY - baselineY) * animationProgress
-            } else {
-                val animatedBarHeight = (baselineY - barValueY) * animationProgress
-                baselineY - animatedBarHeight to animatedBarHeight
-            }
+            calculateVerticalBarDimensions(
+                isNegative = isNegative,
+                isBelowAxisMode = isBelowAxisMode,
+                baselineY = baselineY,
+                barValueY = barValueY,
+                animationProgress = animationProgress,
+            )
 
         if (recordBounds) {
             barBounds.add(

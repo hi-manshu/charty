@@ -127,6 +127,14 @@ tasks.withType<ProcessResources> {
     dependsOn(generateVerificationFile)
 }
 
+// The Compose-resources plugin's prepare/copy/convert tasks read `src/commonMain/resources`,
+// which is where `generateVerificationFile` writes its output. They are not `ProcessResources`
+// tasks, so without this explicit dependency Gradle 9's validation aborts (e.g. `allTests`) with an
+// implicit-dependency error. Declaring the dependency is Gradle's recommended resolution.
+tasks
+    .matching { it.name.contains("ComposeResources") }
+    .configureEach { dependsOn(generateVerificationFile) }
+
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()

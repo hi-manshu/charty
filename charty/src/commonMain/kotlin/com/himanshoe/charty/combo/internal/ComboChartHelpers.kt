@@ -29,7 +29,7 @@ internal fun MutableList<Pair<Rect, ComboChartData>>.addPointHitAreas(
     animationProgress: Float,
 ) {
     pointPositions.fastForEachIndexed { index, position ->
-        val pointProgress = index.toFloat() / (pointPositions.size - 1)
+        val pointProgress = index.toFloat() / (pointPositions.size - 1).coerceAtLeast(1)
         if (pointProgress <= animationProgress) {
             val hitRadius = comboConfig.pointRadius * ComboChartConstants.TWO
             add(

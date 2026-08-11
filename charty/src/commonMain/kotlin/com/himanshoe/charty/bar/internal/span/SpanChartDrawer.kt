@@ -10,6 +10,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 
 internal fun DrawScope.drawSpans(params: SpanDrawParams) {
     val range = params.maxValue - params.minValue
+    if (range == 0f) return // all spans share one value: no width to normalize against
 
     params.dataList.fastForEachIndexed { index, span ->
         val spanChartyColor = span.color ?: params.colors

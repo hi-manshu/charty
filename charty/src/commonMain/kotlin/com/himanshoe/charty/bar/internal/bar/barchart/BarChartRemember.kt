@@ -5,10 +5,10 @@ import androidx.compose.runtime.remember
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.data.getValues
-import com.himanshoe.charty.common.util.baselineValueRange
 
 /**
- * Helper function to remember the value range (min, max) for the Y axis
+ * Helper function to remember the value range (min, max) for the Y axis, honoring the chart's
+ * [negativeValuesDrawMode] (see [barValueRange]).
  */
 @Composable
 internal fun rememberBarValueRange(
@@ -16,5 +16,5 @@ internal fun rememberBarValueRange(
     negativeValuesDrawMode: NegativeValuesDrawMode,
 ): Pair<Float, Float> =
     remember(dataList, negativeValuesDrawMode) {
-        baselineValueRange(dataList.getValues())
+        barValueRange(dataList.getValues(), negativeValuesDrawMode)
     }

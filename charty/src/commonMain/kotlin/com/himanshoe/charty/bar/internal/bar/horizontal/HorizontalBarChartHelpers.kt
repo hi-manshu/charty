@@ -20,14 +20,12 @@ internal fun calculateHorizontalBaselineX(
     minValue: Float,
     maxValue: Float,
     chartContext: ChartContext,
-): Float =
-    if (drawAxisAtZero) {
-        val range = maxValue - minValue
-        val zeroNormalized = (0f - minValue) / range
-        chartContext.left + (zeroNormalized * chartContext.width)
-    } else {
-        chartContext.left
-    }
+): Float {
+    val range = maxValue - minValue
+    if (!drawAxisAtZero || range == 0f) return chartContext.left
+    val zeroNormalized = (0f - minValue) / range
+    return chartContext.left + (zeroNormalized * chartContext.width)
+}
 
 internal fun calculateHorizontalBarDimensions(
     isNegative: Boolean,
