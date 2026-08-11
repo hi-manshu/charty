@@ -199,7 +199,7 @@ fun AreaChart(
                 }
             }
             drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
-            animatedCrosshairState?.let { crosshairState ->
+            animatedCrosshairState?.resolve()?.let { crosshairState ->
                 lineConfig.crosshairConfig?.let { crosshairConfig ->
                     drawLineChartCrosshair(
                         crosshairState,
@@ -216,7 +216,7 @@ fun AreaChart(
         AreaChartOverlays(
             tooltipManager = tooltipManager,
             crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState,
+            animatedCrosshairState = animatedCrosshairState?.resolve(),
             lineConfig = lineConfig,
             tooltipContent = tooltipContent,
             crosshairContent = crosshairContent,

@@ -166,7 +166,7 @@ fun BubbleChart(
             drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
 
             drawBubbleCrosshair(
-                crosshairState = animatedCrosshairState,
+                crosshairState = animatedCrosshairState?.resolve(),
                 crosshairConfig = crosshairConfig,
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
@@ -177,7 +177,7 @@ fun BubbleChart(
 
         BubbleChartOverlay(
             crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState,
+            animatedCrosshairState = animatedCrosshairState?.resolve(),
             crosshairConfig = crosshairConfig,
             config = config,
             crosshairContent = crosshairContent,

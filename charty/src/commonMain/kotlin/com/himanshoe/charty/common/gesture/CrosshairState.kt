@@ -5,6 +5,8 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,12 +84,26 @@ class CrosshairManager<T> {
 fun <T> rememberCrosshairManager(): CrosshairManager<T> = remember { CrosshairManager() }
 
 /**
+ * A position-smoothed crosshair whose animated `x`/`y` are held as [State] rather than read eagerly.
+ *
+ * Call [resolve] from inside a `DrawScope` block to read the current animated position; because the
+ * read then happens in the draw phase, a crosshair drag invalidates draw only and does not recompose
+ * the host chart every frame.
+ */
+@Immutable
+internal class AnimatedCrosshair(
+    private val animatedX: State<Float>,
+    private val animatedY: State<Float>,
+    private val label: String,
+) {
+    fun resolve(): CrosshairState = CrosshairState(x = animatedX.value, y = animatedY.value, label = label)
+}
+
+/**
  * Bundles the standard crosshair setup used by every crosshair-capable chart: a nullable
- * [CrosshairManager] (present only when [enabled]) and the position-smoothed [CrosshairState]
+ * [CrosshairManager] (present only when [enabled]) and the position-smoothed [AnimatedCrosshair]
  * derived from it via [rememberAnimatedCrosshairState].
  *
- * Charts previously repeated these two lines individually, which made it easy to accidentally draw
- * the raw (un-animated) manager state. Prefer this single call:
  * ```kotlin
  * val (crosshairManager, animatedCrosshairState) =
  *     rememberChartCrosshair<LineData>(lineConfig.crosshairConfig != null)
@@ -95,33 +111,31 @@ fun <T> rememberCrosshairManager(): CrosshairManager<T> = remember { CrosshairMa
  *
  * @param enabled Whether the crosshair is configured for this chart (typically
  *   `config.crosshairConfig != null`). When `false`, both returned values are `null`.
- * @return A [Pair] of `(manager, animatedState)`.
+ * @return A [Pair] of `(manager, animatedCrosshair)`.
  */
 @Composable
-internal fun <T> rememberChartCrosshair(enabled: Boolean): Pair<CrosshairManager<T>?, CrosshairState?> {
+internal fun <T> rememberChartCrosshair(enabled: Boolean): Pair<CrosshairManager<T>?, AnimatedCrosshair?> {
     val manager = if (enabled) rememberCrosshairManager<T>() else null
-    val animatedState = rememberAnimatedCrosshairState(manager?.state)
-    return manager to animatedState
+    val animated = rememberAnimatedCrosshairState(manager?.state)
+    return manager to animated
 }
 
 /**
- * Returns a [CrosshairState] whose `x`/`y` smoothly animate toward [state]'s position, so the
- * crosshair glides between data points during a drag instead of snapping instantly.
- *
- * The [label] is taken directly from [state] (no animation). Returns `null` when [state] is `null`,
- * which also resets the internal animations so the next appearance starts cleanly at its target.
+ * Returns an [AnimatedCrosshair] whose `x`/`y` springs toward [state]'s position, so the crosshair
+ * glides between data points during a drag instead of snapping instantly. The animated values are
+ * held as [State] and read lazily via [AnimatedCrosshair.resolve]. Returns `null` when [state] is
+ * `null`, which also resets the internal animations so the next appearance starts at its target.
  *
  * @param state The target crosshair state to follow, or `null` when the crosshair is hidden.
- * @param animationSpec The spring used to drive the positional motion. Defaults to a smooth,
- *   non-bouncy spring tuned for responsive snapping.
+ * @param animationSpec The spring used to drive the positional motion.
  */
 @Composable
-fun rememberAnimatedCrosshairState(
+internal fun rememberAnimatedCrosshairState(
     state: CrosshairState?,
     animationSpec: AnimationSpec<Float> = spring(stiffness = Spring.StiffnessMediumLow),
-): CrosshairState? {
+): AnimatedCrosshair? {
     state ?: return null
-    val animatedX by animateFloatAsState(targetValue = state.x, animationSpec = animationSpec)
-    val animatedY by animateFloatAsState(targetValue = state.y, animationSpec = animationSpec)
-    return state.copy(x = animatedX, y = animatedY)
+    val animatedX = animateFloatAsState(targetValue = state.x, animationSpec = animationSpec)
+    val animatedY = animateFloatAsState(targetValue = state.y, animationSpec = animationSpec)
+    return AnimatedCrosshair(animatedX, animatedY, state.label)
 }

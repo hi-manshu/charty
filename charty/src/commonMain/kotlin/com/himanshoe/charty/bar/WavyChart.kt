@@ -194,7 +194,7 @@ fun WavyChart(
 
         drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
 
-        animatedCrosshairState?.let { state ->
+        animatedCrosshairState?.resolve()?.let { state ->
             crosshairConfig?.let { cfg ->
                 drawLineChartCrosshair(state, cfg, chartContext, textMeasurer, color)
             }

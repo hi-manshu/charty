@@ -179,7 +179,7 @@ fun LineChart(
             drawInteractionOverlays(interactionConfig, chartContext, dataList.size, textMeasurer)
 
             drawLineCrosshairAndTooltip(
-                crosshairState = animatedCrosshairState,
+                crosshairState = animatedCrosshairState?.resolve(),
                 tooltipManager = tooltipManager,
                 lineConfig = lineConfig,
                 chartContext = chartContext,
@@ -193,7 +193,7 @@ fun LineChart(
         LineChartOverlays(
             tooltipManager = tooltipManager,
             crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState,
+            animatedCrosshairState = animatedCrosshairState?.resolve(),
             lineConfig = lineConfig,
             tooltipContent = tooltipContent,
             crosshairContent = crosshairContent,

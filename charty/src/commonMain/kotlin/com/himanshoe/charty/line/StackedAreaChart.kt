@@ -205,7 +205,7 @@ fun StackedAreaChart(
                     areaSegmentBounds = areaSegmentBounds,
                     crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
                     crosshairManager = crosshairManager,
-                    crosshairState = animatedCrosshairState,
+                    crosshairState = animatedCrosshairState?.resolve(),
                     tooltipState = tooltipState,
                     textMeasurer = textMeasurer,
                     interactionConfig = interactionConfig,

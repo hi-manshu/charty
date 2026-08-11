@@ -181,7 +181,7 @@ fun MultilineChart(
                     crosshairBounds = crosshairBounds,
                     onPointClick = onPointClick,
                     crosshairManager = crosshairManager,
-                    crosshairState = animatedCrosshairState,
+                    crosshairState = animatedCrosshairState?.resolve(),
                     tooltipState = tooltipState,
                     textMeasurer = textMeasurer,
                     interactionConfig = interactionConfig,

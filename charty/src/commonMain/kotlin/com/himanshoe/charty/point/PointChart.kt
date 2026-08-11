@@ -331,7 +331,7 @@ fun PointChart(
             }
 
             drawPointTooltipAndCrosshair(
-                crosshairState = animatedCrosshairState,
+                crosshairState = animatedCrosshairState?.resolve(),
                 tooltipManager = tooltipManager,
                 pointConfig = pointConfig,
                 crosshairConfig = pointConfig.crosshairConfig,
@@ -348,7 +348,7 @@ fun PointChart(
         PointChartOverlays(
             tooltipManager = tooltipManager,
             crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState,
+            animatedCrosshairState = animatedCrosshairState?.resolve(),
             pointConfig = pointConfig,
             crosshairConfig = pointConfig.crosshairConfig,
             tooltipContent = tooltipContent,
