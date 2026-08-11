@@ -78,6 +78,7 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.combo.ComboChart
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
+import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
@@ -893,6 +894,37 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             green,
             listOf(
                 ChartVariant("Default") { AreaChart(data = { line }, modifier = chartFill) },
+                ChartVariant("Income 2022 (marker + guide line)") {
+                    AreaChart(
+                        data = {
+                            listOf(
+                                LineData(label = "Jan", value = 4200f),
+                                LineData(label = "Feb", value = 5600f),
+                                LineData(label = "Mar", value = 5100f),
+                                LineData(label = "Apr", value = 8900f),
+                                LineData(label = "May", value = 9700f),
+                            )
+                        },
+                        color = ChartyColor.Gradient(listOf(Color(0xFF43A047), Color(0x1043A047))),
+                        lineConfig =
+                            LineChartConfig(
+                                interpolation = LineInterpolation.SMOOTH,
+                                showPoints = false,
+                                markers =
+                                    listOf(
+                                        PersistentMarker(
+                                            dataIndex = 3,
+                                            label = "$8,900",
+                                            showGuideLine = true,
+                                            dotColor = ChartyColor.Solid(Color(0xFFFF9800)),
+                                            labelBackgroundColor = ChartyColor.Solid(Color(0xFF43A047)),
+                                        ),
+                                    ),
+                            ),
+                        scaffoldConfig = ChartScaffoldConfig(showAxis = false, showGrid = false),
+                        modifier = chartFill,
+                    )
+                },
                 ChartVariant("Smooth curve") {
                     AreaChart(data = { line }, lineConfig = LineChartConfig(smoothCurve = true), modifier = chartFill)
                 },

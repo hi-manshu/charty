@@ -28,7 +28,9 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
 import com.himanshoe.charty.common.gesture.CrosshairManager
@@ -409,6 +411,14 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(param
             animationProgress = params.animationProgress,
         )
     }
+
+    drawPersistentMarkers(
+        chartContext = params.chartContext,
+        markers = params.config.markers,
+        pointPositions = params.pointPositions,
+        valueLabelFor = { index -> formatMarkerValue(params.dataList[index].value) },
+        textMeasurer = params.textMeasurer,
+    )
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaPoints(
