@@ -327,23 +327,23 @@ private fun buildGalleryDemos(): List<ChartDemo> {
     val purple = ChartyColors.Purple
     val red = ChartyColors.Red
 
-    val bars = listOf(BarData("Jan", 120f), BarData("Feb", 180f), BarData("Mar", 90f), BarData("Apr", 210f), BarData("May", 150f))
-    val line = listOf(LineData("Mon", 20f), LineData("Tue", 45f), LineData("Wed", 30f), LineData("Thu", 70f), LineData("Fri", 55f))
-    val points = listOf(PointData("A", 30f), PointData("B", 65f), PointData("C", 45f), PointData("D", 80f), PointData("E", 50f))
+    val bars = listOf(BarData(label = "Jan", value = 120f), BarData(label = "Feb", value = 180f), BarData(label = "Mar", value = 90f), BarData(label = "Apr", value = 210f), BarData(label = "May", value = 150f))
+    val line = listOf(LineData(label = "Mon", value = 20f), LineData(label = "Tue", value = 45f), LineData(label = "Wed", value = 30f), LineData(label = "Thu", value = 70f), LineData(label = "Fri", value = 55f))
+    val points = listOf(PointData(label = "A", value = 30f), PointData(label = "B", value = 65f), PointData(label = "C", value = 45f), PointData(label = "D", value = 80f), PointData(label = "E", value = 50f))
     val groups =
         listOf(
-            BarGroup("Q1", listOf(40f, 30f, 20f)),
-            BarGroup("Q2", listOf(55f, 25f, 35f)),
-            BarGroup("Q3", listOf(30f, 45f, 25f)),
-            BarGroup("Q4", listOf(60f, 40f, 30f)),
+            BarGroup(label = "Q1", values = listOf(40f, 30f, 20f)),
+            BarGroup(label = "Q2", values = listOf(55f, 25f, 35f)),
+            BarGroup(label = "Q3", values = listOf(30f, 45f, 25f)),
+            BarGroup(label = "Q4", values = listOf(60f, 40f, 30f)),
         )
     val lineGroups =
         listOf(
-            LineGroup("Mon", listOf(20f, 35f, 15f)),
-            LineGroup("Tue", listOf(45f, 28f, 38f)),
-            LineGroup("Wed", listOf(30f, 52f, 25f)),
-            LineGroup("Thu", listOf(70f, 40f, 55f)),
-            LineGroup("Fri", listOf(55f, 65f, 45f)),
+            LineGroup(label = "Mon", values = listOf(20f, 35f, 15f)),
+            LineGroup(label = "Tue", values = listOf(45f, 28f, 38f)),
+            LineGroup(label = "Wed", values = listOf(30f, 52f, 25f)),
+            LineGroup(label = "Thu", values = listOf(70f, 40f, 55f)),
+            LineGroup(label = "Fri", values = listOf(55f, 65f, 45f)),
         )
 
     return listOf(
@@ -369,7 +369,7 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             MosaicBarChart(data = { groups }, modifier = chartFill)
         },
         ChartDemo("Comparison Bar", "Two series compared", "Bar", purple) {
-            ComparisonBarChart(data = { groups.map { BarGroup(it.label, it.values.take(2)) } }, modifier = chartFill)
+            ComparisonBarChart(data = { groups.map { BarGroup(label = it.label, values = it.values.take(2)) } }, modifier = chartFill)
         },
         ChartDemo("Lollipop Bar", "Stems with value dots", "Bar", orange) {
             LollipopBarChart(data = { bars }, modifier = chartFill)
@@ -387,10 +387,10 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             SpanChart(
                 data = {
                     listOf(
-                        SpanData("Mon", 10f, 40f),
-                        SpanData("Tue", 20f, 60f),
-                        SpanData("Wed", 15f, 35f),
-                        SpanData("Thu", 30f, 70f),
+                        SpanData(label = "Mon", startValue = 10f, endValue = 40f),
+                        SpanData(label = "Tue", startValue = 20f, endValue = 60f),
+                        SpanData(label = "Wed", startValue = 15f, endValue = 35f),
+                        SpanData(label = "Thu", startValue = 30f, endValue = 70f),
                     )
                 },
                 modifier = chartFill,
@@ -428,10 +428,10 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             ComboChart(
                 data = {
                     listOf(
-                        ComboChartData("Jan", 120f, 40f),
-                        ComboChartData("Feb", 180f, 65f),
-                        ComboChartData("Mar", 90f, 55f),
-                        ComboChartData("Apr", 210f, 80f),
+                        ComboChartData(label = "Jan", barValue = 120f, lineValue = 40f),
+                        ComboChartData(label = "Feb", barValue = 180f, lineValue = 65f),
+                        ComboChartData(label = "Mar", barValue = 90f, lineValue = 55f),
+                        ComboChartData(label = "Apr", barValue = 210f, lineValue = 80f),
                     )
                 },
                 modifier = chartFill,
@@ -441,10 +441,10 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             CandlestickChart(
                 data = {
                     listOf(
-                        CandleData("Mon", 100f, 130f, 90f, 120f),
-                        CandleData("Tue", 120f, 140f, 110f, 115f),
-                        CandleData("Wed", 115f, 125f, 95f, 105f),
-                        CandleData("Thu", 105f, 150f, 100f, 145f),
+                        CandleData(label = "Mon", open = 100f, high = 130f, low = 90f, close = 120f),
+                        CandleData(label = "Tue", open = 120f, high = 140f, low = 110f, close = 115f),
+                        CandleData(label = "Wed", open = 115f, high = 125f, low = 95f, close = 105f),
+                        CandleData(label = "Thu", open = 105f, high = 150f, low = 100f, close = 145f),
                     )
                 },
                 modifier = chartFill,
@@ -454,10 +454,10 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             PieChart(
                 data = {
                     listOf(
-                        PieData("A", 40f, ChartyColor.Solid(blue)),
-                        PieData("B", 25f, ChartyColor.Solid(green)),
-                        PieData("C", 20f, ChartyColor.Solid(orange)),
-                        PieData("D", 15f, ChartyColor.Solid(red)),
+                        PieData(label = "A", value = 40f, color = ChartyColor.Solid(blue)),
+                        PieData(label = "B", value = 25f, color = ChartyColor.Solid(green)),
+                        PieData(label = "C", value = 20f, color = ChartyColor.Solid(orange)),
+                        PieData(label = "D", value = 15f, color = ChartyColor.Solid(red)),
                     )
                 },
                 modifier = chartFill,
@@ -467,9 +467,9 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             CircularProgressIndicator(
                 rings = {
                     listOf(
-                        CircularRingData("Steps", 72f, 100f, ChartyColor.Solid(blue)),
-                        CircularRingData("Move", 55f, 100f, ChartyColor.Solid(green)),
-                        CircularRingData("Stand", 88f, 100f, ChartyColor.Solid(orange)),
+                        CircularRingData(label = "Steps", progress = 72f, maxValue = 100f, color = ChartyColor.Solid(blue)),
+                        CircularRingData(label = "Move", progress = 55f, maxValue = 100f, color = ChartyColor.Solid(green)),
+                        CircularRingData(label = "Stand", progress = 88f, maxValue = 100f, color = ChartyColor.Solid(orange)),
                     )
                 },
                 modifier = chartFill,
@@ -483,11 +483,11 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                             label = "Player",
                             axes =
                                 listOf(
-                                    RadarAxisData("Speed", 80f),
-                                    RadarAxisData("Power", 65f),
-                                    RadarAxisData("Skill", 90f),
-                                    RadarAxisData("Stamina", 70f),
-                                    RadarAxisData("Defense", 55f),
+                                    RadarAxisData(label = "Speed", value = 80f),
+                                    RadarAxisData(label = "Power", value = 65f),
+                                    RadarAxisData(label = "Skill", value = 90f),
+                                    RadarAxisData(label = "Stamina", value = 70f),
+                                    RadarAxisData(label = "Defense", value = 55f),
                                 ),
                             color = ChartyColor.Solid(blue),
                         ),
@@ -500,16 +500,8 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             MultipleRadarChart(
                 dataSets = {
                     listOf(
-                        RadarDataSet(
-                            "A",
-                            listOf(RadarAxisData("Speed", 80f), RadarAxisData("Power", 60f), RadarAxisData("Skill", 90f), RadarAxisData("Stamina", 70f)),
-                            ChartyColor.Solid(blue),
-                        ),
-                        RadarDataSet(
-                            "B",
-                            listOf(RadarAxisData("Speed", 55f), RadarAxisData("Power", 85f), RadarAxisData("Skill", 60f), RadarAxisData("Stamina", 90f)),
-                            ChartyColor.Solid(orange),
-                        ),
+                        RadarDataSet(label = "A", axes = listOf(RadarAxisData("Speed", 80f), RadarAxisData("Power", 60f), RadarAxisData("Skill", 90f), RadarAxisData("Stamina", 70f)), color = ChartyColor.Solid(blue)),
+                        RadarDataSet(label = "B", axes = listOf(RadarAxisData("Speed", 55f), RadarAxisData("Power", 85f), RadarAxisData("Skill", 60f), RadarAxisData("Stamina", 90f)), color = ChartyColor.Solid(orange)),
                     )
                 },
                 modifier = chartFill,
@@ -519,10 +511,10 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             BlockBarChart(
                 data = {
                     listOf(
-                        BlockData(40f, ChartyColor.Solid(blue)),
-                        BlockData(30f, ChartyColor.Solid(green)),
-                        BlockData(20f, ChartyColor.Solid(orange)),
-                        BlockData(10f, ChartyColor.Solid(red)),
+                        BlockData(value = 40f, color = ChartyColor.Solid(blue)),
+                        BlockData(value = 30f, color = ChartyColor.Solid(green)),
+                        BlockData(value = 20f, color = ChartyColor.Solid(orange)),
+                        BlockData(value = 10f, color = ChartyColor.Solid(red)),
                     )
                 },
                 modifier = chartFill,
@@ -532,7 +524,7 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             CalendarHeatmapChart(
                 data = {
                     (1..90).map { day ->
-                        CalendarData(2024, ((day - 1) / 30) + 1, ((day - 1) % 30) + 1, (day * 7 % 10).toFloat())
+                        CalendarData(year = 2024, month = ((day - 1) / 30) + 1, day = ((day - 1) % 30) + 1, value = (day * 7 % 10).toFloat())
                     }
                 },
                 modifier = chartFill,

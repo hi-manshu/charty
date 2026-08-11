@@ -14,22 +14,31 @@ private const val TOL = 0.001f
 class BarChartMathTest {
     @Test
     fun barValueRange_belowAxis_clampsPositiveMinToZero() {
-        val (min, max) = barValueRange(listOf(15f, 65f), NegativeValuesDrawMode.BELOW_AXIS)
+        val (min, max) =
+            barValueRange(
+                values = listOf(15f, 65f),
+                negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
+            )
         assertEquals(0f, min, TOL)
         assertEquals(70f, max, TOL)
     }
 
     @Test
     fun barValueRange_fromMinValue_keepsRealMinForPositiveData() {
-        val (min, max) = barValueRange(listOf(15f, 65f), NegativeValuesDrawMode.FROM_MIN_VALUE)
+        val (min, max) =
+            barValueRange(
+                values = listOf(15f, 65f),
+                negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE,
+            )
         assertEquals(10f, min, TOL)
         assertEquals(70f, max, TOL)
     }
 
     @Test
     fun barValueRange_negativeData_bothModesKeepNegativeMin() {
-        val below = barValueRange(listOf(-5f, 20f), NegativeValuesDrawMode.BELOW_AXIS)
-        val fromMin = barValueRange(listOf(-5f, 20f), NegativeValuesDrawMode.FROM_MIN_VALUE)
+        val below = barValueRange(values = listOf(-5f, 20f), negativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS)
+        val fromMin =
+            barValueRange(values = listOf(-5f, 20f), negativeValuesDrawMode = NegativeValuesDrawMode.FROM_MIN_VALUE)
         assertEquals(-10f, below.first, TOL)
         assertEquals(-10f, fromMin.first, TOL)
     }

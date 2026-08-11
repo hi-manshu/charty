@@ -181,11 +181,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                 label = "Player A",
                                                 axes =
                                                     listOf(
-                                                        RadarAxisData("Speed", 85f),
-                                                        RadarAxisData("Strength", 70f),
-                                                        RadarAxisData("Defense", 90f),
-                                                        RadarAxisData("Agility", 75f),
-                                                        RadarAxisData("Stamina", 80f),
+                                                        RadarAxisData(label = "Speed", value = 85f),
+                                                        RadarAxisData(label = "Strength", value = 70f),
+                                                        RadarAxisData(label = "Defense", value = 90f),
+                                                        RadarAxisData(label = "Agility", value = 75f),
+                                                        RadarAxisData(label = "Stamina", value = 80f),
                                                     ),
                                                 color = ChartyColor.Solid(Color(0xFF2196F3)),
                                                 fillAlpha = 0.4f,
@@ -237,12 +237,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                 label = "Technical Skills",
                                                 axes =
                                                     listOf(
-                                                        RadarAxisData("Programming", 95f),
-                                                        RadarAxisData("Design", 75f),
-                                                        RadarAxisData("Communication", 80f),
-                                                        RadarAxisData("Leadership", 70f),
-                                                        RadarAxisData("Testing", 85f),
-                                                        RadarAxisData("Documentation", 78f),
+                                                        RadarAxisData(label = "Programming", value = 95f),
+                                                        RadarAxisData(label = "Design", value = 75f),
+                                                        RadarAxisData(label = "Communication", value = 80f),
+                                                        RadarAxisData(label = "Leadership", value = 70f),
+                                                        RadarAxisData(label = "Testing", value = 85f),
+                                                        RadarAxisData(label = "Documentation", value = 78f),
                                                     ),
                                                 color = ChartyColor.Solid(Color(0xFF4CAF50)),
                                                 fillAlpha = 0.35f,
@@ -294,14 +294,14 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                 label = "Product X",
                                                 axes =
                                                     listOf(
-                                                        RadarAxisData("Price", 60f),
-                                                        RadarAxisData("Quality", 95f),
-                                                        RadarAxisData("Features", 80f),
-                                                        RadarAxisData("Support", 85f),
-                                                        RadarAxisData("Reliability", 90f),
-                                                        RadarAxisData("Design", 75f),
-                                                        RadarAxisData("Performance", 88f),
-                                                        RadarAxisData("Usability", 82f),
+                                                        RadarAxisData(label = "Price", value = 60f),
+                                                        RadarAxisData(label = "Quality", value = 95f),
+                                                        RadarAxisData(label = "Features", value = 80f),
+                                                        RadarAxisData(label = "Support", value = 85f),
+                                                        RadarAxisData(label = "Reliability", value = 90f),
+                                                        RadarAxisData(label = "Design", value = 75f),
+                                                        RadarAxisData(label = "Performance", value = 88f),
+                                                        RadarAxisData(label = "Usability", value = 82f),
                                                     ),
                                                 color = ChartyColor.Solid(Color(0xFFE91E63)),
                                                 fillAlpha = 0.3f,
@@ -352,9 +352,9 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             BlockBarChart(
                                 data = {
                                     listOf(
-                                        BlockData(1f, ChartyColor.Solid(Color(0xFFFF6B81))), // Pink
-                                        BlockData(2f, ChartyColor.Solid(Color(0xFFFFE066))), // Yellow
-                                        BlockData(5f, ChartyColor.Solid(Color(0xFF5BE37D))), // Green
+                                        BlockData(value = 1f, color = ChartyColor.Solid(Color(0xFFFF6B81))), // Pink
+                                        BlockData(value = 2f, color = ChartyColor.Solid(Color(0xFFFFE066))), // Yellow
+                                        BlockData(value = 5f, color = ChartyColor.Solid(Color(0xFF5BE37D))), // Green
                                     )
                                 },
                                 blockBarConfig =
@@ -376,10 +376,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             BlockBarChart(
                                 data = {
                                     listOf(
-                                        BlockData(25f, ChartyColor.Solid(Color(0xFF2196F3))),
-                                        BlockData(40f, ChartyColor.Solid(Color(0xFF4CAF50))),
-                                        BlockData(15f, ChartyColor.Solid(Color(0xFFFF9800))),
-                                        BlockData(20f, ChartyColor.Solid(Color(0xFFE91E63))),
+                                        BlockData(value = 25f, color = ChartyColor.Solid(Color(0xFF2196F3))),
+                                        BlockData(value = 40f, color = ChartyColor.Solid(Color(0xFF4CAF50))),
+                                        BlockData(value = 15f, color = ChartyColor.Solid(Color(0xFFFF9800))),
+                                        BlockData(value = 20f, color = ChartyColor.Solid(Color(0xFFE91E63))),
                                     )
                                 },
                                 blockBarConfig =
@@ -401,8 +401,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             BlockBarChart(
                                 data = {
                                     listOf(
-                                        BlockData(70f, ChartyColor.Solid(Color(0xFF00C853))),
-                                        BlockData(30f, ChartyColor.Solid(Color(0xFFBDBDBD))),
+                                        BlockData(value = 70f, color = ChartyColor.Solid(Color(0xFF00C853))),
+                                        BlockData(value = 30f, color = ChartyColor.Solid(Color(0xFFBDBDBD))),
                                     )
                                 },
                                 blockBarConfig =
@@ -426,11 +426,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(240.dp),
                             data = {
                                 listOf(
-                                    BarData("Mon", 10f),
-                                    BarData("Tue", -6f),
-                                    BarData("Wed", 14f),
-                                    BarData("Thu", -12f),
-                                    BarData("Fri", 8f),
+                                    BarData(label = "Mon", value = 10f),
+                                    BarData(label = "Tue", value = -6f),
+                                    BarData(label = "Wed", value = 14f),
+                                    BarData(label = "Thu", value = -12f),
+                                    BarData(label = "Fri", value = 8f),
                                 )
                             },
                             scaffoldConfig = ChartScaffoldConfig(),
@@ -476,15 +476,15 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(320.dp),
                                 data = {
                                     listOf(
-                                        BarData("100", 50f),
-                                        BarData("200", 200f),
-                                        BarData("300", 300f),
-                                        BarData("400", 400f),
-                                        BarData("500", 500f),
-                                        BarData("600", 600f),
-                                        BarData("700", 700f),
-                                        BarData("800", 800f),
-                                        BarData("900", 900f),
+                                        BarData(label = "100", value = 50f),
+                                        BarData(label = "200", value = 200f),
+                                        BarData(label = "300", value = 300f),
+                                        BarData(label = "400", value = 400f),
+                                        BarData(label = "500", value = 500f),
+                                        BarData(label = "600", value = 600f),
+                                        BarData(label = "700", value = 700f),
+                                        BarData(label = "800", value = 800f),
+                                        BarData(label = "900", value = 900f),
                                     )
                                 },
                                 color =
@@ -574,12 +574,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(320.dp),
                                 data = {
                                     listOf(
-                                        BarData("Jan", 12500f),
-                                        BarData("Feb", 15800f),
-                                        BarData("Mar", 14200f),
-                                        BarData("Apr", 18900f),
-                                        BarData("May", 17500f),
-                                        BarData("Jun", 21300f),
+                                        BarData(label = "Jan", value = 12500f),
+                                        BarData(label = "Feb", value = 15800f),
+                                        BarData(label = "Mar", value = 14200f),
+                                        BarData(label = "Apr", value = 18900f),
+                                        BarData(label = "May", value = 17500f),
+                                        BarData(label = "Jun", value = 21300f),
                                     )
                                 },
                                 color =
@@ -666,10 +666,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(280.dp),
                                 data = {
                                     listOf(
-                                        BarData("A", 10f, ChartyColor.Solid(Color(0xFFD64C66))),
-                                        BarData("B", 7f, ChartyColor.Solid(Color(0xFF6A1B9A))),
-                                        BarData("C", 15f, ChartyColor.Solid(Color(0xFF0B1D3B))),
-                                        BarData("D", 32f, ChartyColor.Solid(Color(0xFFD64C66))),
+                                        BarData(label = "A", value = 10f, color = ChartyColor.Solid(Color(0xFFD64C66))),
+                                        BarData(label = "B", value = 7f, color = ChartyColor.Solid(Color(0xFF6A1B9A))),
+                                        BarData(label = "C", value = 15f, color = ChartyColor.Solid(Color(0xFF0B1D3B))),
+                                        BarData(label = "D", value = 32f, color = ChartyColor.Solid(Color(0xFFD64C66))),
                                     )
                                 },
                                 config =
@@ -694,42 +694,26 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(280.dp),
                             data = {
                                 listOf(
-                                    BarGroup(
-                                        "A",
-                                        listOf(55f, 30f, 15f),
-                                        listOf(
+                                    BarGroup(label = "A", values = listOf(55f, 30f, 15f), colors = listOf(
                                             ChartyColor.Solid(Color(0xFF0B1D3B)),
                                             ChartyColor.Solid(Color(0xFFD64C66)),
                                             ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "B",
-                                        listOf(45f, 22f, 33f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "B", values = listOf(45f, 22f, 33f), colors = listOf(
                                             ChartyColor.Solid(Color(0xFF0B1D3B)),
                                             ChartyColor.Solid(Color(0xFFD64C66)),
                                             ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "C",
-                                        listOf(25f, 30f, 45f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "C", values = listOf(25f, 30f, 45f), colors = listOf(
                                             ChartyColor.Solid(Color(0xFF0B1D3B)),
                                             ChartyColor.Solid(Color(0xFFD64C66)),
                                             ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "D",
-                                        listOf(10f, 38f, 52f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "D", values = listOf(10f, 38f, 52f), colors = listOf(
                                             ChartyColor.Solid(Color(0xFF0B1D3B)),
                                             ChartyColor.Solid(Color(0xFFD64C66)),
                                             ChartyColor.Solid(Color(0xFFFFA64D)),
-                                        ),
-                                    ),
+                                        )),
                                 )
                             },
                             config =
@@ -776,11 +760,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(280.dp),
                                 data = {
                                     listOf(
-                                        BarData("A", 210f),
-                                        BarData("B", 380f),
-                                        BarData("C", 310f),
-                                        BarData("D", 170f),
-                                        BarData("E", 450f),
+                                        BarData(label = "A", value = 210f),
+                                        BarData(label = "B", value = 380f),
+                                        BarData(label = "C", value = 310f),
+                                        BarData(label = "D", value = 170f),
+                                        BarData(label = "E", value = 450f),
                                     )
                                 },
                                 colors = ChartyColor.Solid(Color(0xFFE91E63)),
@@ -1063,12 +1047,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarData("Jan", 100f, ChartyColor.Solid(Color(0xFF2196F3))),
-                                    BarData("Feb", 150f, ChartyColor.Solid(Color(0xFF4CAF50))),
-                                    BarData("Mar", 120f, ChartyColor.Solid(Color(0xFFFF9800))),
-                                    BarData("Apr", 180f, ChartyColor.Solid(Color(0xFFE91E63))),
-                                    BarData("May", 160f, ChartyColor.Solid(Color(0xFF9C27B0))),
-                                    BarData("Jun", 200f, ChartyColor.Solid(Color(0xFF00BCD4))),
+                                    BarData(label = "Jan", value = 100f, color = ChartyColor.Solid(Color(0xFF2196F3))),
+                                    BarData(label = "Feb", value = 150f, color = ChartyColor.Solid(Color(0xFF4CAF50))),
+                                    BarData(label = "Mar", value = 120f, color = ChartyColor.Solid(Color(0xFFFF9800))),
+                                    BarData(label = "Apr", value = 180f, color = ChartyColor.Solid(Color(0xFFE91E63))),
+                                    BarData(label = "May", value = 160f, color = ChartyColor.Solid(Color(0xFF9C27B0))),
+                                    BarData(label = "Jun", value = 200f, color = ChartyColor.Solid(Color(0xFF00BCD4))),
                                 )
                             },
                             color = ChartyColor.Solid(Color.Gray), // Fallback color (not used since each bar has its own)
@@ -1215,11 +1199,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        BarData("Marketing", 50f),
-                                        BarData("Development", 60f),
-                                        BarData("Sales", 60f),
-                                        BarData("Operations", 60f),
-                                        BarData("Support", 61f),
+                                        BarData(label = "Marketing", value = 50f),
+                                        BarData(label = "Development", value = 60f),
+                                        BarData(label = "Sales", value = 60f),
+                                        BarData(label = "Operations", value = 60f),
+                                        BarData(label = "Support", value = 61f),
                                     )
                                 },
                                 color = ChartyColor.Solid(Color(0xFF9C27B0)),
@@ -1285,11 +1269,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    BarData("Jan", 45f),
-                                    BarData("Feb", 78f),
-                                    BarData("Mar", 62f),
-                                    BarData("Apr", 89f),
-                                    BarData("May", 55f),
+                                    BarData(label = "Jan", value = 45f),
+                                    BarData(label = "Feb", value = 78f),
+                                    BarData(label = "Mar", value = 62f),
+                                    BarData(label = "Apr", value = 89f),
+                                    BarData(label = "May", value = 55f),
                                 )
                             },
                             barConfig =
@@ -1313,12 +1297,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    BarData("Jan", -45f),
-                                    BarData("Feb", 78f),
-                                    BarData("Mar", -62f),
-                                    BarData("Apr", 89f),
-                                    BarData("May", -55f),
-                                    BarData("Jun", 35f),
+                                    BarData(label = "Jan", value = -45f),
+                                    BarData(label = "Feb", value = 78f),
+                                    BarData(label = "Mar", value = -62f),
+                                    BarData(label = "Apr", value = 89f),
+                                    BarData(label = "May", value = -55f),
+                                    BarData(label = "Jun", value = 35f),
                                 )
                             },
                             barConfig =
@@ -1343,12 +1327,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    BarData("Jan", -45f),
-                                    BarData("Feb", 78f),
-                                    BarData("Mar", -62f),
-                                    BarData("Apr", 89f),
-                                    BarData("May", -55f),
-                                    BarData("Jun", 35f),
+                                    BarData(label = "Jan", value = -45f),
+                                    BarData(label = "Feb", value = 78f),
+                                    BarData(label = "Mar", value = -62f),
+                                    BarData(label = "Apr", value = 89f),
+                                    BarData(label = "May", value = -55f),
+                                    BarData(label = "Jun", value = 35f),
                                 )
                             },
                             barConfig =
@@ -1405,10 +1389,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        BarGroup(
-                                            "Q1",
-                                            listOf(20f, 30f, 15f),
-                                            listOf(
+                                        BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
                                                 ChartyColor.Gradient(
                                                     listOf(
                                                         Color(0xFF1976D2),
@@ -1427,12 +1408,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                         Color(0xFFFF8A65),
                                                     ),
                                                 ),
-                                            ),
-                                        ),
-                                        BarGroup(
-                                            "Q2",
-                                            listOf(25f, 35f, 20f),
-                                            listOf(
+                                            )),
+                                        BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
                                                 ChartyColor.Gradient(
                                                     listOf(
                                                         Color(0xFF1976D2),
@@ -1451,12 +1428,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                         Color(0xFFFF8A65),
                                                     ),
                                                 ),
-                                            ),
-                                        ),
-                                        BarGroup(
-                                            "Q3",
-                                            listOf(30f, 25f, 25f),
-                                            listOf(
+                                            )),
+                                        BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
                                                 ChartyColor.Gradient(
                                                     listOf(
                                                         Color(0xFF1976D2),
@@ -1475,12 +1448,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                         Color(0xFFFF8A65),
                                                     ),
                                                 ),
-                                            ),
-                                        ),
-                                        BarGroup(
-                                            "Q4",
-                                            listOf(28f, 40f, 18f),
-                                            listOf(
+                                            )),
+                                        BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
                                                 ChartyColor.Gradient(
                                                     listOf(
                                                         Color(0xFF1976D2),
@@ -1499,8 +1468,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                         Color(0xFFFF8A65),
                                                     ),
                                                 ),
-                                            ),
-                                        ),
+                                            )),
                                     )
                                 },
                                 onBarClick = { segment ->
@@ -1524,10 +1492,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup(
-                                        "Q1",
-                                        listOf(20f, 30f, 15f),
-                                        listOf(
+                                    BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1546,12 +1511,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q2",
-                                        listOf(25f, 35f, 20f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1570,12 +1531,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q3",
-                                        listOf(30f, 25f, 25f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1594,12 +1551,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q4",
-                                        listOf(28f, 40f, 18f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1618,8 +1571,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
+                                        )),
                                 )
                             },
                             comparisonConfig =
@@ -1640,10 +1592,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup(
-                                        "Q1",
-                                        listOf(20f, 30f, 15f),
-                                        listOf(
+                                    BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1662,12 +1611,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q2",
-                                        listOf(25f, 35f, 20f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1686,12 +1631,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q3",
-                                        listOf(30f, 25f, 25f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1710,12 +1651,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q4",
-                                        listOf(28f, 40f, 18f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -1734,8 +1671,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
+                                        )),
                                 )
                             },
                             comparisonConfig =
@@ -1756,13 +1692,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    PointData("Mon", 23f),
-                                    PointData("Tue", 45f),
-                                    PointData("Wed", 31f),
-                                    PointData("Thu", 67f),
-                                    PointData("Fri", 52f),
-                                    PointData("Sat", 39f),
-                                    PointData("Sun", 28f),
+                                    PointData(label = "Mon", value = 23f),
+                                    PointData(label = "Tue", value = 45f),
+                                    PointData(label = "Wed", value = 31f),
+                                    PointData(label = "Thu", value = 67f),
+                                    PointData(label = "Fri", value = 52f),
+                                    PointData(label = "Sat", value = 39f),
+                                    PointData(label = "Sun", value = 28f),
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF4CAF50)),
@@ -1784,13 +1720,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    LineData("Mon", 20f),
-                                    LineData("Tue", 45f),
-                                    LineData("Wed", 30f),
-                                    LineData("Thu", 70f),
-                                    LineData("Fri", 55f),
-                                    LineData("Sat", 40f),
-                                    LineData("Sun", 65f),
+                                    LineData(label = "Mon", value = 20f),
+                                    LineData(label = "Tue", value = 45f),
+                                    LineData(label = "Wed", value = 30f),
+                                    LineData(label = "Thu", value = 70f),
+                                    LineData(label = "Fri", value = 55f),
+                                    LineData(label = "Sat", value = 40f),
+                                    LineData(label = "Sun", value = 65f),
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFFFF9800)),
@@ -1815,13 +1751,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    PointData("Mon", -23f),
-                                    PointData("Tue", 45f),
-                                    PointData("Wed", -31f),
-                                    PointData("Thu", 67f),
-                                    PointData("Fri", -52f),
-                                    PointData("Sat", 39f),
-                                    PointData("Sun", -28f),
+                                    PointData(label = "Mon", value = -23f),
+                                    PointData(label = "Tue", value = 45f),
+                                    PointData(label = "Wed", value = -31f),
+                                    PointData(label = "Thu", value = 67f),
+                                    PointData(label = "Fri", value = -52f),
+                                    PointData(label = "Sat", value = 39f),
+                                    PointData(label = "Sun", value = -28f),
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF4CAF50)),
@@ -1844,13 +1780,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    PointData("Mon", -23f),
-                                    PointData("Tue", 45f),
-                                    PointData("Wed", -31f),
-                                    PointData("Thu", 67f),
-                                    PointData("Fri", -52f),
-                                    PointData("Sat", 39f),
-                                    PointData("Sun", -28f),
+                                    PointData(label = "Mon", value = -23f),
+                                    PointData(label = "Tue", value = 45f),
+                                    PointData(label = "Wed", value = -31f),
+                                    PointData(label = "Thu", value = 67f),
+                                    PointData(label = "Fri", value = -52f),
+                                    PointData(label = "Sat", value = 39f),
+                                    PointData(label = "Sun", value = -28f),
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFFE91E63)),
@@ -1873,13 +1809,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    LineData("Mon", -20f),
-                                    LineData("Tue", 45f),
-                                    LineData("Wed", -30f),
-                                    LineData("Thu", 70f),
-                                    LineData("Fri", -55f),
-                                    LineData("Sat", 40f),
-                                    LineData("Sun", 65f),
+                                    LineData(label = "Mon", value = -20f),
+                                    LineData(label = "Tue", value = 45f),
+                                    LineData(label = "Wed", value = -30f),
+                                    LineData(label = "Thu", value = 70f),
+                                    LineData(label = "Fri", value = -55f),
+                                    LineData(label = "Sat", value = 40f),
+                                    LineData(label = "Sun", value = 65f),
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFFFF9800)),
@@ -1905,13 +1841,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    LineData("Mon", -20f),
-                                    LineData("Tue", 45f),
-                                    LineData("Wed", -30f),
-                                    LineData("Thu", 70f),
-                                    LineData("Fri", -55f),
-                                    LineData("Sat", 40f),
-                                    LineData("Sun", 65f),
+                                    LineData(label = "Mon", value = -20f),
+                                    LineData(label = "Tue", value = 45f),
+                                    LineData(label = "Wed", value = -30f),
+                                    LineData(label = "Thu", value = 70f),
+                                    LineData(label = "Fri", value = -55f),
+                                    LineData(label = "Sat", value = 40f),
+                                    LineData(label = "Sun", value = 65f),
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF00BCD4)),
@@ -1937,10 +1873,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    BarData("Q1", 35f),
-                                    BarData("Q2", 58f),
-                                    BarData("Q3", 72f),
-                                    BarData("Q4", 48f),
+                                    BarData(label = "Q1", value = 35f),
+                                    BarData(label = "Q2", value = 58f),
+                                    BarData(label = "Q3", value = 72f),
+                                    BarData(label = "Q4", value = 48f),
                                 )
                             },
                             color =
@@ -1961,11 +1897,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    PointData("A", 18f),
-                                    PointData("B", 42f),
-                                    PointData("C", 28f),
-                                    PointData("D", 56f),
-                                    PointData("E", 35f),
+                                    PointData(label = "A", value = 18f),
+                                    PointData(label = "B", value = 42f),
+                                    PointData(label = "C", value = 28f),
+                                    PointData(label = "D", value = 56f),
+                                    PointData(label = "E", value = 35f),
                                 )
                             },
                             color =
@@ -1996,13 +1932,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    LineData("00:00", 12f),
-                                    LineData("04:00", 8f),
-                                    LineData("08:00", 25f),
-                                    LineData("12:00", 45f),
-                                    LineData("16:00", 38f),
-                                    LineData("20:00", 22f),
-                                    LineData("23:59", 15f),
+                                    LineData(label = "00:00", value = 12f),
+                                    LineData(label = "04:00", value = 8f),
+                                    LineData(label = "08:00", value = 25f),
+                                    LineData(label = "12:00", value = 45f),
+                                    LineData(label = "16:00", value = 38f),
+                                    LineData(label = "20:00", value = 22f),
+                                    LineData(label = "23:59", value = 15f),
                                 )
                             },
                             color = ChartyColor.Solid(Color(0xFF00BCD4)),
@@ -2026,10 +1962,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup("Q1", listOf(20f, 30f, 15f)),
-                                    BarGroup("Q2", listOf(25f, 35f, 20f)),
-                                    BarGroup("Q3", listOf(30f, 25f, 25f)),
-                                    BarGroup("Q4", listOf(28f, 40f, 18f)),
+                                    BarGroup(label = "Q1", values = listOf(20f, 30f, 15f)),
+                                    BarGroup(label = "Q2", values = listOf(25f, 35f, 20f)),
+                                    BarGroup(label = "Q3", values = listOf(30f, 25f, 25f)),
+                                    BarGroup(label = "Q4", values = listOf(28f, 40f, 18f)),
                                 )
                             },
                             colors =
@@ -2060,10 +1996,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(300.dp),
                             data = {
                                 listOf(
-                                    BarGroup(
-                                        "Q1",
-                                        listOf(20f, 30f, 15f),
-                                        listOf(
+                                    BarGroup(label = "Q1", values = listOf(20f, 30f, 15f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -2082,12 +2015,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q2",
-                                        listOf(25f, 35f, 20f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q2", values = listOf(25f, 35f, 20f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -2106,12 +2035,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q3",
-                                        listOf(30f, 25f, 25f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q3", values = listOf(30f, 25f, 25f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -2130,12 +2055,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
-                                    BarGroup(
-                                        "Q4",
-                                        listOf(28f, 40f, 18f),
-                                        listOf(
+                                        )),
+                                    BarGroup(label = "Q4", values = listOf(28f, 40f, 18f), colors = listOf(
                                             ChartyColor.Gradient(
                                                 listOf(
                                                     Color(0xFF1976D2),
@@ -2154,8 +2075,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     Color(0xFFFF8A65),
                                                 ),
                                             ),
-                                        ),
-                                    ),
+                                        )),
                                 )
                             },
                             colors = ChartyColor.Solid(Color.Gray), // Fallback (not used)
@@ -2179,10 +2099,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(280.dp),
                             data = {
                                 listOf(
-                                    BarGroup("Engineering", listOf(40f, 25f, 15f)),
-                                    BarGroup("Marketing", listOf(20f, 35f, 30f)),
-                                    BarGroup("Sales", listOf(35f, 20f, 25f)),
-                                    BarGroup("Support", listOf(15f, 30f, 20f)),
+                                    BarGroup(label = "Engineering", values = listOf(40f, 25f, 15f)),
+                                    BarGroup(label = "Marketing", values = listOf(20f, 35f, 30f)),
+                                    BarGroup(label = "Sales", values = listOf(35f, 20f, 25f)),
+                                    BarGroup(label = "Support", values = listOf(15f, 30f, 20f)),
                                 )
                             },
                             colors = ChartyColors.DefaultGradient,
@@ -2267,10 +2187,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(320.dp),
                             data = {
                                 listOf(
-                                    BarGroup("North", listOf(120f, 85f, 60f)),
-                                    BarGroup("South", listOf(95f, 110f, 75f)),
-                                    BarGroup("East", listOf(80f, 90f, 100f)),
-                                    BarGroup("West", listOf(105f, 70f, 80f)),
+                                    BarGroup(label = "North", values = listOf(120f, 85f, 60f)),
+                                    BarGroup(label = "South", values = listOf(95f, 110f, 75f)),
+                                    BarGroup(label = "East", values = listOf(80f, 90f, 100f)),
+                                    BarGroup(label = "West", values = listOf(105f, 70f, 80f)),
                                 )
                             },
                             colors = ChartyColors.ModernPalette,
@@ -2294,10 +2214,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(320.dp),
                             data = {
                                 listOf(
-                                    BarGroup("Jan", listOf(40f, -15f, 25f)),
-                                    BarGroup("Feb", listOf(-20f, 30f, -10f)),
-                                    BarGroup("Mar", listOf(55f, -5f, 35f)),
-                                    BarGroup("Apr", listOf(-30f, 45f, 20f)),
+                                    BarGroup(label = "Jan", values = listOf(40f, -15f, 25f)),
+                                    BarGroup(label = "Feb", values = listOf(-20f, 30f, -10f)),
+                                    BarGroup(label = "Mar", values = listOf(55f, -5f, 35f)),
+                                    BarGroup(label = "Apr", values = listOf(-30f, 45f, 20f)),
                                 )
                             },
                             colors = ChartyColors.WarmPalette,
@@ -2323,10 +2243,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(260.dp),
                             data = {
                                 listOf(
-                                    BarGroup("Product A", listOf(50f, 30f, 20f)),
-                                    BarGroup("Product B", listOf(25f, 45f, 30f)),
-                                    BarGroup("Product C", listOf(35f, 25f, 40f)),
-                                    BarGroup("Product D", listOf(60f, 20f, 20f)),
+                                    BarGroup(label = "Product A", values = listOf(50f, 30f, 20f)),
+                                    BarGroup(label = "Product B", values = listOf(25f, 45f, 30f)),
+                                    BarGroup(label = "Product C", values = listOf(35f, 25f, 40f)),
+                                    BarGroup(label = "Product D", values = listOf(60f, 20f, 20f)),
                                 )
                             },
                             colors = ChartyColors.DefaultGradient,
@@ -2415,13 +2335,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    LineData("Jan", 15f),
-                                    LineData("Feb", 28f),
-                                    LineData("Mar", 42f),
-                                    LineData("Apr", 35f),
-                                    LineData("May", 58f),
-                                    LineData("Jun", 48f),
-                                    LineData("Jul", 65f),
+                                    LineData(label = "Jan", value = 15f),
+                                    LineData(label = "Feb", value = 28f),
+                                    LineData(label = "Mar", value = 42f),
+                                    LineData(label = "Apr", value = 35f),
+                                    LineData(label = "May", value = 58f),
+                                    LineData(label = "Jun", value = 48f),
+                                    LineData(label = "Jul", value = 65f),
                                 )
                             },
                             color =
@@ -2454,13 +2374,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(250.dp),
                             data = {
                                 listOf(
-                                    LineData("Mon", 12f),
-                                    LineData("Tue", 25f),
-                                    LineData("Wed", 18f),
-                                    LineData("Thu", 38f),
-                                    LineData("Fri", 30f),
-                                    LineData("Sat", 45f),
-                                    LineData("Sun", 35f),
+                                    LineData(label = "Mon", value = 12f),
+                                    LineData(label = "Tue", value = 25f),
+                                    LineData(label = "Wed", value = 18f),
+                                    LineData(label = "Thu", value = 38f),
+                                    LineData(label = "Fri", value = 30f),
+                                    LineData(label = "Sat", value = 45f),
+                                    LineData(label = "Sun", value = 35f),
                                 )
                             },
                             color =
@@ -2525,12 +2445,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        LineGroup("Mon", listOf(20f, 35f, 15f)),
-                                        LineGroup("Tue", listOf(45f, 28f, 38f)),
-                                        LineGroup("Wed", listOf(30f, 52f, 25f)),
-                                        LineGroup("Thu", listOf(70f, 40f, 55f)),
-                                        LineGroup("Fri", listOf(55f, 65f, 45f)),
-                                        LineGroup("Sat", listOf(40f, 50f, 35f)),
+                                        LineGroup(label = "Mon", values = listOf(20f, 35f, 15f)),
+                                        LineGroup(label = "Tue", values = listOf(45f, 28f, 38f)),
+                                        LineGroup(label = "Wed", values = listOf(30f, 52f, 25f)),
+                                        LineGroup(label = "Thu", values = listOf(70f, 40f, 55f)),
+                                        LineGroup(label = "Fri", values = listOf(55f, 65f, 45f)),
+                                        LineGroup(label = "Sat", values = listOf(40f, 50f, 35f)),
                                     )
                                 },
                                 colors =
@@ -2603,12 +2523,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        LineGroup("Jan", listOf(25f, 40f)),
-                                        LineGroup("Feb", listOf(35f, 30f)),
-                                        LineGroup("Mar", listOf(50f, 45f)),
-                                        LineGroup("Apr", listOf(45f, 60f)),
-                                        LineGroup("May", listOf(60f, 50f)),
-                                        LineGroup("Jun", listOf(55f, 70f)),
+                                        LineGroup(label = "Jan", values = listOf(25f, 40f)),
+                                        LineGroup(label = "Feb", values = listOf(35f, 30f)),
+                                        LineGroup(label = "Mar", values = listOf(50f, 45f)),
+                                        LineGroup(label = "Apr", values = listOf(45f, 60f)),
+                                        LineGroup(label = "May", values = listOf(60f, 50f)),
+                                        LineGroup(label = "Jun", values = listOf(55f, 70f)),
                                     )
                                 },
                                 colors =
@@ -2685,12 +2605,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        LineGroup("Mon", listOf(20f, 15f, 10f)),
-                                        LineGroup("Tue", listOf(45f, 28f, 12f)),
-                                        LineGroup("Wed", listOf(30f, 22f, 18f)),
-                                        LineGroup("Thu", listOf(70f, 30f, 15f)),
-                                        LineGroup("Fri", listOf(55f, 35f, 20f)),
-                                        LineGroup("Sat", listOf(40f, 25f, 15f)),
+                                        LineGroup(label = "Mon", values = listOf(20f, 15f, 10f)),
+                                        LineGroup(label = "Tue", values = listOf(45f, 28f, 12f)),
+                                        LineGroup(label = "Wed", values = listOf(30f, 22f, 18f)),
+                                        LineGroup(label = "Thu", values = listOf(70f, 30f, 15f)),
+                                        LineGroup(label = "Fri", values = listOf(55f, 35f, 20f)),
+                                        LineGroup(label = "Sat", values = listOf(40f, 25f, 15f)),
                                     )
                                 },
                                 colors =
@@ -2767,10 +2687,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(300.dp),
                                 data = {
                                     listOf(
-                                        LineGroup("Q1", listOf(30f, 25f, 20f)),
-                                        LineGroup("Q2", listOf(40f, 35f, 25f)),
-                                        LineGroup("Q3", listOf(50f, 30f, 30f)),
-                                        LineGroup("Q4", listOf(45f, 40f, 28f)),
+                                        LineGroup(label = "Q1", values = listOf(30f, 25f, 20f)),
+                                        LineGroup(label = "Q2", values = listOf(40f, 35f, 25f)),
+                                        LineGroup(label = "Q3", values = listOf(50f, 30f, 30f)),
+                                        LineGroup(label = "Q4", values = listOf(45f, 40f, 28f)),
                                     )
                                 },
                                 colors =
@@ -2858,10 +2778,10 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().height(400.dp),
                                 data = {
                                     listOf(
-                                        PieData("Product A", 45f),
-                                        PieData("Product B", 30f),
-                                        PieData("Product C", 15f),
-                                        PieData("Product D", 10f),
+                                        PieData(label = "Product A", value = 45f),
+                                        PieData(label = "Product B", value = 30f),
+                                        PieData(label = "Product C", value = 15f),
+                                        PieData(label = "Product D", value = 10f),
                                     )
                                 },
                                 color =
@@ -2909,11 +2829,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(400.dp),
                             data = {
                                 listOf(
-                                    PieData("Sales", 120f),
-                                    PieData("Marketing", 85f),
-                                    PieData("Development", 95f),
-                                    PieData("Support", 60f),
-                                    PieData("Operations", 40f),
+                                    PieData(label = "Sales", value = 120f),
+                                    PieData(label = "Marketing", value = 85f),
+                                    PieData(label = "Development", value = 95f),
+                                    PieData(label = "Support", value = 60f),
+                                    PieData(label = "Operations", value = 40f),
                                 )
                             },
                             color =
@@ -2977,12 +2897,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(450.dp),
                             data = {
                                 listOf(
-                                    PieData("Electronics", 180f),
-                                    PieData("Clothing", 150f),
-                                    PieData("Food", 120f),
-                                    PieData("Books", 80f),
-                                    PieData("Sports", 70f),
-                                    PieData("Others", 50f),
+                                    PieData(label = "Electronics", value = 180f),
+                                    PieData(label = "Clothing", value = 150f),
+                                    PieData(label = "Food", value = 120f),
+                                    PieData(label = "Books", value = 80f),
+                                    PieData(label = "Sports", value = 70f),
+                                    PieData(label = "Others", value = 50f),
                                 )
                             },
                             color =
@@ -3036,12 +2956,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Player 1",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Speed", 85f),
-                                                RadarAxisData("Power", 75f),
-                                                RadarAxisData("Defense", 90f),
-                                                RadarAxisData("Skill", 80f),
-                                                RadarAxisData("Stamina", 70f),
-                                                RadarAxisData("Accuracy", 88f),
+                                                RadarAxisData(label = "Speed", value = 85f),
+                                                RadarAxisData(label = "Power", value = 75f),
+                                                RadarAxisData(label = "Defense", value = 90f),
+                                                RadarAxisData(label = "Skill", value = 80f),
+                                                RadarAxisData(label = "Stamina", value = 70f),
+                                                RadarAxisData(label = "Accuracy", value = 88f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFF00BCD4)),
                                         fillAlpha = 0.3f,
@@ -3050,12 +2970,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Player 2",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Speed", 70f),
-                                                RadarAxisData("Power", 90f),
-                                                RadarAxisData("Defense", 75f),
-                                                RadarAxisData("Skill", 85f),
-                                                RadarAxisData("Stamina", 88f),
-                                                RadarAxisData("Accuracy", 72f),
+                                                RadarAxisData(label = "Speed", value = 70f),
+                                                RadarAxisData(label = "Power", value = 90f),
+                                                RadarAxisData(label = "Defense", value = 75f),
+                                                RadarAxisData(label = "Skill", value = 85f),
+                                                RadarAxisData(label = "Stamina", value = 88f),
+                                                RadarAxisData(label = "Accuracy", value = 72f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFFE91E63)),
                                         fillAlpha = 0.3f,
@@ -3064,12 +2984,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Player 3",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Speed", 92f),
-                                                RadarAxisData("Power", 65f),
-                                                RadarAxisData("Defense", 70f),
-                                                RadarAxisData("Skill", 95f),
-                                                RadarAxisData("Stamina", 80f),
-                                                RadarAxisData("Accuracy", 90f),
+                                                RadarAxisData(label = "Speed", value = 92f),
+                                                RadarAxisData(label = "Power", value = 65f),
+                                                RadarAxisData(label = "Defense", value = 70f),
+                                                RadarAxisData(label = "Skill", value = 95f),
+                                                RadarAxisData(label = "Stamina", value = 80f),
+                                                RadarAxisData(label = "Accuracy", value = 90f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFF4CAF50)),
                                         fillAlpha = 0.3f,
@@ -3122,14 +3042,14 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Product A",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Price", 70f),
-                                                RadarAxisData("Quality", 90f),
-                                                RadarAxisData("Durability", 85f),
-                                                RadarAxisData("Design", 95f),
-                                                RadarAxisData("Features", 80f),
-                                                RadarAxisData("Support", 75f),
-                                                RadarAxisData("Warranty", 88f),
-                                                RadarAxisData("Value", 82f),
+                                                RadarAxisData(label = "Price", value = 70f),
+                                                RadarAxisData(label = "Quality", value = 90f),
+                                                RadarAxisData(label = "Durability", value = 85f),
+                                                RadarAxisData(label = "Design", value = 95f),
+                                                RadarAxisData(label = "Features", value = 80f),
+                                                RadarAxisData(label = "Support", value = 75f),
+                                                RadarAxisData(label = "Warranty", value = 88f),
+                                                RadarAxisData(label = "Value", value = 82f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFF9C27B0)),
                                         fillAlpha = 0.25f,
@@ -3138,14 +3058,14 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Product B",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Price", 95f),
-                                                RadarAxisData("Quality", 75f),
-                                                RadarAxisData("Durability", 70f),
-                                                RadarAxisData("Design", 80f),
-                                                RadarAxisData("Features", 90f),
-                                                RadarAxisData("Support", 85f),
-                                                RadarAxisData("Warranty", 65f),
-                                                RadarAxisData("Value", 88f),
+                                                RadarAxisData(label = "Price", value = 95f),
+                                                RadarAxisData(label = "Quality", value = 75f),
+                                                RadarAxisData(label = "Durability", value = 70f),
+                                                RadarAxisData(label = "Design", value = 80f),
+                                                RadarAxisData(label = "Features", value = 90f),
+                                                RadarAxisData(label = "Support", value = 85f),
+                                                RadarAxisData(label = "Warranty", value = 65f),
+                                                RadarAxisData(label = "Value", value = 88f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFFFF9800)),
                                         fillAlpha = 0.25f,
@@ -3193,11 +3113,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Frontend",
                                         axes =
                                             listOf(
-                                                RadarAxisData("React", 95f),
-                                                RadarAxisData("Vue", 80f),
-                                                RadarAxisData("Angular", 70f),
-                                                RadarAxisData("Svelte", 85f),
-                                                RadarAxisData("Mobile", 75f),
+                                                RadarAxisData(label = "React", value = 95f),
+                                                RadarAxisData(label = "Vue", value = 80f),
+                                                RadarAxisData(label = "Angular", value = 70f),
+                                                RadarAxisData(label = "Svelte", value = 85f),
+                                                RadarAxisData(label = "Mobile", value = 75f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFF2196F3)),
                                         fillAlpha = 0.35f,
@@ -3206,11 +3126,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Backend",
                                         axes =
                                             listOf(
-                                                RadarAxisData("React", 60f),
-                                                RadarAxisData("Vue", 55f),
-                                                RadarAxisData("Angular", 50f),
-                                                RadarAxisData("Svelte", 45f),
-                                                RadarAxisData("Mobile", 40f),
+                                                RadarAxisData(label = "React", value = 60f),
+                                                RadarAxisData(label = "Vue", value = 55f),
+                                                RadarAxisData(label = "Angular", value = 50f),
+                                                RadarAxisData(label = "Svelte", value = 45f),
+                                                RadarAxisData(label = "Mobile", value = 40f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFFFF5722)),
                                         fillAlpha = 0.35f,
@@ -3219,11 +3139,11 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Full Stack",
                                         axes =
                                             listOf(
-                                                RadarAxisData("React", 88f),
-                                                RadarAxisData("Vue", 75f),
-                                                RadarAxisData("Angular", 70f),
-                                                RadarAxisData("Svelte", 65f),
-                                                RadarAxisData("Mobile", 82f),
+                                                RadarAxisData(label = "React", value = 88f),
+                                                RadarAxisData(label = "Vue", value = 75f),
+                                                RadarAxisData(label = "Angular", value = 70f),
+                                                RadarAxisData(label = "Svelte", value = 65f),
+                                                RadarAxisData(label = "Mobile", value = 82f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFF00C853)),
                                         fillAlpha = 0.35f,
@@ -3275,13 +3195,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Q1 2024",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Sales", 75f),
-                                                RadarAxisData("Growth", 68f),
-                                                RadarAxisData("Profit", 82f),
-                                                RadarAxisData("Customer Sat", 90f),
-                                                RadarAxisData("Market Share", 70f),
-                                                RadarAxisData("Innovation", 85f),
-                                                RadarAxisData("Efficiency", 78f),
+                                                RadarAxisData(label = "Sales", value = 75f),
+                                                RadarAxisData(label = "Growth", value = 68f),
+                                                RadarAxisData(label = "Profit", value = 82f),
+                                                RadarAxisData(label = "Customer Sat", value = 90f),
+                                                RadarAxisData(label = "Market Share", value = 70f),
+                                                RadarAxisData(label = "Innovation", value = 85f),
+                                                RadarAxisData(label = "Efficiency", value = 78f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFFFF6B6B)),
                                         fillAlpha = 0.28f,
@@ -3290,13 +3210,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Q2 2024",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Sales", 82f),
-                                                RadarAxisData("Growth", 75f),
-                                                RadarAxisData("Profit", 88f),
-                                                RadarAxisData("Customer Sat", 92f),
-                                                RadarAxisData("Market Share", 78f),
-                                                RadarAxisData("Innovation", 80f),
-                                                RadarAxisData("Efficiency", 85f),
+                                                RadarAxisData(label = "Sales", value = 82f),
+                                                RadarAxisData(label = "Growth", value = 75f),
+                                                RadarAxisData(label = "Profit", value = 88f),
+                                                RadarAxisData(label = "Customer Sat", value = 92f),
+                                                RadarAxisData(label = "Market Share", value = 78f),
+                                                RadarAxisData(label = "Innovation", value = 80f),
+                                                RadarAxisData(label = "Efficiency", value = 85f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFF4ECDC4)),
                                         fillAlpha = 0.28f,
@@ -3305,13 +3225,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Q3 2024",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Sales", 88f),
-                                                RadarAxisData("Growth", 85f),
-                                                RadarAxisData("Profit", 90f),
-                                                RadarAxisData("Customer Sat", 95f),
-                                                RadarAxisData("Market Share", 85f),
-                                                RadarAxisData("Innovation", 88f),
-                                                RadarAxisData("Efficiency", 92f),
+                                                RadarAxisData(label = "Sales", value = 88f),
+                                                RadarAxisData(label = "Growth", value = 85f),
+                                                RadarAxisData(label = "Profit", value = 90f),
+                                                RadarAxisData(label = "Customer Sat", value = 95f),
+                                                RadarAxisData(label = "Market Share", value = 85f),
+                                                RadarAxisData(label = "Innovation", value = 88f),
+                                                RadarAxisData(label = "Efficiency", value = 92f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFF95E1D3)),
                                         fillAlpha = 0.28f,
@@ -3320,13 +3240,13 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         label = "Q4 2024 (Projected)",
                                         axes =
                                             listOf(
-                                                RadarAxisData("Sales", 92f),
-                                                RadarAxisData("Growth", 90f),
-                                                RadarAxisData("Profit", 93f),
-                                                RadarAxisData("Customer Sat", 97f),
-                                                RadarAxisData("Market Share", 88f),
-                                                RadarAxisData("Innovation", 92f),
-                                                RadarAxisData("Efficiency", 95f),
+                                                RadarAxisData(label = "Sales", value = 92f),
+                                                RadarAxisData(label = "Growth", value = 90f),
+                                                RadarAxisData(label = "Profit", value = 93f),
+                                                RadarAxisData(label = "Customer Sat", value = 97f),
+                                                RadarAxisData(label = "Market Share", value = 88f),
+                                                RadarAxisData(label = "Innovation", value = 92f),
+                                                RadarAxisData(label = "Efficiency", value = 95f),
                                             ),
                                         color = ChartyColor.Solid(Color(0xFFF38181)),
                                         fillAlpha = 0.28f,
@@ -3744,12 +3664,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(260.dp).padding(16.dp),
                             data = {
                                 listOf(
-                                    LineGroup("Mon", listOf(20f, 35f, 15f)),
-                                    LineGroup("Tue", listOf(45f, 28f, 38f)),
-                                    LineGroup("Wed", listOf(30f, 52f, 25f)),
-                                    LineGroup("Thu", listOf(70f, 40f, 55f)),
-                                    LineGroup("Fri", listOf(55f, 65f, 45f)),
-                                    LineGroup("Sat", listOf(40f, 50f, 35f)),
+                                    LineGroup(label = "Mon", values = listOf(20f, 35f, 15f)),
+                                    LineGroup(label = "Tue", values = listOf(45f, 28f, 38f)),
+                                    LineGroup(label = "Wed", values = listOf(30f, 52f, 25f)),
+                                    LineGroup(label = "Thu", values = listOf(70f, 40f, 55f)),
+                                    LineGroup(label = "Fri", values = listOf(55f, 65f, 45f)),
+                                    LineGroup(label = "Sat", values = listOf(40f, 50f, 35f)),
                                 )
                             },
                             colors =
@@ -3785,12 +3705,12 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(260.dp).padding(16.dp),
                             data = {
                                 listOf(
-                                    LineGroup("Mon", listOf(20f, 15f, 10f)),
-                                    LineGroup("Tue", listOf(45f, 28f, 12f)),
-                                    LineGroup("Wed", listOf(30f, 22f, 18f)),
-                                    LineGroup("Thu", listOf(70f, 30f, 15f)),
-                                    LineGroup("Fri", listOf(55f, 35f, 20f)),
-                                    LineGroup("Sat", listOf(40f, 25f, 15f)),
+                                    LineGroup(label = "Mon", values = listOf(20f, 15f, 10f)),
+                                    LineGroup(label = "Tue", values = listOf(45f, 28f, 12f)),
+                                    LineGroup(label = "Wed", values = listOf(30f, 22f, 18f)),
+                                    LineGroup(label = "Thu", values = listOf(70f, 30f, 15f)),
+                                    LineGroup(label = "Fri", values = listOf(55f, 35f, 20f)),
+                                    LineGroup(label = "Sat", values = listOf(40f, 25f, 15f)),
                                 )
                             },
                             colors =

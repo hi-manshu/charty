@@ -25,14 +25,20 @@ class ReferenceBandTest {
 
     @Test
     fun bounds_partlyOutside_isClamped() {
-        assertEquals(0f to 50f, resolveBandValueBounds(-10f, 50f, 0f, 100f))
-        assertEquals(50f to 100f, resolveBandValueBounds(50f, 200f, 0f, 100f))
+        assertEquals(
+            0f to 50f,
+            resolveBandValueBounds(lowValue = -10f, highValue = 50f, minValue = 0f, maxValue = 100f),
+        )
+        assertEquals(
+            50f to 100f,
+            resolveBandValueBounds(lowValue = 50f, highValue = 200f, minValue = 0f, maxValue = 100f),
+        )
     }
 
     @Test
     fun bounds_fullyOutside_isNull() {
-        assertNull(resolveBandValueBounds(-20f, -5f, 0f, 100f))
-        assertNull(resolveBandValueBounds(150f, 200f, 0f, 100f))
+        assertNull(resolveBandValueBounds(lowValue = -20f, highValue = -5f, minValue = 0f, maxValue = 100f))
+        assertNull(resolveBandValueBounds(lowValue = 150f, highValue = 200f, minValue = 0f, maxValue = 100f))
     }
 
     @Test
@@ -42,7 +48,7 @@ class ReferenceBandTest {
 
     @Test
     fun bounds_degenerateBand_isNull() {
-        assertNull(resolveBandValueBounds(50f, 50f, 0f, 100f))
+        assertNull(resolveBandValueBounds(lowValue = 50f, highValue = 50f, minValue = 0f, maxValue = 100f))
     }
 
     @Test
