@@ -16,16 +16,16 @@ private const val DEFAULT_STROKE_WIDTH_DP = 3f
  * This config controls the visual appearance and animation behavior of the
  * wavy lines that represent each bar.
  *
- * @param barWidthFraction Fraction of horizontal slot width occupied by each bar (0–1).
- * @param waveAmplitudeFractionOfBarWidth Amplitude of the wave as a fraction of the bar width.
+ * @property barWidthFraction Fraction of horizontal slot width occupied by each bar (0–1).
+ * @property waveAmplitudeFractionOfBarWidth Amplitude of the wave as a fraction of the bar width.
  * A value of `1f / 3f` means the wave will deviate up to one third of the bar width
  * from its center line.
- * @param waveSegments Number of vertical segments used to approximate the sine wave.
+ * @property waveSegments Number of vertical segments used to approximate the sine wave.
  * Higher values produce smoother curves at the cost of more draw operations.
- * @param animationDurationMillis Duration (in milliseconds) of one full wave cycle.
- * @param animationEasing Easing function used for the wave phase animation.
- * @param strokeWidthDp Stroke width of the wavy line in dp.
- * @param phaseOffsetPerBar Optional additional phase offset applied per bar index.
+ * @property animationDurationMillis Duration (in milliseconds) of one full wave cycle.
+ * @property animationEasing Easing function used for the wave phase animation.
+ * @property strokeWidthDp Stroke width of the wavy line in dp.
+ * @property phaseOffsetPerBar Optional additional phase offset applied per bar index.
  * Use `0f` to keep all bars in sync, or a small positive value to create a cascading effect.
  */
 @Stable

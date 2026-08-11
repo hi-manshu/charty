@@ -10,10 +10,10 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Represents a single segment within a mosaic bar that was clicked
  *
- * @param barGroup The entire bar group that contains this segment
- * @param segmentIndex The index of the clicked segment within the bar
- * @param segmentValue The value of the clicked segment
- * @param segmentPercentage The percentage this segment represents of the total
+ * @property barGroup The entire bar group that contains this segment
+ * @property segmentIndex The index of the clicked segment within the bar
+ * @property segmentValue The value of the clicked segment
+ * @property segmentPercentage The percentage this segment represents of the total
  */
 @Immutable
 data class MosaicBarSegment(
@@ -26,10 +26,11 @@ data class MosaicBarSegment(
 /**
  * Configuration for [com.himanshoe.charty.bar.MosaicBarChart]
  *
- * @param barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param tooltipConfig Configuration for tooltip appearance when a segment is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  */
 @Stable
 data class MosaicBarChartConfig(

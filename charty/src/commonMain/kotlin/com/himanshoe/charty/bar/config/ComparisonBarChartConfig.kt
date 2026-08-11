@@ -11,9 +11,9 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Represents a single bar in a comparison chart that was clicked
  *
- * @param barGroup The bar group that contains this bar
- * @param barIndex The index of the clicked bar within the group
- * @param barValue The value of the clicked bar
+ * @property barGroup The bar group that contains this bar
+ * @property barIndex The index of the clicked bar within the group
+ * @property barValue The value of the clicked bar
  */
 @Stable
 data class ComparisonBarSegment(
@@ -25,12 +25,13 @@ data class ComparisonBarSegment(
 /**
  * Configuration for Comparison Bar Chart (formerly Grouped Bar Chart) appearance and behavior
  *
- * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
- * @param cornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param referenceLine Optional reference line configuration
- * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
+ * @property cornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property referenceLine Optional reference line configuration
+ * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  */
 @Stable
 data class ComparisonBarChartConfig(

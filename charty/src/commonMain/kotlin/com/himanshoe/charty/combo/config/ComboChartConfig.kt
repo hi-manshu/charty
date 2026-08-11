@@ -14,20 +14,21 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Configuration for Combo Chart appearance and behavior
  *
- * @param barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
- * @param barCornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
- * @param lineWidth Width of the line stroke in pixels
- * @param showPoints Whether to show circular markers at data points on the line
- * @param pointRadius Radius of point markers in pixels (if showPoints is true)
- * @param pointAlpha Alpha (transparency) value for points (0.0f - 1.0f)
- * @param strokeCap The style of line endings (Butt, Round, or Square)
- * @param smoothCurve Whether to draw smooth curves instead of straight lines
- * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
- * @param tooltipConfig Configuration for tooltip appearance when a data point is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
- * @param crosshairConfig When non-null, enables a draggable crosshair snapping to line points.
+ * @property barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
+ * @property barCornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
+ * @property lineWidth Width of the line stroke in pixels
+ * @property showPoints Whether to show circular markers at data points on the line
+ * @property pointRadius Radius of point markers in pixels (if showPoints is true)
+ * @property pointAlpha Alpha (transparency) value for points (0.0f - 1.0f)
+ * @property strokeCap The style of line endings (Butt, Round, or Square)
+ * @property smoothCurve Whether to draw smooth curves instead of straight lines
+ * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
+ * @property tooltipConfig Configuration for tooltip appearance when a data point is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property crosshairConfig When non-null, enables a draggable crosshair snapping to line points.
  *   Enabling this replaces tap-to-tooltip interaction.
  */
 @Stable

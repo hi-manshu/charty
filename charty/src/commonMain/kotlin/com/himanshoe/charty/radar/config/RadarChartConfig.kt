@@ -38,11 +38,11 @@ enum class RadarGridStyle {
 /**
  * Configuration for radar chart labels
  *
- * @param showLabels Whether to show axis labels
- * @param showValues Whether to show values on data points
- * @param labelDistanceMultiplier Distance multiplier for label positioning (1.0 = at edge, >1.0 = outside)
- * @param labelTextStyle TextStyle for axis labels - allows full customization of text appearance
- * @param valueTextStyle TextStyle for value labels - allows full customization of text appearance
+ * @property showLabels Whether to show axis labels
+ * @property showValues Whether to show values on data points
+ * @property labelDistanceMultiplier Distance multiplier for label positioning (1.0 = at edge, >1.0 = outside)
+ * @property labelTextStyle TextStyle for axis labels - allows full customization of text appearance
+ * @property valueTextStyle TextStyle for value labels - allows full customization of text appearance
  */
 @Stable
 data class RadarLabelConfig(
@@ -60,15 +60,15 @@ data class RadarLabelConfig(
 /**
  * Configuration for radar chart grid appearance
  *
- * @param gridStyle Style of the grid (CIRCULAR or POLYGON)
- * @param numberOfGridLevels Number of concentric grid levels (excluding center)
- * @param showGridLines Whether to show grid lines
- * @param showAxisLines Whether to show axis lines from center to edges
- * @param gridLineWidth Width of grid lines
- * @param axisLineWidth Width of axis lines
- * @param gridLineColor Color of grid lines
- * @param axisLineColor Color of axis lines
- * @param gridLineAlpha Alpha transparency for grid lines
+ * @property gridStyle Style of the grid (CIRCULAR or POLYGON)
+ * @property numberOfGridLevels Number of concentric grid levels (excluding center)
+ * @property showGridLines Whether to show grid lines
+ * @property showAxisLines Whether to show axis lines from center to edges
+ * @property gridLineWidth Width of grid lines
+ * @property axisLineWidth Width of axis lines
+ * @property gridLineColor Color of grid lines
+ * @property axisLineColor Color of axis lines
+ * @property gridLineAlpha Alpha transparency for grid lines
  */
 @Stable
 data class RadarGridConfig(
@@ -103,10 +103,10 @@ data class RadarGridConfig(
 /**
  * Configuration for radar chart center content
  *
- * @param showCenterIcon Whether to show an icon/content in the center
- * @param centerIconSize Size of the center icon/content
- * @param centerBackgroundColor Background color for center area
- * @param centerBackgroundRadius Radius of center background circle
+ * @property showCenterIcon Whether to show an icon/content in the center
+ * @property centerIconSize Size of the center icon/content
+ * @property centerBackgroundColor Background color for center area
+ * @property centerBackgroundRadius Radius of center background circle
  */
 @Stable
 data class RadarCenterConfig(
@@ -124,18 +124,18 @@ data class RadarCenterConfig(
 /**
  * Comprehensive configuration for Radar Chart appearance and behavior
  *
- * @param dataLineWidth Width of the data polygon lines
- * @param showDataPoints Whether to show points at each data vertex
- * @param dataPointRadius Radius of data points
- * @param strokeCap Style of line ends
- * @param strokeJoin Style of line joins
- * @param startAngleDegrees Starting angle in degrees (0° = right, -90° = top)
- * @param labelConfig Configuration for labels
- * @param gridConfig Configuration for grid
- * @param centerConfig Configuration for center content
- * @param animation Animation configuration
- * @param scaleToFit Whether to scale the chart to fit available space
- * @param paddingFraction Padding around the chart as fraction of size
+ * @property dataLineWidth Width of the data polygon lines
+ * @property showDataPoints Whether to show points at each data vertex
+ * @property dataPointRadius Radius of data points
+ * @property strokeCap Style of line ends
+ * @property strokeJoin Style of line joins
+ * @property startAngleDegrees Starting angle in degrees (0° = right, -90° = top)
+ * @property labelConfig Configuration for labels
+ * @property gridConfig Configuration for grid
+ * @property centerConfig Configuration for center content
+ * @property animation Animation configuration
+ * @property scaleToFit Whether to scale the chart to fit available space
+ * @property paddingFraction Padding around the chart as fraction of size
  */
 @Stable
 data class RadarChartConfig(

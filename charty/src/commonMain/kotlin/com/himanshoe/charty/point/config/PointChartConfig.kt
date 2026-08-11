@@ -12,16 +12,16 @@ import com.himanshoe.charty.point.data.PointData
 /**
  * Configuration for Point Chart appearance and behavior
  *
- * @param pointRadius Radius of each point in pixels
- * @param pointAlpha Alpha (transparency) value for points (0.0f - 1.0f)
- * @param showLabels Whether to show data labels on points
- * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param referenceLine Optional reference line configuration for reusable target/avg line support
- * @param tooltipConfig Configuration for tooltip appearance when a point is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
- * @param tooltipFormatter Function to format tooltip content from PointData
- * @param crosshairConfig When non-null, enables a draggable crosshair that tracks the user's finger
+ * @property pointRadius Radius of each point in pixels
+ * @property pointAlpha Alpha (transparency) value for points (0.0f - 1.0f)
+ * @property showLabels Whether to show data labels on points
+ * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property referenceLine Optional reference line configuration for reusable target/avg line support
+ * @property tooltipConfig Configuration for tooltip appearance when a point is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Function to format tooltip content from PointData
+ * @property crosshairConfig When non-null, enables a draggable crosshair that tracks the user's finger
  *   and snaps to the nearest point. When set, it replaces the standard tap-to-tooltip interaction.
  *   Applies to [com.himanshoe.charty.point.PointChart] and [com.himanshoe.charty.point.BubbleChart].
  */

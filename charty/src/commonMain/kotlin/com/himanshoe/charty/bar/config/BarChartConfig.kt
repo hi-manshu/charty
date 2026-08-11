@@ -34,17 +34,18 @@ enum class NegativeValuesDrawMode {
 /**
  * Configuration for Bar Chart appearance and behavior
  *
- * @param barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
- * @param barSpacing Spacing between bars in pixels
- * @param cornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
- * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param referenceLine Optional reference line configuration (target/average line)
- * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
- * @param showDataLabels Whether to show value labels above each bar
- * @param dataLabelFormatter Formats the bar value for the data label text
- * @param dataLabelStyle Text style for data labels
+ * @property barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
+ * @property barSpacing Spacing between bars in pixels
+ * @property cornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
+ * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property referenceLine Optional reference line configuration (target/average line)
+ * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property showDataLabels Whether to show value labels above each bar
+ * @property dataLabelFormatter Formats the bar value for the data label text
+ * @property dataLabelStyle Text style for data labels
  */
 @Stable
 data class BarChartConfig(

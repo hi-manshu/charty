@@ -24,6 +24,13 @@ class AxisConfigTest {
     }
 
     @Test
+    fun formatAxisLabel_largeIntegerValue_noOverflowNoScientificNotation() {
+        // regression: 3e9 exceeds Int.MAX_VALUE (old toInt() overflowed to a negative)
+        assertEquals("3000000000", formatAxisLabel(3_000_000_000f))
+        assertEquals("150000000", formatAxisLabel(150_000_000f))
+    }
+
+    @Test
     fun valueFormatter_defaultsToFormatAxisLabel() {
         val config = AxisConfig(minValue = 0f, maxValue = 100f, steps = 5)
         assertEquals(formatAxisLabel(42f), config.valueFormatter(42f))

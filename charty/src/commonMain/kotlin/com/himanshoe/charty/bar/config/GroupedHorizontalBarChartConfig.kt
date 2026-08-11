@@ -12,9 +12,9 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Identifies a single bar inside a grouped horizontal bar chart that was clicked.
  *
- * @param barGroup The group (row) that contains the tapped bar.
- * @param barIndex Zero-based index of the bar within its group.
- * @param barValue The value of the tapped bar.
+ * @property barGroup The group (row) that contains the tapped bar.
+ * @property barIndex Zero-based index of the bar within its group.
+ * @property barValue The value of the tapped bar.
  */
 @Immutable
 data class GroupedHorizontalBarEntry(
@@ -26,18 +26,18 @@ data class GroupedHorizontalBarEntry(
 /**
  * Configuration for [com.himanshoe.charty.bar.GroupedHorizontalBarChart].
  *
- * @param barWidthFraction Fraction of each row's height occupied by all bars collectively (0.0f – 1.0f).
+ * @property barWidthFraction Fraction of each row's height occupied by all bars collectively (0.0f – 1.0f).
  *   Remaining space is used as top/bottom padding around the bar group within the row.
- * @param barSpacing Gap in pixels between individual bars within the same group.
- * @param cornerRadius Corner radius for the trailing (right) end of each bar.
- * @param negativeValuesDrawMode How to render negative values:
+ * @property barSpacing Gap in pixels between individual bars within the same group.
+ * @property cornerRadius Corner radius for the trailing (right) end of each bar.
+ * @property negativeValuesDrawMode How to render negative values:
  *   [NegativeValuesDrawMode.BELOW_AXIS] draws them to the left of the zero axis line;
  *   [NegativeValuesDrawMode.FROM_MIN_VALUE] aligns all bars from the minimum value.
- * @param animation Animation configuration ([Animation.Disabled] or [Animation.Enabled]).
- * @param referenceLine Optional vertical reference line (e.g. a target or average value).
- * @param tooltipConfig Tooltip appearance configuration.
- * @param tooltipPosition Preferred tooltip placement ([TooltipPosition.AUTO] by default).
- * @param tooltipFormatter Lambda that formats the tooltip text for a tapped [GroupedHorizontalBarEntry].
+ * @property animation Animation configuration ([Animation.Disabled] or [Animation.Enabled]).
+ * @property referenceLine Optional vertical reference line (e.g. a target or average value).
+ * @property tooltipConfig Tooltip appearance configuration.
+ * @property tooltipPosition Preferred tooltip placement ([TooltipPosition.AUTO] by default).
+ * @property tooltipFormatter Lambda that formats the tooltip text for a tapped [GroupedHorizontalBarEntry].
  */
 @Stable
 data class GroupedHorizontalBarChartConfig(

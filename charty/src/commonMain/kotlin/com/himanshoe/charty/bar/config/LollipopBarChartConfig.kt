@@ -10,14 +10,15 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Configuration for [com.himanshoe.charty.bar.LollipopBarChart]
  *
- * @param barWidthFraction Fraction of horizontal space each lollipop stem occupies (0f..1f)
- * @param stemThickness Thickness of the vertical stem in pixels
- * @param circleRadius Radius of the lollipop circle in pixels
- * @param circleStrokeWidth Optional stroke width for drawing the circle as a ring; 0f for filled
- * @param circleColor Optional override color for the circle head. If null, falls back to the bar color.
- * @param animation Animation configuration for growing stems from baseline
- * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property barWidthFraction Fraction of horizontal space each lollipop stem occupies (0f..1f)
+ * @property stemThickness Thickness of the vertical stem in pixels
+ * @property circleRadius Radius of the lollipop circle in pixels
+ * @property circleStrokeWidth Optional stroke width for drawing the circle as a ring; 0f for filled
+ * @property circleColor Optional override color for the circle head. If null, falls back to the bar color.
+ * @property animation Animation configuration for growing stems from baseline
+ * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  */
 @Stable
 data class LollipopBarChartConfig(

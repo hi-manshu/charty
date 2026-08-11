@@ -14,13 +14,14 @@ private const val DEFAULT_NEGATIVE_COLOR = 0xFFD64C66
 /**
  * Configuration for [com.himanshoe.charty.bar.WaterfallChart]
  *
- * @param barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
- * @param cornerRadius Corner radius for bar corners
- * @param positiveColor Color for positive value bars
- * @param negativeColor Color for negative value bars
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
+ * @property cornerRadius Corner radius for bar corners
+ * @property positiveColor Color for positive value bars
+ * @property negativeColor Color for negative value bars
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  */
 @Stable
 data class WaterfallChartConfig(

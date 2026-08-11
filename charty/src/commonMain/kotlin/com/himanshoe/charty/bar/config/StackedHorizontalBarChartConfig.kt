@@ -12,9 +12,9 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Represents a single segment within a stacked horizontal bar that was clicked.
  *
- * @param barGroup The entire bar group that contains this segment.
- * @param segmentIndex The index of the clicked segment within the bar.
- * @param segmentValue The value of the clicked segment.
+ * @property barGroup The entire bar group that contains this segment.
+ * @property segmentIndex The index of the clicked segment within the bar.
+ * @property segmentValue The value of the clicked segment.
  */
 @Immutable
 data class StackedHorizontalBarSegment(
@@ -26,14 +26,14 @@ data class StackedHorizontalBarSegment(
 /**
  * Configuration for Stacked Horizontal Bar Chart appearance and behavior.
  *
- * @param barWidthFraction Fraction of the available row height that each bar occupies (0.0f – 1.0f).
- * @param barSpacing Spacing between bars in pixels. Must be non-negative.
- * @param rightCornerRadius Corner radius applied to the right (trailing) end of each stacked bar.
- * @param animation Animation configuration ([Animation.Disabled] or [Animation.Enabled] with duration).
- * @param referenceLine Optional configuration for a vertical reference line (e.g., a target or average line).
- * @param tooltipConfig Configuration for tooltip appearance when a segment is clicked.
- * @param tooltipPosition Preferred position for tooltips ([TooltipPosition.ABOVE], [TooltipPosition.BELOW], or [TooltipPosition.AUTO]).
- * @param tooltipFormatter Lambda that formats the tooltip label for a clicked [StackedHorizontalBarSegment].
+ * @property barWidthFraction Fraction of the available row height that each bar occupies (0.0f – 1.0f).
+ * @property barSpacing Spacing between bars in pixels. Must be non-negative.
+ * @property rightCornerRadius Corner radius applied to the right (trailing) end of each stacked bar.
+ * @property animation Animation configuration ([Animation.Disabled] or [Animation.Enabled] with duration).
+ * @property referenceLine Optional configuration for a vertical reference line (e.g., a target or average line).
+ * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked.
+ * @property tooltipPosition Preferred position for tooltips ([TooltipPosition.ABOVE], [TooltipPosition.BELOW], or [TooltipPosition.AUTO]).
+ * @property tooltipFormatter Lambda that formats the tooltip label for a clicked [StackedHorizontalBarSegment].
  */
 @Stable
 data class StackedHorizontalBarChartConfig(

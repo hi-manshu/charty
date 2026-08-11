@@ -11,10 +11,10 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Identifies a single segment inside a normalized horizontal bar chart that was clicked.
  *
- * @param barGroup The group (row) that contains the tapped segment.
- * @param segmentIndex Zero-based index of the segment within the bar.
- * @param segmentValue The raw value of the tapped segment.
- * @param segmentPercentage The percentage share this segment holds within its group (0–100).
+ * @property barGroup The group (row) that contains the tapped segment.
+ * @property segmentIndex Zero-based index of the segment within the bar.
+ * @property segmentValue The raw value of the tapped segment.
+ * @property segmentPercentage The percentage share this segment holds within its group (0–100).
  */
 @Immutable
 data class NormalizedHorizontalBarSegment(
@@ -27,12 +27,12 @@ data class NormalizedHorizontalBarSegment(
 /**
  * Configuration for [com.himanshoe.charty.bar.NormalizedHorizontalBarChart].
  *
- * @param barWidthFraction Fraction of each row's height occupied by the bar (0.0f – 1.0f).
- * @param rightCornerRadius Corner radius applied to the trailing (right) end of each full bar.
- * @param animation Animation configuration ([Animation.Disabled] or [Animation.Enabled]).
- * @param tooltipConfig Tooltip appearance settings.
- * @param tooltipPosition Preferred tooltip placement.
- * @param tooltipFormatter Lambda that formats the tooltip text for a tapped [NormalizedHorizontalBarSegment].
+ * @property barWidthFraction Fraction of each row's height occupied by the bar (0.0f – 1.0f).
+ * @property rightCornerRadius Corner radius applied to the trailing (right) end of each full bar.
+ * @property animation Animation configuration ([Animation.Disabled] or [Animation.Enabled]).
+ * @property tooltipConfig Tooltip appearance settings.
+ * @property tooltipPosition Preferred tooltip placement.
+ * @property tooltipFormatter Lambda that formats the tooltip text for a tapped [NormalizedHorizontalBarSegment].
  *   Defaults to showing the segment label, index, and percentage.
  */
 @Stable

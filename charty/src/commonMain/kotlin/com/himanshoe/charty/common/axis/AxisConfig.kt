@@ -35,17 +35,25 @@ private const val ZERO_VALUE = 0f
  * @param value The float value to be formatted.
  * @return A formatted string representation of the value.
  */
-internal fun formatAxisLabel(value: Float): String =
-    if (value % MODULO_CHECK_ZERO == ZERO_VALUE) {
-        value.toInt().toString()
-    } else {
-        val rounded = round(value * ROUNDING_MULTIPLIER) / ROUNDING_MULTIPLIER
-        val str = rounded.toString()
+internal fun formatAxisLabel(value: Float): String {
+    // toLong (not toInt) avoids overflow for integer-valued magnitudes above Int.MAX_VALUE.
+    if (value % MODULO_CHECK_ZERO == ZERO_VALUE) return value.toLong().toString()
 
-        val dotIndex = str.indexOf('.')
-        if (dotIndex >= 0 && str.length > dotIndex + 1 + MAX_DECIMAL_PLACES) {
-            str.take(dotIndex + 1 + MAX_DECIMAL_PLACES).trimEnd('0').trimEnd('.')
-        } else {
-            str.trimEnd('0').trimEnd('.')
+    val rounded = round(value * ROUNDING_MULTIPLIER) / ROUNDING_MULTIPLIER
+    val str = rounded.toString()
+
+    // Guard against platform scientific notation (e.g. "1.5E7"), which the slice logic would mangle
+    // into "1.5E" and which also renders differently on JVM vs JS/Wasm: fall back to the rounded
+    // integer form. Otherwise trim to at most two decimal places.
+    return when {
+        str.any { it == 'e' || it == 'E' } -> rounded.toLong().toString()
+        else -> {
+            val dotIndex = str.indexOf('.')
+            if (dotIndex >= 0 && str.length > dotIndex + 1 + MAX_DECIMAL_PLACES) {
+                str.take(dotIndex + 1 + MAX_DECIMAL_PLACES).trimEnd('0').trimEnd('.')
+            } else {
+                str.trimEnd('0').trimEnd('.')
+            }
         }
     }
+}

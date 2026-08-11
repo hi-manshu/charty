@@ -7,12 +7,12 @@ import com.himanshoe.charty.common.config.CornerRadius
 /**
  * Configuration for Candlestick Chart appearance and behavior
  *
- * @param candleWidthFraction Fraction of available space that each candle occupies (0.0f - 1.0f)
- * @param wickWidthFraction Fraction of candle width that the wick line occupies (0.0f - 1.0f)
- * @param minCandleBodyHeight Minimum height for candle body in pixels (for doji candles)
- * @param showWicks Whether to show upper and lower wicks
- * @param cornerRadius Corner radius for all corners of candle body (None, Small, Medium, Large, ExtraLarge, or Custom)
- * @param animation Animation configuration (Disabled or Enabled with duration)
+ * @property candleWidthFraction Fraction of available space that each candle occupies (0.0f - 1.0f)
+ * @property wickWidthFraction Fraction of candle width that the wick line occupies (0.0f - 1.0f)
+ * @property minCandleBodyHeight Minimum height for candle body in pixels (for doji candles)
+ * @property showWicks Whether to show upper and lower wicks
+ * @property cornerRadius Corner radius for all corners of candle body (None, Small, Medium, Large, ExtraLarge, or Custom)
+ * @property animation Animation configuration (Disabled or Enabled with duration)
  */
 @Stable
 data class CandlestickChartConfig(

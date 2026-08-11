@@ -10,14 +10,15 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Configuration for Bubble Bar Chart appearance and behavior
  *
- * @param barWidthFraction Fraction of available space that each bar column occupies (0.0f - 1.0f)
- * @param bubbleRadius Radius of each bubble in pixels
- * @param bubbleSpacing Spacing between bubbles in pixels
- * @param negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param referenceLine Optional reference line configuration (target/average line)
- * @param tooltipConfig Configuration for tooltip appearance when a bar is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property barWidthFraction Fraction of available space that each bar column occupies (0.0f - 1.0f)
+ * @property bubbleRadius Radius of each bubble in pixels
+ * @property bubbleSpacing Spacing between bubbles in pixels
+ * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property referenceLine Optional reference line configuration (target/average line)
+ * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  */
 @Stable
 data class BubbleBarChartConfig(

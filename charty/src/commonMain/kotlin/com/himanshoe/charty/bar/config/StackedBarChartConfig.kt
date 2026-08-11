@@ -16,9 +16,9 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 /**
  * Represents a single segment within a stacked bar that was clicked
  *
- * @param barGroup The entire bar group that contains this segment
- * @param segmentIndex The index of the clicked segment within the bar
- * @param segmentValue The value of the clicked segment
+ * @property barGroup The entire bar group that contains this segment
+ * @property segmentIndex The index of the clicked segment within the bar
+ * @property segmentValue The value of the clicked segment
  */
 @Immutable
 data class StackedBarSegment(
@@ -30,16 +30,17 @@ data class StackedBarSegment(
 /**
  * Configuration for Stacked Bar Chart appearance and behavior
  *
- * @param barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
- * @param barSpacing Spacing between bars in pixels
- * @param topCornerRadius Corner radius for the top segment of stacked bars
- * @param animation Animation configuration (Disabled or Enabled with duration)
- * @param referenceLine Optional configuration for a reference line (e.g., target or average line) shared across all bars
- * @param tooltipConfig Configuration for tooltip appearance when a segment is clicked
- * @param tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
- * @param showDataLabels Whether to show the stacked total above each bar
- * @param dataLabelFormatter Formats the total value for the data label text
- * @param dataLabelStyle Text style for data labels
+ * @property barWidthFraction Fraction of available space that each bar occupies (0.0f - 1.0f)
+ * @property barSpacing Spacing between bars in pixels
+ * @property topCornerRadius Corner radius for the top segment of stacked bars
+ * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property referenceLine Optional configuration for a reference line (e.g., target or average line) shared across all bars
+ * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked
+ * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property showDataLabels Whether to show the stacked total above each bar
+ * @property dataLabelFormatter Formats the total value for the data label text
+ * @property dataLabelStyle Text style for data labels
  */
 @Stable
 data class StackedBarChartConfig(

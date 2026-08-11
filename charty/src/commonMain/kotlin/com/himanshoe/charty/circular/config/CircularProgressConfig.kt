@@ -28,16 +28,16 @@ enum class RingDirection {
 /**
  * Comprehensive configuration for CircularProgressIndicator appearance and behavior
  *
- * @param gapBetweenRings Gap between concentric rings in pixels
- * @param startAngleDegrees Starting angle in degrees (-90° = top, 0° = right, 90° = bottom, 180° = left)
- * @param ringDirection Direction to draw rings (CLOCKWISE or COUNTER_CLOCKWISE)
- * @param strokeCap Style of line ends (Round, Butt, or Square)
- * @param animation Animation configuration for entry and transitions
- * @param enableShadows Whether to enable shadows for all rings (individual rings can still override)
- * @param centerHoleRatio Ratio of the center hole size (0.0 = no hole, 1.0 = all hole)
- * @param rotationEnabled Whether the entire ring system should rotate
- * @param rotationDurationMs Duration of one full rotation in milliseconds (only if rotationEnabled)
- * @param interactionEnabled Whether rings respond to clicks/taps
+ * @property gapBetweenRings Gap between concentric rings in pixels
+ * @property startAngleDegrees Starting angle in degrees (-90° = top, 0° = right, 90° = bottom, 180° = left)
+ * @property ringDirection Direction to draw rings (CLOCKWISE or COUNTER_CLOCKWISE)
+ * @property strokeCap Style of line ends (Round, Butt, or Square)
+ * @property animation Animation configuration for entry and transitions
+ * @property enableShadows Whether to enable shadows for all rings (individual rings can still override)
+ * @property centerHoleRatio Ratio of the center hole size (0.0 = no hole, 1.0 = all hole)
+ * @property rotationEnabled Whether the entire ring system should rotate
+ * @property rotationDurationMs Duration of one full rotation in milliseconds (only if rotationEnabled)
+ * @property interactionEnabled Whether rings respond to clicks/taps
  *
  * Usage:
  * ```kotlin
