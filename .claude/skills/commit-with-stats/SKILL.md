@@ -17,8 +17,26 @@ project convention for the Charty library. Follow every step; do not skip the ve
    explicitly said to commit to it, confirm the target before committing. For this repo the user
    typically commits directly to `main` — honor an explicit "commit and push" as approval for `main`.
 4. **Never fabricate stats.** Every number comes from a real git command run in this step.
+5. **Public-API gate.** If the staged change touches public API under `charty/src`, the
+   `public-api-guard` skill's three gates (KDoc, test, performance matrix) must pass first —
+   see step 0.
 
 ## Steps
+
+### 0. Public-API gate (precondition)
+
+If the staged diff adds or changes any public declaration under `charty/src` (a `fun`, `class`,
+`data class`, `enum class`, `object`, `val`/`var`, or composable that is not `internal`/`private`),
+apply the **`public-api-guard`** skill before committing and confirm all three gates pass:
+
+- **KDoc** present and meaningful on every new/changed public declaration.
+- **Test** present and green — `./gradlew :charty:allTests` passes.
+- **Performance matrix** satisfied (stability annotations, `fast*` iteration, no per-frame
+  allocations, memoized derived data).
+
+Also confirm project checks are clean: `./gradlew detekt` and no new ktlint violations. If any gate
+fails, stop and fix it (or make the declaration `internal`) — do not commit. Changes that touch
+only `internal`/`private` code, the sample app, docs, or tooling skip this step.
 
 ### 1. Stage and inspect
 
