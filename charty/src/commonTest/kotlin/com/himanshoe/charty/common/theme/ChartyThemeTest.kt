@@ -3,6 +3,7 @@ package com.himanshoe.charty.common.theme
 import androidx.compose.ui.graphics.Color
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class ChartyThemeTest {
     private val palette = listOf(Color.Red, Color.Green, Color.Blue)
@@ -33,5 +34,19 @@ class ChartyThemeTest {
         val theme = ChartyTheme(palette = emptyList(), primaryColor = Color.Magenta)
         assertEquals(Color.Magenta, theme.colorForSeries(0))
         assertEquals(Color.Magenta, theme.colorForSeries(5))
+    }
+
+    @Test
+    fun lightAndDark_haveDistinctAxisAndLabelColors() {
+        val light = ChartyTheme.light()
+        val dark = ChartyTheme.dark()
+        assertNotEquals(light.axisColor, dark.axisColor)
+        assertNotEquals(light.gridColor, dark.gridColor)
+        assertNotEquals(light.labelTextStyle.color, dark.labelTextStyle.color)
+    }
+
+    @Test
+    fun light_matchesDefaultConstructor() {
+        assertEquals(ChartyTheme(), ChartyTheme.light())
     }
 }
