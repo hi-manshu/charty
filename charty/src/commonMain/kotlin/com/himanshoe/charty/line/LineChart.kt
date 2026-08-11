@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
@@ -18,8 +20,10 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
@@ -93,13 +97,10 @@ fun LineChart(
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
-    val (minValue, maxValue) =
-        remember(dataList, lineConfig.negativeValuesDrawMode) {
-            val values = dataList.getValues()
-            calculateMinValue(values) to calculateMaxValue(values)
-        }
+    val (minValue, maxValue) = rememberLineValueRange(dataList, lineConfig.negativeValuesDrawMode)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(lineConfig.animation)
+    val displayList = rememberAnimatedLineData(dataList, lineConfig.animation, lineConfig.animateValueChanges)
 
     val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
@@ -158,7 +159,7 @@ fun LineChart(
                 textMeasurer = textMeasurer,
             )
 
-            val pointPositions = chartContext.calculatePointPositions(dataList)
+            val pointPositions = chartContext.calculatePointPositions(displayList)
 
             if (onPointClick != null || crosshairManager != null) {
                 pointPositions.fastForEachIndexed { index, position ->
@@ -302,5 +303,41 @@ private fun DrawScope.drawLineContent(
             lineConfig = lineConfig,
             animationProgress = animationProgress,
         )
+    }
+}
+
+/**
+ * Remembers the min/max value range for [dataList], recomputed only when the data or
+ * [negativeValuesDrawMode] changes.
+ */
+@Composable
+private fun rememberLineValueRange(
+    dataList: List<LineData>,
+    negativeValuesDrawMode: NegativeValuesDrawMode,
+): Pair<Float, Float> =
+    remember(dataList, negativeValuesDrawMode) {
+        val values = dataList.getValues()
+        calculateMinValue(values) to calculateMaxValue(values)
+    }
+
+/**
+ * Returns [dataList] with each point's value tweened toward its target whenever the data changes, so
+ * the line glides to its new shape. When [enabled] is `false` or [animation] is disabled the list is
+ * returned unchanged. See [rememberAnimatedValues].
+ */
+@Composable
+private fun rememberAnimatedLineData(
+    dataList: List<LineData>,
+    animation: Animation,
+    enabled: Boolean,
+): List<LineData> {
+    val animatedValues =
+        rememberAnimatedValues(
+            targetValues = dataList.fastMap { it.value },
+            animation = animation,
+            enabled = enabled,
+        )
+    return remember(dataList, animatedValues) {
+        dataList.fastMapIndexed { index, point -> point.copy(value = animatedValues[index]) }
     }
 }

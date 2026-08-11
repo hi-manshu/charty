@@ -40,6 +40,9 @@ enum class NegativeValuesDrawMode {
  * @property cornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
  * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property animateValueChanges When `true`, bar heights tween from their previous values to the new
+ *   ones whenever the data changes (using [animation]); when `false` (default) new data appears
+ *   instantly. Has no effect if [animation] is [Animation.Disabled].
  * @property referenceLine Optional reference line configuration (target/average line)
  * @property referenceBand Optional shaded value region drawn behind the bars (see [ReferenceBandConfig])
  * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
@@ -56,6 +59,7 @@ data class BarChartConfig(
     val cornerRadius: CornerRadius = CornerRadius.Medium,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
+    val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
     val tooltipConfig: TooltipConfig = TooltipConfig(),

@@ -7,6 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
@@ -23,8 +25,10 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
@@ -96,6 +100,7 @@ fun BarChart(
     val (minValue, maxValue) = rememberBarValueRange(dataList, barConfig.negativeValuesDrawMode)
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(barConfig.animation)
+    val displayList = rememberAnimatedBarData(dataList, barConfig.animation, barConfig.animateValueChanges)
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
@@ -154,7 +159,7 @@ fun BarChart(
 
             drawBars(
                 BarDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     barConfig = barConfig,
                     baselineY = baselineY,
@@ -183,5 +188,27 @@ fun BarChart(
                 content = tooltipContent,
             )
         }
+    }
+}
+
+/**
+ * Returns [dataList] with each bar's value tweened toward its target whenever the data changes, so
+ * bars glide to their new heights. When [enabled] is `false` or [animation] is disabled the list is
+ * returned unchanged. See [rememberAnimatedValues].
+ */
+@Composable
+private fun rememberAnimatedBarData(
+    dataList: List<BarData>,
+    animation: Animation,
+    enabled: Boolean,
+): List<BarData> {
+    val animatedValues =
+        rememberAnimatedValues(
+            targetValues = dataList.fastMap { it.value },
+            animation = animation,
+            enabled = enabled,
+        )
+    return remember(dataList, animatedValues) {
+        dataList.fastMapIndexed { index, bar -> bar.copy(value = animatedValues[index]) }
     }
 }

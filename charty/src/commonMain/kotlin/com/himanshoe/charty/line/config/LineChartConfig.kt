@@ -29,6 +29,9 @@ import com.himanshoe.charty.line.data.LineData
  *   segments between data points.
  * @property negativeValuesDrawMode Controls how bars below zero are rendered.
  * @property animation Entry animation played when the chart first appears.
+ * @property animateValueChanges When `true`, the line tweens from its previous points to the new ones
+ *   whenever the data changes (using [animation]); when `false` (default) new data appears instantly.
+ *   Has no effect if [animation] is [Animation.Disabled].
  * @property referenceLine Optional horizontal or vertical reference line drawn across the chart.
  * @property referenceBand Optional shaded value region drawn behind the data (see [ReferenceBandConfig]).
  * @property tooltipConfig Appearance of the tooltip bubble shown on tap. Only used when
@@ -59,6 +62,7 @@ data class LineChartConfig(
     val smoothCurve: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
+    val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
