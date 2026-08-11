@@ -87,6 +87,9 @@ fun StackedBarChart(
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
+    require(fullDataList.fastAll { group -> group.values.fastAll { it >= 0f } }) {
+        "Stacked bar chart does not support negative values"
+    }
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 

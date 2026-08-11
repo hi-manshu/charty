@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.MosaicBarChartConfig
 import com.himanshoe.charty.bar.config.MosaicBarSegment
@@ -30,7 +31,13 @@ internal fun DrawScope.drawMosaicBars(
     groups.fastForEachIndexed { groupIndex, group ->
         val barX = chartContext.calculateBarLeftPosition(groupIndex, groups.size, config.barWidthFraction)
         val barWidth = chartContext.calculateBarWidth(groups.size, config.barWidthFraction)
-        val total = group.values.sum().takeIf { it > 0f } ?: return@fastForEachIndexed
+        // Normalize over positive values only (matching NormalizedHorizontalBarChart); a mixed-sign
+        // group otherwise understates the denominator and overflows the bar.
+        val total =
+            group.values
+                .fastFilter { it > 0f }
+                .sum()
+                .takeIf { it > 0f } ?: return@fastForEachIndexed
 
         drawMosaicBarSegments(
             group = group,
@@ -63,6 +70,7 @@ private fun DrawScope.drawMosaicBarSegments(
     var currentTop = chartBottom
 
     group.values.fastForEachIndexed { segmentIndex, value ->
+        if (value <= 0f) return@fastForEachIndexed // skip non-positive segments (part-to-whole)
         val fraction = (value / total).coerceIn(MIN_PERCENTAGE, 1f)
         val fullHeight = chartHeight * fraction
         val animatedHeight = fullHeight * animationProgress

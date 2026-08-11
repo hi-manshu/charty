@@ -74,9 +74,13 @@ internal fun DrawScope.drawStraightLineSegments(
     val segmentsToDraw = ((pointPositions.size - 1) * animationProgress).toInt()
     val segmentProgress = ((pointPositions.size - 1) * animationProgress) - segmentsToDraw
 
+    // Loop-invariant: the brush depends only on the colour, so allocate it once per draw, not once
+    // per segment (this loop re-runs every animation frame).
+    val brush = Brush.linearGradient(color.value)
+
     for (i in 0 until segmentsToDraw) {
         drawLine(
-            brush = Brush.linearGradient(color.value),
+            brush = brush,
             start = pointPositions[i],
             end = pointPositions[i + 1],
             strokeWidth = lineConfig.lineWidth,
@@ -93,7 +97,7 @@ internal fun DrawScope.drawStraightLineSegments(
                 y = start.y + (end.y - start.y) * segmentProgress,
             )
         drawLine(
-            brush = Brush.linearGradient(color.value),
+            brush = brush,
             start = start,
             end = partialEnd,
             strokeWidth = lineConfig.lineWidth,

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.util.fastAll
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -61,6 +62,7 @@ fun ComparisonBarChart(
 ) {
     val fullDataList = remember(data) { data() }
     require(fullDataList.isNotEmpty()) { "Comparison bar chart data cannot be empty" }
+    require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each comparison group must have at least one value" }
 
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 

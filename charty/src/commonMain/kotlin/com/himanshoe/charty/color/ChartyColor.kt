@@ -32,6 +32,10 @@ sealed class ChartyColor {
     data class Gradient(
         val colors: List<Color>,
     ) : ChartyColor() {
+        init {
+            require(colors.isNotEmpty()) { "Gradient must have at least one color" }
+        }
+
         override val value: List<Color>
             get() = colors
     }

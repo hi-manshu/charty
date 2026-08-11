@@ -22,6 +22,19 @@ private const val DEFAULT_DASH_INTERVAL = 10f
 private const val DASH_PHASE_OFFSET = 0f
 private const val CENTER_DIVISOR = 2f
 
+// Hoisted so the common (default-dash) case allocates no PathEffect per draw; reference lines can
+// redraw every frame during animations/crosshair drags.
+private val DEFAULT_DASH_PATH_EFFECT =
+    PathEffect.dashPathEffect(floatArrayOf(DEFAULT_DASH_INTERVAL, DEFAULT_DASH_INTERVAL), DASH_PHASE_OFFSET)
+
+/** Resolves the [PathEffect] for a reference line, reusing the hoisted default dash pattern. */
+private fun referenceLinePathEffect(config: ReferenceLineConfig): PathEffect? =
+    when (config.strokeStyle) {
+        ReferenceLineStrokeStyle.SOLID -> null
+        ReferenceLineStrokeStyle.DASHED ->
+            config.dashIntervals?.let { PathEffect.dashPathEffect(it, DASH_PHASE_OFFSET) } ?: DEFAULT_DASH_PATH_EFFECT
+    }
+
 private fun referenceValueWithinRange(
     value: Float,
     minValue: Float,
@@ -63,14 +76,7 @@ private fun DrawScope.drawHorizontalReferenceLine(
     val start = Offset(chartContext.left, y)
     val end = Offset(chartContext.right, y)
 
-    val pathEffect =
-        when (config.strokeStyle) {
-            ReferenceLineStrokeStyle.SOLID -> null
-            ReferenceLineStrokeStyle.DASHED -> {
-                val intervals = config.dashIntervals ?: floatArrayOf(DEFAULT_DASH_INTERVAL, DEFAULT_DASH_INTERVAL)
-                PathEffect.dashPathEffect(intervals, DASH_PHASE_OFFSET)
-            }
-        }
+    val pathEffect = referenceLinePathEffect(config)
 
     drawLine(
         color = config.color,
@@ -190,14 +196,7 @@ private fun DrawScope.drawVerticalReferenceLine(
     val normalized = (config.value - chartContext.minValue) / range
     val x = chartContext.left + normalized * chartContext.width
 
-    val pathEffect =
-        when (config.strokeStyle) {
-            ReferenceLineStrokeStyle.SOLID -> null
-            ReferenceLineStrokeStyle.DASHED -> {
-                val intervals = config.dashIntervals ?: floatArrayOf(DEFAULT_DASH_INTERVAL, DEFAULT_DASH_INTERVAL)
-                PathEffect.dashPathEffect(intervals, DASH_PHASE_OFFSET)
-            }
-        }
+    val pathEffect = referenceLinePathEffect(config)
 
     drawVerticalLineWithLabel(x, chartContext, config, textMeasurer, pathEffect)
 }

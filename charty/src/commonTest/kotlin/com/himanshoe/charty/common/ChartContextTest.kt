@@ -6,8 +6,10 @@ import kotlin.test.assertEquals
 private const val TOL = 0.001f
 
 class ChartContextTest {
-    private fun context(min: Float = 0f, max: Float = 100f) =
-        ChartContext(left = 0f, top = 0f, right = 100f, bottom = 100f, minValue = min, maxValue = max)
+    private fun context(
+        min: Float = 0f,
+        max: Float = 100f,
+    ) = ChartContext(left = 0f, top = 0f, right = 100f, bottom = 100f, minValue = min, maxValue = max)
 
     @Test
     fun width_and_height_areDerived() {

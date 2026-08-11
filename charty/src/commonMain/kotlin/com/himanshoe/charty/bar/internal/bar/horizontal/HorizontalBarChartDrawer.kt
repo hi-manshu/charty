@@ -44,6 +44,10 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
                 animationProgress = params.animationProgress,
             )
 
+        // Skip degenerate/negative widths instead of drawing an inverted rect, matching
+        // GroupedHorizontalBarChart. Below-axis negatives still yield a positive width.
+        if (barWidth <= 0f) return@fastForEachIndexed
+
         if (params.recordBounds) {
             params.onBarBoundCalculated(
                 Rect(

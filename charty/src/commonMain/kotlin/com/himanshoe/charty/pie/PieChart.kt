@@ -60,9 +60,11 @@ private data class PieChartContentParams(
     val sliceColors: List<Color>,
     val total: Float,
     val config: PieChartConfig,
-    val animationProgress: Float,
+    // Held as Animatables (not their .value) so the entry + selection animations are read inside the
+    // Canvas draw lambda — a deferred read that invalidates draw only, not composition.
+    val animationProgress: Animatable<Float, *>,
     val selectedSliceIndex: Int?,
-    val selectedScale: Float,
+    val selectedScale: Animatable<Float, *>,
     val centerContent: @Composable (() -> Unit)?,
     val onSliceClick: (Int) -> Unit,
 )
@@ -209,9 +211,9 @@ fun PieChart(
                 sliceColors = sliceColors,
                 total = total,
                 config = config,
-                animationProgress = animationProgress.value,
+                animationProgress = animationProgress,
                 selectedSliceIndex = selectedSliceIndex,
-                selectedScale = selectedScale.value,
+                selectedScale = selectedScale,
                 centerContent = centerContent,
                 onSliceClick =
                     onSliceClickLambda(dataList) { index ->
@@ -283,9 +285,9 @@ private fun PieChartContent(
                         center = center,
                         radius = radius,
                         config = params.config,
-                        animationProgress = params.animationProgress,
+                        animationProgress = params.animationProgress.value,
                         selectedSliceIndex = params.selectedSliceIndex,
-                        selectedScale = params.selectedScale,
+                        selectedScale = params.selectedScale.value,
                         textMeasurer = textMeasurer,
                     ),
             )

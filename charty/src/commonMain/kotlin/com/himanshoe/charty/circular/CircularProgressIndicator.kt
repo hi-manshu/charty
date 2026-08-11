@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -126,7 +126,9 @@ fun CircularProgressIndicator(
                         onRingClick = onRingClick,
                     ),
         ) {
-            drawRingsContent(ringsList, config, animatedProgress, rotationAngle)
+            // Read the infinite rotation State here, inside the Canvas draw lambda, so the
+            // perpetual animation invalidates draw only — not composition (deferred read).
+            drawRingsContent(ringsList, config, animatedProgress, rotationAngle.value)
         }
         when {
             centerContent != null ->
@@ -149,9 +151,9 @@ fun CircularProgressIndicator(
 }
 
 @Composable
-private fun rememberRotationAngle(config: CircularProgressConfig): Float {
+private fun rememberRotationAngle(config: CircularProgressConfig): State<Float> {
     val infiniteTransition = rememberInfiniteTransition(label = "rotation")
-    val rotationAngle by infiniteTransition.animateFloat(
+    return infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = if (config.rotationEnabled) 360f else 0f,
         animationSpec =
@@ -161,7 +163,6 @@ private fun rememberRotationAngle(config: CircularProgressConfig): Float {
             ),
         label = "rotationAngle",
     )
-    return rotationAngle
 }
 
 private fun DrawScope.drawRingsContent(
