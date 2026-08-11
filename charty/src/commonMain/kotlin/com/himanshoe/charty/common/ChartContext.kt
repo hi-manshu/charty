@@ -57,7 +57,9 @@ data class ChartContext(
         rangeMax: Float,
     ): Float {
         val range = rangeMax - rangeMin
-        if (range == ZERO_RANGE) return bottom
+        if (range == ZERO_RANGE) {
+            return bottom
+        }
         val normalized = (value - rangeMin) / range
         return bottom - (normalized * height)
     }

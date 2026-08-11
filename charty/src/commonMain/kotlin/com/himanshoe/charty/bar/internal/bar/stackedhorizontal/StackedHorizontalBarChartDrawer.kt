@@ -38,7 +38,9 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  *    applied as a horizontal gradient scoped to the individual segment.
  */
 internal fun DrawScope.drawStackedHorizontalBars(params: StackedHorizontalBarDrawParams) {
-    if (params.maxTotal == 0f) return
+    if (params.maxTotal == 0f) {
+        return
+    }
 
     val totalGroups = params.dataList.size
     val rowHeight = params.chartContext.height / totalGroups
@@ -63,7 +65,9 @@ internal fun DrawScope.drawStackedHorizontalBars(params: StackedHorizontalBarDra
 
             cumulativeValue += value
 
-            if (segmentWidth <= 0f) return@fastForEachIndexed
+            if (segmentWidth <= 0f) {
+                return@fastForEachIndexed
+            }
 
             if (params.recordBounds) {
                 params.segmentBounds.add(

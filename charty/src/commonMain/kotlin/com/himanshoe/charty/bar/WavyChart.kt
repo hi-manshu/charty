@@ -171,7 +171,9 @@ fun WavyChart(
             updateInteractionBounds(interactionConfig, chartContext)
 
             val barCount = dataList.size
-            if (barCount == 0) return@ChartScaffold
+            if (barCount == 0) {
+                return@ChartScaffold
+            }
 
             populateWavyCrosshairBounds(chartContext, dataList, crosshairManager, crosshairBounds)
 
@@ -256,9 +258,13 @@ private fun populateWavyCrosshairBounds(
     crosshairBounds: MutableList<Pair<Offset, BarData>>,
 ) {
     crosshairBounds.clear()
-    if (crosshairManager == null) return
+    if (crosshairManager == null) {
+        return
+    }
     val barCount = dataList.size
-    if (barCount == 0) return
+    if (barCount == 0) {
+        return
+    }
     val barSpacing = chartContext.width / (barCount * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
     dataList.fastForEachIndexed { index, barData ->
         val xCenter = chartContext.left + barSpacing * (1 + index * 2)
@@ -323,7 +329,9 @@ private fun DrawScope.drawSingleWave(
     }
 
     val barHeight = bottom - top
-    if (barHeight == 0f) return
+    if (barHeight == 0f) {
+        return
+    }
 
     val path = Path()
     val dy = barHeight / segments

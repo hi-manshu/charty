@@ -38,7 +38,9 @@ private fun referenceValueWithinRange(
     minValue: Float,
     maxValue: Float,
 ): Boolean {
-    if (minValue == maxValue) return false
+    if (minValue == maxValue) {
+        return false
+    }
     return value in minValue..maxValue
 }
 
@@ -56,8 +58,12 @@ fun DrawScope.drawReferenceLine(
     config: ReferenceLineConfig,
     textMeasurer: TextMeasurer,
 ) {
-    if (!config.isEnabled) return
-    if (!referenceValueWithinRange(config.value, chartContext.minValue, chartContext.maxValue)) return
+    if (!config.isEnabled) {
+        return
+    }
+    if (!referenceValueWithinRange(config.value, chartContext.minValue, chartContext.maxValue)) {
+        return
+    }
 
     when (orientation) {
         ChartOrientation.VERTICAL -> drawHorizontalReferenceLine(chartContext, config, textMeasurer)
@@ -189,7 +195,9 @@ private fun DrawScope.drawVerticalReferenceLine(
     textMeasurer: TextMeasurer,
 ) {
     val range = chartContext.maxValue - chartContext.minValue
-    if (range == 0f) return
+    if (range == 0f) {
+        return
+    }
 
     val normalized = (config.value - chartContext.minValue) / range
     val x = chartContext.left + normalized * chartContext.width

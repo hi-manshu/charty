@@ -36,7 +36,9 @@ private const val ZERO_VALUE = 0f
  * @return A formatted string representation of the value.
  */
 internal fun formatAxisLabel(value: Float): String {
-    if (value % MODULO_CHECK_ZERO == ZERO_VALUE) return value.toLong().toString()
+    if (value % MODULO_CHECK_ZERO == ZERO_VALUE) {
+        return value.toLong().toString()
+    }
 
     val rounded = round(value * ROUNDING_MULTIPLIER) / ROUNDING_MULTIPLIER
     val str = rounded.toString()

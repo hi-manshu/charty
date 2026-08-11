@@ -151,7 +151,9 @@ internal fun DrawScope.drawCalendarGrid(
     cellBoundsOutput.clear()
 
     val totalWeeks = gridLayout.totalWeeks
-    if (totalWeeks == 0) return
+    if (totalWeeks == 0) {
+        return
+    }
 
     val animWeeks = animationProgress * totalWeeks
 

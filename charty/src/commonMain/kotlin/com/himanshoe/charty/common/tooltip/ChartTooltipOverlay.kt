@@ -50,7 +50,9 @@ fun <T> ChartTooltipOverlay(
     modifier: Modifier = Modifier,
     content: @Composable (T) -> Unit,
 ) {
-    if (item == null || anchor == null) return
+    if (item == null || anchor == null) {
+        return
+    }
 
     val density = LocalDensity.current
     val offsetYPx = with(density) { config.offsetY.toPx() }

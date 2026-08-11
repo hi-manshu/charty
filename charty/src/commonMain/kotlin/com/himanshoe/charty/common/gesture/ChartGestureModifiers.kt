@@ -170,7 +170,9 @@ fun <T, D> Modifier.chartCrosshairHandler(
                 val event = awaitPointerEvent()
                 val primary = event.changes.fastFirstOrNull { true } ?: break
                 if (primary.pressed) {
-                    if (primary.positionChanged()) primary.consume()
+                    if (primary.positionChanged()) {
+                        primary.consume()
+                    }
                     findNearestPointByX(primary.position.x, pointBounds)?.let { (position, data) ->
                         onCrosshairUpdate(
                             CrosshairState(x = position.x, y = position.y, label = labelFormatter(data)),
@@ -181,7 +183,9 @@ fun <T, D> Modifier.chartCrosshairHandler(
                     isPressed = false
                 }
             }
-            if (dismissOnRelease) onCrosshairUpdate(null, null)
+            if (dismissOnRelease) {
+                onCrosshairUpdate(null, null)
+            }
         }
     }
 
@@ -219,7 +223,9 @@ fun <T, D> Modifier.rectangularChartScrubHandler(
                 val event = awaitPointerEvent()
                 val primary = event.changes.fastFirstOrNull { true } ?: break
                 if (primary.pressed) {
-                    if (primary.positionChanged()) primary.consume()
+                    if (primary.positionChanged()) {
+                        primary.consume()
+                    }
                     findItemByX(primary.position, bounds)?.let { (rect, data) ->
                         onTooltipStateChange(createTooltipContent(data, rect), data)
                     }
@@ -227,7 +233,9 @@ fun <T, D> Modifier.rectangularChartScrubHandler(
                     isPressed = false
                 }
             }
-            if (dismissOnRelease) onTooltipStateChange(null, null)
+            if (dismissOnRelease) {
+                onTooltipStateChange(null, null)
+            }
         }
     }
 

@@ -48,7 +48,9 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
 
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
         val groupTotal = barGroup.values.fastFilter { it > 0f }.sum()
-        if (groupTotal == 0f) return@fastForEachIndexed
+        if (groupTotal == 0f) {
+            return@fastForEachIndexed
+        }
 
         val centeredBarY =
             params.chartContext.top +
@@ -60,7 +62,9 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
         val lastActiveIndex = barGroup.values.indexOfLast { it > 0f }
 
         barGroup.values.fastForEachIndexed { segmentIndex, value ->
-            if (value <= 0f) return@fastForEachIndexed
+            if (value <= 0f) {
+                return@fastForEachIndexed
+            }
 
             val fraction = value / groupTotal
             val segmentPercentage = fraction * NORMALIZED_HORIZONTAL_MAX_PERCENT
@@ -69,7 +73,9 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
 
             cumulativeFraction += fraction
 
-            if (segmentWidth <= 0f) return@fastForEachIndexed
+            if (segmentWidth <= 0f) {
+                return@fastForEachIndexed
+            }
 
             if (params.recordBounds) {
                 params.segmentBounds.add(

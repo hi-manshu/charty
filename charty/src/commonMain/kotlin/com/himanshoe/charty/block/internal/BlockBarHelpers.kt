@@ -19,10 +19,14 @@ internal fun DrawScope.drawBlockBar(
     blocks: List<BlockData>,
     config: BlockBarChartConfig,
 ) {
-    if (blocks.isEmpty()) return
+    if (blocks.isEmpty()) {
+        return
+    }
 
     val totalValue = blocks.sumOf { it.value.toDouble() }.toFloat()
-    if (totalValue <= 0f) return
+    if (totalValue <= 0f) {
+        return
+    }
 
     val canvasWidth = size.width
     val canvasHeight = size.height
@@ -73,7 +77,9 @@ private fun DrawScope.drawSegment(
     roundEnd: Boolean,
     color: ChartyColor,
 ) {
-    if (width <= 0f) return
+    if (width <= 0f) {
+        return
+    }
 
     val leftCornerRadius = if (roundStart) CornerRadius(radius) else CornerRadius.Zero
     val rightCornerRadius = if (roundEnd) CornerRadius(radius) else CornerRadius.Zero

@@ -354,7 +354,9 @@ private fun calculateBaselineY(
     }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(params: AreaChartDrawParams) {
-    if (params.pointPositions.isEmpty()) return
+    if (params.pointPositions.isEmpty()) {
+        return
+    }
 
     drawReferenceBandIfNeeded(
         referenceBandConfig = params.config.referenceBand,

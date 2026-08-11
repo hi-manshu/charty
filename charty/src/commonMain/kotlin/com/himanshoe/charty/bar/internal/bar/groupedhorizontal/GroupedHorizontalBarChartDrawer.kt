@@ -42,7 +42,9 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  */
 internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDrawParams) {
     val range = params.maxValue - params.minValue
-    if (range == 0f) return
+    if (range == 0f) {
+        return
+    }
 
     val isBelowAxisMode = params.config.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val totalGroups = params.dataList.size
@@ -50,7 +52,9 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
 
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
         val numBars = barGroup.values.size
-        if (numBars == 0) return@fastForEachIndexed
+        if (numBars == 0) {
+            return@fastForEachIndexed
+        }
 
         val usableRowHeight = rowHeight * params.config.barWidthFraction
         val totalSpacing = params.config.barSpacing * (numBars - 1).coerceAtLeast(0)
@@ -75,7 +79,9 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
                     params.baselineX to (fullWidth * params.animationProgress)
                 }
 
-            if (barWidth <= 0f) return@fastForEachIndexed
+            if (barWidth <= 0f) {
+                return@fastForEachIndexed
+            }
 
             if (params.recordBounds) {
                 params.barBounds.add(

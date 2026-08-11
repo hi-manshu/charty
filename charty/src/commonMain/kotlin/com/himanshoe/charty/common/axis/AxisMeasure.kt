@@ -34,7 +34,9 @@ internal fun measureMaxAxisLabelWidth(
                 .measure(text = AnnotatedString(axisConfig.valueFormatter(value)), style = labelStyle)
                 .size.width
                 .toFloat()
-        if (width > maxWidth) maxWidth = width
+        if (width > maxWidth) {
+            maxWidth = width
+        }
     }
     return maxWidth
 }
@@ -49,7 +51,9 @@ internal fun measureAxisGutter(
     labelStyle: TextStyle,
     showLabels: Boolean,
 ): Float {
-    if (!showLabels) return AXIS_LABEL_MARGIN
+    if (!showLabels) {
+        return AXIS_LABEL_MARGIN
+    }
     val labelWidth =
         measureMaxAxisLabelWidth(axisConfig = axisConfig, textMeasurer = textMeasurer, labelStyle = labelStyle)
     return labelWidth + AXIS_LABEL_MARGIN * 2f

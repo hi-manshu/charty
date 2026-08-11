@@ -52,7 +52,9 @@ fun <T> ChartCrosshairOverlay(
     modifier: Modifier = Modifier,
     content: @Composable (T) -> Unit,
 ) {
-    if (item == null || state == null) return
+    if (item == null || state == null) {
+        return
+    }
 
     val density = LocalDensity.current
     val gapPx = with(density) { CrosshairContentGap.toPx() }

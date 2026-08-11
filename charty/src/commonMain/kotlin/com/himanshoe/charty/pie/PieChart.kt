@@ -416,12 +416,16 @@ private fun DrawScope.drawSliceLabel(
                 append("${(percentage * PERCENTAGE_PRECISION_MULTIPLIER).toInt() / PERCENTAGE_PRECISION_MULTIPLIER}%")
             }
             if (config.labelConfig.shouldShowValue) {
-                if (isNotEmpty()) append("\n")
+                if (isNotEmpty()) {
+                    append("\n")
+                }
                 append(slice.value.toInt().toString())
             }
         }
 
-    if (labelText.isEmpty()) return
+    if (labelText.isEmpty()) {
+        return
+    }
 
     val textLayoutResult = textMeasurer.measure(labelText, config.labelConfig.labelTextStyle)
     val labelRadius =
@@ -466,9 +470,13 @@ private fun findClickedSlice(
     }
 
     var touchAngle = (atan2(dy.toDouble(), dx.toDouble()) * RADIANS_TO_DEGREES).toFloat()
-    if (touchAngle < 0) touchAngle += FULL_CIRCLE_DEGREES
+    if (touchAngle < 0) {
+        touchAngle += FULL_CIRCLE_DEGREES
+    }
     var normalizedAngle = touchAngle - config.startAngleDegrees
-    if (normalizedAngle < 0) normalizedAngle += FULL_CIRCLE_DEGREES
+    if (normalizedAngle < 0) {
+        normalizedAngle += FULL_CIRCLE_DEGREES
+    }
     var currentAngle = 0f
     var result: Int? = null
     dataList.fastForEachIndexed { index, slice ->

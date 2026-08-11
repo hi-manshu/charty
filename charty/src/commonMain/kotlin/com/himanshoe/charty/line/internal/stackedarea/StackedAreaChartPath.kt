@@ -12,7 +12,9 @@ internal fun createSmoothAreaPath(
     baselineY: Float,
 ): Path {
     return Path().apply {
-        if (cumulativePositions.isEmpty()) return@apply
+        if (cumulativePositions.isEmpty()) {
+            return@apply
+        }
 
         val firstPoint = cumulativePositions[0]
         val control1X = startX + (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
@@ -61,7 +63,9 @@ internal fun createStraightAreaPath(
     baselineY: Float,
 ): Path {
     return Path().apply {
-        if (cumulativePositions.isEmpty()) return@apply
+        if (cumulativePositions.isEmpty()) {
+            return@apply
+        }
 
         val firstPoint = cumulativePositions[0]
         moveTo(startX, baselineY)
@@ -86,7 +90,9 @@ internal fun createSmoothLinePath(
     baselineY: Float,
 ): Path {
     return Path().apply {
-        if (cumulativePositions.isEmpty()) return@apply
+        if (cumulativePositions.isEmpty()) {
+            return@apply
+        }
 
         val firstPoint = cumulativePositions[0]
         val control1X = startX + (firstPoint.x - startX) / StackedAreaChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
@@ -131,7 +137,9 @@ internal fun createStraightLinePath(
     baselineY: Float,
 ): Path {
     return Path().apply {
-        if (cumulativePositions.isEmpty()) return@apply
+        if (cumulativePositions.isEmpty()) {
+            return@apply
+        }
 
         val firstPoint = cumulativePositions[0]
         moveTo(startX, baselineY)

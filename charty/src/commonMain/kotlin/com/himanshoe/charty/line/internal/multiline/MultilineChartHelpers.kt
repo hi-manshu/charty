@@ -14,7 +14,9 @@ internal fun Path.drawSmoothMultiline(
     startX: Float,
     startY: Float,
 ) {
-    if (pointPositions.isEmpty()) return
+    if (pointPositions.isEmpty()) {
+        return
+    }
 
     val firstPoint = pointPositions[0]
     val control1X = startX + (firstPoint.x - startX) / MultilineChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
@@ -56,7 +58,9 @@ internal fun Path.drawStraightMultiline(
     startX: Float,
     startY: Float,
 ) {
-    if (pointPositions.isEmpty()) return
+    if (pointPositions.isEmpty()) {
+        return
+    }
 
     val firstPoint = pointPositions[0]
     moveTo(startX, startY)

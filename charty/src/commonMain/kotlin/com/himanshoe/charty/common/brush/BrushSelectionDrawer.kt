@@ -35,7 +35,9 @@ fun DrawScope.drawBrushSelection(
     val (startPx, endPx) = state.pixelRange ?: return
     val left = startPx.coerceIn(chartLeft, chartRight)
     val right = endPx.coerceIn(chartLeft, chartRight)
-    if (right <= left) return
+    if (right <= left) {
+        return
+    }
 
     val top = chartTop
     val height = chartBottom - chartTop

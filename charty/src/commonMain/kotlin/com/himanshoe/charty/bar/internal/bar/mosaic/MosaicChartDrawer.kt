@@ -68,7 +68,9 @@ private fun DrawScope.drawMosaicBarSegments(
     var currentTop = chartBottom
 
     group.values.fastForEachIndexed { segmentIndex, value ->
-        if (value <= 0f) return@fastForEachIndexed
+        if (value <= 0f) {
+            return@fastForEachIndexed
+        }
         val fraction = (value / total).coerceIn(MIN_PERCENTAGE, 1f)
         val fullHeight = chartHeight * fraction
         val animatedHeight = fullHeight * animationProgress

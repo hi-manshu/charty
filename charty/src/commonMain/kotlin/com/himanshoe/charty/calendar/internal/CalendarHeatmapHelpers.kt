@@ -145,7 +145,9 @@ internal fun computeGridLayout(
     weekStartDay: WeekStartDay,
     visibleWeeks: Int?,
 ): GridLayout {
-    if (dataList.isEmpty()) return GridLayout(emptyList(), emptyMap(), 0, emptyList())
+    if (dataList.isEmpty()) {
+        return GridLayout(emptyList(), emptyMap(), 0, emptyList())
+    }
 
     val startOffset = if (weekStartDay == WeekStartDay.SUNDAY) 0 else 1
 
@@ -207,7 +209,9 @@ internal fun CalendarHeatmapConfig.resolveColor(
     value: Float,
     maxValue: Float,
 ): Color {
-    if (value <= 0f || maxValue <= 0f) return emptyColor
+    if (value <= 0f || maxValue <= 0f) {
+        return emptyColor
+    }
     val ratio = (value / maxValue).coerceIn(0f, 1f)
     val index =
         (ratio * (intensityColors.size - 1))

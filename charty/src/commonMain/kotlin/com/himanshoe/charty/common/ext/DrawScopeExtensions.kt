@@ -202,7 +202,9 @@ private fun DrawScope.drawSecondaryVerticalAxis(
     labelStyle: TextStyle,
 ) {
     val range = axisConfig.maxValue - axisConfig.minValue
-    if (range == ZERO_VALUE) return
+    if (range == ZERO_VALUE) {
+        return
+    }
     val steps = axisConfig.steps.coerceAtLeast(MIN_STEPS)
 
     if (config.showAxis) {

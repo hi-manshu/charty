@@ -22,7 +22,9 @@ internal fun calculateHorizontalBaselineX(
     chartContext: ChartContext,
 ): Float {
     val range = maxValue - minValue
-    if (!drawAxisAtZero || range == 0f) return chartContext.left
+    if (!drawAxisAtZero || range == 0f) {
+        return chartContext.left
+    }
     val zeroNormalized = (0f - minValue) / range
     return chartContext.left + (zeroNormalized * chartContext.width)
 }

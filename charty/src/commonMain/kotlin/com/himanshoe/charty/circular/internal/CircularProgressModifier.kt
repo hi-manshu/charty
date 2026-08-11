@@ -18,7 +18,9 @@ internal fun Modifier.ringClickHandler(
     enabled: Boolean,
     onRingClick: ((CircularRingData, Int) -> Unit)?,
 ): Modifier {
-    if (!enabled || onRingClick == null) return this
+    if (!enabled || onRingClick == null) {
+        return this
+    }
 
     return this.pointerInput(ringsList) {
         detectTapGestures { offset ->

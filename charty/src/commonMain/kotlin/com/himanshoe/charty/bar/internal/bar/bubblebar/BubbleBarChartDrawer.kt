@@ -100,7 +100,9 @@ private fun DrawScope.drawBubbleBar(
     bubbleRadius: Float,
     bubbleSpacing: Float,
 ) {
-    if (height <= 0f) return
+    if (height <= 0f) {
+        return
+    }
 
     val centerX = x + width / 2f
     val diameter = bubbleRadius * 2
@@ -110,7 +112,9 @@ private fun DrawScope.drawBubbleBar(
     for (i in 0 until bubbleCount) {
         val bubbleY = y + height - (i * verticalStep) - bubbleRadius
 
-        if (bubbleY < y - bubbleRadius) break
+        if (bubbleY < y - bubbleRadius) {
+            break
+        }
 
         val bubbleColor =
             when (color) {

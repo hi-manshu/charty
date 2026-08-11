@@ -21,7 +21,9 @@ private const val DATA_LABEL_PADDING = 4f
 
 internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
     val range = params.maxValue - params.minValue
-    if (range == 0f) return
+    if (range == 0f) {
+        return
+    }
 
     params.dataList.fastForEachIndexed { index, bar ->
         val barHeight = params.chartContext.height / params.dataList.size
@@ -42,7 +44,9 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
                 animationProgress = params.animationProgress,
             )
 
-        if (barWidth <= 0f) return@fastForEachIndexed
+        if (barWidth <= 0f) {
+            return@fastForEachIndexed
+        }
 
         if (params.recordBounds) {
             params.onBarBoundCalculated(

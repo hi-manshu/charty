@@ -30,7 +30,9 @@ fun generateLineChartDescription(
     minValue: Float,
     maxValue: Float,
 ): String {
-    if (data.isEmpty()) return "Empty line chart."
+    if (data.isEmpty()) {
+        return "Empty line chart."
+    }
     val peak = data.maxByOrNull { it.value }
     val trough = data.minByOrNull { it.value }
     return buildString {
@@ -57,7 +59,9 @@ fun generateBarChartDescription(
     minValue: Float,
     maxValue: Float,
 ): String {
-    if (data.isEmpty()) return "Empty bar chart."
+    if (data.isEmpty()) {
+        return "Empty bar chart."
+    }
     val highest = data.maxByOrNull { it.value }
     val lowest = data.minByOrNull { it.value }
     return buildString {
@@ -82,14 +86,18 @@ fun generateBarGroupChartDescription(
     data: List<BarGroup>,
     chartTypeName: String = "grouped bar",
 ): String {
-    if (data.isEmpty()) return "Empty $chartTypeName chart."
+    if (data.isEmpty()) {
+        return "Empty $chartTypeName chart."
+    }
     val seriesCount = data.getOrNull(0)?.values?.size ?: 0
     val allValues = data.fastFlatMap { it.values }
     val maxVal = allValues.maxOrNull() ?: 0f
     val minVal = allValues.minOrNull() ?: 0f
     return buildString {
         append("${chartTypeName.replaceFirstChar { it.uppercaseChar() }} chart, ${data.size} groups")
-        if (seriesCount > 0) append(", $seriesCount series each")
+        if (seriesCount > 0) {
+            append(", $seriesCount series each")
+        }
         append(". ")
         append("Range: ${minVal.toReadableString()} to ${maxVal.toReadableString()}.")
     }
@@ -111,7 +119,9 @@ fun generatePointChartDescription(
     minValue: Float,
     maxValue: Float,
 ): String {
-    if (data.isEmpty()) return "Empty point chart."
+    if (data.isEmpty()) {
+        return "Empty point chart."
+    }
     val peak = data.maxByOrNull { it.value }
     val trough = data.minByOrNull { it.value }
     return buildString {
@@ -132,7 +142,9 @@ fun generatePointChartDescription(
  * @return A descriptive string suitable for use as a `contentDescription`.
  */
 fun generateBubbleChartDescription(data: List<BubbleData>): String {
-    if (data.isEmpty()) return "Empty bubble chart."
+    if (data.isEmpty()) {
+        return "Empty bubble chart."
+    }
     val minY = data.minOfOrNull { it.yValue } ?: 0f
     val maxY = data.maxOfOrNull { it.yValue } ?: 0f
     val largest = data.maxByOrNull { it.size }
@@ -157,14 +169,18 @@ fun generateLineGroupChartDescription(
     data: List<LineGroup>,
     chartTypeName: String = "multiline",
 ): String {
-    if (data.isEmpty()) return "Empty $chartTypeName chart."
+    if (data.isEmpty()) {
+        return "Empty $chartTypeName chart."
+    }
     val seriesCount = data.getOrNull(0)?.values?.size ?: 0
     val allValues = data.fastFlatMap { it.values }
     val maxVal = allValues.maxOrNull() ?: 0f
     val minVal = allValues.minOrNull() ?: 0f
     return buildString {
         append("${chartTypeName.replaceFirstChar { it.uppercaseChar() }} chart, ${data.size} data points")
-        if (seriesCount > 0) append(", $seriesCount series")
+        if (seriesCount > 0) {
+            append(", $seriesCount series")
+        }
         append(". ")
         append("Range: ${minVal.toReadableString()} to ${maxVal.toReadableString()}.")
     }
@@ -184,7 +200,9 @@ fun generatePieChartDescription(
     data: List<PieData>,
     chartTypeName: String = "Pie",
 ): String {
-    if (data.isEmpty()) return "Empty $chartTypeName chart."
+    if (data.isEmpty()) {
+        return "Empty $chartTypeName chart."
+    }
     val total = data.sumOf { it.value.toDouble() }.toFloat()
     val largest = data.maxByOrNull { it.value }
     val smallest = data.minByOrNull { it.value }
@@ -211,7 +229,9 @@ fun generatePieChartDescription(
  * @return A descriptive string suitable for use as a `contentDescription`.
  */
 fun generateCandlestickChartDescription(data: List<CandleData>): String {
-    if (data.isEmpty()) return "Empty candlestick chart."
+    if (data.isEmpty()) {
+        return "Empty candlestick chart."
+    }
     val minLow = data.minOfOrNull { it.low } ?: 0f
     val maxHigh = data.maxOfOrNull { it.high } ?: 0f
     val latest = data.lastOrNull()
@@ -232,7 +252,9 @@ fun generateCandlestickChartDescription(data: List<CandleData>): String {
  * @return A descriptive string suitable for use as a `contentDescription`.
  */
 fun generateComboChartDescription(data: List<ComboChartData>): String {
-    if (data.isEmpty()) return "Empty combo chart."
+    if (data.isEmpty()) {
+        return "Empty combo chart."
+    }
     val topBar = data.maxByOrNull { it.barValue }
     val topLine = data.maxByOrNull { it.lineValue }
     return buildString {
@@ -259,11 +281,15 @@ fun generateRadarChartDescription(
     data: List<RadarDataSet>,
     chartTypeName: String = "Radar",
 ): String {
-    if (data.isEmpty()) return "Empty $chartTypeName chart."
+    if (data.isEmpty()) {
+        return "Empty $chartTypeName chart."
+    }
     val axisCount = data.firstOrNull()?.axes?.size ?: 0
     return buildString {
         append("$chartTypeName chart, ${data.size} dataset${if (data.size == 1) "" else "s"}")
-        if (axisCount > 0) append(", $axisCount axes each")
+        if (axisCount > 0) {
+            append(", $axisCount axes each")
+        }
         append(". ")
         if (data.size == 1) {
             val strongest = data.first().axes.maxByOrNull { it.getNormalizedValue() }
@@ -284,7 +310,9 @@ fun generateRadarChartDescription(
  * @return A descriptive string suitable for use as a `contentDescription`.
  */
 fun generateCircularProgressDescription(data: List<CircularRingData>): String {
-    if (data.isEmpty()) return "Empty circular progress indicator."
+    if (data.isEmpty()) {
+        return "Empty circular progress indicator."
+    }
     return buildString {
         append("Circular progress indicator, ${data.size} ring${if (data.size == 1) "" else "s"}. ")
         data.forEach { ring ->
@@ -303,7 +331,9 @@ fun generateCircularProgressDescription(data: List<CircularRingData>): String {
  * @return A descriptive string suitable for use as a `contentDescription`.
  */
 fun generateBlockBarDescription(data: List<BlockData>): String {
-    if (data.isEmpty()) return "Empty block bar chart."
+    if (data.isEmpty()) {
+        return "Empty block bar chart."
+    }
     val total = data.sumOf { it.value.toDouble() }.toFloat()
     val largest = data.maxByOrNull { it.value }
     return buildString {

@@ -45,7 +45,9 @@ internal fun DrawScope.drawMultilineChartCrosshair(
     textMeasurer: TextMeasurer,
     drawLabel: Boolean = true,
 ) {
-    if (dataList.isEmpty() || colorList.isEmpty()) return
+    if (dataList.isEmpty() || colorList.isEmpty()) {
+        return
+    }
     val dashEffect = MULTILINE_CROSSHAIR_DASH_EFFECT
 
     val snappedIndex =

@@ -19,7 +19,9 @@ internal fun DrawScope.drawSmoothLine(
     lineConfig: LineChartConfig,
     animationProgress: Float,
 ) {
-    if (pointPositions.isEmpty()) return
+    if (pointPositions.isEmpty()) {
+        return
+    }
 
     val path = Path()
     path.moveTo(pointPositions[0].x, pointPositions[0].y)

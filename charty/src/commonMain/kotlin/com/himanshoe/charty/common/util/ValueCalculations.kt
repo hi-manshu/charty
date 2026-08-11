@@ -107,7 +107,9 @@ internal fun baselineValueRange(values: List<Float>): Pair<Float, Float> {
  * Produces human-readable axis tick intervals.
  */
 internal fun niceAxisStep(roughStep: Float): Float {
-    if (roughStep <= 0f) return 1f
+    if (roughStep <= 0f) {
+        return 1f
+    }
     val exponent = floor(log10(roughStep)).toInt()
     val magnitude = NICE_FACTOR_10.pow(exponent)
     val normalized = roughStep / magnitude

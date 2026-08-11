@@ -39,7 +39,9 @@ fun ChartLegend(
     modifier: Modifier = Modifier,
     textStyle: TextStyle = TextStyle.Default,
 ) {
-    if (labels.isEmpty() || colors.isEmpty()) return
+    if (labels.isEmpty() || colors.isEmpty()) {
+        return
+    }
 
     Row(
         modifier =
@@ -51,7 +53,9 @@ fun ChartLegend(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         labels.fastForEachIndexed { index, label ->
-            if (index > 0) Spacer(modifier = Modifier.width(LEGEND_ITEM_SPACING))
+            if (index > 0) {
+                Spacer(modifier = Modifier.width(LEGEND_ITEM_SPACING))
+            }
             val dotColor = colors[index % colors.size]
             Surface(
                 modifier = Modifier.size(LEGEND_DOT_SIZE),

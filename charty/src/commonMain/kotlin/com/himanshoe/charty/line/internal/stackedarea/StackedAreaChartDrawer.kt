@@ -14,7 +14,9 @@ import com.himanshoe.charty.line.data.StackedAreaPoint
  * Draw a single stacked area series
  */
 internal fun DrawScope.drawStackedAreaSeries(params: StackedAreaSeriesParams) {
-    if (params.cumulativePositions.isEmpty()) return
+    if (params.cumulativePositions.isEmpty()) {
+        return
+    }
     val areaPath =
         if (params.lineConfig.smoothCurve) {
             createSmoothAreaPath(

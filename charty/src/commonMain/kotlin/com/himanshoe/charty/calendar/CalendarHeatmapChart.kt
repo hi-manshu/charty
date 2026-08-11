@@ -148,7 +148,9 @@ fun CalendarHeatmapChart(
     val outerModifier = if (scrollEnabled) modifier.horizontalScroll(scrollState) else modifier
 
     Box(modifier = outerModifier) {
-        if (gridLayout.totalWeeks == 0) return@Box
+        if (gridLayout.totalWeeks == 0) {
+            return@Box
+        }
 
         Canvas(
             modifier =
@@ -203,7 +205,9 @@ private fun rememberMeasuredMonthLabels(
     textMeasurer: TextMeasurer,
 ): Map<String, TextLayoutResult> {
     return remember(config.showMonthLabels, config.labelTextStyle, gridLayout.monthBoundaries) {
-        if (!config.showMonthLabels) return@remember emptyMap()
+        if (!config.showMonthLabels) {
+            return@remember emptyMap()
+        }
         gridLayout.monthBoundaries.associate { (_, label) ->
             label to textMeasurer.measure(label, config.labelTextStyle)
         }
@@ -216,7 +220,9 @@ private fun rememberMeasuredDayLabelRows(
     textMeasurer: TextMeasurer,
 ): List<Pair<Int, TextLayoutResult>> {
     return remember(config.showDayLabels, config.weekStartDay, config.labelTextStyle) {
-        if (!config.showDayLabels) return@remember emptyList()
+        if (!config.showDayLabels) {
+            return@remember emptyList()
+        }
         val rows =
             if (config.weekStartDay == WeekStartDay.SUNDAY) {
                 listOf(DOW_MON_SUNDAY_START to "Mon", DOW_WED_SUNDAY_START to "Wed", DOW_FRI_SUNDAY_START to "Fri")

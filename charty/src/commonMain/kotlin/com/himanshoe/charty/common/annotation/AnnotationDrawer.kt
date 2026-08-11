@@ -34,7 +34,9 @@ fun DrawScope.drawChartAnnotation(
     totalItems: Int,
     textMeasurer: TextMeasurer,
 ) {
-    if (totalItems == 0) return
+    if (totalItems == 0) {
+        return
+    }
     val x = chartContext.calculateCenteredXPosition(annotation.xIndex, totalItems)
 
     val pathEffect = if (annotation.style.isDashed) DASH_EFFECT else null

@@ -31,7 +31,9 @@ internal fun resolveBandValueBounds(
     minValue: Float,
     maxValue: Float,
 ): Pair<Float, Float>? {
-    if (minValue == maxValue) return null
+    if (minValue == maxValue) {
+        return null
+    }
     val low = minOf(lowValue, highValue).coerceAtLeast(minValue)
     val high = maxOf(lowValue, highValue).coerceAtMost(maxValue)
     return if (low >= high) null else low to high
@@ -52,7 +54,9 @@ fun DrawScope.drawReferenceBand(
     config: ReferenceBandConfig,
     textMeasurer: TextMeasurer,
 ) {
-    if (!config.isEnabled) return
+    if (!config.isEnabled) {
+        return
+    }
     val (low, high) =
         resolveBandValueBounds(
             lowValue = config.lowValue,

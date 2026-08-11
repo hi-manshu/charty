@@ -9,7 +9,9 @@ internal fun calculateStrokeWidth(
     gapBetweenRings: Float,
     ringCount: Int,
 ): Float {
-    if (ringCount == 0) return 0f
+    if (ringCount == 0) {
+        return 0f
+    }
 
     val centerHoleSize = radius * centerHoleRatio
     val availableRadius = radius - centerHoleSize
