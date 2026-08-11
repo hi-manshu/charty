@@ -86,7 +86,7 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
-import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.theme.ChartyTheme
 import com.himanshoe.charty.common.theme.ChartyThemeProvider
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -954,26 +954,35 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         modifier = chartFill,
                     )
                 },
+                ChartVariant("Crosshair: default label (drag me)") {
+                    LineChart(data = { line }, crosshair = ChartCrosshair(), modifier = chartFill)
+                },
                 ChartVariant("Crosshair: custom label (drag me)") {
                     LineChart(
                         data = { line },
-                        lineConfig = LineChartConfig(crosshairConfig = ChartCrosshairConfig()),
-                        crosshairContent = { point ->
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = Color(0xFF1E88E5),
-                                shadowElevation = 4.dp,
-                            ) {
-                                Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
-                                    Text(
-                                        text = point.label,
-                                        color = Color.White.copy(alpha = 0.8f),
-                                        style = MaterialTheme.typography.labelSmall,
-                                    )
-                                    Text(text = "${point.value}", color = Color.White, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        },
+                        crosshair =
+                            ChartCrosshair(
+                                label = {
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color(0xFF1E88E5),
+                                        shadowElevation = 4.dp,
+                                    ) {
+                                        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                                            Text(
+                                                text = data.label,
+                                                color = Color.White.copy(alpha = 0.8f),
+                                                style = MaterialTheme.typography.labelSmall,
+                                            )
+                                            Text(
+                                                text = "${data.value}",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                            )
+                                        }
+                                    }
+                                },
+                            ),
                         modifier = chartFill,
                     )
                 },

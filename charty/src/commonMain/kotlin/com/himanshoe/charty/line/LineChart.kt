@@ -36,7 +36,8 @@ import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.drawSelectionColumnIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
+import com.himanshoe.charty.common.gesture.ChartCrosshair
+import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
@@ -77,9 +78,8 @@ import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
  * @param scaffoldConfig Axes and label configuration for the chart scaffold.
  * @param onPointClick Invoked when the user taps a data point.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
- * @param crosshairContent An optional composable slot for rendering a custom crosshair label. When
- *   provided (and a crosshair is configured via [lineConfig]), it replaces the default canvas
- *   crosshair label and is invoked with the [LineData] under the dragging finger.
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it.
  * @param tooltip How the tap tooltip is shown: [ChartTooltip.canvas] (the built-in bubble, styled via
  *   [LineChartConfig.tooltipConfig]), [ChartTooltip.compose] (your Composable, e.g. `PillTooltip`), or
  *   [ChartTooltip.none].
@@ -103,7 +103,7 @@ fun LineChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onPointClick: ((LineData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
-    crosshairContent: (@Composable (LineData) -> Unit)? = null,
+    crosshair: ChartCrosshair<LineData>? = null,
     tooltip: ChartTooltip<LineData> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
@@ -111,6 +111,8 @@ fun LineChart(
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
+    val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
+    val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
@@ -132,7 +134,7 @@ fun LineChart(
     val textMeasurer = rememberTextMeasurer()
 
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<LineData>(lineConfig.crosshairConfig != null)
+        rememberChartCrosshair<LineData>(effectiveLineConfig.crosshairConfig != null)
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
@@ -154,7 +156,7 @@ fun LineChart(
     val interactionModifier =
         Modifier.lineChartInteractionHandler(
             dataList = dataList,
-            lineConfig = lineConfig,
+            lineConfig = effectiveLineConfig,
             pointBounds = tooltipManager.bounds,
             onPointClick = onPointClick,
             onTooltipStateChange = tooltipManager::updateTooltip,
@@ -231,12 +233,12 @@ fun LineChart(
             drawLineCrosshairAndTooltip(
                 crosshairState = animatedCrosshairState?.resolve(),
                 tooltipManager = tooltipManager,
-                lineConfig = lineConfig,
+                lineConfig = effectiveLineConfig,
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
                 drawBubble = tooltip.isCanvas(),
-                drawCrosshairLabel = crosshairContent == null,
+                drawCrosshairLabel = false,
             )
         }
 
@@ -244,9 +246,8 @@ fun LineChart(
             tooltipManager = tooltipManager,
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
-            lineConfig = lineConfig,
             tooltip = tooltip,
-            crosshairContent = crosshairContent,
+            crosshair = activeCrosshair,
         )
     }
 }
@@ -256,9 +257,8 @@ private fun BoxScope.LineChartOverlays(
     tooltipManager: TooltipManager<Offset, LineData>,
     crosshairManager: CrosshairManager<LineData>?,
     animatedCrosshairState: CrosshairState?,
-    lineConfig: LineChartConfig,
     tooltip: ChartTooltip<LineData>,
-    crosshairContent: (@Composable (LineData) -> Unit)?,
+    crosshair: ChartCrosshair<LineData>?,
 ) {
     ChartTooltipHost(
         tooltip = tooltip,
@@ -267,13 +267,12 @@ private fun BoxScope.LineChartOverlays(
         modifier = Modifier.matchParentSize(),
     )
 
-    if (crosshairContent != null && crosshairManager != null) {
-        ChartCrosshairOverlay(
-            item = crosshairManager.selectedItem,
+    if (crosshair != null) {
+        ChartCrosshairHost(
+            crosshair = crosshair,
+            item = crosshairManager?.selectedItem,
             state = animatedCrosshairState,
-            config = lineConfig.crosshairConfig?.tooltipConfig ?: lineConfig.tooltipConfig,
             modifier = Modifier.matchParentSize(),
-            content = crosshairContent,
         )
     }
 }
