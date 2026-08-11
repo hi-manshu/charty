@@ -27,7 +27,12 @@ private val MONTH_ABBREVS =
         "Dec",
     )
 
-internal fun calendarMonthName(month: Int): String = if (month in 1..12) MONTH_ABBREVS[month - 1] else ""
+internal fun calendarMonthName(month: Int): String =
+    if (month in 1..12) {
+        MONTH_ABBREVS[month - 1]
+    } else {
+        ""
+    }
 
 private val DEFAULT_INTENSITY_COLOR_1 = Color(0xFF9BE9A8)
 private val DEFAULT_INTENSITY_COLOR_2 = Color(0xFF40C463)

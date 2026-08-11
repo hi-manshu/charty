@@ -98,7 +98,12 @@ fun calculateMinMaxValue(
 internal fun baselineValueRange(values: List<Float>): Pair<Float, Float> {
     val calculatedMin = calculateMinValue(values)
     val calculatedMax = calculateMaxValue(values)
-    val finalMin = if (calculatedMin >= 0f) 0f else calculatedMin
+    val finalMin =
+        if (calculatedMin >= 0f) {
+            0f
+        } else {
+            calculatedMin
+        }
     return finalMin to calculatedMax
 }
 
@@ -143,7 +148,12 @@ internal fun calculateNiceAxisRange(
 ): Triple<Float, Float, Int> {
     require(targetSteps > 0)
     if (rawMin == rawMax) {
-        val half = if (rawMin == 0f) 1f else abs(rawMin)
+        val half =
+            if (rawMin == 0f) {
+                1f
+            } else {
+                abs(rawMin)
+            }
         return Triple(rawMin - half, rawMax + half, 2)
     }
     val range = rawMax - rawMin

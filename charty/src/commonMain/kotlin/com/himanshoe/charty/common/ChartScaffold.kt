@@ -64,7 +64,11 @@ fun ChartScaffold(
         remember(yAxisConfig, config.showLabels, config.labelTextStyle, orientation) {
             when {
                 orientation == ChartOrientation.HORIZONTAL ->
-                    if (config.showLabels) HORIZONTAL_LEFT_PADDING_WITH_LABELS else LEFT_PADDING_WITHOUT_LABELS
+                    if (config.showLabels) {
+                        HORIZONTAL_LEFT_PADDING_WITH_LABELS
+                    } else {
+                        LEFT_PADDING_WITHOUT_LABELS
+                    }
 
                 else ->
                     measureAxisGutter(

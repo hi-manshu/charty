@@ -150,8 +150,13 @@ fun CalendarHeatmapChart(
 
     val chartDescription = remember(dataList) { generateCalendarHeatmapDescription(dataList) }
     val outerModifier =
-        (if (scrollEnabled) modifier.horizontalScroll(scrollState) else modifier)
-            .semantics { contentDescription = chartDescription }
+        (
+            if (scrollEnabled) {
+                modifier.horizontalScroll(scrollState)
+            } else {
+                modifier
+            }
+        ).semantics { contentDescription = chartDescription }
 
     Box(modifier = outerModifier) {
         if (gridLayout.totalWeeks == 0) {

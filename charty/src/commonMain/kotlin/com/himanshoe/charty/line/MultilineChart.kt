@@ -1,6 +1,5 @@
 package com.himanshoe.charty.line
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -27,6 +26,7 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.animation.rememberChartAnimationState
 import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -124,7 +124,7 @@ fun MultilineChart(
         }
 
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = remember { Animatable(if (lineConfig.animation.isAnimated) 0f else 1f) }
+    val animationProgress = rememberChartAnimationState(lineConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
@@ -267,7 +267,8 @@ private fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
             lineConfig = p.lineConfig,
             colorList = p.colorList,
             animationProgress = p.animationProgress,
-            pointBounds = if (p.onPointClick != null) p.pointBounds else null,
+            pointBounds =
+                p.pointBounds.takeIf { p.onPointClick != null },
         )
     }
 

@@ -115,7 +115,12 @@ internal class AnimatedCrosshair(
  */
 @Composable
 internal fun <T> rememberChartCrosshair(enabled: Boolean): Pair<CrosshairManager<T>?, AnimatedCrosshair?> {
-    val manager = if (enabled) rememberCrosshairManager<T>() else null
+    val manager =
+        if (enabled) {
+            rememberCrosshairManager<T>()
+        } else {
+            null
+        }
     val animated = rememberAnimatedCrosshairState(manager?.state)
     return manager to animated
 }

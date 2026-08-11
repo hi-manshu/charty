@@ -36,7 +36,11 @@ internal fun resolveBandValueBounds(
     }
     val low = minOf(lowValue, highValue).coerceAtLeast(minValue)
     val high = maxOf(lowValue, highValue).coerceAtMost(maxValue)
-    return if (low >= high) null else low to high
+    return if (low >= high) {
+        null
+    } else {
+        low to high
+    }
 }
 
 /**

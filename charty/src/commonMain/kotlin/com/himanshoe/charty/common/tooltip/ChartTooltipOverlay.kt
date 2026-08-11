@@ -64,7 +64,12 @@ fun <T> ChartTooltipOverlay(
     Box(modifier = modifier.onSizeChanged { containerSize = it }) {
         val isMeasured = tooltipSize != IntSize.Zero && containerSize != IntSize.Zero
         val animatedAlpha by animateFloatAsState(
-            targetValue = if (isMeasured) 1f else 0f,
+            targetValue =
+                if (isMeasured) {
+                    1f
+                } else {
+                    0f
+                },
             animationSpec = tween(durationMillis = TOOLTIP_FADE_DURATION_MS, easing = FastOutSlowInEasing),
             label = "tooltipFade",
         )
@@ -136,5 +141,9 @@ private fun resolveTooltipY(
                     else -> anchor.y > (containerHeight - anchor.y)
                 }
         }
-    return if (placeAbove) aboveY else belowY
+    return if (placeAbove) {
+        aboveY
+    } else {
+        belowY
+    }
 }

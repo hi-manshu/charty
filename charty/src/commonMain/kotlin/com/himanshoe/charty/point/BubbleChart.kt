@@ -157,7 +157,8 @@ fun BubbleChart(
                 config = config,
                 color = color,
                 animationProgress = animationProgress.value,
-                onBubbleClick = if (crosshairManager == null) onBubbleClick else null,
+                onBubbleClick =
+                    onBubbleClick.takeIf { crosshairManager == null },
                 bubbleBounds = bubbleBounds,
             )
 

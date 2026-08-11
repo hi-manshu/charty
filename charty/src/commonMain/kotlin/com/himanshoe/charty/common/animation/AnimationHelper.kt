@@ -57,7 +57,12 @@ fun rememberChartAnimation(
 ): Animatable<Float, *> {
     val animationProgress =
         remember(animation) {
-            val initial = initialValue ?: if (animation.isAnimated) 0f else targetValue
+            val initial =
+                initialValue ?: if (animation.isAnimated) {
+                    0f
+                } else {
+                    targetValue
+                }
             Animatable(initial)
         }
 
@@ -89,6 +94,11 @@ fun rememberChartAnimationState(
     initialValue: Float? = null,
 ): Animatable<Float, *> =
     remember(animation) {
-        val initial = initialValue ?: if (animation.isAnimated) 0f else 1f
+        val initial =
+            initialValue ?: if (animation.isAnimated) {
+                0f
+            } else {
+                1f
+            }
         Animatable(initial)
     }

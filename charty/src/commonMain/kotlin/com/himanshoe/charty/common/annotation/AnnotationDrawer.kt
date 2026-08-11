@@ -39,7 +39,12 @@ fun DrawScope.drawChartAnnotation(
     }
     val x = chartContext.calculateCenteredXPosition(annotation.xIndex, totalItems)
 
-    val pathEffect = if (annotation.style.isDashed) DASH_EFFECT else null
+    val pathEffect =
+        if (annotation.style.isDashed) {
+            DASH_EFFECT
+        } else {
+            null
+        }
 
     drawLine(
         color = annotation.style.lineColor,

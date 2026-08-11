@@ -78,7 +78,11 @@ private fun determineTooltipPosition(
                 else -> {
                     val spaceAbove = barY - chartTop
                     val spaceBelow = chartBottom - barY
-                    if (spaceAbove > spaceBelow) TooltipPosition.ABOVE else TooltipPosition.BELOW
+                    if (spaceAbove > spaceBelow) {
+                        TooltipPosition.ABOVE
+                    } else {
+                        TooltipPosition.BELOW
+                    }
                 }
             }
         }
@@ -123,7 +127,12 @@ private fun calculateTooltipPosition(
             tooltipState.y,
         )
 
-    val tooltipY = if (finalPosition == TooltipPosition.ABOVE) tooltipAboveY else tooltipBelowY
+    val tooltipY =
+        if (finalPosition == TooltipPosition.ABOVE) {
+            tooltipAboveY
+        } else {
+            tooltipBelowY
+        }
     return Offset(tooltipX, tooltipY) to finalPosition
 }
 
@@ -239,7 +248,12 @@ internal fun DrawScope.drawTooltip(
             verticalPadding = verticalPadding,
             offsetY = config.offsetY.toPx(),
             minEdgeDistance = config.minDistanceFromEdge.toPx(),
-            arrowSize = if (config.showArrow) config.arrowSize.toPx() else ELEVATION_THRESHOLD,
+            arrowSize =
+                if (config.showArrow) {
+                    config.arrowSize.toPx()
+                } else {
+                    ELEVATION_THRESHOLD
+                },
         )
 
     val (tooltipOffset, finalPosition) =

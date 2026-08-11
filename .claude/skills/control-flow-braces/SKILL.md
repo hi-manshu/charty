@@ -1,54 +1,73 @@
 ---
 name: control-flow-braces
-description: Brace style for the Charty codebase — use when writing or editing any Kotlin in charty/ or composeApp/, and before committing. Every `if`/`else if`/`else`/`for`/`while` body must be wrapped in braces `{ }`, even a single statement on one line. Braceless one-liners like `if (width > maxWidth) maxWidth = width` are not allowed; write `if (width > maxWidth) { maxWidth = width }`.
+description: Brace style for the Charty codebase — use when writing or editing any Kotlin in charty/ or composeApp/, and before committing. Every `if`/`else if`/`else`/`for`/`while` body must be wrapped in braces `{ }`, even a single statement, a one-liner, or an `if`/`else` used as a value expression. Braceless forms like `if (w > m) m = w` or `val x = if (a) 1 else 2` are not allowed.
 ---
 
 # Control-flow braces
 
-Charty always braces the bodies of control-flow statements. A single guarded statement is easy to
-misread or to break when a second line is added later, so we never write the braceless form.
+Charty always braces the bodies of control-flow statements **and** the branches of `if`/`else` used
+as a value expression. A single guarded statement or a terse ternary-style `if` is easy to misread or
+to break when a second line is added later, so we never write the braceless form.
 
 ## Rule
 
 **Every `if`, `else if`, `else`, `for`, and `while` body is wrapped in `{ }`** — including a body
-that is a single statement, and including the one-line form.
+that is a single statement, the one-line form, **and an `if`/`else` whose value is assigned,
+returned, or passed as an argument.**
 
-Banned (braceless body):
+Banned (braceless body or branch):
 
 ```kotlin
 if (width > maxWidth) maxWidth = width
 if (range == 0f) return bottom
 for (point in points) draw(point)
 if (a) b() else c()
+val label = if (v == v.toLong().toFloat()) v.toLong().toString() else v.toString()
+fun sweep(total: Float): Float = if (total > 0f) value / total else 0f
+foo(bar = if (enabled) onClick else null)
 ```
 
-Required (braced body):
+Required (braced):
 
 ```kotlin
 if (width > maxWidth) {
     maxWidth = width
 }
-if (range == 0f) {
-    return bottom
-}
 for (point in points) {
     draw(point)
 }
-if (a) {
-    b()
-} else {
-    c()
-}
+val label =
+    if (v == v.toLong().toFloat()) {
+        v.toLong().toString()
+    } else {
+        v.toString()
+    }
+fun sweep(total: Float): Float =
+    if (total > 0f) {
+        value / total
+    } else {
+        0f
+    }
+foo(
+    bar =
+        if (enabled) {
+            onClick
+        } else {
+            null
+        },
+)
 ```
+
+Inside a string template, brace the branches in place (it cannot span lines):
+`"${if (n == 1) { "" } else { "s" }}"`.
 
 ## Not covered by this rule
 
-- **`when` branches** — a single-expression branch stays as `arm -> expression`; do not add braces.
-- **`if`/`when` used as an expression** that returns a value (e.g. `val x = if (a) 1 else 2`, or a
-  `when` block assigned to a `val`) — leave the expression form as-is; this rule is about
-  *statement* bodies that perform an action.
-- **Elvis / single-expression functions** (`fun f() = ...`, `x ?: return`) — not control-flow
-  bodies, not affected.
+- **`when` branches** — a single-expression branch stays as `arm -> expression`; do not add braces
+  (`else ->` is a `when` branch, not an `if`/`else`).
+- **Elvis / single-expression functions with no `if`** (`fun f() = expr`, `x ?: return`) — not
+  control-flow, not affected. But when the single-expression body **is** an `if`/`else`, brace its
+  branches as shown above.
 
 ## Applying it
 

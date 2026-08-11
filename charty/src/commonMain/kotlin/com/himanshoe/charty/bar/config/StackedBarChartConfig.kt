@@ -57,7 +57,11 @@ data class StackedBarChartConfig(
     val showDataLabels: Boolean = false,
     val dataLabelFormatter: (BarGroup) -> String = { group ->
         val total = group.values.sum()
-        if (total == total.toLong().toFloat()) total.toLong().toString() else total.toString()
+        if (total == total.toLong().toFloat()) {
+            total.toLong().toString()
+        } else {
+            total.toString()
+        }
     },
     val dataLabelStyle: TextStyle =
         TextStyle(

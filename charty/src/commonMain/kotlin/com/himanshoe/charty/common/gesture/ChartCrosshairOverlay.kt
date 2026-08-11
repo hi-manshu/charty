@@ -66,7 +66,12 @@ fun <T> ChartCrosshairOverlay(
     Box(modifier = modifier.onSizeChanged { containerSize = it }) {
         val isMeasured = contentSize != IntSize.Zero && containerSize != IntSize.Zero
         val animatedAlpha by animateFloatAsState(
-            targetValue = if (isMeasured) 1f else 0f,
+            targetValue =
+                if (isMeasured) {
+                    1f
+                } else {
+                    0f
+                },
             animationSpec = tween(durationMillis = CROSSHAIR_FADE_DURATION_MS, easing = FastOutSlowInEasing),
             label = "crosshairFade",
         )
@@ -125,5 +130,9 @@ private fun resolveCrosshairY(
     val aboveY = anchorY - contentHeight - gap
     val belowY = anchorY + gap
     val fitsAbove = aboveY >= minEdge
-    return if (fitsAbove) aboveY else belowY.coerceAtMost(containerHeight - contentHeight - minEdge)
+    return if (fitsAbove) {
+        aboveY
+    } else {
+        belowY.coerceAtMost(containerHeight - contentHeight - minEdge)
+    }
 }

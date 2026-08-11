@@ -153,7 +153,12 @@ private fun rememberRotationAngle(config: CircularProgressConfig): State<Float> 
     val infiniteTransition = rememberInfiniteTransition(label = "rotation")
     return infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = if (config.rotationEnabled) 360f else 0f,
+        targetValue =
+            if (config.rotationEnabled) {
+                360f
+            } else {
+                0f
+            },
         animationSpec =
             infiniteRepeatable(
                 animation = tween(durationMillis = config.rotationDurationMs, easing = LinearEasing),
@@ -187,7 +192,12 @@ private fun DrawScope.drawRingsContent(
                 gapBetweenRings = config.gapBetweenRings,
                 strokeWidth = strokeWidth,
             )
-        val animProgress = if (index < animatedProgress.size) animatedProgress[index] else ring.progress
+        val animProgress =
+            if (index < animatedProgress.size) {
+                animatedProgress[index]
+            } else {
+                ring.progress
+            }
         drawRingBackground(center, ringRadius, ring, config, rotationAngle, strokeWidth)
         drawRingProgress(center, ringRadius, ring, animProgress, config, rotationAngle, strokeWidth)
     }

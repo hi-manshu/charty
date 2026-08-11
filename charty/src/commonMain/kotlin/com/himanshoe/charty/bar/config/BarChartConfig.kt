@@ -70,7 +70,11 @@ data class BarChartConfig(
     val showDataLabels: Boolean = false,
     val dataLabelFormatter: (BarData) -> String = { barData ->
         val v = barData.value
-        if (v == v.toLong().toFloat()) v.toLong().toString() else v.toString()
+        if (v == v.toLong().toFloat()) {
+            v.toLong().toString()
+        } else {
+            v.toString()
+        }
     },
     val dataLabelStyle: TextStyle =
         TextStyle(

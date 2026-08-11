@@ -84,7 +84,12 @@ internal fun DrawScope.drawStackedBars(params: StackedBarDrawParams) {
                 y = animatedTopY,
                 width = barWidth,
                 height = animatedHeight,
-                cornerRadius = if (isTopSegment) params.stackedConfig.topCornerRadius.value else 0f,
+                cornerRadius =
+                    if (isTopSegment) {
+                        params.stackedConfig.topCornerRadius.value
+                    } else {
+                        0f
+                    },
                 isTopSegment = isTopSegment,
             )
         }

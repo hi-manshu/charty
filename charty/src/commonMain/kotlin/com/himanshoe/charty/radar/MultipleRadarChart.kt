@@ -539,7 +539,12 @@ private fun RadarChartContent(
 private fun rememberRadarAnimation(animation: Animation): Animatable<Float, *> =
     rememberChartAnimation(
         animation = animation,
-        initialValue = if (animation.isAnimated) DEFAULT_ANIMATION_START else DEFAULT_ANIMATION_END,
+        initialValue =
+            if (animation.isAnimated) {
+                DEFAULT_ANIMATION_START
+            } else {
+                DEFAULT_ANIMATION_END
+            },
         targetValue = DEFAULT_ANIMATION_END,
     )
 

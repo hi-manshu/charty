@@ -13,7 +13,11 @@ internal fun calculateOptimizedLabels(allLabels: List<String>): List<String> =
                 (i * (allLabels.size - 1)) / CandlestickChartConstants.LABEL_DIVISOR
             }
         allLabels.fastMapIndexed { index, label ->
-            if (index in indices) label else ""
+            if (index in indices) {
+                label
+            } else {
+                ""
+            }
         }
     } else {
         allLabels

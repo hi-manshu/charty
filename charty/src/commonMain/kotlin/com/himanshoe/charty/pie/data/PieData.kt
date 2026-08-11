@@ -40,12 +40,24 @@ data class PieData(
      * @param total The sum of all slice values
      * @return Percentage as a float (0.0 to 100.0)
      */
-    fun calculatePercentage(total: Float): Float = if (total > 0f) (value / total) * PERCENTAGE_MULTIPLIER else 0f
+    fun calculatePercentage(total: Float): Float =
+        if (total >
+            0f
+        ) {
+            (value / total) * PERCENTAGE_MULTIPLIER
+        } else {
+            0f
+        }
 
     /**
      * Calculates the sweep angle for this slice in degrees
      * @param total The sum of all slice values
      * @return Angle in degrees (0.0 to 360.0)
      */
-    fun calculateSweepAngle(total: Float): Float = if (total > 0f) (value / total) * DEGREES_IN_CIRCLE else 0f
+    fun calculateSweepAngle(total: Float): Float =
+        if (total > 0f) {
+            (value / total) * DEGREES_IN_CIRCLE
+        } else {
+            0f
+        }
 }

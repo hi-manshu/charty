@@ -45,7 +45,11 @@ class BrushSelectionState {
         get() {
             val s = startX ?: return null
             val c = currentX ?: return null
-            return if (s <= c) s to c else c to s
+            return if (s <= c) {
+                s to c
+            } else {
+                c to s
+            }
         }
 
     /**

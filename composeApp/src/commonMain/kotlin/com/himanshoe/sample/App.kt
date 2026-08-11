@@ -2957,7 +2957,7 @@ fun App(modifier: Modifier = Modifier) {
                                         fontWeight = FontWeight.Bold,
                                     )
                                     Text(
-                                        text = if (selectedCategory != null) "Selected" else "400",
+                                        text = if (selectedCategory != null) { "Selected" } else { "400" },
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = Color.Gray,
                                     )

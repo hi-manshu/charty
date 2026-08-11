@@ -234,11 +234,19 @@ private fun calculateHorizontalChartBounds(
     showLabels: Boolean,
 ): ChartBounds {
     val leftPadding =
-        if (showLabels) HORIZONTAL_CHART_LEFT_PADDING_WITH_LABELS else HORIZONTAL_CHART_LEFT_PADDING_WITHOUT_LABELS
+        if (showLabels) {
+            HORIZONTAL_CHART_LEFT_PADDING_WITH_LABELS
+        } else {
+            HORIZONTAL_CHART_LEFT_PADDING_WITHOUT_LABELS
+        }
     val rightPadding = HORIZONTAL_CHART_RIGHT_PADDING
     val topPadding = HORIZONTAL_CHART_TOP_PADDING
     val bottomPadding =
-        if (showLabels) HORIZONTAL_CHART_BOTTOM_PADDING_WITH_LABELS else HORIZONTAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS
+        if (showLabels) {
+            HORIZONTAL_CHART_BOTTOM_PADDING_WITH_LABELS
+        } else {
+            HORIZONTAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS
+        }
 
     val right = size.width - rightPadding
     val bottom = size.height - bottomPadding

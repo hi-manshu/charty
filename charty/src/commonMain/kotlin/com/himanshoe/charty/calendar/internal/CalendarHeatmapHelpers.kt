@@ -75,7 +75,12 @@ internal fun dayOfWeek(
     month: Int,
     day: Int,
 ): Int {
-    val y = if (month < PREV_YEAR_MONTH_THRESHOLD) year - 1 else year
+    val y =
+        if (month < PREV_YEAR_MONTH_THRESHOLD) {
+            year - 1
+        } else {
+            year
+        }
     return (
         y + y / JDN_4_YEAR_CYCLE - y / JDN_100_YEAR_CYCLE +
             y / JDN_400_YEAR_CYCLE + SAKAMOTO_TABLE[month - 1] + day
@@ -149,7 +154,12 @@ internal fun computeGridLayout(
         return GridLayout(emptyList(), emptyMap(), 0, emptyList())
     }
 
-    val startOffset = if (weekStartDay == WeekStartDay.SUNDAY) 0 else 1
+    val startOffset =
+        if (weekStartDay == WeekStartDay.SUNDAY) {
+            0
+        } else {
+            1
+        }
 
     val lookup = dataList.associateBy { gregorianToJdn(it.year, it.month, it.day) }
 

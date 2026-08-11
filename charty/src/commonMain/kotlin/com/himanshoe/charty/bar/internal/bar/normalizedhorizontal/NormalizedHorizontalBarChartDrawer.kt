@@ -102,7 +102,12 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
                 }
 
             val isLastSegment = segmentIndex == lastActiveIndex
-            val cornerRadius = if (isLastSegment) params.config.rightCornerRadius.value else 0f
+            val cornerRadius =
+                if (isLastSegment) {
+                    params.config.rightCornerRadius.value
+                } else {
+                    0f
+                }
 
             val brush =
                 Brush.horizontalGradient(

@@ -26,12 +26,31 @@ internal fun comboPrimaryRange(
     negativeValuesDrawMode: NegativeValuesDrawMode,
     secondaryAxisForLine: Boolean,
 ): Pair<Float, Float> {
-    val values = if (secondaryAxisForLine) dataList.map { it.barValue } else dataList.getAllValues()
+    val values =
+        if (secondaryAxisForLine) {
+            dataList.map { it.barValue }
+        } else {
+            dataList.getAllValues()
+        }
     val calculatedMin = values.minOrNull() ?: 0f
     val calculatedMax = values.maxOrNull() ?: 0f
     val minVal =
-        if (negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS) minOf(calculatedMin, 0f) else calculatedMin
-    val maxVal = maxOf(calculatedMax, if (minVal < 0f) 0f else calculatedMin)
+        if (negativeValuesDrawMode ==
+            NegativeValuesDrawMode.BELOW_AXIS
+        ) {
+            minOf(calculatedMin, 0f)
+        } else {
+            calculatedMin
+        }
+    val maxVal =
+        maxOf(
+            calculatedMax,
+            if (minVal < 0f) {
+                0f
+            } else {
+                calculatedMin
+            },
+        )
     return minVal to maxVal
 }
 

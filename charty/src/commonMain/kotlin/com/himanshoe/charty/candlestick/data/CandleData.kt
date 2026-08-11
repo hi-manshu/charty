@@ -68,6 +68,10 @@ data class CandleData(
      */
     fun isDoji(threshold: Float = 0.01f): Boolean {
         val range = high - low
-        return if (range == 0f) true else bodyHeight / range < threshold
+        return if (range == 0f) {
+            true
+        } else {
+            bodyHeight / range < threshold
+        }
     }
 }

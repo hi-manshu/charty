@@ -81,8 +81,18 @@ private fun DrawScope.drawSegment(
         return
     }
 
-    val leftCornerRadius = if (roundStart) CornerRadius(radius) else CornerRadius.Zero
-    val rightCornerRadius = if (roundEnd) CornerRadius(radius) else CornerRadius.Zero
+    val leftCornerRadius =
+        if (roundStart) {
+            CornerRadius(radius)
+        } else {
+            CornerRadius.Zero
+        }
+    val rightCornerRadius =
+        if (roundEnd) {
+            CornerRadius(radius)
+        } else {
+            CornerRadius.Zero
+        }
 
     val segmentRect =
         RoundRect(

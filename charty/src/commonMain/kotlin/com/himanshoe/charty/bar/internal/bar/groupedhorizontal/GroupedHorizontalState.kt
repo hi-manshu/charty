@@ -49,7 +49,12 @@ internal fun rememberGroupedHorizontalState(
             } else {
                 rawMin
             }
-        val axisMax = if (rawMax < axisMin) axisMin else rawMax
+        val axisMax =
+            if (rawMax < axisMin) {
+                axisMin
+            } else {
+                rawMax
+            }
 
         val (niceMin, niceMax, steps) = calculateNiceAxisRange(axisMin, axisMax, GROUPED_HORIZONTAL_DEFAULT_AXIS_STEPS)
 

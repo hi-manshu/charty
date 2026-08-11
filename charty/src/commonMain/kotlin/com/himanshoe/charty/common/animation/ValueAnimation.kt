@@ -73,7 +73,13 @@ fun rememberAnimatedValues(
             progress.animateTo(targetValue = 1f, animationSpec = animation.toFloatSpec())
         } finally {
             previous.values =
-                if (progress.value == 1f) targetValues else lerpValues(startValues, targetValues, progress.value)
+                if (progress.value ==
+                    1f
+                ) {
+                    targetValues
+                } else {
+                    lerpValues(startValues, targetValues, progress.value)
+                }
         }
     }
 

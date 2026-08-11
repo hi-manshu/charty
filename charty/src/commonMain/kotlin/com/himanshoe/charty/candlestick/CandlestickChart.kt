@@ -155,7 +155,12 @@ private fun DrawScope.drawCandleBar(
     val lowY = chartContext.convertValueToYPosition(candle.low)
     val closeY = chartContext.convertValueToYPosition(candle.close)
     val isBullish = candle.isBullish
-    val candleColor = if (isBullish) bullishColor.value else bearishColor.value
+    val candleColor =
+        if (isBullish) {
+            bullishColor.value
+        } else {
+            bearishColor.value
+        }
 
     val bodyTop = minOf(openY, closeY)
     val bodyBottom = maxOf(openY, closeY)

@@ -111,7 +111,12 @@ private fun DrawScope.drawMosaicBarSegments(
             y = top,
             width = barWidth,
             height = animatedHeight,
-            cornerRadius = if (isTop) CornerRadius(0f, 0f) else CornerRadius.Zero,
+            cornerRadius =
+                if (isTop) {
+                    CornerRadius(0f, 0f)
+                } else {
+                    CornerRadius.Zero
+                },
         )
 
         currentTop -= animatedHeight

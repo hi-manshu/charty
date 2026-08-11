@@ -126,7 +126,7 @@ fun WavyChart(
             val rawMin = values.minOrNull() ?: 0f
             val rawMax = values.maxOrNull() ?: 0f
             val minVal = min(rawMin, 0f)
-            val maxVal = max(rawMax, if (minVal < 0f) 0f else rawMin)
+            val maxVal = max(rawMax, rawMin.coerceAtLeast(0f))
             minVal to maxVal
         }
 
@@ -288,7 +288,12 @@ private fun DrawScope.drawWavyBars(
     val waveCtx =
         WaveDrawContext(
             barSpacing = barSpacing,
-            baselineY = if (minValue < 0f) chartContext.convertValueToYPosition(0f) else chartContext.bottom,
+            baselineY =
+                if (minValue < 0f) {
+                    chartContext.convertValueToYPosition(0f)
+                } else {
+                    chartContext.bottom
+                },
             waveAmplitude = barWidth * wavyConfig.waveAmplitudeFractionOfBarWidth,
             segments = wavyConfig.waveSegments.coerceAtLeast(MIN_WAVE_SEGMENTS),
             basePhase = basePhase,

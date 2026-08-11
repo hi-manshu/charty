@@ -25,7 +25,12 @@ internal fun calculateWaterfallBarParams(
     val barX = chartContext.calculateBarLeftPosition(index, items.size, config.barWidthFraction)
     val barWidth = chartContext.calculateBarWidth(items.size, config.barWidthFraction)
 
-    val prevTotal = if (index == 0) 0f else cumulativeValues[index - 1]
+    val prevTotal =
+        if (index == 0) {
+            0f
+        } else {
+            cumulativeValues[index - 1]
+        }
     val currTotal = cumulativeValues[index]
 
     val startY = chartContext.convertValueToYPosition(prevTotal)
@@ -34,9 +39,19 @@ internal fun calculateWaterfallBarParams(
     val isIncrease = bar.value >= 0f
     val fullHeight = kotlin.math.abs(endY - startY)
     val animatedHeight = fullHeight * animationProgress
-    val animatedTop = if (isIncrease) startY - animatedHeight else startY
+    val animatedTop =
+        if (isIncrease) {
+            startY - animatedHeight
+        } else {
+            startY
+        }
 
-    val baseColor = if (isIncrease) config.positiveColor else config.negativeColor
+    val baseColor =
+        if (isIncrease) {
+            config.positiveColor
+        } else {
+            config.negativeColor
+        }
     val chartyColor = bar.color ?: baseColor
     val brush = Brush.verticalGradient(chartyColor.value)
 

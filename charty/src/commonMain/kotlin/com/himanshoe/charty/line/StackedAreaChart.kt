@@ -1,6 +1,5 @@
 package com.himanshoe.charty.line
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -29,6 +28,7 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.animation.rememberChartAnimationState
 import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -146,7 +146,7 @@ fun StackedAreaChart(
             calculateMaxValue(calculateStackedCumulativeValues(dataList)) to colors.value
         }
 
-    val animationProgress = remember { Animatable(if (lineConfig.animation.isAnimated) 0f else 1f) }
+    val animationProgress = rememberChartAnimationState(lineConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val areaSegmentBounds = remember { mutableListOf<Triple<Rect, Path, StackedAreaPoint>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, LineGroup>>() }
@@ -214,7 +214,8 @@ fun StackedAreaChart(
                         animationProgress = animationProgress.value,
                         onAreaClick = onAreaClick,
                         areaSegmentBounds = areaSegmentBounds,
-                        crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
+                        crosshairBounds =
+                            crosshairBounds.takeIf { crosshairManager != null },
                         crosshairManager = crosshairManager,
                         crosshairState = animatedCrosshairState?.resolve(),
                         tooltipState = tooltipState,

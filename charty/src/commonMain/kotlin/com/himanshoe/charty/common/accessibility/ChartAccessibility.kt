@@ -210,11 +210,21 @@ fun generatePieChartDescription(
     return buildString {
         append("$chartTypeName chart, ${data.size} slices. ")
         largest?.let {
-            val pct = if (total > 0f) ((it.value / total) * 100).toInt() else 0
+            val pct =
+                if (total > 0f) {
+                    ((it.value / total) * 100).toInt()
+                } else {
+                    0
+                }
             append("Largest slice: ${it.label} ($pct%). ")
         }
         smallest?.let {
-            val pct = if (total > 0f) ((it.value / total) * 100).toInt() else 0
+            val pct =
+                if (total > 0f) {
+                    ((it.value / total) * 100).toInt()
+                } else {
+                    0
+                }
             append("Smallest slice: ${it.label} ($pct%).")
         }
     }
@@ -259,7 +269,13 @@ fun generateComboChartDescription(data: List<ComboChartData>): String {
     val topBar = data.maxByOrNull { it.barValue }
     val topLine = data.maxByOrNull { it.lineValue }
     return buildString {
-        append("Combo chart, ${data.size} data point${if (data.size == 1) "" else "s"}. ")
+        append(
+            "Combo chart, ${data.size} data point${if (data.size == 1) {
+                ""
+            } else {
+                "s"
+            }}. ",
+        )
         topBar?.let { append("Highest bar: ${it.barValue.toReadableString()} at ${it.label}. ") }
         topLine?.let { append("Highest line: ${it.lineValue.toReadableString()} at ${it.label}.") }
     }
@@ -287,7 +303,13 @@ fun generateRadarChartDescription(
     }
     val axisCount = data.firstOrNull()?.axes?.size ?: 0
     return buildString {
-        append("$chartTypeName chart, ${data.size} dataset${if (data.size == 1) "" else "s"}")
+        append(
+            "$chartTypeName chart, ${data.size} dataset${if (data.size == 1) {
+                ""
+            } else {
+                "s"
+            }}",
+        )
         if (axisCount > 0) {
             append(", $axisCount axes each")
         }
@@ -315,7 +337,13 @@ fun generateCircularProgressDescription(data: List<CircularRingData>): String {
         return "Empty circular progress indicator."
     }
     return buildString {
-        append("Circular progress indicator, ${data.size} ring${if (data.size == 1) "" else "s"}. ")
+        append(
+            "Circular progress indicator, ${data.size} ring${if (data.size == 1) {
+                ""
+            } else {
+                "s"
+            }}. ",
+        )
         data.forEach { ring ->
             append("${ring.label}: ${ring.calculatePercentage().toInt()}%. ")
         }
@@ -338,9 +366,20 @@ fun generateBlockBarDescription(data: List<BlockData>): String {
     val total = data.sumOf { it.value.toDouble() }.toFloat()
     val largest = data.maxByOrNull { it.value }
     return buildString {
-        append("Block bar chart, ${data.size} segment${if (data.size == 1) "" else "s"}. ")
+        append(
+            "Block bar chart, ${data.size} segment${if (data.size == 1) {
+                ""
+            } else {
+                "s"
+            }}. ",
+        )
         largest?.let {
-            val pct = if (total > 0f) ((it.value / total) * 100).toInt() else 0
+            val pct =
+                if (total > 0f) {
+                    ((it.value / total) * 100).toInt()
+                } else {
+                    0
+                }
             append("Largest segment: $pct% of total.")
         }
     }
@@ -359,7 +398,13 @@ fun generateCalendarHeatmapDescription(data: List<CalendarData>): String {
     }
     val busiest = data.maxByOrNull { it.value }
     return buildString {
-        append("Calendar heatmap, ${data.size} day${if (data.size == 1) "" else "s"} with data. ")
+        append(
+            "Calendar heatmap, ${data.size} day${if (data.size == 1) {
+                ""
+            } else {
+                "s"
+            }} with data. ",
+        )
         busiest?.let {
             append("Busiest day: ${it.year}-${it.month}-${it.day} at ${it.value.toReadableString()}.")
         }
@@ -368,5 +413,9 @@ fun generateCalendarHeatmapDescription(data: List<CalendarData>): String {
 
 private fun Float.toReadableString(): String {
     val long = toLong()
-    return if (this == long.toFloat()) long.toString() else toString()
+    return if (this == long.toFloat()) {
+        long.toString()
+    } else {
+        toString()
+    }
 }

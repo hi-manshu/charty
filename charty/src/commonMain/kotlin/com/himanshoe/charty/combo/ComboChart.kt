@@ -217,7 +217,8 @@ fun ComboChart(
                     animationProgress = animationProgress.value,
                     onDataClick = onDataClick,
                     dataBounds = dataBounds,
-                    crosshairBounds = if (crosshairManager != null) crosshairBounds else null,
+                    crosshairBounds =
+                        crosshairBounds.takeIf { crosshairManager != null },
                     crosshairManager = crosshairManager,
                     crosshairState = animatedCrosshairState?.resolve(),
                     tooltipState = tooltipState,
@@ -276,7 +277,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
         baselineY = baselineY,
         animationProgress = p.animationProgress,
         isBelowAxisMode = p.isBelowAxisMode,
-        dataBounds = if (p.onDataClick != null) p.dataBounds else null,
+        dataBounds =
+            p.dataBounds.takeIf { p.onDataClick != null },
     )
     val pointPositions = p.chartContext.calculateLinePointPositions(dataList = p.dataList, lineRange = p.lineRange)
     p.crosshairBounds?.let { bounds ->
@@ -291,7 +293,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
         comboConfig = p.comboConfig,
         animationProgress = p.animationProgress,
         dataList = p.dataList,
-        dataBounds = if (p.onDataClick != null) p.dataBounds else null,
+        dataBounds =
+            p.dataBounds.takeIf { p.onDataClick != null },
     )
     p.comboConfig.referenceLine?.let { referenceLineConfig ->
         drawReferenceLine(

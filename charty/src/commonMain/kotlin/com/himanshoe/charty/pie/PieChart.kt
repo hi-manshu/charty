@@ -170,7 +170,12 @@ fun PieChart(
                 null ->
                     generatePieChartDescription(
                         data = dataList,
-                        chartTypeName = if (config.style == PieChartStyle.DONUT) "Donut" else "Pie",
+                        chartTypeName =
+                            if (config.style == PieChartStyle.DONUT) {
+                                "Donut"
+                            } else {
+                                "Pie"
+                            },
                     )
                 else -> accessibilityDescription
             }
@@ -216,7 +221,12 @@ fun PieChart(
                 centerContent = centerContent,
                 onSliceClick =
                     onSliceClickLambda(dataList) { index ->
-                        selectedSliceIndex = if (selectedSliceIndex == index) null else index
+                        selectedSliceIndex =
+                            if (selectedSliceIndex == index) {
+                                null
+                            } else {
+                                index
+                            }
                         onSliceClick?.invoke(dataList[index], index)
                     },
             ),
@@ -320,7 +330,12 @@ private fun DrawScope.drawPieSlices(params: PieSliceDrawParams) {
 
         if (sweepAngle > 0) {
             val isSelected = index == params.selectedSliceIndex
-            val scale = if (isSelected) params.selectedScale else 1f
+            val scale =
+                if (isSelected) {
+                    params.selectedScale
+                } else {
+                    1f
+                }
             val alpha =
                 if (params.selectedSliceIndex != null && !isSelected) {
                     params.config.interactionConfig.unselectedSliceOpacity
