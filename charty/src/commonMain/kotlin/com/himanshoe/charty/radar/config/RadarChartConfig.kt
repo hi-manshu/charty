@@ -38,7 +38,8 @@ enum class RadarGridStyle {
 /**
  * Configuration for radar chart labels
  *
- * @property showLabels Whether to show axis labels
+ * @property showLabels Whether to show axis labels. Defaults to `true` — radar axes are hard to read
+ *   without their names; set to `false` to hide them.
  * @property showValues Whether to show values on data points
  * @property labelDistanceMultiplier Distance multiplier for label positioning (1.0 = at edge, >1.0 = outside)
  * @property labelTextStyle TextStyle for axis labels - allows full customization of text appearance
@@ -46,7 +47,7 @@ enum class RadarGridStyle {
  */
 @Stable
 data class RadarLabelConfig(
-    val showLabels: Boolean = false,
+    val showLabels: Boolean = true,
     val showValues: Boolean = false,
     val labelDistanceMultiplier: Float = DEFAULT_LABEL_DISTANCE_MULTIPLIER,
     val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = DEFAULT_LABEL_TEXT_SIZE_SP.sp),

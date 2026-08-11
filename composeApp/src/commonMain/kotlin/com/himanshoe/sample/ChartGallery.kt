@@ -100,6 +100,8 @@ import com.himanshoe.charty.point.data.BubbleData
 import com.himanshoe.charty.point.data.PointData
 import com.himanshoe.charty.radar.MultipleRadarChart
 import com.himanshoe.charty.radar.RadarChart
+import com.himanshoe.charty.radar.config.RadarChartConfig
+import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
 
@@ -1214,6 +1216,28 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                                 ),
                             )
                         },
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Axis labels + values") {
+                    RadarChart(
+                        data = {
+                            listOf(
+                                RadarDataSet(
+                                    label = "Player",
+                                    axes =
+                                        listOf(
+                                            RadarAxisData(label = "Speed", value = 80f),
+                                            RadarAxisData(label = "Power", value = 65f),
+                                            RadarAxisData(label = "Skill", value = 90f),
+                                            RadarAxisData(label = "Stamina", value = 70f),
+                                            RadarAxisData(label = "Defense", value = 55f),
+                                        ),
+                                    color = ChartyColor.Solid(purple),
+                                ),
+                            )
+                        },
+                        config = RadarChartConfig(labelConfig = RadarLabelConfig(showLabels = true, showValues = true)),
                         modifier = chartFill,
                     )
                 },
