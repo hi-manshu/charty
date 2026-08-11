@@ -18,13 +18,15 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
-import com.himanshoe.charty.combo.ext.getAllValues
 import com.himanshoe.charty.combo.ext.getLabels
 import com.himanshoe.charty.combo.internal.ComboChartConstants
 import com.himanshoe.charty.combo.internal.calculateLinePointPositions
 import com.himanshoe.charty.combo.internal.comboChartClickHandler
+import com.himanshoe.charty.combo.internal.comboLineRange
+import com.himanshoe.charty.combo.internal.comboPrimaryRange
 import com.himanshoe.charty.combo.internal.drawComboBars
 import com.himanshoe.charty.combo.internal.drawComboLine
+import com.himanshoe.charty.combo.internal.toSecondaryAxisConfig
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateComboChartDescription
@@ -48,8 +50,6 @@ import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
-import kotlin.math.max
-import kotlin.math.min
 
 private data class ComboDrawParams(
     val dataList: List<ComboChartData>,
@@ -58,6 +58,7 @@ private data class ComboDrawParams(
     val barColor: ChartyColor,
     val lineColor: ChartyColor,
     val minValue: Float,
+    val lineRange: Pair<Float, Float>?,
     val isBelowAxisMode: Boolean,
     val animationProgress: Float,
     val onDataClick: ((ComboChartData) -> Unit)?,
@@ -134,18 +135,17 @@ fun ComboChart(
     val dataList = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
 
     val (minValue, maxValue) =
-        remember(dataList, comboConfig.negativeValuesDrawMode) {
-            val allValues = dataList.getAllValues()
-            val calculatedMin = allValues.minOrNull() ?: 0f
-            val calculatedMax = allValues.maxOrNull() ?: 0f
-            val minVal =
-                if (comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS) {
-                    min(calculatedMin, 0f)
-                } else {
-                    calculatedMin
-                }
-            val maxVal = max(calculatedMax, if (minVal < 0f) 0f else calculatedMin)
-            minVal to maxVal
+        remember(dataList, comboConfig.negativeValuesDrawMode, comboConfig.secondaryAxisForLine) {
+            comboPrimaryRange(
+                dataList = dataList,
+                negativeValuesDrawMode = comboConfig.negativeValuesDrawMode,
+                secondaryAxisForLine = comboConfig.secondaryAxisForLine,
+            )
+        }
+
+    val secondaryLineRange =
+        remember(dataList, comboConfig.secondaryAxisForLine) {
+            comboLineRange(dataList = dataList, secondaryAxisForLine = comboConfig.secondaryAxisForLine)
         }
 
     val isBelowAxisMode = comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -200,6 +200,7 @@ fun ComboChart(
                 ),
             config = scaffoldConfig,
             contentDescription = chartDescription,
+            secondaryYAxisConfig = secondaryLineRange.toSecondaryAxisConfig(),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig, chartContext)
             dataBounds.clear()
@@ -211,6 +212,7 @@ fun ComboChart(
                     barColor = barColor,
                     lineColor = lineColor,
                     minValue = minValue,
+                    lineRange = secondaryLineRange,
                     isBelowAxisMode = isBelowAxisMode,
                     animationProgress = animationProgress.value,
                     onDataClick = onDataClick,
@@ -276,7 +278,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
         isBelowAxisMode = p.isBelowAxisMode,
         dataBounds = if (p.onDataClick != null) p.dataBounds else null,
     )
-    val pointPositions = p.chartContext.calculateLinePointPositions(p.dataList)
+    val pointPositions = p.chartContext.calculateLinePointPositions(dataList = p.dataList, lineRange = p.lineRange)
     p.crosshairBounds?.let { bounds ->
         bounds.clear()
         pointPositions.fastForEachIndexed { index, pos ->

@@ -14,6 +14,7 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 private const val VERTICAL_CHART_LEFT_PADDING_WITH_LABELS = 60f
 private const val VERTICAL_CHART_LEFT_PADDING_WITHOUT_LABELS = 20f
 private const val VERTICAL_CHART_RIGHT_PADDING = 20f
+private const val VERTICAL_CHART_RIGHT_PADDING_WITH_SECONDARY = 60f
 private const val VERTICAL_CHART_TOP_PADDING = 20f
 private const val VERTICAL_CHART_BOTTOM_PADDING_WITH_LABELS = 50f
 private const val VERTICAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS = 20f
@@ -45,10 +46,18 @@ private fun calculateVerticalChartBounds(
     size: androidx.compose.ui.geometry.Size,
     showLabels: Boolean,
     hasXLabels: Boolean,
+    hasSecondaryAxis: Boolean = false,
 ): ChartBounds {
     val leftPadding =
         if (showLabels) VERTICAL_CHART_LEFT_PADDING_WITH_LABELS else VERTICAL_CHART_LEFT_PADDING_WITHOUT_LABELS
-    val rightPadding = VERTICAL_CHART_RIGHT_PADDING
+    val rightPadding =
+        if (hasSecondaryAxis &&
+            showLabels
+        ) {
+            VERTICAL_CHART_RIGHT_PADDING_WITH_SECONDARY
+        } else {
+            VERTICAL_CHART_RIGHT_PADDING
+        }
     val topPadding = VERTICAL_CHART_TOP_PADDING
     val bottomPadding =
         if (showLabels && hasXLabels) {
@@ -110,8 +119,15 @@ internal fun DrawScope.drawVerticalChartAxes(
     textMeasurer: TextMeasurer,
     labelStyle: TextStyle,
     leftLabelRotation: LabelRotation,
+    secondaryYAxisConfig: AxisConfig? = null,
 ) {
-    val bounds = calculateVerticalChartBounds(size, config.showLabels, xLabels.isNotEmpty())
+    val bounds =
+        calculateVerticalChartBounds(
+            size = size,
+            showLabels = config.showLabels,
+            hasXLabels = xLabels.isNotEmpty(),
+            hasSecondaryAxis = secondaryYAxisConfig != null,
+        )
     val valueRange = yAxisConfig.maxValue - yAxisConfig.minValue
     val steps = yAxisConfig.steps.coerceAtLeast(MIN_STEPS)
 
@@ -173,6 +189,49 @@ internal fun DrawScope.drawVerticalChartAxes(
                         centerX - textLayout.size.width / CENTER_DIVISOR,
                         bounds.bottom + LABEL_OFFSET,
                     ),
+            )
+        }
+    }
+
+    if (secondaryYAxisConfig != null) {
+        drawSecondaryVerticalAxis(
+            bounds = bounds,
+            axisConfig = secondaryYAxisConfig,
+            config = config,
+            textMeasurer = textMeasurer,
+            labelStyle = labelStyle,
+        )
+    }
+}
+
+private fun DrawScope.drawSecondaryVerticalAxis(
+    bounds: ChartBounds,
+    axisConfig: AxisConfig,
+    config: ChartScaffoldConfig,
+    textMeasurer: TextMeasurer,
+    labelStyle: TextStyle,
+) {
+    val range = axisConfig.maxValue - axisConfig.minValue
+    if (range == ZERO_VALUE) return
+    val steps = axisConfig.steps.coerceAtLeast(MIN_STEPS)
+
+    if (config.showAxis) {
+        drawLine(
+            color = config.axisColor,
+            start = Offset(bounds.right, bounds.top),
+            end = Offset(bounds.right, bounds.bottom),
+            strokeWidth = config.axisThickness,
+        )
+    }
+
+    for (i in 0..steps) {
+        val value = axisConfig.minValue + range * (i.toFloat() / steps)
+        val y = bounds.bottom - ((value - axisConfig.minValue) / range) * bounds.height
+        if (config.showLabels) {
+            val textLayout = textMeasurer.measure(AnnotatedString(axisConfig.valueFormatter(value)), labelStyle)
+            drawText(
+                textLayoutResult = textLayout,
+                topLeft = Offset(bounds.right + LABEL_OFFSET, y - textLayout.size.height / CENTER_DIVISOR),
             )
         }
     }

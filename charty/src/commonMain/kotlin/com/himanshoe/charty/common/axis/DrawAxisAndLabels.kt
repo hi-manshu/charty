@@ -29,6 +29,7 @@ internal fun DrawAxisAndLabels(
     config: ChartScaffoldConfig,
     orientation: ChartOrientation,
     leftLabelRotation: LabelRotation,
+    secondaryYAxisConfig: AxisConfig? = null,
 ) {
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = config.labelTextStyle
@@ -43,6 +44,7 @@ internal fun DrawAxisAndLabels(
                     textMeasurer = textMeasurer,
                     labelStyle = labelStyle,
                     leftLabelRotation = leftLabelRotation,
+                    secondaryYAxisConfig = secondaryYAxisConfig,
                 )
 
             ChartOrientation.HORIZONTAL ->

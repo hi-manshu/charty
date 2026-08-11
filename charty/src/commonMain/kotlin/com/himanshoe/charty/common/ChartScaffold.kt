@@ -17,6 +17,7 @@ private const val VERTICAL_LEFT_PADDING_WITH_LABELS = 60f
 private const val HORIZONTAL_LEFT_PADDING_WITH_LABELS = 100f
 private const val LEFT_PADDING_WITHOUT_LABELS = 20f
 private const val RIGHT_PADDING = 20f
+private const val RIGHT_PADDING_WITH_SECONDARY = 60f
 private const val TOP_PADDING = 20f
 private const val BOTTOM_PADDING_WITH_LABELS = 50f
 private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
@@ -34,6 +35,9 @@ private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
  * @param contentDescription An accessibility description read by screen readers. When provided,
  *   it is attached to the chart's root composable via [Modifier.semantics]. Generate one
  *   automatically with helpers such as `generateLineChartDescription`.
+ * @param secondaryYAxisConfig Optional second value axis rendered on the right edge with its own
+ *   scale, for dual-axis charts. When non-null, the right gutter widens and a right axis is drawn;
+ *   plot a series against it with [ChartContext.convertValueToYPosition] and this config's range.
  * @param content A lambda function that provides a [DrawScope] and [ChartContext] for drawing the chart content.
  */
 @Composable
@@ -45,6 +49,7 @@ fun ChartScaffold(
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
     leftLabelRotation: LabelRotation = LabelRotation.Straight,
     contentDescription: String? = null,
+    secondaryYAxisConfig: AxisConfig? = null,
     content: DrawScope.(ChartContext) -> Unit,
 ) {
     val accessibilityModifier =
@@ -60,6 +65,7 @@ fun ChartScaffold(
             config = config,
             orientation = orientation,
             leftLabelRotation = leftLabelRotation,
+            secondaryYAxisConfig = secondaryYAxisConfig,
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -69,6 +75,8 @@ fun ChartScaffold(
                     orientation == ChartOrientation.HORIZONTAL -> HORIZONTAL_LEFT_PADDING_WITH_LABELS
                     else -> VERTICAL_LEFT_PADDING_WITH_LABELS
                 }
+            val rightPadding =
+                if (secondaryYAxisConfig != null && config.showLabels) RIGHT_PADDING_WITH_SECONDARY else RIGHT_PADDING
             val bottomPadding =
                 if (config.showLabels && xLabels.isNotEmpty()) {
                     BOTTOM_PADDING_WITH_LABELS
@@ -80,7 +88,7 @@ fun ChartScaffold(
                 ChartContext(
                     left = leftPadding,
                     top = TOP_PADDING,
-                    right = size.width - RIGHT_PADDING,
+                    right = size.width - rightPadding,
                     bottom = size.height - bottomPadding,
                     minValue = yAxisConfig.minValue,
                     maxValue = yAxisConfig.maxValue,

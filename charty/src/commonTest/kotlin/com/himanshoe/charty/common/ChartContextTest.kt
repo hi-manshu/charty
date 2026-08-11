@@ -34,6 +34,20 @@ class ChartContextTest {
     }
 
     @Test
+    fun convertValueToYPosition_secondaryRange_usesThatScale() {
+        val c = context() // own range 0..100
+        assertEquals(50f, c.convertValueToYPosition(value = 5f, rangeMin = 0f, rangeMax = 10f), TOL)
+        assertEquals(100f, c.convertValueToYPosition(value = 0f, rangeMin = 0f, rangeMax = 10f), TOL)
+        assertEquals(0f, c.convertValueToYPosition(value = 10f, rangeMin = 0f, rangeMax = 10f), TOL)
+    }
+
+    @Test
+    fun convertValueToYPosition_secondaryZeroRange_returnsBottom() {
+        val c = context()
+        assertEquals(100f, c.convertValueToYPosition(value = 5f, rangeMin = 5f, rangeMax = 5f), TOL)
+    }
+
+    @Test
     fun calculateBarWidth_isFractionOfSection() {
         assertEquals(15f, context().calculateBarWidth(totalBars = 4, widthFraction = 0.6f), TOL)
     }

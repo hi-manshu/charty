@@ -27,6 +27,9 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @property animation Animation configuration (Disabled or Enabled with duration)
  * @property referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
  * @property referenceBand Optional shaded value region drawn behind the combo data (see [ReferenceBandConfig])
+ * @property secondaryAxisForLine When `true`, the line is plotted against its own secondary Y axis on
+ *   the right (scaled to the line values), while the bars keep the left axis (scaled to the bar
+ *   values). Useful when bar and line series have very different magnitudes.
  * @property tooltipConfig Configuration for tooltip appearance when a data point is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
@@ -47,6 +50,7 @@ data class ComboChartConfig(
     val animation: Animation = Animation.Default,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
+    val secondaryAxisForLine: Boolean = false,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (ComboChartData) -> String = { data ->

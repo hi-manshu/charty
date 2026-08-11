@@ -39,10 +39,26 @@ data class ChartContext(
      * @param value The data value to be converted.
      * @return The y-coordinate on the canvas.
      */
-    fun convertValueToYPosition(value: Float): Float {
-        val range = maxValue - minValue
+    fun convertValueToYPosition(value: Float): Float = convertValueToYPosition(value, minValue, maxValue)
+
+    /**
+     * Converts a data value to its y-coordinate using an explicit `[rangeMin, rangeMax]` range
+     * instead of the context's own range. Used to plot a series against a **secondary Y axis** (a
+     * different scale) in dual-axis charts.
+     *
+     * @param value The data value to be converted.
+     * @param rangeMin The minimum of the axis this value belongs to.
+     * @param rangeMax The maximum of the axis this value belongs to.
+     * @return The y-coordinate on the canvas.
+     */
+    fun convertValueToYPosition(
+        value: Float,
+        rangeMin: Float,
+        rangeMax: Float,
+    ): Float {
+        val range = rangeMax - rangeMin
         if (range == ZERO_RANGE) return bottom
-        val normalized = (value - minValue) / range
+        val normalized = (value - rangeMin) / range
         return bottom - (normalized * height)
     }
 
