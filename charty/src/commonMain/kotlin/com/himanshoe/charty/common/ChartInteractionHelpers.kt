@@ -1,6 +1,7 @@
 package com.himanshoe.charty.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -10,6 +11,7 @@ import com.himanshoe.charty.common.annotation.drawChartAnnotation
 import com.himanshoe.charty.common.brush.BrushSelectionState
 import com.himanshoe.charty.common.brush.drawBrushSelection
 import com.himanshoe.charty.common.config.ChartInteractionConfig
+import com.himanshoe.charty.common.draw.drawScrollEdgeFades
 import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.viewport.ViewPortState
@@ -132,5 +134,34 @@ internal fun DrawScope.drawInteractionOverlays(
             chartRight = chartContext.right,
             chartBottom = chartContext.bottom,
         )
+    }
+    val viewPortState = interactionConfig.viewPortState
+    interactionConfig.edgeFade?.let { edgeFade ->
+        if (viewPortState != null) {
+            drawScrollEdgeFades(
+                chartContext = chartContext,
+                config = edgeFade,
+                fadeLeft = !viewPortState.isAtStart,
+                fadeRight = !viewPortState.isAtEnd,
+            )
+        }
+    }
+}
+
+/**
+ * Follows the end of the data when [enabled] and a [viewPortState] is present: each time
+ * [fullDataSize] grows the viewport animates to reveal the newest points (see
+ * [ViewPortState.animateScrollToEnd]). Call from a chart's composition.
+ */
+@Composable
+internal fun AutoScrollToLatestEffect(
+    viewPortState: ViewPortState?,
+    fullDataSize: Int,
+    enabled: Boolean,
+) {
+    LaunchedEffect(viewPortState, fullDataSize, enabled) {
+        if (enabled && viewPortState != null) {
+            viewPortState.animateScrollToEnd()
+        }
     }
 }

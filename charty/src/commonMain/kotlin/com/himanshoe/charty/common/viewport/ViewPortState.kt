@@ -2,6 +2,7 @@ package com.himanshoe.charty.common.viewport
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.exponentialDecay
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -15,6 +16,8 @@ import kotlinx.coroutines.launch
 
 private const val MIN_VISIBLE_FRACTION = 0.1f
 private const val FLING_FRICTION = 1.5f
+private const val EDGE_EPSILON = 0.001f
+private const val SCROLL_ANIMATION_MILLIS = 600
 
 /**
  * Tracks the currently visible data window for a zoomable/pannable chart.
@@ -134,6 +137,54 @@ class ViewPortState {
     internal fun cancelFling() {
         flingJob?.cancel()
         flingJob = null
+    }
+
+    /**
+     * `true` when the window's left edge is at the start of the dataset (there is no earlier data
+     * scrolled off to the left).
+     */
+    val isAtStart: Boolean get() = startFraction <= EDGE_EPSILON
+
+    /**
+     * `true` when the window's right edge is at the end of the dataset (there is no later data
+     * scrolled off to the right).
+     */
+    val isAtEnd: Boolean get() = endFraction >= 1f - EDGE_EPSILON
+
+    /**
+     * Moves the window to the end of the dataset, keeping the current [visibleFraction], so the most
+     * recent data becomes visible. No-op effect when already showing the full dataset.
+     */
+    fun scrollToEnd() {
+        cancelFling()
+        val width = visibleFraction
+        startFraction = (1f - width).coerceAtLeast(0f)
+        endFraction = 1f
+    }
+
+    /**
+     * Like [scrollToEnd] but glides the window to the end with a smooth tween instead of jumping.
+     * Falls back to an instant [scrollToEnd] if no coroutine scope is bound yet.
+     */
+    fun animateScrollToEnd() {
+        cancelFling()
+        val width = visibleFraction
+        val targetStart = (1f - width).coerceAtLeast(0f)
+        val scope = coroutineScope
+        if (scope == null) {
+            scrollToEnd()
+            return
+        }
+        flingJob =
+            scope.launch {
+                Animatable(startFraction).animateTo(
+                    targetValue = targetStart,
+                    animationSpec = tween(durationMillis = SCROLL_ANIMATION_MILLIS),
+                ) {
+                    startFraction = value
+                    endFraction = (value + width).coerceAtMost(1f)
+                }
+            }
     }
 
     /**

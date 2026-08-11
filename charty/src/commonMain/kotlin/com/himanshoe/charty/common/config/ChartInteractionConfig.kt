@@ -18,6 +18,12 @@ import com.himanshoe.charty.common.viewport.ViewPortState
  *   bar chart) tracks the item under the finger and shows its tooltip, dismissing on release. This
  *   is automatically suppressed while [viewPortState] or [brushSelectionState] is active, since
  *   those also consume drag gestures.
+ * @property autoScrollToLatest When `true` and [viewPortState] is set, the viewport follows the end
+ *   of the data: whenever the dataset grows the window scrolls to reveal the newest points (keeping
+ *   the current zoom level). Has no effect without a [viewPortState].
+ * @property edgeFade When non-null and [viewPortState] is set, draws a scrim at the leading/trailing
+ *   edges while data is scrolled off-screen, hinting there is more to pan to (see
+ *   [ScrollEdgeFadeConfig]).
  */
 @Stable
 class ChartInteractionConfig(
@@ -27,4 +33,6 @@ class ChartInteractionConfig(
     val annotations: List<ChartAnnotation> = emptyList(),
     val accessibilityDescription: String? = null,
     val dragTooltipEnabled: Boolean = false,
+    val autoScrollToLatest: Boolean = false,
+    val edgeFade: ScrollEdgeFadeConfig? = null,
 )

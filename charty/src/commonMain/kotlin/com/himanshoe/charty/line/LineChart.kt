@@ -15,6 +15,7 @@ import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.AutoScrollToLatestEffect
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
@@ -121,6 +122,7 @@ fun LineChart(
         fullDataSize = fullDataList.size,
         dataSize = dataList.size,
     )
+    AutoScrollToLatestEffect(interactionConfig.viewPortState, fullDataList.size, interactionConfig.autoScrollToLatest)
 
     val interactionModifier =
         Modifier.lineChartInteractionHandler(
@@ -140,13 +142,7 @@ fun LineChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
-            yAxisConfig =
-                AxisConfig(
-                    minValue = minValue,
-                    maxValue = maxValue,
-                    steps = 6,
-                    drawAxisAtZero = isBelowAxisMode,
-                ),
+            yAxisConfig = lineAxisConfig(minValue = minValue, maxValue = maxValue, drawAxisAtZero = isBelowAxisMode),
             config = scaffoldConfig,
             contentDescription = chartDescription,
         ) { chartContext ->
@@ -321,6 +317,21 @@ private fun DrawScope.drawLineContent(
         textMeasurer = textMeasurer,
     )
 }
+
+private const val LINE_AXIS_STEPS = 6
+
+/** Builds the line chart's value axis configuration. */
+private fun lineAxisConfig(
+    minValue: Float,
+    maxValue: Float,
+    drawAxisAtZero: Boolean,
+): AxisConfig =
+    AxisConfig(
+        minValue = minValue,
+        maxValue = maxValue,
+        steps = LINE_AXIS_STEPS,
+        drawAxisAtZero = drawAxisAtZero,
+    )
 
 /**
  * Remembers the min/max value range for [dataList], recomputed only when the data or
