@@ -1,6 +1,6 @@
 ---
 name: commit-with-stats
-description: Create a git commit for the Charty project with a change-stats block appended to the message body. Use whenever the user asks to commit (e.g. "commit this", "commit and push", "make a commit"). Produces a conventional imperative subject, a descriptive body, and a "Stats" footer of files-changed / insertions / deletions / net LOC. Never adds a Claude co-author trailer.
+description: Create a git commit for the Charty project with a change-stats block appended to the message body. Use whenever the user asks to commit (e.g. "commit this", "commit and push", "make a commit"). Produces a bracketed [Type]-prefixed imperative subject, a descriptive body, and a "Stats" footer of files-changed / insertions / deletions / net LOC. Never adds a Claude co-author trailer.
 ---
 
 # Commit with stats
@@ -26,6 +26,31 @@ project convention for the Charty library. Follow every step; do not skip the ve
 7. **Named-arguments gate.** New/changed calls with 2+ value arguments must pass them by name (see
    the `named-arguments` skill), outside its listed exemptions. Name the multi-arg calls in the code
    you touched before committing.
+8. **Type prefix.** The subject must start with a bracketed change type — `[Type] imperative
+   subject`. Pick the one type that best fits the primary change (see the table below).
+
+## Subject type prefix
+
+Every commit subject begins with exactly one `[Type]` tag, then a space, then the imperative
+subject. This makes the history scannable and groups changes by intent.
+
+| Prefix | Use for |
+| --- | --- |
+| `[Feature]` | New user-facing capability (a chart, a config option, an API) |
+| `[Fix]` | A bug fix — wrong output, crash, regression |
+| `[Refactor]` | Behaviour-preserving restructuring, renames, style/brace sweeps |
+| `[Perf]` | A performance improvement |
+| `[Docs]` | KDoc, README, or other documentation only |
+| `[Test]` | Adding or changing tests only |
+| `[Build]` | Gradle, CI, GitHub Actions, publishing, dependency bumps |
+| `[Chore]` | Tooling, skills, config, or housekeeping that isn't the above |
+
+Rules:
+- Exactly one tag, capitalized as shown, in square brackets, followed by a single space.
+- Subject stays imperative and ≤ 72 chars **including** the tag; no trailing period.
+- If a change spans types, tag it by its dominant purpose (e.g. a feature that adds a test is
+  `[Feature]`, not `[Test]`).
+- Example: `[Feature] Add persistent markers pinned to data points`.
 
 ## Steps
 
