@@ -414,3 +414,9 @@ style:
 custom-rules:
   ColorMagicNumber:
     active: true
+
+Compose:
+  CompositionLocalAllowlist:
+    active: true
+    allowedCompositionLocals:
+      - LocalChartyTheme
