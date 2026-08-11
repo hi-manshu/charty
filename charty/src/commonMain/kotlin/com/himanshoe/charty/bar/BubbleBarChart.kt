@@ -20,7 +20,6 @@ import com.himanshoe.charty.bar.internal.bar.bubblebar.drawReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.bubblebar.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.bubblebar.rememberValueRange
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -64,7 +63,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun BubbleBarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
+    color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     bubbleConfig: BubbleBarChartConfig = BubbleBarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,

@@ -29,9 +29,9 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.accessibility.generatePieChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.data.PieData
@@ -155,7 +155,7 @@ private data class PieSliceDrawParams(
 fun PieChart(
     data: () -> List<PieData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
+    color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     config: PieChartConfig = PieChartConfig(),
     onSliceClick: ((PieData, Int) -> Unit)? = null,
     centerContent: @Composable (() -> Unit)? = null,

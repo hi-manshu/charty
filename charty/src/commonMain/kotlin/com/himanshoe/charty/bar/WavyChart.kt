@@ -24,7 +24,6 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.WavyChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -97,7 +96,7 @@ private data class WaveDrawContext(
 fun WavyChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
+    color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     wavyConfig: WavyChartConfig = WavyChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     crosshairConfig: ChartCrosshairConfig? = null,

@@ -16,7 +16,6 @@ import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
@@ -259,7 +258,7 @@ private fun DrawScope.drawTooltipHighlight(
 fun PointChart(
     data: () -> List<PointData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
+    color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     pointConfig: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onPointClick: ((PointData) -> Unit)? = null,

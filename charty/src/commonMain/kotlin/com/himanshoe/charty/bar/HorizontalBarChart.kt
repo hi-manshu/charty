@@ -20,7 +20,6 @@ import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalTooltipIfN
 import com.himanshoe.charty.bar.internal.bar.horizontal.rememberHorizontalAnimation
 import com.himanshoe.charty.bar.internal.bar.horizontal.rememberHorizontalValueRange
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
@@ -81,7 +80,7 @@ import com.himanshoe.charty.common.updateInteractionBounds
 fun HorizontalBarChart(
     data: () -> List<BarData>,
     modifier: Modifier = Modifier,
-    color: ChartyColor = ChartyColor.Solid(ChartyColors.Blue),
+    color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     barConfig: BarChartConfig = BarChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
