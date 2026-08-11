@@ -29,6 +29,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.generatePieChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
@@ -162,7 +163,10 @@ fun PieChart(
     accessibilityDescription: String? = null,
 ) {
     val dataList = remember(data) { data() }
-    require(dataList.isNotEmpty()) { "Pie chart data cannot be empty" }
+    if (dataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
     val chartDescription =
         remember(dataList, config.style, accessibilityDescription) {
             when (accessibilityDescription) {

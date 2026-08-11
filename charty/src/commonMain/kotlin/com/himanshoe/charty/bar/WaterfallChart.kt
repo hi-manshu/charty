@@ -16,6 +16,7 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallRange
 import com.himanshoe.charty.bar.internal.bar.waterfall.createWaterfallClickModifier
 import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallBar
 import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -71,7 +72,10 @@ fun WaterfallChart(
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Waterfall chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 

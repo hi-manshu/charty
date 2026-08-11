@@ -20,6 +20,7 @@ import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedReferenceLineIfN
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedTooltipIfNeeded
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateBarGroupChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -86,7 +87,10 @@ fun StackedBarChart(
     tooltip: ChartTooltip<StackedBarSegment> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Stacked bar chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
     require(fullDataList.fastAll { group -> group.values.fastAll { it >= 0f } }) {
         "Stacked bar chart does not support negative values"

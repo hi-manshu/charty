@@ -18,6 +18,7 @@ import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopAnimation
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopValueRange
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -74,7 +75,10 @@ fun LollipopBarChart(
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Lollipop bar chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 

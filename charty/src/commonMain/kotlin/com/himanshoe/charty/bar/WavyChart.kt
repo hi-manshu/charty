@@ -25,6 +25,7 @@ import com.himanshoe.charty.bar.config.WavyChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -104,7 +105,10 @@ fun WavyChart(
     crosshairContent: (@Composable (BarData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Wavy chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 

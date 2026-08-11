@@ -21,6 +21,7 @@ import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.drawStackedHorizo
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.drawStackedHorizontalTooltipIfNeeded
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -69,7 +70,10 @@ fun StackedHorizontalBarChart(
     tooltip: ChartTooltip<StackedHorizontalBarSegment> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Stacked horizontal bar chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
     require(fullDataList.fastAll { group -> group.values.fastAll { it >= 0f } }) {
         "Stacked horizontal bar chart does not support negative values"

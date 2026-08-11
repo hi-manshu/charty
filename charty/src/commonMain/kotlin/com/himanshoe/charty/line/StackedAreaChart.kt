@@ -23,6 +23,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartLegend
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
@@ -137,7 +138,10 @@ fun StackedAreaChart(
     crosshairContent: (@Composable (LineGroup) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Stacked area chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)

@@ -39,6 +39,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.generateRadarChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -106,7 +107,10 @@ fun MultipleRadarChart(
     accessibilityDescription: String? = null,
 ) {
     val dataSetsList = remember(dataSets) { dataSets() }
-    require(dataSetsList.isNotEmpty()) { "Multiple radar chart data cannot be empty" }
+    if (dataSetsList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val chartDescription =
         remember(dataSetsList, accessibilityDescription) {

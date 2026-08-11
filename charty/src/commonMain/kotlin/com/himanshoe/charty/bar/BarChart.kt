@@ -21,6 +21,7 @@ import com.himanshoe.charty.bar.internal.bar.barchart.drawBarTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBars
 import com.himanshoe.charty.bar.internal.bar.barchart.rememberBarValueRange
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
@@ -94,7 +95,10 @@ fun BarChart(
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Bar chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 

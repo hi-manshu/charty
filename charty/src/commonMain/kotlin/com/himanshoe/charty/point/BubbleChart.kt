@@ -14,6 +14,7 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateBubbleChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -75,7 +76,10 @@ fun BubbleChart(
     crosshairContent: (@Composable (BubbleData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Bubble chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
     require(minBubbleRadius > 0f) { "Minimum bubble radius must be positive" }
     require(config.pointRadius > minBubbleRadius) { "Max radius must be greater than min radius" }
     val crosshairConfig = config.crosshairConfig

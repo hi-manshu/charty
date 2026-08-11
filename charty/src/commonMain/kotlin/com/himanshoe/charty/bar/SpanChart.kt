@@ -21,6 +21,7 @@ import com.himanshoe.charty.bar.internal.span.createSpanChartModifier
 import com.himanshoe.charty.bar.internal.span.drawSpans
 import com.himanshoe.charty.bar.internal.span.rememberSpanValueRange
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -83,7 +84,10 @@ fun SpanChart(
     tooltip: ChartTooltip<SpanData> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Span chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 

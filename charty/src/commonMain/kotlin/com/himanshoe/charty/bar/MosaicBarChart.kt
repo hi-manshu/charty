@@ -15,6 +15,7 @@ import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicAxisConfig
 import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosaic.drawMosaicBars
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -71,7 +72,10 @@ fun MosaicBarChart(
     tooltip: ChartTooltip<MosaicBarSegment> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Mosaic bar chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)

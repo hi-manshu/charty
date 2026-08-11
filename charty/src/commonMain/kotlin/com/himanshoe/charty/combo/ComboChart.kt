@@ -27,6 +27,7 @@ import com.himanshoe.charty.combo.internal.comboPrimaryRange
 import com.himanshoe.charty.combo.internal.drawComboBars
 import com.himanshoe.charty.combo.internal.drawComboLine
 import com.himanshoe.charty.combo.internal.toSecondaryAxisConfig
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateComboChartDescription
@@ -131,7 +132,10 @@ fun ComboChart(
     crosshairContent: (@Composable (ComboChartData) -> Unit)? = null,
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Combo chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 

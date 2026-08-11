@@ -20,6 +20,7 @@ import com.himanshoe.charty.bar.internal.bar.bubblebar.drawReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.bubblebar.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.bubblebar.rememberValueRange
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -70,7 +71,10 @@ fun BubbleBarChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Bubble bar chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 

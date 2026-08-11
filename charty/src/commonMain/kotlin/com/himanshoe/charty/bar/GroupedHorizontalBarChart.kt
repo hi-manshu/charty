@@ -23,6 +23,7 @@ import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.drawGroupedHorizo
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.rememberGroupedHorizontalState
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -68,7 +69,10 @@ fun GroupedHorizontalBarChart(
     tooltip: ChartTooltip<GroupedHorizontalBarEntry> = ChartTooltip.canvas(),
 ) {
     val fullDataList = remember(data) { data() }
-    require(fullDataList.isNotEmpty()) { "Grouped horizontal bar chart data cannot be empty" }
+    if (fullDataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)

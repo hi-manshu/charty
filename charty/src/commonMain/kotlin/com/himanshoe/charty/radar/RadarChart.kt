@@ -23,6 +23,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.generateRadarChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.radar.config.RadarChartConfig
@@ -97,7 +98,10 @@ fun RadarChart(
     onAxisClick: ((axis: RadarAxisData, index: Int) -> Unit)? = null,
 ) {
     val dataSets = remember(data) { data() }
-    require(dataSets.isNotEmpty()) { "Radar chart data cannot be empty" }
+    if (dataSets.isEmpty()) {
+        ChartEmptyState(modifier = modifier)
+        return
+    }
 
     val numberOfAxes = dataSets.first().axes.size
     require(dataSets.fastAll { it.axes.size == numberOfAxes }) {
