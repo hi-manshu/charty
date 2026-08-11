@@ -34,8 +34,9 @@ import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.drawSelectionColumnIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
-import com.himanshoe.charty.common.gesture.ChartCrosshairOverlay
+import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
@@ -285,13 +286,15 @@ fun PointChart(
     onPointClick: ((PointData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<PointData> = ChartTooltip.canvas(),
-    crosshairContent: (@Composable (PointData) -> Unit)? = null,
+    crosshair: ChartCrosshair<PointData>? = null,
 ) {
     val fullDataList = remember(data) { data() }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
+    val effectiveCrosshairConfig = crosshair?.config ?: pointConfig.crosshairConfig
+    val activeCrosshair = crosshair ?: pointConfig.crosshairConfig?.let { ChartCrosshair<PointData>(config = it) }
 
     val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
 
@@ -314,7 +317,7 @@ fun PointChart(
     val textMeasurer = rememberTextMeasurer()
 
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<PointData>(pointConfig.crosshairConfig != null)
+        rememberChartCrosshair<PointData>(effectiveCrosshairConfig != null)
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
@@ -336,7 +339,7 @@ fun PointChart(
                 tooltipManager = tooltipManager,
                 pointConfig = pointConfig,
                 onPointClick = onPointClick,
-                crosshairConfig = pointConfig.crosshairConfig,
+                crosshairConfig = effectiveCrosshairConfig,
                 interactionConfig = interactionConfig,
             ),
         )
@@ -382,12 +385,12 @@ fun PointChart(
                 crosshairState = animatedCrosshairState?.resolve(),
                 tooltipManager = tooltipManager,
                 pointConfig = pointConfig,
-                crosshairConfig = pointConfig.crosshairConfig,
+                crosshairConfig = effectiveCrosshairConfig,
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
                 drawBubble = tooltip.isCanvas(),
-                drawCrosshairLabel = crosshairContent == null,
+                drawCrosshairLabel = false,
             )
 
             drawInteractionOverlays(
@@ -402,10 +405,8 @@ fun PointChart(
             tooltipManager = tooltipManager,
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
-            pointConfig = pointConfig,
-            crosshairConfig = pointConfig.crosshairConfig,
             tooltip = tooltip,
-            crosshairContent = crosshairContent,
+            crosshair = activeCrosshair,
         )
     }
 }
@@ -415,10 +416,8 @@ private fun BoxScope.PointChartOverlays(
     tooltipManager: TooltipManager<Offset, PointData>,
     crosshairManager: CrosshairManager<PointData>?,
     animatedCrosshairState: CrosshairState?,
-    pointConfig: PointChartConfig,
-    crosshairConfig: ChartCrosshairConfig?,
     tooltip: ChartTooltip<PointData>,
-    crosshairContent: (@Composable (PointData) -> Unit)?,
+    crosshair: ChartCrosshair<PointData>?,
 ) {
     ChartTooltipHost(
         tooltip = tooltip,
@@ -427,13 +426,12 @@ private fun BoxScope.PointChartOverlays(
         modifier = Modifier.matchParentSize(),
     )
 
-    if (crosshairContent != null && crosshairManager != null) {
-        ChartCrosshairOverlay(
-            item = crosshairManager.selectedItem,
+    if (crosshair != null) {
+        ChartCrosshairHost(
+            crosshair = crosshair,
+            item = crosshairManager?.selectedItem,
             state = animatedCrosshairState,
-            config = crosshairConfig?.tooltipConfig ?: pointConfig.tooltipConfig,
             modifier = Modifier.matchParentSize(),
-            content = crosshairContent,
         )
     }
 }
