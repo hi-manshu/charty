@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.androidxBaselineprofile)
 }
 
 composeCompiler {
@@ -49,6 +50,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.profileinstaller)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -100,6 +102,9 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            // Baseline-profile generation builds a non-minified release variant; sign it with the
+            // debug key so it installs on the emulator/device during the generate run.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

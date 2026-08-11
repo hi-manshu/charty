@@ -11,6 +11,11 @@ detekt = "1.23.8"
 dokka = "2.2.0"
 kotlin = "2.4.0"
 kotlinxBenchmark = "0.4.14"
+androidxBenchmark = "1.4.1"
+androidxProfileinstaller = "1.4.1"
+androidxTestExtJunit = "1.2.1"
+androidxEspresso = "3.6.1"
+androidxUiautomator = "2.3.0"
 kotlinx-coroutines = "1.11.0"
 ktlint = "14.2.0"
 mavenPublish = "0.30.0"
@@ -22,6 +27,11 @@ androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecyc
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmark" }
+androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "androidxBenchmark" }
+androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "androidxProfileinstaller" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExtJunit" }
+androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
+androidx-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidxUiautomator" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -31,7 +41,10 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMul
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidTest = { id = "com.android.test", version.ref = "agp" }
 kotlinxBenchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinxBenchmark" }
+androidxBaselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxBenchmark" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }

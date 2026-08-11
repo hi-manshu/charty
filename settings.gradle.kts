@@ -35,3 +35,4 @@ plugins {
 include(":composeApp")
 include(":charty")
 include(":benchmark")
+include(":baselineprofile")
