@@ -81,7 +81,9 @@ fun <T, D> Modifier.pointChartClickHandler(
 ): Modifier =
     this.pointerInput(dataList, onPointClick) {
         detectTapGestures { offset ->
-            val nearestPoint = findNearestPoint(offset = offset, pointBounds = pointBounds, tapRadius = tapRadius)
+            val nearestPoint =
+                findNearestPoint(offset = offset, pointBounds = pointBounds, tapRadius = tapRadius)
+                    ?: findNearestPointByX(pointBounds = pointBounds, xOffset = offset.x)
             nearestPoint?.let { (position, data) ->
                 onPointClick.invoke(data)
                 onTooltipStateChange(createTooltipContent(data, position), data)
