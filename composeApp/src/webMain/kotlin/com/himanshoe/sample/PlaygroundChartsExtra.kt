@@ -300,7 +300,7 @@ internal fun CircularPlayground() {
         },
         controls = {
             ControlSection(title = "Data")
-            IntSliderRow(label = "Rings", value = rings, valueRange = 1..5, onValueChange = { rings = it })
+            IntSliderRow(label = "Rings", value = rings, valueRange = 1..8, onValueChange = { rings = it })
             PlaygroundActionRow(primaryLabel = "Randomize", onPrimary = { tick++ })
             ControlSection(title = "Shape")
             SliderRow(label = "Ring gap", value = gapBetweenRings, valueRange = 0f..24f, onValueChange = {

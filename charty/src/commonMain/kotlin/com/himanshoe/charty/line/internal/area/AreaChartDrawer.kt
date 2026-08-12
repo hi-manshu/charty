@@ -50,7 +50,8 @@ internal fun DrawScope.drawAreaChart(params: AreaChartDrawParams) {
         textMeasurer = params.textMeasurer,
     )
 
-    val startX = params.pointPositions.first().x
+    val axisAnchor = Offset(x = params.chartContext.left, y = params.baselineY)
+    val startX = axisAnchor.x
     val endX = params.pointPositions.last().x
     val clipRight = startX + (endX - startX) * params.animationProgress
 
@@ -60,6 +61,7 @@ internal fun DrawScope.drawAreaChart(params: AreaChartDrawParams) {
             points = params.pointPositions,
             baselineY = params.baselineY,
             interpolation = interpolation,
+            anchor = axisAnchor,
         )
     val areaBrush =
         createAreaBrush(

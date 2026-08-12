@@ -364,7 +364,8 @@ private fun DrawScope.drawAllBubbles(
             }
 
         if (bubbleAnimationProgress > 0f) {
-            val center = Offset(bubbleX, bubbleY)
+            val center =
+                Offset(x = bubbleX, y = bubbleCenterY(chartContext = chartContext, y = bubbleY, radius = bubbleRadius))
             val animatedRadius = bubbleRadius * bubbleAnimationProgress
 
             if (onBubbleClick != null) {
@@ -384,5 +385,27 @@ private fun DrawScope.drawAllBubbles(
                 alpha = config.pointAlpha * bubbleAnimationProgress,
             )
         }
+    }
+}
+
+/**
+ * Keeps a bubble inside the plot by insetting its centre from the value position by its own radius.
+ *
+ * A bubble is sized by its value rather than by the axis, so a point near either end of the range
+ * would otherwise spill past the axis line — most visibly at the bottom, where a large bubble on a
+ * low value hangs below the plot. When the plot is shorter than the bubble, the centre falls back to
+ * the middle so the overflow is at least symmetric.
+ */
+private fun bubbleCenterY(
+    chartContext: ChartContext,
+    y: Float,
+    radius: Float,
+): Float {
+    val top = chartContext.top + radius
+    val bottom = chartContext.bottom - radius
+    return if (top > bottom) {
+        (chartContext.top + chartContext.bottom) / 2f
+    } else {
+        y.coerceIn(minimumValue = top, maximumValue = bottom)
     }
 }
