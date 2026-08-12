@@ -21,11 +21,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.himanshoe.charty.bar.BarChart
+import com.himanshoe.charty.bar.HorizontalBarChart
+import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
+import com.himanshoe.charty.point.PointChart
+import com.himanshoe.charty.point.config.PointChartConfig
+import com.himanshoe.charty.point.data.PointData
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 
@@ -35,6 +43,14 @@ private const val VALUE_MIN = 15f
 private const val VALUE_MAX = 95f
 
 private fun nextValue(): Float = VALUE_MIN + Random.nextFloat() * (VALUE_MAX - VALUE_MIN)
+
+internal enum class StreamChartType(val label: String) {
+    Line("Line"),
+    Area("Area"),
+    Bar("Bar"),
+    HorizontalBar("Horizontal bar"),
+    Point("Point"),
+}
 
 /**
  * Live streaming demo driving the real [LineChart] with a rolling `visibleWindow`. The chart owns the
@@ -47,6 +63,7 @@ internal fun StreamingLinePlayground() {
     var windowSize by remember { mutableStateOf(8) }
     var auto by remember { mutableStateOf(true) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
+    var chartType by remember { mutableStateOf(StreamChartType.Line) }
 
     val values = remember { mutableStateListOf<Float>().apply { repeat(SEED_COUNT) { add(nextValue()) } } }
 
@@ -61,15 +78,21 @@ internal fun StreamingLinePlayground() {
         }
     }
 
-    val chartData = values.mapIndexed { index, value -> LineData(label = (index + 1).toString(), value = value) }
-
+    val chartName =
+        when (chartType) {
+            StreamChartType.Line -> "LineChart"
+            StreamChartType.Area -> "AreaChart"
+            StreamChartType.Bar -> "BarChart"
+            StreamChartType.HorizontalBar -> "HorizontalBarChart"
+            StreamChartType.Point -> "PointChart"
+        }
     val code =
         """
-        // The real LineChart with a rolling window — the chart owns the slide.
-        LineChart(
+        // The real $chartName with a rolling window — the chart owns the slide.
+        $chartName(
             data = { streamData },              // append points over time
             color = ChartyColor.Solid(color),
-            lineConfig = LineChartConfig(
+            config = ${if (chartType == StreamChartType.Line || chartType == StreamChartType.Area) "LineChartConfig" else if (chartType == StreamChartType.Point) "PointChartConfig" else "BarChartConfig"}(
                 visibleWindow = $windowSize,    // show only the last $windowSize points
                 animation = Animation.Fast,     // drives the slide easing
             ),
@@ -79,18 +102,22 @@ internal fun StreamingLinePlayground() {
     PlaygroundScaffold(
         code = code,
         chart = {
-            LineChart(
-                data = { chartData },
-                modifier = Modifier.fillMaxSize(),
-                color = ChartyColor.Solid(color),
-                lineConfig =
-                    LineChartConfig(
-                        visibleWindow = windowSize,
-                        animation = Animation.Fast,
-                    ),
+            StreamingChart(
+                chartType = chartType,
+                values = values,
+                windowSize = windowSize,
+                color = color,
             )
         },
         controls = {
+            ControlSection(title = "Chart")
+            ChoiceRow(
+                label = "Type",
+                options = StreamChartType.entries.toList(),
+                selected = chartType,
+                labelOf = { it.label },
+                onSelect = { chartType = it },
+            )
             ControlSection(title = "Stream")
             SwitchRow(label = "Auto (add every 0.7s)", checked = auto, onCheckedChange = { auto = it })
             PlaygroundActionRow(
@@ -118,4 +145,58 @@ internal fun StreamingLinePlayground() {
             ColorRow(label = "Line color", selected = color, onSelect = { color = it })
         },
     )
+}
+
+@Composable
+private fun StreamingChart(
+    chartType: StreamChartType,
+    values: List<Float>,
+    windowSize: Int,
+    color: androidx.compose.ui.graphics.Color,
+) {
+    val chartyColor = ChartyColor.Solid(color)
+    val lineData = values.mapIndexed { i, v -> LineData(label = (i + 1).toString(), value = v) }
+    val barData = values.mapIndexed { i, v -> BarData(label = (i + 1).toString(), value = v) }
+    val pointData = values.mapIndexed { i, v -> PointData(label = (i + 1).toString(), value = v) }
+    when (chartType) {
+        StreamChartType.Line ->
+            LineChart(
+                data = { lineData },
+                modifier = Modifier.fillMaxSize(),
+                color = chartyColor,
+                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+            )
+
+        StreamChartType.Area ->
+            AreaChart(
+                data = { lineData },
+                modifier = Modifier.fillMaxSize(),
+                color = chartyColor,
+                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+            )
+
+        StreamChartType.Bar ->
+            BarChart(
+                data = { barData },
+                modifier = Modifier.fillMaxSize(),
+                color = chartyColor,
+                barConfig = BarChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+            )
+
+        StreamChartType.HorizontalBar ->
+            HorizontalBarChart(
+                data = { barData },
+                modifier = Modifier.fillMaxSize(),
+                color = chartyColor,
+                barConfig = BarChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+            )
+
+        StreamChartType.Point ->
+            PointChart(
+                data = { pointData },
+                modifier = Modifier.fillMaxSize(),
+                color = chartyColor,
+                pointConfig = PointChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+            )
+    }
 }
