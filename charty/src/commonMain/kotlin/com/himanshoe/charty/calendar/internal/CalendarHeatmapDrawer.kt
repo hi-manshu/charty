@@ -12,10 +12,58 @@ import androidx.compose.ui.text.drawText
 import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
 import com.himanshoe.charty.calendar.config.CellShape
 import com.himanshoe.charty.calendar.data.CalendarData
+import com.himanshoe.charty.common.tooltip.drawTooltip
 
 private const val DAY_LABEL_END_GAP = 4f
 private const val MONTH_LABEL_MIN_GAP = 4f
 private const val DAY_LABEL_MIN_GAP = 2f
+
+/**
+ * Draws the calendar heatmap in back-to-front order: labels, the animated cell grid, then the
+ * tooltip overlay.
+ *
+ * @param params The pre-measured layout, colour, animation, and tooltip state for this frame.
+ */
+internal fun DrawScope.drawCalendarContent(params: CalendarDrawParams) {
+    if (params.config.showMonthLabels) {
+        drawMonthLabels(
+            monthBoundaries = params.gridLayout.monthBoundaries,
+            measuredLabels = params.measuredMonthLabels,
+            leftPadding = params.leftPadding,
+            topPadding = params.topPadding,
+            cellStridePx = params.cellStridePx,
+        )
+    }
+    if (params.config.showDayLabels) {
+        drawDayLabels(
+            dayLabelRows = params.measuredDayLabelRows,
+            topPadding = params.topPadding,
+            leftPadding = params.leftPadding,
+            cellStridePx = params.cellStridePx,
+        )
+    }
+    drawCalendarGrid(
+        gridLayout = params.gridLayout,
+        config = params.config,
+        maxValue = params.maxValue,
+        leftPadding = params.leftPadding,
+        topPadding = params.topPadding,
+        cellSizePx = params.cellSizePx,
+        cellStridePx = params.cellStridePx,
+        animationProgress = params.animationProgress,
+        cellBoundsOutput = params.cellBounds,
+    )
+    params.tooltipState?.let { ts ->
+        drawTooltip(
+            tooltipState = ts,
+            config = params.config.tooltipConfig,
+            textMeasurer = params.textMeasurer,
+            chartWidth = size.width,
+            chartTop = params.topPadding,
+            chartBottom = size.height,
+        )
+    }
+}
 
 /**
  * Draws the month abbreviation labels along the top of the calendar grid.

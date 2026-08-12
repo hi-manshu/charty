@@ -15,7 +15,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
@@ -26,32 +25,14 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
 import com.himanshoe.charty.calendar.config.WeekStartDay
 import com.himanshoe.charty.calendar.data.CalendarData
+import com.himanshoe.charty.calendar.internal.CalendarDrawParams
 import com.himanshoe.charty.calendar.internal.GridLayout
 import com.himanshoe.charty.calendar.internal.computeGridLayout
-import com.himanshoe.charty.calendar.internal.drawCalendarGrid
-import com.himanshoe.charty.calendar.internal.drawDayLabels
-import com.himanshoe.charty.calendar.internal.drawMonthLabels
+import com.himanshoe.charty.calendar.internal.drawCalendarContent
 import com.himanshoe.charty.common.accessibility.generateCalendarHeatmapDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
-
-private data class CalendarDrawParams(
-    val config: CalendarHeatmapConfig,
-    val gridLayout: GridLayout,
-    val measuredMonthLabels: Map<String, TextLayoutResult>,
-    val measuredDayLabelRows: List<Pair<Int, TextLayoutResult>>,
-    val leftPadding: Float,
-    val topPadding: Float,
-    val cellSizePx: Float,
-    val cellStridePx: Float,
-    val maxValue: Float,
-    val animationProgress: Float,
-    val cellBounds: MutableList<Pair<Rect, CalendarData>>,
-    val tooltipState: TooltipState?,
-    val textMeasurer: TextMeasurer,
-)
 
 private const val DAY_LABEL_RIGHT_GAP = 8f
 private const val MONTH_LABEL_BOTTOM_GAP = 4f
@@ -243,46 +224,5 @@ private fun rememberMeasuredDayLabelRows(
                 listOf(DOW_MON_MONDAY_START to "Mon", DOW_WED_MONDAY_START to "Wed", DOW_FRI_MONDAY_START to "Fri")
             }
         rows.map { (dayIndex, label) -> dayIndex to textMeasurer.measure(label, config.labelTextStyle) }
-    }
-}
-
-private fun DrawScope.drawCalendarContent(params: CalendarDrawParams) {
-    if (params.config.showMonthLabels) {
-        drawMonthLabels(
-            monthBoundaries = params.gridLayout.monthBoundaries,
-            measuredLabels = params.measuredMonthLabels,
-            leftPadding = params.leftPadding,
-            topPadding = params.topPadding,
-            cellStridePx = params.cellStridePx,
-        )
-    }
-    if (params.config.showDayLabels) {
-        drawDayLabels(
-            dayLabelRows = params.measuredDayLabelRows,
-            topPadding = params.topPadding,
-            leftPadding = params.leftPadding,
-            cellStridePx = params.cellStridePx,
-        )
-    }
-    drawCalendarGrid(
-        gridLayout = params.gridLayout,
-        config = params.config,
-        maxValue = params.maxValue,
-        leftPadding = params.leftPadding,
-        topPadding = params.topPadding,
-        cellSizePx = params.cellSizePx,
-        cellStridePx = params.cellStridePx,
-        animationProgress = params.animationProgress,
-        cellBoundsOutput = params.cellBounds,
-    )
-    params.tooltipState?.let { ts ->
-        drawTooltip(
-            tooltipState = ts,
-            config = params.config.tooltipConfig,
-            textMeasurer = params.textMeasurer,
-            chartWidth = size.width,
-            chartTop = params.topPadding,
-            chartBottom = size.height,
-        )
     }
 }
