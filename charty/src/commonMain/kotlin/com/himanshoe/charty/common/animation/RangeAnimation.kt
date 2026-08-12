@@ -12,14 +12,17 @@ import kotlinx.coroutines.launch
  * (or an old one leaving) the window glides the axis — and every plotted point with it — to the new
  * scale instead of jumping.
  *
- * While [active] and [animation] is animated, the returned min/max ease toward the targets with
- * [animation]'s spec, retargeting continuously as the window keeps moving. Otherwise the targets are
- * returned as-is (and the internal state snaps, so a later activation starts from the truth). All
- * hooks run on every composition, keeping the hook order stable across mode switches.
+ * While [active], the returned min/max ease toward the targets, retargeting continuously as the
+ * window keeps moving. Otherwise the targets are returned as-is (and the internal state snaps, so a
+ * later activation starts from the truth). All hooks run on every composition, keeping the hook
+ * order stable across mode switches.
  *
  * @param minValue The target minimum of the currently visible data.
  * @param maxValue The target maximum of the currently visible data.
- * @param animation Supplies the easing/duration; a disabled animation snaps.
+ * @param animation Supplies the easing and duration. A disabled animation does **not** make the
+ *   rescale snap: [Animation] governs a chart's entry reveal, whereas a rescale is a continuous
+ *   response to the window moving, and an axis that teleports under a sliding window reads as a
+ *   glitch. A disabled animation therefore falls back to [Animation.Fast] here.
  * @param active Whether smoothing applies — pass the chart's streaming state.
  * @return The min/max to lay out with this frame.
  */
@@ -32,10 +35,16 @@ internal fun rememberAnimatedRange(
 ): Pair<Float, Float> {
     val animatedMin = remember { Animatable(minValue) }
     val animatedMax = remember { Animatable(maxValue) }
-    LaunchedEffect(minValue, maxValue, animation, active) {
-        if (active && animation.isAnimated) {
-            launch { animatedMin.animateTo(targetValue = minValue, animationSpec = animation.toFloatSpec()) }
-            launch { animatedMax.animateTo(targetValue = maxValue, animationSpec = animation.toFloatSpec()) }
+    val rescale =
+        if (animation.isAnimated) {
+            animation
+        } else {
+            Animation.Fast
+        }
+    LaunchedEffect(minValue, maxValue, rescale, active) {
+        if (active) {
+            launch { animatedMin.animateTo(targetValue = minValue, animationSpec = rescale.toFloatSpec()) }
+            launch { animatedMax.animateTo(targetValue = maxValue, animationSpec = rescale.toFloatSpec()) }
         } else {
             animatedMin.snapTo(minValue)
             animatedMax.snapTo(maxValue)
