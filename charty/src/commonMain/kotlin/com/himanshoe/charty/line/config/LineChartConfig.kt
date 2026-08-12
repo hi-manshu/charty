@@ -18,6 +18,7 @@ import com.himanshoe.charty.line.data.LineData
 
 private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
 private const val MIN_DOWNSAMPLE_THRESHOLD = 3
+private const val MIN_VISIBLE_WINDOW = 2
 
 /**
  * Configuration for [com.himanshoe.charty.line.LineChart],
@@ -76,6 +77,10 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  *   [com.himanshoe.charty.line.MultilineChart], and [com.himanshoe.charty.line.StackedAreaChart].
  *   For the multi-series charts, selection is driven by the per-x sum of all series so every series
  *   keeps the same x-indices and stays aligned.
+ * @property visibleWindow When set, only the most recent this-many points are shown — a rolling
+ *   window. As new points are appended to `data` the window advances to the latest, ideal for
+ *   live/streaming data. `null` (the default) shows the whole series and changes nothing. Must be
+ *   `>= 2`. Ignored when an interactive viewport (zoom/pan) is configured, which takes precedence.
  */
 @Stable
 data class LineChartConfig(
@@ -107,8 +112,12 @@ data class LineChartConfig(
     val gradientFillAlpha: Float = 0.3f,
     val fillAlpha: Float = 0.3f,
     val downsampleThreshold: Int? = null,
+    val visibleWindow: Int? = null,
 ) {
     init {
+        require(visibleWindow == null || visibleWindow >= MIN_VISIBLE_WINDOW) {
+            "visibleWindow must be null or >= $MIN_VISIBLE_WINDOW"
+        }
         require(lineWidth > 0) { "Line width must be greater than 0" }
         require(pointRadius > 0) { "Point radius must be greater than 0" }
         require(pointAlpha in 0f..1f) { "Point alpha must be between 0 and 1" }

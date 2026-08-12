@@ -59,13 +59,28 @@ internal fun <T> rememberDownsampledData(
     }
 
 /**
- * Remembers the points a chart should actually draw: the viewport window of [fullDataList], then an
- * LTTB downsample to [downsampleThreshold] points when the window is larger. This is the single entry
- * point charts use so hit-testing and drawing share the exact same list.
+ * Returns the last [visibleWindow] items of [dataList] (a rolling "show last N" window), or
+ * [dataList] unchanged when [visibleWindow] is `null` or the list is already within the window.
+ */
+internal fun <T> tailWindow(
+    dataList: List<T>,
+    visibleWindow: Int?,
+): List<T> =
+    if (visibleWindow == null || dataList.size <= visibleWindow) {
+        dataList
+    } else {
+        dataList.takeLast(visibleWindow)
+    }
+
+/**
+ * Remembers the points a chart should actually draw: the viewport window of [fullDataList], then the
+ * [visibleWindow] rolling tail, then an LTTB downsample to [downsampleThreshold]. This single entry
+ * point keeps hit-testing and drawing on the exact same list.
  *
  * @param fullDataList The complete series.
- * @param interactionConfig Supplies the viewport (windowing) state.
+ * @param interactionConfig Supplies the viewport (zoom/pan) state, which takes precedence over [visibleWindow].
  * @param downsampleThreshold Maximum points to render; `null` disables downsampling.
+ * @param visibleWindow Rolling "show last N" window; `null` shows everything. Ignored when a viewport is set.
  * @param value Extracts the y-value used to preserve the line's shape when downsampling.
  */
 @Composable
@@ -73,10 +88,14 @@ internal fun <T> rememberVisibleData(
     fullDataList: List<T>,
     interactionConfig: ChartInteractionConfig,
     downsampleThreshold: Int?,
+    visibleWindow: Int? = null,
     value: (T) -> Float,
 ): List<T> {
     val windowed = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
-    return rememberDownsampledData(windowed, downsampleThreshold, value)
+    // An interactive viewport (zoom/pan) takes precedence over the fixed rolling window.
+    val effectiveWindow = if (interactionConfig.viewPortState == null) visibleWindow else null
+    val tail = remember(windowed, effectiveWindow) { tailWindow(windowed, effectiveWindow) }
+    return rememberDownsampledData(tail, downsampleThreshold, value)
 }
 
 /**

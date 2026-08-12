@@ -115,7 +115,13 @@ fun LineChart(
     val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
 
-    val dataList = rememberVisibleData(fullDataList, interactionConfig, lineConfig.downsampleThreshold) { it.value }
+    val dataList =
+        rememberVisibleData(
+            fullDataList = fullDataList,
+            interactionConfig = interactionConfig,
+            downsampleThreshold = lineConfig.downsampleThreshold,
+            visibleWindow = lineConfig.visibleWindow,
+        ) { it.value }
 
     val (minValue, maxValue) =
         rememberLineValueRange(
