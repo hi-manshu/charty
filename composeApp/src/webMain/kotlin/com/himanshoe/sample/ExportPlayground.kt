@@ -88,7 +88,12 @@ internal fun ExportPlayground() {
                 data = { data },
                 modifier = Modifier.fillMaxSize().chartCapture(controller),
                 color = ChartyColor.Solid(color),
-                lineConfig = LineChartConfig(smoothCurve = smooth, showPoints = showPoints),
+                lineConfig =
+                    LineChartConfig(
+                        smoothCurve = smooth,
+                        showPoints = showPoints,
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
+                    ),
             )
         },
         controls = {

@@ -38,6 +38,9 @@ internal fun GaugePlayground() {
     var minValue by remember { mutableStateOf(0) }
     var maxValue by remember { mutableStateOf(100) }
     var tickCount by remember { mutableStateOf(5) }
+    var startAngle by remember { mutableStateOf(135f) }
+    var sweepAngle by remember { mutableStateOf(270f) }
+    var trackWidthFraction by remember { mutableStateOf(0.12f) }
     var showBands by remember { mutableStateOf(true) }
     var showValueLabel by remember { mutableStateOf(true) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
@@ -92,11 +95,14 @@ internal fun GaugePlayground() {
             config = AngularGaugeConfig(
                 minValue = ${minValue}f,
                 maxValue = ${maxValue}f,
+                startAngleDegrees = ${fc(startAngle)},
+                sweepAngleDegrees = ${fc(sweepAngle)},
+                trackWidthFraction = ${fc(trackWidthFraction)},
                 tickCount = $tickCount,
                 plotBands = $bandsCode,
                 needleColor = ChartyColor.Solid(Color(${colorHex(color)})),
                 showValueLabel = $showValueLabel,
-                animation = Animation.Default,
+                animation = ${if (LocalPlaygroundAnimate.current) "Animation.Default" else "Animation.Disabled"},
             ),
         )
         """.trimIndent()
@@ -112,6 +118,9 @@ internal fun GaugePlayground() {
                     AngularGaugeConfig(
                         minValue = minValue.toFloat(),
                         maxValue = maxValue.toFloat(),
+                        startAngleDegrees = startAngle,
+                        sweepAngleDegrees = sweepAngle,
+                        trackWidthFraction = trackWidthFraction,
                         tickCount = tickCount,
                         plotBands = bands,
                         needleColor = ChartyColor.Solid(color),
@@ -147,6 +156,27 @@ internal fun GaugePlayground() {
                 value = tickCount,
                 valueRange = 2..11,
                 onValueChange = { tickCount = it },
+            )
+            SliderRow(
+                label = "Start angle",
+                value = startAngle,
+                valueRange = 0f..270f,
+                onValueChange = { startAngle = it },
+                decimals = 0,
+            )
+            SliderRow(
+                label = "Sweep angle",
+                value = sweepAngle,
+                valueRange = 90f..360f,
+                onValueChange = { sweepAngle = it },
+                decimals = 0,
+            )
+            SliderRow(
+                label = "Track width",
+                value = trackWidthFraction,
+                valueRange = 0.02f..0.4f,
+                onValueChange = { trackWidthFraction = it },
+                decimals = 2,
             )
             SwitchRow(label = "Plot bands", checked = showBands, onCheckedChange = { showBands = it })
             SwitchRow(label = "Value label", checked = showValueLabel, onCheckedChange = { showValueLabel = it })

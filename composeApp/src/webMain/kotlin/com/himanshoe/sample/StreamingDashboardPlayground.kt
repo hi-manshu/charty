@@ -118,7 +118,7 @@ internal fun StreamingDashboardPlayground() {
             val throughput = rememberStreamingState()
             LineChart(
                 data = { feed.map { LineData(it.tick, it.throughput) } },
-                lineConfig = LineChartConfig(visibleWindow = $windowSize, animation = Animation.Fast),
+                lineConfig = LineChartConfig(visibleWindow = $windowSize, animation = ${if (LocalPlaygroundAnimate.current) "Animation.Fast" else "Animation.Disabled"}),
                 interactionConfig = ChartInteractionConfig(
                     streamingState = throughput,
                     jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },

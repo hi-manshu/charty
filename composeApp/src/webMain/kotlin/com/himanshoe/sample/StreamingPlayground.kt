@@ -191,6 +191,7 @@ internal fun StreamingLinePlayground() {
             tooltipMode = tooltipMode,
             crosshairEnabled = crosshairEnabled && supportsCrosshair,
             labelNewest = labelNewest,
+            animate = LocalPlaygroundAnimate.current,
         )
 
     PlaygroundScaffold(
@@ -503,6 +504,7 @@ private fun streamingCode(
     tooltipMode: StreamTooltipMode,
     crosshairEnabled: Boolean,
     labelNewest: Boolean,
+    animate: Boolean,
 ): String {
     val chartName =
         when (chartType) {
@@ -576,7 +578,7 @@ private fun streamingCode(
             color = ChartyColor.Solid(color),
             $configName(
                 visibleWindow = $windowSize,    // show only the last $windowSize points
-                animation = Animation.Fast,     // drives the horizontal slide$markerLine
+                animation = ${if (animate) "Animation.Fast" else "Animation.Disabled"},     // drives the horizontal slide$markerLine
             ),$interactionBlock$clickLine$tooltipLine$crosshairLine
         )
         """.trimIndent()

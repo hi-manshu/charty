@@ -64,7 +64,9 @@ import com.himanshoe.charty.bar.StackedHorizontalBarChart
 import com.himanshoe.charty.bar.WaterfallChart
 import com.himanshoe.charty.bar.WavyChart
 import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.data.SpanData
@@ -108,6 +110,7 @@ import com.himanshoe.charty.line.config.SparklineConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.pie.PieChart
+import com.himanshoe.charty.pie.config.LabelConfig
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.data.PieData
@@ -493,6 +496,31 @@ private fun ReshuffleColumn(
     }
 }
 
+/**
+ * A consumer-designed placeholder for the `emptyContent` slot every chart exposes, so the gallery
+ * shows that the empty state is the caller's composable rather than a fixed library rendering.
+ */
+@Composable
+private fun GalleryEmptyState() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(text = "📭", fontSize = 40.sp)
+        Text(
+            text = "Nothing to plot",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = "emptyContent is your slot — any composable goes here.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
 /** Deterministic per-[tick] weekday series, so an animated-value demo has something to tween to. */
 private fun reshuffledLine(tick: Int): List<LineData> =
     listOf("Mon", "Tue", "Wed", "Thu", "Fri").mapIndexed { index, label ->
@@ -511,6 +539,13 @@ private fun buildGalleryDemos(): List<ChartDemo> {
     val coolGradient = ChartyColor.Gradient(listOf(green, blue))
     val palette = ChartyColor.Gradient(listOf(blue, green, orange, purple, red))
 
+    val pieSlices =
+        listOf(
+            PieData(label = "A", value = 40f, color = ChartyColor.Solid(blue)),
+            PieData(label = "B", value = 25f, color = ChartyColor.Solid(green)),
+            PieData(label = "C", value = 20f, color = ChartyColor.Solid(orange)),
+            PieData(label = "D", value = 15f, color = ChartyColor.Solid(red)),
+        )
     val bars =
         listOf(
             BarData(label = "Jan", value = 120f),
@@ -697,6 +732,27 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                     )
                 },
                 ChartVariant("Gradient bars") { BarChart(data = { bars }, color = blueGradient, modifier = chartFill) },
+                ChartVariant("Custom corner radius (CornerRadius.Custom)") {
+                    BarChart(
+                        data = { bars },
+                        barConfig = BarChartConfig(cornerRadius = CornerRadius.Custom(radius = 22f)),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Bar spacing") {
+                    BarChart(
+                        data = { bars },
+                        barConfig = BarChartConfig(barSpacing = 16f, cornerRadius = CornerRadius.Custom(radius = 6f)),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Rolling window (visibleWindow = 4)") {
+                    BarChart(
+                        data = { bars },
+                        barConfig = BarChartConfig(visibleWindow = 4),
+                        modifier = chartFill,
+                    )
+                },
                 ChartVariant("Extra-rounded corners") {
                     BarChart(
                         data = { bars },
@@ -824,6 +880,20 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                 ChartVariant("Negative values") {
                     HorizontalBarChart(data = { barsSigned }, modifier = chartFill)
                 },
+                ChartVariant("Custom corner radius (CornerRadius.Custom)") {
+                    HorizontalBarChart(
+                        data = { bars },
+                        barConfig = BarChartConfig(cornerRadius = CornerRadius.Custom(radius = 18f)),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Empty data (custom placeholder)") {
+                    HorizontalBarChart(
+                        data = { emptyList() },
+                        emptyContent = { GalleryEmptyState() },
+                        modifier = chartFill,
+                    )
+                },
             ),
         ),
         ChartDemo(
@@ -849,6 +919,31 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                 ChartVariant(
                     "Custom palette",
                 ) { StackedBarChart(data = { groups }, colors = palette, modifier = chartFill) },
+                ChartVariant("Custom top corner radius (CornerRadius.Custom)") {
+                    StackedBarChart(
+                        data = { groups },
+                        stackedConfig =
+                            StackedBarChartConfig(
+                                topCornerRadius = CornerRadius.Custom(radius = 20f),
+                                barSpacing = 10f,
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Total labels") {
+                    StackedBarChart(
+                        data = { groups },
+                        stackedConfig = StackedBarChartConfig(showDataLabels = true),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Empty data (custom placeholder)") {
+                    StackedBarChart(
+                        data = { emptyList() },
+                        emptyContent = { GalleryEmptyState() },
+                        modifier = chartFill,
+                    )
+                },
             ),
         ),
         ChartDemo(
@@ -874,6 +969,24 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                 ChartVariant(
                     "Custom palette",
                 ) { GroupedHorizontalBarChart(data = { groups }, colors = palette, modifier = chartFill) },
+                ChartVariant("Custom corner radius (CornerRadius.Custom)") {
+                    GroupedHorizontalBarChart(
+                        data = { groups },
+                        config =
+                            GroupedHorizontalBarChartConfig(
+                                cornerRadius = CornerRadius.Custom(radius = 14f),
+                                barSpacing = 8f,
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Empty data (custom placeholder)") {
+                    GroupedHorizontalBarChart(
+                        data = { emptyList() },
+                        emptyContent = { GalleryEmptyState() },
+                        modifier = chartFill,
+                    )
+                },
             ),
         ),
         ChartDemo(
@@ -1200,6 +1313,33 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                             ),
                         modifier = chartFill,
                     )
+                },
+                ChartVariant("Empty data (built-in placeholder)") {
+                    LineChart(data = { emptyList() }, modifier = chartFill)
+                },
+                ChartVariant("Empty data (custom placeholder)") {
+                    LineChart(
+                        data = { emptyList() },
+                        emptyContent = { GalleryEmptyState() },
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Gradient fill under the line") {
+                    LineChart(
+                        data = { line },
+                        lineConfig = LineChartConfig(showGradientFill = true, gradientFillAlpha = 0.45f),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Legend label") {
+                    LineChart(
+                        data = { line },
+                        lineConfig = LineChartConfig(legendLabels = listOf("Revenue")),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Rolling window (visibleWindow = 3)") {
+                    LineChart(data = { line }, lineConfig = LineChartConfig(visibleWindow = 3), modifier = chartFill)
                 },
             ),
         ),
@@ -1555,6 +1695,34 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                             )
                         },
                         config = PieChartConfig(style = PieChartStyle.DONUT),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Labels outside, with values") {
+                    PieChart(
+                        data = { pieSlices },
+                        config =
+                            PieChartConfig(
+                                labelConfig = LabelConfig(shouldShowLabelsOutside = true, shouldShowValue = true),
+                                sliceSpacingDegrees = 2f,
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Rotated start angle (0°)") {
+                    PieChart(
+                        data = { pieSlices },
+                        config = PieChartConfig(startAngleDegrees = 0f),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Empty data (built-in placeholder)") {
+                    PieChart(data = { emptyList() }, modifier = chartFill)
+                },
+                ChartVariant("Empty data (custom placeholder)") {
+                    PieChart(
+                        data = { emptyList() },
+                        emptyContent = { GalleryEmptyState() },
                         modifier = chartFill,
                     )
                 },

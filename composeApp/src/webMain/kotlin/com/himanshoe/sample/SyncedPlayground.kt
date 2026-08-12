@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
@@ -155,7 +154,11 @@ private fun SyncedCharts(
                 data = { topData },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 color = ChartyColor.Solid(topColor),
-                lineConfig = LineChartConfig(smoothCurve = smooth, animation = Animation.Disabled),
+                lineConfig =
+                    LineChartConfig(
+                        smoothCurve = smooth,
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
+                    ),
                 crosshair =
                     ChartCrosshair(config = crosshairConfig),
                 interactionConfig = ChartInteractionConfig(viewPortState = topViewport),
@@ -166,7 +169,11 @@ private fun SyncedCharts(
                 data = { bottomData },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 color = ChartyColor.Solid(bottomColor),
-                lineConfig = LineChartConfig(smoothCurve = smooth, animation = Animation.Disabled),
+                lineConfig =
+                    LineChartConfig(
+                        smoothCurve = smooth,
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
+                    ),
                 crosshair =
                     ChartCrosshair(config = crosshairConfig),
                 interactionConfig = ChartInteractionConfig(viewPortState = bottomViewport),

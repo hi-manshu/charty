@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,6 +37,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,8 +50,10 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.common.config.CornerRadius
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -396,6 +403,256 @@ private fun PlaygroundButton(
                 .padding(vertical = 10.dp),
     )
 }
+
+/** A quieter heading for a group of related controls nested under a [ControlSection]. */
+@Composable
+internal fun ControlSubSection(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 6.dp),
+    )
+}
+
+private const val CUSTOM_CORNER_LABEL = "Custom"
+
+/**
+ * Corner-radius picker: the [CornerRadius] presets plus a `Custom` option that reveals a free
+ * slider feeding [CornerRadius.Custom].
+ */
+@Composable
+internal fun CornerRadiusControls(
+    label: String,
+    corner: CornerRadius,
+    onCornerChange: (CornerRadius) -> Unit,
+) {
+    var customRadius by remember { mutableStateOf(DEFAULT_CUSTOM_CORNER_RADIUS) }
+    val options = cornerOptions.map(::cornerLabel) + CUSTOM_CORNER_LABEL
+    val selected =
+        if (corner is CornerRadius.Custom) {
+            CUSTOM_CORNER_LABEL
+        } else {
+            cornerLabel(corner)
+        }
+    ChoiceRow(
+        label = label,
+        options = options,
+        selected = selected,
+        labelOf = { it },
+        onSelect = { choice ->
+            if (choice == CUSTOM_CORNER_LABEL) {
+                onCornerChange(CornerRadius.Custom(radius = customRadius))
+            } else {
+                onCornerChange(cornerOptions[options.indexOf(choice)])
+            }
+        },
+    )
+    if (corner is CornerRadius.Custom) {
+        SliderRow(
+            label = "Custom radius",
+            value = customRadius,
+            valueRange = 0f..48f,
+            onValueChange = {
+                customRadius = it
+                onCornerChange(CornerRadius.Custom(radius = it))
+            },
+            decimals = 0,
+        )
+    }
+}
+
+private const val DEFAULT_CUSTOM_CORNER_RADIUS = 22f
+
+/**
+ * The consumer-supplied placeholder handed to a chart's `emptyContent` slot, so the playground
+ * shows that the slot is fully yours to design.
+ */
+@Composable
+internal fun ChartEmptyState(onAction: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(text = "📭", fontSize = 40.sp)
+        Text(
+            text = "Nothing to plot",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = "emptyContent is your slot — any composable goes here.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = "↺ Load sample data",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable(onClick = onAction)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    }
+}
+
+private const val EMPTY_BUILT_IN = "Built-in"
+private const val EMPTY_CUSTOM = "Custom"
+
+/** Switch that forces the data list empty, plus the built-in / custom placeholder chooser. */
+@Composable
+internal fun EmptyStateControls(
+    forceEmpty: Boolean,
+    onForceEmptyChange: (Boolean) -> Unit,
+    custom: Boolean,
+    onCustomChange: (Boolean) -> Unit,
+) {
+    ControlSection(title = "Empty state")
+    SwitchRow(label = "Force empty data", checked = forceEmpty, onCheckedChange = onForceEmptyChange)
+    ChoiceRow(
+        label = "Placeholder",
+        options = listOf(EMPTY_BUILT_IN, EMPTY_CUSTOM),
+        selected =
+            if (custom) {
+                EMPTY_CUSTOM
+            } else {
+                EMPTY_BUILT_IN
+            },
+        labelOf = { it },
+        onSelect = { onCustomChange(it == EMPTY_CUSTOM) },
+    )
+}
+
+/** Enable switch and value slider for a reference line; the caller builds the config. */
+@Composable
+internal fun ReferenceLineControls(
+    enabled: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+) {
+    SwitchRow(label = "Reference line", checked = enabled, onCheckedChange = onEnabledChange)
+    if (enabled) {
+        SliderRow(
+            label = "Line value",
+            value = value,
+            valueRange = valueRange,
+            onValueChange = onValueChange,
+            decimals = 0,
+        )
+    }
+}
+
+/** Enable switch and low/high sliders for a reference band; the caller builds the config. */
+@Composable
+internal fun ReferenceBandControls(
+    enabled: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    low: Float,
+    onLowChange: (Float) -> Unit,
+    high: Float,
+    onHighChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+) {
+    SwitchRow(label = "Reference band", checked = enabled, onCheckedChange = onEnabledChange)
+    if (enabled) {
+        SliderRow(
+            label = "Band low",
+            value = low,
+            valueRange = valueRange,
+            onValueChange = onLowChange,
+            decimals = 0,
+        )
+        SliderRow(
+            label = "Band high",
+            value = high,
+            valueRange = valueRange,
+            onValueChange = onHighChange,
+            decimals = 0,
+        )
+    }
+}
+
+/** Enable switch and size slider for a rolling visible window; the caller applies `visibleWindow`. */
+@Composable
+internal fun VisibleWindowControls(
+    enabled: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    size: Int,
+    onSizeChange: (Int) -> Unit,
+    sizeRange: IntRange,
+) {
+    SwitchRow(label = "Visible window", checked = enabled, onCheckedChange = onEnabledChange)
+    if (enabled) {
+        IntSliderRow(label = "Window size", value = size, valueRange = sizeRange, onValueChange = onSizeChange)
+    }
+}
+
+/** The `emptyContent` argument for a chart: [ChartEmptyState] when custom, `null` for the built-in. */
+internal fun emptyPlaceholder(
+    custom: Boolean,
+    onAction: () -> Unit,
+): (@Composable () -> Unit)? =
+    if (custom) {
+        { ChartEmptyState(onAction = onAction) }
+    } else {
+        null
+    }
+
+/** A one-entry legend label list when enabled, otherwise the empty default. */
+internal fun legendLabelsOf(enabled: Boolean): List<String> =
+    if (enabled) {
+        listOf("Series A")
+    } else {
+        emptyList()
+    }
+
+/** The nullable `downsampleThreshold` / `visibleWindow` style argument. */
+internal fun thresholdOf(
+    enabled: Boolean,
+    value: Int,
+): Int? =
+    if (enabled) {
+        value
+    } else {
+        null
+    }
+
+/** The nullable `visibleWindow` argument. */
+internal fun windowOf(
+    enabled: Boolean,
+    size: Int,
+): Int? =
+    if (enabled) {
+        size
+    } else {
+        null
+    }
+
+/** Renders one optional argument line for a code snippet, indented to sit inside the call. */
+internal fun codeArg(
+    include: Boolean,
+    text: String,
+    indent: Int = 12,
+): String =
+    if (include) {
+        "\n" + " ".repeat(indent) + text
+    } else {
+        ""
+    }
+
+/** The `emptyContent = { … }` snippet line, shown only when the custom placeholder is selected. */
+internal fun emptyContentArg(custom: Boolean): String =
+    codeArg(include = custom, text = "emptyContent = { ChartEmptyState(onAction = { }) },")
 
 private fun formatFloat(
     value: Float,

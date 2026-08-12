@@ -54,22 +54,27 @@ private fun randomWalk(seed: Int): List<Float> {
 @Composable
 internal fun SparklinePlayground() {
     var showFill by remember { mutableStateOf(true) }
+    var fillAlpha by remember { mutableStateOf(0.15f) }
     var showDot by remember { mutableStateOf(true) }
+    var dotRadius by remember { mutableStateOf(3f) }
     var smooth by remember { mutableStateOf(false) }
     var animate by remember { mutableStateOf(false) }
     var lineWidth by remember { mutableStateOf(1.5f) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
     var tick by remember { mutableStateOf(0) }
 
+    val animateEntry = animate || LocalPlaygroundAnimate.current
     val walks = remember(tick) { sparklineSeriesNames.indices.map { randomWalk(seed = tick * 31 + it) } }
     val config =
         SparklineConfig(
             lineWidth = lineWidth,
             showFill = showFill,
+            fillAlpha = fillAlpha,
             showLastPointDot = showDot,
+            lastPointDotRadius = dotRadius,
             smoothCurve = smooth,
             animation =
-                if (animate) {
+                if (animateEntry) {
                     Animation.Fast
                 } else {
                     Animation.Disabled
@@ -86,9 +91,11 @@ internal fun SparklinePlayground() {
             config = SparklineConfig(
                 lineWidth = ${fc(lineWidth)},
                 showFill = $showFill,
+                fillAlpha = ${fc(fillAlpha)},
                 showLastPointDot = $showDot,
+                lastPointDotRadius = ${fc(dotRadius)},
                 smoothCurve = $smooth,
-                animation = ${if (animate) "Animation.Fast" else "Animation.Disabled"},
+                animation = ${if (animateEntry) "Animation.Fast" else "Animation.Disabled"},
             ),
         )
         """.trimIndent()
@@ -130,7 +137,25 @@ internal fun SparklinePlayground() {
             SwitchRow(label = "Smooth curve", checked = smooth, onCheckedChange = { smooth = it })
             ControlSection(title = "Accents")
             SwitchRow(label = "Fill under line", checked = showFill, onCheckedChange = { showFill = it })
+            if (showFill) {
+                SliderRow(
+                    label = "Fill alpha",
+                    value = fillAlpha,
+                    valueRange = 0f..1f,
+                    onValueChange = { fillAlpha = it },
+                    decimals = 2,
+                )
+            }
             SwitchRow(label = "Last point dot", checked = showDot, onCheckedChange = { showDot = it })
+            if (showDot) {
+                SliderRow(
+                    label = "Dot radius",
+                    value = dotRadius,
+                    valueRange = 1f..8f,
+                    onValueChange = { dotRadius = it },
+                    decimals = 1,
+                )
+            }
             ControlSection(title = "Animation")
             SwitchRow(label = "Animate entry", checked = animate, onCheckedChange = { animate = it })
             ControlSection(title = "Data")

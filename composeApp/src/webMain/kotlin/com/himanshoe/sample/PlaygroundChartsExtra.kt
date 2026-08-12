@@ -26,6 +26,8 @@ import com.himanshoe.charty.block.config.BlockBarChartConfig
 import com.himanshoe.charty.block.data.BlockData
 import com.himanshoe.charty.calendar.CalendarHeatmapChart
 import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
+import com.himanshoe.charty.calendar.config.CellShape
+import com.himanshoe.charty.calendar.config.WeekStartDay
 import com.himanshoe.charty.calendar.data.CalendarData
 import com.himanshoe.charty.candlestick.CandlestickChart
 import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
@@ -35,7 +37,7 @@ import com.himanshoe.charty.circular.config.CircularProgressConfig
 import com.himanshoe.charty.circular.config.RingDirection
 import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.line.MultilineChart
 import com.himanshoe.charty.line.StackedAreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -45,6 +47,7 @@ import com.himanshoe.charty.radar.RadarChart
 import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.config.RadarGridConfig
 import com.himanshoe.charty.radar.config.RadarGridStyle
+import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
 import kotlin.random.Random
@@ -69,6 +72,12 @@ internal fun CandlestickPlayground() {
     var candleWidthFraction by remember { mutableStateOf(0.7f) }
     var wickWidthFraction by remember { mutableStateOf(0.1f) }
     var showWicks by remember { mutableStateOf(true) }
+    var minBodyHeight by remember { mutableStateOf(2f) }
+    var corner by remember { mutableStateOf<CornerRadius>(CornerRadius.None) }
+    var animateValueChanges by remember { mutableStateOf(false) }
+    var markers by remember { mutableStateOf(false) }
+    var window by remember { mutableStateOf(false) }
+    var windowSize by remember { mutableStateOf(10) }
     var bullish by remember { mutableStateOf(playgroundPalette[5]) }
     var bearish by remember { mutableStateOf(playgroundPalette[1]) }
 
@@ -105,7 +114,21 @@ internal fun CandlestickPlayground() {
             candlestickConfig = CandlestickChartConfig(
                 candleWidthFraction = ${fc(candleWidthFraction)},
                 wickWidthFraction = ${fc(wickWidthFraction)},
+                minCandleBodyHeight = ${fc(minBodyHeight)},
                 showWicks = $showWicks,
+                cornerRadius = CornerRadius.${cornerName(corner)},${codeArg(
+            include = animateValueChanges,
+            text = "animateValueChanges = true,",
+            indent = 16,
+        )}${codeArg(
+            include = markers,
+            text = "markers = listOf(PersistentMarker(dataIndex = ${data.size / 2}, label = \"Peak\", showGuideLine = true)),",
+            indent = 16,
+        )}${codeArg(
+            include = window,
+            text = "visibleWindow = $windowSize,",
+            indent = 16,
+        )}
             ),
         )
         """.trimIndent()
@@ -121,8 +144,13 @@ internal fun CandlestickPlayground() {
                     CandlestickChartConfig(
                         candleWidthFraction = candleWidthFraction,
                         wickWidthFraction = wickWidthFraction,
+                        minCandleBodyHeight = minBodyHeight,
                         showWicks = showWicks,
-                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                        cornerRadius = corner,
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
+                        animateValueChanges = animateValueChanges,
+                        markers = demoMarkers(enabled = markers, size = data.size, label = "Peak"),
+                        visibleWindow = windowOf(enabled = window, size = windowSize),
                     ),
             )
         },
@@ -140,6 +168,28 @@ internal fun CandlestickPlayground() {
                     it
             }, decimals = 2)
             SwitchRow(label = "Show wicks", checked = showWicks, onCheckedChange = { showWicks = it })
+            SliderRow(
+                label = "Min body height",
+                value = minBodyHeight,
+                valueRange = 0f..12f,
+                onValueChange = { minBodyHeight = it },
+                decimals = 0,
+            )
+            CornerRadiusControls(label = "Corner radius", corner = corner, onCornerChange = { corner = it })
+            ControlSection(title = "Behaviour")
+            SwitchRow(
+                label = "Animate value changes",
+                checked = animateValueChanges,
+                onCheckedChange = { animateValueChanges = it },
+            )
+            SwitchRow(label = "Persistent marker", checked = markers, onCheckedChange = { markers = it })
+            VisibleWindowControls(
+                enabled = window,
+                onEnabledChange = { window = it },
+                size = windowSize,
+                onSizeChange = { windowSize = it },
+                sizeRange = 3..40,
+            )
             ControlSection(title = "Colors")
             ColorRow(label = "Bullish", selected = bullish, onSelect = { bullish = it })
             ColorRow(label = "Bearish", selected = bearish, onSelect = { bearish = it })
@@ -156,6 +206,14 @@ internal fun RadarPlayground() {
     var dataPointRadius by remember { mutableStateOf(4f) }
     var fillAlpha by remember { mutableStateOf(0.3f) }
     var gridStyle by remember { mutableStateOf(RadarGridStyle.POLYGON) }
+    var gridLevels by remember { mutableStateOf(5) }
+    var showGridLines by remember { mutableStateOf(true) }
+    var showAxisLines by remember { mutableStateOf(true) }
+    var showLabels by remember { mutableStateOf(true) }
+    var showValues by remember { mutableStateOf(false) }
+    var startAngle by remember { mutableStateOf(-90f) }
+    var paddingFraction by remember { mutableStateOf(0.15f) }
+    var scaleToFit by remember { mutableStateOf(true) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
 
     val dataSet =
@@ -195,7 +253,16 @@ internal fun RadarPlayground() {
                 dataLineWidth = ${fc(dataLineWidth)},
                 showDataPoints = $showDataPoints,
                 dataPointRadius = ${fc(dataPointRadius)},
-                gridConfig = RadarGridConfig(gridStyle = RadarGridStyle.${gridStyle.name}),
+                startAngleDegrees = ${fc(startAngle)},
+                scaleToFit = $scaleToFit,
+                paddingFraction = ${fc(paddingFraction)},
+                labelConfig = RadarLabelConfig(showLabels = $showLabels, showValues = $showValues),
+                gridConfig = RadarGridConfig(
+                    gridStyle = RadarGridStyle.${gridStyle.name},
+                    numberOfGridLevels = $gridLevels,
+                    showGridLines = $showGridLines,
+                    showAxisLines = $showAxisLines,
+                ),
             ),
         )
         """.trimIndent()
@@ -210,8 +277,18 @@ internal fun RadarPlayground() {
                         dataLineWidth = dataLineWidth,
                         showDataPoints = showDataPoints,
                         dataPointRadius = dataPointRadius,
-                        gridConfig = RadarGridConfig(gridStyle = gridStyle),
-                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                        startAngleDegrees = startAngle,
+                        scaleToFit = scaleToFit,
+                        paddingFraction = paddingFraction,
+                        labelConfig = RadarLabelConfig(showLabels = showLabels, showValues = showValues),
+                        gridConfig =
+                            RadarGridConfig(
+                                gridStyle = gridStyle,
+                                numberOfGridLevels = gridLevels,
+                                showGridLines = showGridLines,
+                                showAxisLines = showAxisLines,
+                            ),
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
                     ),
             )
         },
@@ -234,12 +311,37 @@ internal fun RadarPlayground() {
             SliderRow(label = "Fill alpha", value = fillAlpha, valueRange = 0f..1f, onValueChange = {
                 fillAlpha = it
             }, decimals = 2)
-            ChoiceRow(label = "Grid", options = RadarGridStyle.entries.toList(), selected = gridStyle, labelOf = {
-                it.name
-            }, onSelect = {
-                gridStyle =
-                    it
+            SliderRow(
+                label = "Start angle",
+                value = startAngle,
+                valueRange = -180f..180f,
+                onValueChange = { startAngle = it },
+                decimals = 0,
+            )
+            ControlSection(title = "Grid")
+            ChoiceRow(
+                label = "Grid",
+                options = RadarGridStyle.entries.toList(),
+                selected = gridStyle,
+                labelOf = { it.name },
+                onSelect = { gridStyle = it },
+            )
+            IntSliderRow(label = "Grid levels", value = gridLevels, valueRange = 1..10, onValueChange = {
+                gridLevels = it
             })
+            SwitchRow(label = "Grid lines", checked = showGridLines, onCheckedChange = { showGridLines = it })
+            SwitchRow(label = "Axis lines", checked = showAxisLines, onCheckedChange = { showAxisLines = it })
+            ControlSection(title = "Labels & layout")
+            SwitchRow(label = "Axis labels", checked = showLabels, onCheckedChange = { showLabels = it })
+            SwitchRow(label = "Axis values", checked = showValues, onCheckedChange = { showValues = it })
+            SwitchRow(label = "Scale to fit", checked = scaleToFit, onCheckedChange = { scaleToFit = it })
+            SliderRow(
+                label = "Padding fraction",
+                value = paddingFraction,
+                valueRange = 0f..0.5f,
+                onValueChange = { paddingFraction = it },
+                decimals = 2,
+            )
             ControlSection(title = "Color")
             ColorRow(label = "Series color", selected = color, onSelect = { color = it })
         },
@@ -253,6 +355,12 @@ internal fun CircularPlayground() {
     var gapBetweenRings by remember { mutableStateOf(8f) }
     var centerHoleRatio by remember { mutableStateOf(0f) }
     var direction by remember { mutableStateOf(RingDirection.CLOCKWISE) }
+    var startAngle by remember { mutableStateOf(-90f) }
+    var padding by remember { mutableStateOf(16f) }
+    var enableShadows by remember { mutableStateOf(false) }
+    var rotationEnabled by remember { mutableStateOf(false) }
+    var showCenterText by remember { mutableStateOf(false) }
+    var interactionEnabled by remember { mutableStateOf(true) }
 
     val data =
         remember(rings, tick) {
@@ -280,6 +388,12 @@ internal fun CircularPlayground() {
                 gapBetweenRings = ${fc(gapBetweenRings)},
                 centerHoleRatio = ${fc(centerHoleRatio)},
                 ringDirection = RingDirection.${direction.name},
+                startAngleDegrees = ${fc(startAngle)},
+                paddingDp = ${fc(padding)},
+                enableShadows = $enableShadows,
+                rotationEnabled = $rotationEnabled,
+                showCenterText = $showCenterText,
+                interactionEnabled = $interactionEnabled,
             ),
         )
         """.trimIndent()
@@ -294,7 +408,13 @@ internal fun CircularPlayground() {
                         gapBetweenRings = gapBetweenRings,
                         centerHoleRatio = centerHoleRatio,
                         ringDirection = direction,
-                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                        startAngleDegrees = startAngle,
+                        paddingDp = padding,
+                        enableShadows = enableShadows,
+                        rotationEnabled = rotationEnabled,
+                        showCenterText = showCenterText,
+                        interactionEnabled = interactionEnabled,
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
                     ),
             )
         },
@@ -311,12 +431,36 @@ internal fun CircularPlayground() {
                 centerHoleRatio =
                     it
             }, decimals = 2)
-            ChoiceRow(label = "Direction", options = RingDirection.entries.toList(), selected = direction, labelOf = {
-                it.name
-            }, onSelect = {
-                direction =
-                    it
-            })
+            ChoiceRow(
+                label = "Direction",
+                options = RingDirection.entries.toList(),
+                selected = direction,
+                labelOf = { it.name },
+                onSelect = { direction = it },
+            )
+            SliderRow(
+                label = "Start angle",
+                value = startAngle,
+                valueRange = -180f..180f,
+                onValueChange = { startAngle = it },
+                decimals = 0,
+            )
+            SliderRow(
+                label = "Padding",
+                value = padding,
+                valueRange = 0f..48f,
+                onValueChange = { padding = it },
+                decimals = 0,
+            )
+            ControlSection(title = "Behaviour")
+            SwitchRow(label = "Shadows", checked = enableShadows, onCheckedChange = { enableShadows = it })
+            SwitchRow(label = "Rotate rings", checked = rotationEnabled, onCheckedChange = { rotationEnabled = it })
+            SwitchRow(label = "Center text", checked = showCenterText, onCheckedChange = { showCenterText = it })
+            SwitchRow(
+                label = "Tap interaction",
+                checked = interactionEnabled,
+                onCheckedChange = { interactionEnabled = it },
+            )
         },
     )
 }
@@ -327,11 +471,7 @@ internal fun BlockPlayground() {
     var tick by remember { mutableStateOf(0) }
     var barHeight by remember { mutableStateOf(16f) }
     var gap by remember { mutableStateOf(4f) }
-    var corner by remember {
-        mutableStateOf<com.himanshoe.charty.common.config.CornerRadius>(
-            com.himanshoe.charty.common.config.CornerRadius.Small,
-        )
-    }
+    var corner by remember { mutableStateOf<CornerRadius>(CornerRadius.Small) }
 
     val data =
         remember(blocks, tick) {
@@ -377,10 +517,7 @@ internal fun BlockPlayground() {
                 barHeight = it
             }, decimals = 0)
             SliderRow(label = "Gap", value = gap, valueRange = 0f..16f, onValueChange = { gap = it }, decimals = 0)
-            ChoiceRow(label = "Corner radius", options = cornerOptions, selected = corner, labelOf = ::cornerLabel, onSelect = {
-                corner =
-                    it
-            })
+            CornerRadiusControls(label = "Corner radius", corner = corner, onCornerChange = { corner = it })
         },
     )
 }
@@ -392,6 +529,12 @@ internal fun WavyPlayground() {
     var barWidthFraction by remember { mutableStateOf(0.8f) }
     var amplitude by remember { mutableStateOf(0.33f) }
     var strokeWidth by remember { mutableStateOf(3f) }
+    var waveSegments by remember { mutableStateOf(40) }
+    var phaseOffset by remember { mutableStateOf(0f) }
+    var animateValueChanges by remember { mutableStateOf(false) }
+    var markers by remember { mutableStateOf(false) }
+    var window by remember { mutableStateOf(false) }
+    var windowSize by remember { mutableStateOf(4) }
     var color by remember { mutableStateOf(playgroundPalette[6]) }
 
     val data =
@@ -408,7 +551,21 @@ internal fun WavyPlayground() {
             wavyConfig = WavyChartConfig(
                 barWidthFraction = ${fc(barWidthFraction)},
                 waveAmplitudeFractionOfBarWidth = ${fc(amplitude)},
-                strokeWidthDp = ${fc(strokeWidth)},
+                waveSegments = $waveSegments,
+                phaseOffsetPerBar = ${fc(phaseOffset)},
+                strokeWidthDp = ${fc(strokeWidth)},${codeArg(
+            include = animateValueChanges,
+            text = "animateValueChanges = true,",
+            indent = 16,
+        )}${codeArg(
+            include = markers,
+            text = "markers = listOf(PersistentMarker(dataIndex = ${data.size / 2}, label = \"Peak\", showGuideLine = true)),",
+            indent = 16,
+        )}${codeArg(
+            include = window,
+            text = "visibleWindow = $windowSize,",
+            indent = 16,
+        )}
             ),
         )
         """.trimIndent()
@@ -423,7 +580,12 @@ internal fun WavyPlayground() {
                     WavyChartConfig(
                         barWidthFraction = barWidthFraction,
                         waveAmplitudeFractionOfBarWidth = amplitude,
+                        waveSegments = waveSegments,
+                        phaseOffsetPerBar = phaseOffset,
                         strokeWidthDp = strokeWidth,
+                        animateValueChanges = animateValueChanges,
+                        markers = demoMarkers(enabled = markers, size = data.size, label = "Peak"),
+                        visibleWindow = windowOf(enabled = window, size = windowSize),
                     ),
             )
         },
@@ -447,6 +609,30 @@ internal fun WavyPlayground() {
                 strokeWidth =
                     it
             })
+            IntSliderRow(label = "Wave segments", value = waveSegments, valueRange = 4..80, onValueChange = {
+                waveSegments = it
+            })
+            SliderRow(
+                label = "Phase offset per bar",
+                value = phaseOffset,
+                valueRange = 0f..6.28f,
+                onValueChange = { phaseOffset = it },
+                decimals = 2,
+            )
+            ControlSection(title = "Behaviour")
+            SwitchRow(
+                label = "Animate value changes",
+                checked = animateValueChanges,
+                onCheckedChange = { animateValueChanges = it },
+            )
+            SwitchRow(label = "Persistent marker", checked = markers, onCheckedChange = { markers = it })
+            VisibleWindowControls(
+                enabled = window,
+                onEnabledChange = { window = it },
+                size = windowSize,
+                onSizeChange = { windowSize = it },
+                sizeRange = 2..12,
+            )
             ControlSection(title = "Color")
             ColorRow(label = "Wave color", selected = color, onSelect = { color = it })
         },
@@ -461,9 +647,16 @@ internal fun MultilinePlayground() {
     var lineWidth by remember { mutableStateOf(3f) }
     var showPoints by remember { mutableStateOf(true) }
     var showGradientFill by remember { mutableStateOf(false) }
+    var gradientFillAlpha by remember { mutableStateOf(0.3f) }
+    var pointRadius by remember { mutableStateOf(6f) }
+    var legend by remember { mutableStateOf(false) }
+    var animateValueChanges by remember { mutableStateOf(false) }
+    var window by remember { mutableStateOf(false) }
+    var windowSize by remember { mutableStateOf(6) }
     var interpolation by remember { mutableStateOf(LineInterpolation.SMOOTH) }
 
     val data = remember(points, series, tick) { randomGroups(points, series, tick) }
+    val legendLabels = remember(series, legend) { multilineLegend(enabled = legend, series = series) }
 
     val code =
         """
@@ -479,8 +672,25 @@ internal fun MultilinePlayground() {
             lineConfig = LineChartConfig(
                 lineWidth = ${fc(lineWidth)},
                 showPoints = $showPoints,
+                pointRadius = ${fc(pointRadius)},
                 interpolation = LineInterpolation.${interpolation.name},
-                showGradientFill = $showGradientFill,
+                showGradientFill = $showGradientFill,${codeArg(
+            include = showGradientFill,
+            text = "gradientFillAlpha = ${fc(gradientFillAlpha)},",
+            indent = 16,
+        )}${codeArg(
+            include = legend,
+            text = "legendLabels = listOf(${legendLabels.joinToString(", ") { "\"$it\"" }}),",
+            indent = 16,
+        )}${codeArg(
+            include = animateValueChanges,
+            text = "animateValueChanges = true,",
+            indent = 16,
+        )}${codeArg(
+            include = window,
+            text = "visibleWindow = $windowSize,",
+            indent = 16,
+        )}
             ),
         )
         """.trimIndent()
@@ -495,9 +705,14 @@ internal fun MultilinePlayground() {
                     LineChartConfig(
                         lineWidth = lineWidth,
                         showPoints = showPoints,
+                        pointRadius = pointRadius,
                         interpolation = interpolation,
                         showGradientFill = showGradientFill,
-                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                        gradientFillAlpha = gradientFillAlpha,
+                        legendLabels = legendLabels,
+                        animateValueChanges = animateValueChanges,
+                        visibleWindow = windowOf(enabled = window, size = windowSize),
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
                     ),
             )
         },
@@ -515,10 +730,51 @@ internal fun MultilinePlayground() {
                     it
             })
             SwitchRow(label = "Show points", checked = showPoints, onCheckedChange = { showPoints = it })
+            if (showPoints) {
+                SliderRow(
+                    label = "Point radius",
+                    value = pointRadius,
+                    valueRange = 2f..14f,
+                    onValueChange = { pointRadius = it },
+                )
+            }
             SwitchRow(label = "Gradient fill", checked = showGradientFill, onCheckedChange = { showGradientFill = it })
+            if (showGradientFill) {
+                SliderRow(
+                    label = "Gradient alpha",
+                    value = gradientFillAlpha,
+                    valueRange = 0f..1f,
+                    onValueChange = { gradientFillAlpha = it },
+                    decimals = 2,
+                )
+            }
+            ControlSection(title = "Legend & behaviour")
+            SwitchRow(label = "Legend labels", checked = legend, onCheckedChange = { legend = it })
+            SwitchRow(
+                label = "Animate value changes",
+                checked = animateValueChanges,
+                onCheckedChange = { animateValueChanges = it },
+            )
+            VisibleWindowControls(
+                enabled = window,
+                onEnabledChange = { window = it },
+                size = windowSize,
+                onSizeChange = { windowSize = it },
+                sizeRange = 2..20,
+            )
         },
     )
 }
+
+private fun multilineLegend(
+    enabled: Boolean,
+    series: Int,
+): List<String> =
+    if (enabled) {
+        List(series) { "Series ${it + 1}" }
+    } else {
+        emptyList()
+    }
 
 @Composable
 internal fun StackedAreaPlayground() {
@@ -527,6 +783,11 @@ internal fun StackedAreaPlayground() {
     var tick by remember { mutableStateOf(0) }
     var lineWidth by remember { mutableStateOf(2f) }
     var fillAlpha by remember { mutableStateOf(0.7f) }
+    var showPoints by remember { mutableStateOf(false) }
+    var pointRadius by remember { mutableStateOf(5f) }
+    var animateValueChanges by remember { mutableStateOf(false) }
+    var window by remember { mutableStateOf(false) }
+    var windowSize by remember { mutableStateOf(6) }
     var interpolation by remember { mutableStateOf(LineInterpolation.SMOOTH) }
 
     val data = remember(points, series, tick) { randomGroups(points, series, tick) }
@@ -544,7 +805,17 @@ internal fun StackedAreaPlayground() {
             colors = ChartyColor.Gradient(seriesColors),
             lineConfig = LineChartConfig(
                 lineWidth = ${fc(lineWidth)},
-                interpolation = LineInterpolation.${interpolation.name},
+                showPoints = $showPoints,
+                pointRadius = ${fc(pointRadius)},
+                interpolation = LineInterpolation.${interpolation.name},${codeArg(
+            include = animateValueChanges,
+            text = "animateValueChanges = true,",
+            indent = 16,
+        )}${codeArg(
+            include = window,
+            text = "visibleWindow = $windowSize,",
+            indent = 16,
+        )}
             ),
             fillAlpha = ${fc(fillAlpha)},
         )
@@ -559,8 +830,12 @@ internal fun StackedAreaPlayground() {
                 lineConfig =
                     LineChartConfig(
                         lineWidth = lineWidth,
+                        showPoints = showPoints,
+                        pointRadius = pointRadius,
                         interpolation = interpolation,
-                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                        animateValueChanges = animateValueChanges,
+                        visibleWindow = windowOf(enabled = window, size = windowSize),
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
                     ),
                 fillAlpha = fillAlpha,
             )
@@ -581,6 +856,28 @@ internal fun StackedAreaPlayground() {
                 interpolation =
                     it
             })
+            SwitchRow(label = "Show points", checked = showPoints, onCheckedChange = { showPoints = it })
+            if (showPoints) {
+                SliderRow(
+                    label = "Point radius",
+                    value = pointRadius,
+                    valueRange = 2f..12f,
+                    onValueChange = { pointRadius = it },
+                )
+            }
+            ControlSection(title = "Behaviour")
+            SwitchRow(
+                label = "Animate value changes",
+                checked = animateValueChanges,
+                onCheckedChange = { animateValueChanges = it },
+            )
+            VisibleWindowControls(
+                enabled = window,
+                onEnabledChange = { window = it },
+                size = windowSize,
+                onSizeChange = { windowSize = it },
+                sizeRange = 2..20,
+            )
         },
     )
 }
@@ -592,6 +889,11 @@ internal fun CalendarPlayground() {
     var cellSpacing by remember { mutableStateOf(2f) }
     var showMonthLabels by remember { mutableStateOf(true) }
     var showDayLabels by remember { mutableStateOf(true) }
+    var cellCorner by remember { mutableStateOf(2f) }
+    var weekStart by remember { mutableStateOf(WeekStartDay.SUNDAY) }
+    var limitWeeks by remember { mutableStateOf(false) }
+    var visibleWeeks by remember { mutableStateOf(8) }
+    var scrollEnabled by remember { mutableStateOf(true) }
 
     val data =
         remember(tick) {
@@ -622,9 +924,12 @@ internal fun CalendarPlayground() {
             config = CalendarHeatmapConfig(
                 cellSize = ${fc(cellSize)}.dp,
                 cellSpacing = ${fc(cellSpacing)}.dp,
+                cellShape = CellShape.RoundedSquare(cornerRadius = ${fc(cellCorner)}),
                 showMonthLabels = $showMonthLabels,
                 showDayLabels = $showDayLabels,
-            ),
+                weekStartDay = WeekStartDay.${weekStart.name},
+            ),${codeArg(include = limitWeeks, text = "visibleWeeks = $visibleWeeks,")}
+            scrollEnabled = $scrollEnabled,
         )
         """.trimIndent()
     PlaygroundScaffold(
@@ -637,10 +942,14 @@ internal fun CalendarPlayground() {
                     CalendarHeatmapConfig(
                         cellSize = cellSize.dp,
                         cellSpacing = cellSpacing.dp,
+                        cellShape = CellShape.RoundedSquare(cornerRadius = cellCorner),
                         showMonthLabels = showMonthLabels,
                         showDayLabels = showDayLabels,
-                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                        weekStartDay = weekStart,
+                        animation = playgroundAnimation(animate = LocalPlaygroundAnimate.current),
                     ),
+                visibleWeeks = windowOf(enabled = limitWeeks, size = visibleWeeks),
+                scrollEnabled = scrollEnabled,
             )
         },
         controls = {
@@ -658,8 +967,33 @@ internal fun CalendarPlayground() {
                 cellSpacing =
                     it
             }, decimals = 0)
+            SliderRow(
+                label = "Cell corner",
+                value = cellCorner,
+                valueRange = 0f..10f,
+                onValueChange = { cellCorner = it },
+                decimals = 0,
+            )
+            ControlSection(title = "Labels & layout")
             SwitchRow(label = "Month labels", checked = showMonthLabels, onCheckedChange = { showMonthLabels = it })
             SwitchRow(label = "Day labels", checked = showDayLabels, onCheckedChange = { showDayLabels = it })
+            ChoiceRow(
+                label = "Week starts on",
+                options = WeekStartDay.entries.toList(),
+                selected = weekStart,
+                labelOf = { it.name },
+                onSelect = { weekStart = it },
+            )
+            SwitchRow(label = "Limit visible weeks", checked = limitWeeks, onCheckedChange = { limitWeeks = it })
+            if (limitWeeks) {
+                IntSliderRow(
+                    label = "Visible weeks",
+                    value = visibleWeeks,
+                    valueRange = 2..20,
+                    onValueChange = { visibleWeeks = it },
+                )
+            }
+            SwitchRow(label = "Scroll enabled", checked = scrollEnabled, onCheckedChange = { scrollEnabled = it })
         },
     )
 }
