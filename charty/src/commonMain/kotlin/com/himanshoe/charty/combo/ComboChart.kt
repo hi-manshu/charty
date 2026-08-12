@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.config.ComboChartConfig
@@ -188,6 +189,11 @@ fun ComboChart(
                 ),
             config = scaffoldConfig,
             contentDescription = chartDescription,
+            dataPointDescriptions =
+                dataList.fastMapIndexed { index, item ->
+                    "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
+                        "bar ${item.barValue}, line ${item.lineValue}"
+                },
             secondaryYAxisConfig = secondaryLineRange.toSecondaryAxisConfig(),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
