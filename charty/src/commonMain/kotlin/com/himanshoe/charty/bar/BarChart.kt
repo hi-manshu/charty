@@ -24,6 +24,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -32,6 +33,7 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.drawInteractionOverlays
@@ -164,6 +166,7 @@ fun BarChart(
             config = scaffoldConfig,
             leftLabelRotation = scaffoldConfig.leftLabelRotation,
             contentDescription = chartDescription,
+            dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
+import com.himanshoe.charty.common.accessibility.ChartDataPointSemantics
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.DrawAxisAndLabels
 import com.himanshoe.charty.common.axis.LabelRotation
@@ -36,6 +37,10 @@ private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
  * @param contentDescription An accessibility description read by screen readers. When provided,
  *   it is attached to the chart's root composable via [Modifier.semantics]. Generate one
  *   automatically with helpers such as `generateLineChartDescription`.
+ * @param dataPointDescriptions Optional per-point descriptions (one per data point). When non-empty,
+ *   an invisible, focusable semantics node is placed over each point so screen readers can traverse
+ *   the chart point by point. Build them with `buildDataPointDescriptions`. Empty (the default)
+ *   exposes only the whole-chart [contentDescription].
  * @param secondaryYAxisConfig Optional second value axis rendered on the right edge with its own
  *   scale, for dual-axis charts. When non-null, the right gutter widens and a right axis is drawn;
  *   plot a series against it with [ChartContext.convertValueToYPosition] and this config's range.
@@ -50,6 +55,7 @@ fun ChartScaffold(
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
     leftLabelRotation: LabelRotation = LabelRotation.Straight,
     contentDescription: String? = null,
+    dataPointDescriptions: List<String> = emptyList(),
     secondaryYAxisConfig: AxisConfig? = null,
     content: DrawScope.(ChartContext) -> Unit,
 ) {
@@ -123,5 +129,11 @@ fun ChartScaffold(
 
             content(chartContext)
         }
+
+        ChartDataPointSemantics(
+            descriptions = dataPointDescriptions,
+            orientation = orientation,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }
