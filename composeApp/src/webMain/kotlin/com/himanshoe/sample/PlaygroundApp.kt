@@ -62,6 +62,9 @@ internal enum class PlaygroundFamily(
     Line("Line", "Trend over an index", Color(0xFF2962FF)),
     Area("Area", "Filled line", Color(0xFF00BFA5)),
     Bar("Bar", "Categorical values", Color(0xFFFF6D00)),
+    HorizontalBar("Horizontal bar", "Bars along the x-axis", Color(0xFFEF6C00)),
+    StackedBar("Stacked bar", "Segments per group", Color(0xFFF4511E)),
+    GroupedBar("Grouped bar", "Bars grouped by category", Color(0xFFD84315)),
     Point("Scatter", "Points on a plane", Color(0xFF8E24AA)),
     Bubble("Bubble", "Points sized by value", Color(0xFFE91E63)),
     Pie("Pie / Donut", "Part-to-whole", Color(0xFF43A047)),
@@ -269,6 +272,9 @@ private fun PlaygroundContent(family: PlaygroundFamily) {
         PlaygroundFamily.Line -> LinePlayground()
         PlaygroundFamily.Area -> AreaPlayground()
         PlaygroundFamily.Bar -> BarPlayground()
+        PlaygroundFamily.HorizontalBar -> HorizontalBarPlayground()
+        PlaygroundFamily.StackedBar -> StackedBarPlayground()
+        PlaygroundFamily.GroupedBar -> GroupedBarPlayground()
         PlaygroundFamily.Point -> PointPlayground()
         PlaygroundFamily.Bubble -> BubblePlayground()
         PlaygroundFamily.Pie -> PiePlayground()
