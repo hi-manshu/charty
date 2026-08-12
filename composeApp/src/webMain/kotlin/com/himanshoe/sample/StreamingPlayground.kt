@@ -95,6 +95,12 @@ internal fun StreamingLinePlayground() {
     }
 
     val newest = buffer.lastOrNull()
+    // The label's x already slides via scrollPos; animate its value so its y glides between the
+    // previous and new newest point instead of jumping.
+    val labelValue = remember { Animatable(newest ?: 50f) }
+    LaunchedEffect(newest) {
+        newest?.let { labelValue.animateTo(targetValue = it, animationSpec = tween(durationMillis = SLIDE_MILLIS)) }
+    }
     val labelStyle = remember { TextStyle(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
     val code =
         """
@@ -163,7 +169,7 @@ internal fun StreamingLinePlayground() {
                     val bubbleWidth = layout.size.width + padH * 2
                     val bubbleHeight = layout.size.height + padV * 2
                     val pointX = xAt(total - 1).coerceIn(left, right)
-                    val pointY = yAt(newest)
+                    val pointY = yAt(labelValue.value)
                     val bubbleX = (pointX - bubbleWidth / 2f).coerceIn(left, right - bubbleWidth)
                     val bubbleY = (pointY - 14f - bubbleHeight).coerceAtLeast(0f)
                     drawRoundRect(
