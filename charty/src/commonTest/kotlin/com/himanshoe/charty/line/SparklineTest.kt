@@ -98,4 +98,25 @@ class SparklineTest {
     fun config_rejectsNonPositiveDotRadius() {
         assertFailsWith<IllegalArgumentException> { SparklineConfig(lastPointDotRadius = 0f) }
     }
+
+    @Test
+    fun description_reportsCountEndpointsAndRange() {
+        assertEquals(
+            "Sparkline, 4 values from 3 to 9. Range: 1 to 9.",
+            buildSparklineDescription(listOf(3f, 1f, 5f, 9f)),
+        )
+    }
+
+    @Test
+    fun description_allEqualValues_reportsAFlatRange() {
+        assertEquals(
+            "Sparkline, 3 values from 7 to 7. Range: 7 to 7.",
+            buildSparklineDescription(listOf(7f, 7f, 7f)),
+        )
+    }
+
+    @Test
+    fun description_emptySeries() {
+        assertEquals("Empty sparkline.", buildSparklineDescription(emptyList()))
+    }
 }

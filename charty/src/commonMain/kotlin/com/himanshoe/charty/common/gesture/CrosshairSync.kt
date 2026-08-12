@@ -1,13 +1,21 @@
 package com.himanshoe.charty.common.gesture
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import com.himanshoe.charty.common.viewport.ViewPortState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 private const val DRIVEN_CROSSHAIR_Y = 0f
 private const val DRIVEN_CROSSHAIR_LABEL = ""
@@ -22,27 +30,28 @@ private const val DRIVEN_CROSSHAIR_LABEL = ""
  * horizontal position. Ownership is last-writer-wins: the moment another chart publishes, it takes
  * over and the previous owner becomes an observer.
  *
- * Create one instance per synced group with [rememberCrosshairSync] and enrol each chart with
- * [rememberParticipant].
+ * Create one instance per synced group with [rememberCrosshairSync] and share it with
+ * [CrosshairSyncScope]; charts inside that scope enrol themselves.
  */
 @Stable
 class CrosshairSyncState internal constructor() {
-    private val normalizedX: MutableState<Float?> = mutableStateOf(null)
-    private val ownerId: MutableState<String?> = mutableStateOf(null)
+    private val sharedState = MutableStateFlow<SharedCrosshair?>(null)
+
+    internal val shared: StateFlow<SharedCrosshair?> = sharedState.asStateFlow()
 
     /**
      * The shared crosshair position as a fraction in `0f..1f` across the plot width, or `null`
      * when no participant currently shows a crosshair.
      */
     val fraction: Float?
-        get() = normalizedX.value
+        get() = sharedState.value?.fraction
 
     /**
      * The id of the participant whose gesture produced the current [fraction], or `null` when no
      * crosshair is active.
      */
     val owner: String?
-        get() = ownerId.value
+        get() = sharedState.value?.ownerId
 
     /**
      * Publishes the crosshair position of the chart identified by [ownerId], making it the active
@@ -56,21 +65,29 @@ class CrosshairSyncState internal constructor() {
         ownerId: String,
         fraction: Float,
     ) {
-        this.ownerId.value = ownerId
-        normalizedX.value = fraction.coerceIn(minimumValue = 0f, maximumValue = 1f)
+        sharedState.update {
+            SharedCrosshair(
+                ownerId = ownerId,
+                fraction = fraction.coerceIn(minimumValue = 0f, maximumValue = 1f),
+            )
+        }
     }
 
     /**
      * Clears the shared crosshair if [ownerId] is the current owner. Requests from a participant
      * that does not own the crosshair are ignored, so an observer dismissing its mirrored guide
-     * can never cancel the owner's active gesture.
+     * can never cancel the owner's active gesture. The owner check and the clear happen as one
+     * atomic update, so a concurrent publish from another chart can never be lost.
      *
      * @param ownerId Stable id of the participant requesting the clear.
      */
     fun clear(ownerId: String) {
-        if (this.ownerId.value == ownerId) {
-            this.ownerId.value = null
-            normalizedX.value = null
+        sharedState.update { current ->
+            if (current?.ownerId == ownerId) {
+                null
+            } else {
+                current
+            }
         }
     }
 
@@ -81,15 +98,21 @@ class CrosshairSyncState internal constructor() {
      *
      * @param observerId Stable id of the observing chart within the synced group.
      */
-    fun fractionFor(observerId: String): Float? {
-        val activeOwner = ownerId.value ?: return null
-        return if (activeOwner == observerId) {
-            null
-        } else {
-            normalizedX.value
-        }
-    }
+    fun fractionFor(observerId: String): Float? = sharedState.value?.takeIf { it.ownerId != observerId }?.fraction
 }
+
+/**
+ * The group's active crosshair: which chart owns the gesture and where the guide sits. Held as a
+ * single value so the owner and the position can never be observed out of step.
+ *
+ * @property ownerId Stable id of the chart whose gesture produced [fraction].
+ * @property fraction Horizontal position as a fraction in `0f..1f` across the plot width.
+ */
+@Immutable
+internal data class SharedCrosshair(
+    val ownerId: String,
+    val fraction: Float,
+)
 
 /**
  * Converts a canvas pixel [x] into the normalised `0f..1f` fraction across a plot that starts at
@@ -133,47 +156,62 @@ fun crosshairXForFraction(
 
 /**
  * Creates and remembers a [CrosshairSyncState] shared by a group of stacked charts. Pass the same
- * instance to [rememberParticipant] for every chart in the group.
+ * instance to [CrosshairSyncScope] to share it across a group of charts.
  */
 @Composable
 fun rememberCrosshairSync(): CrosshairSyncState = remember { CrosshairSyncState() }
 
 /**
- * Enrols one chart in this synced-crosshair group and returns the [ChartCrosshair] to pass to the
- * chart's `crosshair` parameter.
+ * Shares one crosshair position across every crosshair-capable chart composed inside [content].
  *
- * The participant owns a [CrosshairManager] wired to the group in both directions. When this
- * chart's own crosshair moves — a [CrosshairState] carrying a snapped data item — its position is
- * published to the group as a normalised fraction of the plot width. While another participant
- * owns the gesture, this chart's manager is driven to show a mirrored guide at the shared
- * fraction. Plot pixel geometry is read from [viewPortState], so the same instance must also be
- * given to the chart via `ChartInteractionConfig(viewPortState = ...)`; the chart scaffold
- * populates its bounds on every draw pass.
+ * Each participating chart publishes its own crosshair while the user drags it, and every other
+ * chart in the scope mirrors that position as a guide line. Ownership is last-writer-wins, so
+ * moving to a different chart hands the crosshair over. Charts enrol automatically — no per-chart
+ * parameter is needed — but a chart only participates when it has a crosshair configured **and** an
+ * [com.himanshoe.charty.common.viewport.ViewPortState] in its `interactionConfig`, which supplies
+ * the plot geometry the shared fraction is resolved against.
  *
- * A mirrored guide carries no snapped data item, so no label is rendered for it and its marker dot
- * rests at the top of the plot; the vertical guide line is the shared element. Until charts adopt
- * an externally supplied manager (a pending `ChartCrosshair.manager` hook honoured by
- * `rememberChartCrosshair`), the returned crosshair behaves exactly like a plain [ChartCrosshair]
- * and the group state stays idle.
+ * A mirrored guide carries no snapped data item, so no label is drawn for it; the vertical guide
+ * line is the shared element.
  *
- * @param T The chart's data/point type.
- * @param ownerId Stable id for this chart, unique within the synced group.
- * @param viewPortState The chart's viewport state, used as the source of plot pixel geometry.
- * @param config Appearance of the guide line; defaults to a vertical-only guide, which reads best
- *   when mirrored across charts whose y-scales differ.
- * @param label Optional custom label for this chart's own crosshair, as on [ChartCrosshair].
+ * ```kotlin
+ * CrosshairSyncScope {
+ *     LineChart(data = { revenue }, crosshair = ChartCrosshair(), interactionConfig = topConfig)
+ *     LineChart(data = { costs }, crosshair = ChartCrosshair(), interactionConfig = bottomConfig)
+ * }
+ * ```
+ *
+ * @param sync The shared group state; defaults to one remembered for this scope.
+ * @param content The charts that share the crosshair.
  */
 @Composable
-fun <T> CrosshairSyncState.rememberParticipant(
+fun CrosshairSyncScope(
+    sync: CrosshairSyncState = rememberCrosshairSync(),
+    content: @Composable () -> Unit,
+) {
+    CompositionLocalProvider(LocalCrosshairSync provides sync) { content() }
+}
+
+/**
+ * The synced-crosshair group the current charts belong to, or `null` when they are not inside a
+ * [CrosshairSyncScope]. Charts read this internally to enrol themselves.
+ */
+val LocalCrosshairSync: ProvidableCompositionLocal<CrosshairSyncState?> =
+    staticCompositionLocalOf { null }
+
+/**
+ * Wires [manager] into [sync] in both directions: publishing this chart's own crosshair to the
+ * group and mirroring the group's position while another chart owns the gesture.
+ */
+@Composable
+internal fun <T> CrosshairSyncParticipantEffects(
+    sync: CrosshairSyncState,
     ownerId: String,
+    manager: CrosshairManager<T>,
     viewPortState: ViewPortState,
-    config: ChartCrosshairConfig = ChartCrosshairConfig(showHorizontalLine = false),
-    label: (@Composable CrosshairScope<T>.() -> Unit)? = null,
-): ChartCrosshair<T> {
-    val manager = rememberCrosshairManager<T>()
-    SyncPublishEffect(sync = this, ownerId = ownerId, manager = manager, viewPortState = viewPortState)
-    SyncMirrorEffect(sync = this, ownerId = ownerId, manager = manager, viewPortState = viewPortState)
-    return remember(this, ownerId, config, label) { ChartCrosshair(config = config, label = label) }
+) {
+    SyncPublishEffect(sync = sync, ownerId = ownerId, manager = manager, viewPortState = viewPortState)
+    SyncMirrorEffect(sync = sync, ownerId = ownerId, manager = manager, viewPortState = viewPortState)
 }
 
 /**
@@ -213,7 +251,8 @@ private fun <T> SyncPublishEffect(
  * Drives [manager] to mirror the group's shared fraction while another participant owns the
  * gesture. Mirrored states are pushed with a `null` item so [SyncPublishEffect] never re-publishes
  * them; when the shared fraction clears, the mirrored guide is dismissed unless this chart's own
- * gesture is active.
+ * gesture is active. The pixel position is resolved inside the observed snapshot so a plot that
+ * resizes while the mirror is showing moves the guide instead of leaving it at a stale pixel.
  */
 @Composable
 private fun <T> SyncMirrorEffect(
@@ -222,27 +261,30 @@ private fun <T> SyncMirrorEffect(
     manager: CrosshairManager<T>,
     viewPortState: ViewPortState,
 ) {
+    val shared by sync.shared.collectAsState()
     LaunchedEffect(sync, ownerId, manager, viewPortState) {
-        snapshotFlow { sync.fractionFor(observerId = ownerId) }
-            .collect { fraction ->
-                if (fraction != null) {
-                    manager.update(
-                        newState =
-                            CrosshairState(
-                                x =
-                                    crosshairXForFraction(
-                                        fraction = fraction,
-                                        plotLeft = viewPortState.chartLeft,
-                                        plotWidth = viewPortState.chartWidth,
-                                    ),
-                                y = DRIVEN_CROSSHAIR_Y,
-                                label = DRIVEN_CROSSHAIR_LABEL,
-                            ),
-                        item = null,
-                    )
-                } else if (manager.selectedItem == null) {
-                    manager.dismiss()
-                }
+        snapshotFlow {
+            shared?.takeIf { it.ownerId != ownerId }?.let { active ->
+                crosshairXForFraction(
+                    fraction = active.fraction,
+                    plotLeft = viewPortState.chartLeft,
+                    plotWidth = viewPortState.chartWidth,
+                )
             }
+        }.collect { mirroredX ->
+            if (mirroredX != null) {
+                manager.update(
+                    newState =
+                        CrosshairState(
+                            x = mirroredX,
+                            y = DRIVEN_CROSSHAIR_Y,
+                            label = DRIVEN_CROSSHAIR_LABEL,
+                        ),
+                    item = null,
+                )
+            } else if (manager.selectedItem == null) {
+                manager.dismiss()
+            }
+        }
     }
 }

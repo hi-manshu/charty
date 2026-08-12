@@ -28,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
-import com.himanshoe.charty.common.gesture.rememberCrosshairSync
-import com.himanshoe.charty.common.gesture.rememberParticipant
+import com.himanshoe.charty.common.gesture.CrosshairSyncScope
 import com.himanshoe.charty.common.viewport.rememberViewPortState
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -57,7 +57,7 @@ private fun relatedSeries(
  * Synchronized-crosshair demo: two stacked [LineChart]s over related series share one
  * `CrosshairSyncState`, so dragging on either chart is meant to show the guide line on both. The
  * full cross-chart mirroring waits on a small library hook (see the code panel); until it lands,
- * each chart's crosshair works normally and this screen demonstrates the sync API surface.
+ * dragging either chart moves a mirrored guide line on the other.
  */
 @Composable
 internal fun SyncedPlayground() {
@@ -75,35 +75,28 @@ internal fun SyncedPlayground() {
 
     val code =
         """
-        // One CrosshairSyncState shared by both stacked charts.
-        val sync = rememberCrosshairSync()
+        // Every crosshair-capable chart inside the scope shares one position.
+        CrosshairSyncScope {
+            val revenueViewport = rememberViewPortState()
+            LineChart(
+                data = { revenue },
+                crosshair = ChartCrosshair(
+                    config = ChartCrosshairConfig(dismissOnRelease = ${!pinOnRelease}),
+                ),
+                interactionConfig = ChartInteractionConfig(viewPortState = revenueViewport),
+            )
 
-        val revenueViewport = rememberViewPortState()
-        LineChart(
-            data = { revenue },
-            crosshair = sync.rememberParticipant(
-                ownerId = "revenue",
-                viewPortState = revenueViewport,
-                config = ChartCrosshairConfig(dismissOnRelease = ${!pinOnRelease}),
-            ),
-            interactionConfig = ChartInteractionConfig(viewPortState = revenueViewport),
-        )
-
-        val ordersViewport = rememberViewPortState()
-        LineChart(
-            data = { orders },
-            crosshair = sync.rememberParticipant(
-                ownerId = "orders",
-                viewPortState = ordersViewport,
-                config = ChartCrosshairConfig(dismissOnRelease = ${!pinOnRelease}),
-            ),
-            interactionConfig = ChartInteractionConfig(viewPortState = ordersViewport),
-        )
-
-        // Pending library hook for full cross-chart mirroring:
-        //   1) ChartCrosshair gains `val manager: CrosshairManager<T>? = null`
-        //   2) rememberChartCrosshair(enabled, external = crosshair?.manager) adopts it
-        // Until charts adopt the participant's manager, each guide stays chart-local.
+            val ordersViewport = rememberViewPortState()
+            LineChart(
+                data = { orders },
+                crosshair = ChartCrosshair(
+                    config = ChartCrosshairConfig(dismissOnRelease = ${!pinOnRelease}),
+                ),
+                interactionConfig = ChartInteractionConfig(viewPortState = ordersViewport),
+            )
+        }
+        // A chart participates when it has a crosshair AND a viewPortState (the plot geometry
+        // the shared fraction resolves against). Drag either chart; the other mirrors the guide.
         """.trimIndent()
 
     PlaygroundScaffold(
@@ -138,7 +131,7 @@ internal fun SyncedPlayground() {
             ColorRow(label = "Orders (bottom)", selected = bottomColor, onSelect = { bottomColor = it })
             ControlSection(title = "Status")
             Text(
-                text = "Drag across a chart to scrub its crosshair. Cross-chart mirroring activates once the ChartCrosshair.manager hook lands in the library.",
+                text = "Drag across a chart to scrub its crosshair. Drag either chart — the other mirrors the guide line at the same position.",
                 style = MaterialTheme.typography.bodySmall,
             )
         },
@@ -154,37 +147,30 @@ private fun SyncedCharts(
     pinOnRelease: Boolean,
     smooth: Boolean,
 ) {
-    val sync = rememberCrosshairSync()
     val crosshairConfig = ChartCrosshairConfig(showHorizontalLine = false, dismissOnRelease = !pinOnRelease)
-    Column(modifier = Modifier.fillMaxSize()) {
-        val topViewport = rememberViewPortState()
-        LineChart(
-            data = { topData },
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            color = ChartyColor.Solid(topColor),
-            lineConfig = LineChartConfig(smoothCurve = smooth, animation = Animation.Disabled),
-            crosshair =
-                sync.rememberParticipant<LineData>(
-                    ownerId = "revenue",
-                    viewPortState = topViewport,
-                    config = crosshairConfig,
-                ),
-            interactionConfig = ChartInteractionConfig(viewPortState = topViewport),
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        val bottomViewport = rememberViewPortState()
-        LineChart(
-            data = { bottomData },
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            color = ChartyColor.Solid(bottomColor),
-            lineConfig = LineChartConfig(smoothCurve = smooth, animation = Animation.Disabled),
-            crosshair =
-                sync.rememberParticipant<LineData>(
-                    ownerId = "orders",
-                    viewPortState = bottomViewport,
-                    config = crosshairConfig,
-                ),
-            interactionConfig = ChartInteractionConfig(viewPortState = bottomViewport),
-        )
+    CrosshairSyncScope {
+        Column(modifier = Modifier.fillMaxSize()) {
+            val topViewport = rememberViewPortState()
+            LineChart(
+                data = { topData },
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                color = ChartyColor.Solid(topColor),
+                lineConfig = LineChartConfig(smoothCurve = smooth, animation = Animation.Disabled),
+                crosshair =
+                    ChartCrosshair(config = crosshairConfig),
+                interactionConfig = ChartInteractionConfig(viewPortState = topViewport),
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            val bottomViewport = rememberViewPortState()
+            LineChart(
+                data = { bottomData },
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                color = ChartyColor.Solid(bottomColor),
+                lineConfig = LineChartConfig(smoothCurve = smooth, animation = Animation.Disabled),
+                crosshair =
+                    ChartCrosshair(config = crosshairConfig),
+                interactionConfig = ChartInteractionConfig(viewPortState = bottomViewport),
+            )
+        }
     }
 }

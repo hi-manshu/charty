@@ -8,6 +8,7 @@ import com.himanshoe.charty.heatmap.data.HeatmapCell
 import com.himanshoe.charty.heatmap.internal.HEATMAP_MIN_RAMP_ALPHA
 import com.himanshoe.charty.heatmap.internal.buildMatrixHeatmapDescription
 import com.himanshoe.charty.heatmap.internal.computeMatrixGrid
+import com.himanshoe.charty.heatmap.internal.flattenCells
 import com.himanshoe.charty.heatmap.internal.formatHeatmapValue
 import com.himanshoe.charty.heatmap.internal.heatmapContrastTextColor
 import com.himanshoe.charty.heatmap.internal.interpolateHeatmapColor
@@ -79,6 +80,29 @@ class MatrixHeatmapHelpersTest {
     }
 
     @Test
+    fun flattenCells_isRowMajorWithNullsForGaps() {
+        val grid =
+            computeMatrixGrid(
+                listOf(
+                    HeatmapCell(rowLabel = "A", columnLabel = "x", value = 1f),
+                    HeatmapCell(rowLabel = "A", columnLabel = "y", value = 2f),
+                    HeatmapCell(rowLabel = "B", columnLabel = "y", value = 3f),
+                ),
+            )
+        val flat = grid.flattenCells()
+        assertEquals(4, flat.size)
+        assertEquals(1f, flat[0]?.value)
+        assertEquals(2f, flat[1]?.value)
+        assertEquals(null, flat[2])
+        assertEquals(3f, flat[3]?.value)
+    }
+
+    @Test
+    fun flattenCells_emptyGridIsEmpty() {
+        assertTrue(computeMatrixGrid(emptyList()).flattenCells().isEmpty())
+    }
+
+    @Test
     fun normalize_spansRangeAndClamps() {
         assertEquals(0f, normalizeHeatmapValue(value = 0f, minValue = 0f, maxValue = 10f))
         assertEquals(0.5f, normalizeHeatmapValue(value = 5f, minValue = 0f, maxValue = 10f))
@@ -92,6 +116,20 @@ class MatrixHeatmapHelpersTest {
     fun normalize_equalMinAndMax_returnsFullIntensity() {
         assertEquals(1f, normalizeHeatmapValue(value = 7f, minValue = 7f, maxValue = 7f))
         assertEquals(1f, normalizeHeatmapValue(value = 0f, minValue = 3f, maxValue = 3f))
+    }
+
+    @Test
+    fun normalize_invertedRange_returnsFullIntensity() {
+        assertEquals(1f, normalizeHeatmapValue(value = 5f, minValue = 10f, maxValue = 0f))
+    }
+
+    @Test
+    fun normalize_singleCellDataset_rendersAtFullIntensity() {
+        val grid = computeMatrixGrid(listOf(HeatmapCell(rowLabel = "r", columnLabel = "c", value = 42f)))
+        assertEquals(
+            1f,
+            normalizeHeatmapValue(value = 42f, minValue = grid.minValue, maxValue = grid.maxValue),
+        )
     }
 
     @Test

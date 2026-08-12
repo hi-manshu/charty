@@ -7,6 +7,7 @@ import com.himanshoe.charty.gauge.internal.gaugeTickValues
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class GaugeMathTest {
     @Test
@@ -181,5 +182,73 @@ class GaugeMathTest {
         assertFailsWith<IllegalArgumentException> {
             gaugeTickValues(minValue = 0f, maxValue = 100f, tickCount = 1)
         }
+    }
+
+    @Test
+    fun tickValues_rejectsCollapsedRange() {
+        assertFailsWith<IllegalArgumentException> {
+            gaugeTickValues(minValue = 50f, maxValue = 50f, tickCount = 5)
+        }
+    }
+
+    @Test
+    fun tickValues_areMonotonicallyIncreasing() {
+        val ticks = gaugeTickValues(minValue = -20f, maxValue = 35f, tickCount = 9)
+        ticks.zipWithNext { previous, next ->
+            assertTrue(next > previous, "ticks must ascend but $next followed $previous")
+        }
+        assertEquals(expected = -20f, actual = ticks.first())
+        assertEquals(expected = 35f, actual = ticks.last())
+    }
+
+    @Test
+    fun bandArc_spanningWholeRangeCoversTheFullSweep() {
+        val arc =
+            gaugeBandArc(
+                fromValue = 0f,
+                toValue = 100f,
+                minValue = 0f,
+                maxValue = 100f,
+                startAngleDegrees = 135f,
+                sweepAngleDegrees = 270f,
+            )
+        assertEquals(expected = 135f, actual = arc.startAngleDegrees, absoluteTolerance = 0.001f)
+        assertEquals(expected = 270f, actual = arc.sweepAngleDegrees, absoluteTolerance = 0.001f)
+    }
+
+    @Test
+    fun bandArc_invertedSpanNeverProducesNegativeSweep() {
+        val arc =
+            gaugeBandArc(
+                fromValue = 80f,
+                toValue = 20f,
+                minValue = 0f,
+                maxValue = 100f,
+                startAngleDegrees = 135f,
+                sweepAngleDegrees = 270f,
+            )
+        assertEquals(expected = 0f, actual = arc.sweepAngleDegrees, absoluteTolerance = 0.001f)
+    }
+
+    @Test
+    fun angle_fullCircleSweepKeepsEndpointsOneRevolutionApart() {
+        val start =
+            gaugeAngleForValue(
+                value = 0f,
+                minValue = 0f,
+                maxValue = 100f,
+                startAngleDegrees = -90f,
+                sweepAngleDegrees = 360f,
+            )
+        val end =
+            gaugeAngleForValue(
+                value = 100f,
+                minValue = 0f,
+                maxValue = 100f,
+                startAngleDegrees = -90f,
+                sweepAngleDegrees = 360f,
+            )
+        assertEquals(expected = -90f, actual = start)
+        assertEquals(expected = 270f, actual = end)
     }
 }

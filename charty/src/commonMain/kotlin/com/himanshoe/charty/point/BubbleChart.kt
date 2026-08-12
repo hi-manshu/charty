@@ -107,7 +107,10 @@ fun BubbleChart(
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<BubbleData>(crosshairConfig != null)
+        rememberChartCrosshair<BubbleData>(
+            enabled = crosshairConfig != null,
+            viewPortState = interactionConfig.viewPortState,
+        )
     val sizeInfo = remember(dataList) { calculateBubbleSizeInfo(dataList) }
     val (minValue, maxValue) =
         rememberAnimatedRange(

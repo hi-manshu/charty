@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -61,7 +62,14 @@ private data class GaugeDrawParams(
     val displayedValue: Float,
     val progressColor: ChartyColor,
     val config: AngularGaugeConfig,
+    val ticks: List<GaugeTick>,
     val textMeasurer: TextMeasurer,
+)
+
+/** A major tick resolved once per configuration: its dial direction and its pre-measured label. */
+private data class GaugeTick(
+    val direction: Offset,
+    val label: TextLayoutResult,
 )
 
 /** Resolved pixel geometry of the dial for the current canvas size. */
@@ -139,7 +147,7 @@ fun AngularGaugeChart(
             Modifier
         }
     val animatedValue = remember(config.minValue, config.maxValue) { Animatable(config.minValue) }
-    LaunchedEffect(targetValue, config.animation) {
+    LaunchedEffect(animatedValue, targetValue, config.animation) {
         if (config.animation.isAnimated) {
             animatedValue.animateTo(targetValue = targetValue, animationSpec = config.animation.toFloatSpec())
         } else {
@@ -147,6 +155,7 @@ fun AngularGaugeChart(
         }
     }
     val textMeasurer = rememberTextMeasurer()
+    val ticks = rememberGaugeTicks(config = config, textMeasurer = textMeasurer)
     Box(
         modifier = modifier.then(semanticsModifier),
         contentAlignment = Alignment.Center,
@@ -158,12 +167,48 @@ fun AngularGaugeChart(
                         displayedValue = animatedValue.value,
                         progressColor = color,
                         config = config,
+                        ticks = ticks,
                         textMeasurer = textMeasurer,
                     ),
             )
         }
     }
 }
+
+/**
+ * Resolves the dial's major ticks once per configuration: their tick values, dial directions, and
+ * measured labels, so the draw phase neither formats nor measures text on every animation frame.
+ */
+@Composable
+private fun rememberGaugeTicks(
+    config: AngularGaugeConfig,
+    textMeasurer: TextMeasurer,
+): List<GaugeTick> =
+    remember(config, textMeasurer) {
+        gaugeTickValues(
+            minValue = config.minValue,
+            maxValue = config.maxValue,
+            tickCount = config.tickCount,
+        ).map { tickValue ->
+            GaugeTick(
+                direction =
+                    gaugeDirection(
+                        gaugeAngleForValue(
+                            value = tickValue,
+                            minValue = config.minValue,
+                            maxValue = config.maxValue,
+                            startAngleDegrees = config.startAngleDegrees,
+                            sweepAngleDegrees = config.sweepAngleDegrees,
+                        ),
+                    ),
+                label =
+                    textMeasurer.measure(
+                        text = config.tickLabelFormatter(tickValue),
+                        style = config.tickLabelTextStyle,
+                    ),
+            )
+        }
+    }
 
 /** Builds the default screen-reader description for the gauge. */
 private fun buildGaugeDescription(
@@ -220,6 +265,9 @@ private fun DrawScope.drawPlotBands(
     val bandRadius =
         geometry.arcRadius - geometry.trackWidth / HALF_DIVIDER -
             geometry.half * BAND_GAP_FRACTION - bandWidth / HALF_DIVIDER
+    if (bandRadius <= 0f) {
+        return
+    }
     config.plotBands.fastForEach { band ->
         val arc =
             gaugeBandArc(
@@ -277,41 +325,21 @@ private fun DrawScope.drawTicks(
     val tickStartRadius = geometry.outerRadius + geometry.half * TICK_GAP_FRACTION
     val tickEndRadius = tickStartRadius + geometry.half * TICK_LENGTH_FRACTION
     val labelRadius = tickEndRadius + geometry.half * TICK_LABEL_OFFSET_FRACTION
-    val tickValues =
-        gaugeTickValues(
-            minValue = config.minValue,
-            maxValue = config.maxValue,
-            tickCount = config.tickCount,
-        )
-    tickValues.fastForEach { tickValue ->
-        val angleDegrees =
-            gaugeAngleForValue(
-                value = tickValue,
-                minValue = config.minValue,
-                maxValue = config.maxValue,
-                startAngleDegrees = config.startAngleDegrees,
-                sweepAngleDegrees = config.sweepAngleDegrees,
-            )
-        val direction = gaugeDirection(angleDegrees)
+    params.ticks.fastForEach { tick ->
         drawLine(
             brush = tickBrush,
-            start = geometry.center + direction * tickStartRadius,
-            end = geometry.center + direction * tickEndRadius,
+            start = geometry.center + tick.direction * tickStartRadius,
+            end = geometry.center + tick.direction * tickEndRadius,
             strokeWidth = geometry.half * TICK_STROKE_FRACTION,
             cap = StrokeCap.Round,
         )
-        val layout =
-            params.textMeasurer.measure(
-                text = config.tickLabelFormatter(tickValue),
-                style = config.tickLabelTextStyle,
-            )
-        val labelCenter = geometry.center + direction * labelRadius
+        val labelCenter = geometry.center + tick.direction * labelRadius
         drawText(
-            textLayoutResult = layout,
+            textLayoutResult = tick.label,
             topLeft =
                 Offset(
-                    x = labelCenter.x - layout.size.width / HALF_DIVIDER,
-                    y = labelCenter.y - layout.size.height / HALF_DIVIDER,
+                    x = labelCenter.x - tick.label.size.width / HALF_DIVIDER,
+                    y = labelCenter.y - tick.label.size.height / HALF_DIVIDER,
                 ),
         )
     }
@@ -333,8 +361,10 @@ private fun DrawScope.drawNeedle(
     val direction = gaugeDirection(angleDegrees)
     val perpendicular = Offset(x = -direction.y, y = direction.x)
     val needleLength =
-        geometry.arcRadius - geometry.trackWidth / HALF_DIVIDER -
-            geometry.half * NEEDLE_TIP_CLEARANCE_FRACTION
+        (
+            geometry.arcRadius - geometry.trackWidth / HALF_DIVIDER -
+                geometry.half * NEEDLE_TIP_CLEARANCE_FRACTION
+        ).coerceAtLeast(0f)
     val tip = geometry.center + direction * needleLength
     val tail = geometry.center - direction * (geometry.half * NEEDLE_TAIL_FRACTION)
     val baseHalfWidth = geometry.half * NEEDLE_BASE_HALF_WIDTH_FRACTION

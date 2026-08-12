@@ -34,6 +34,21 @@ class ActivityRingsLayoutTest {
     }
 
     @Test
+    fun sweepFraction_nonPositiveTargetYieldsZeroInsteadOfNaN() {
+        assertEquals(0f, ringSweepFraction(value = 10f, target = 0f), EPSILON)
+        assertEquals(0f, ringSweepFraction(value = 0f, target = 0f), EPSILON)
+        assertEquals(0f, ringSweepFraction(value = 10f, target = -5f), EPSILON)
+    }
+
+    @Test
+    fun ringLayouts_singleRingIsCenteredOnTheOuterEdge() {
+        val layouts = ringLayouts(ringCount = 1, outerRadius = 50f, thicknessFraction = 0.2f, ringGapFraction = 0.05f)
+        assertEquals(1, layouts.size)
+        assertEquals(10f, layouts.first().strokeWidth, EPSILON)
+        assertEquals(45f, layouts.first().centerRadius, EPSILON)
+    }
+
+    @Test
     fun requiredRadiusFraction_sumsThicknessAndGaps() {
         assertEquals(
             3 * 0.1f + 2 * 0.05f,

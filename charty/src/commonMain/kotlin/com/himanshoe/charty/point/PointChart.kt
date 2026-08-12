@@ -338,7 +338,10 @@ fun PointChart(
     val textMeasurer = rememberTextMeasurer()
 
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<PointData>(effectiveCrosshairConfig != null)
+        rememberChartCrosshair<PointData>(
+            enabled = effectiveCrosshairConfig != null,
+            viewPortState = interactionConfig.viewPortState,
+        )
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {

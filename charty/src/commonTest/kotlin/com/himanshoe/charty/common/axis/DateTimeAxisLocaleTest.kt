@@ -57,6 +57,59 @@ class DateTimeAxisLocaleTest {
     }
 
     @Test
+    fun timeAndDayTicksUseTheSuppliedFormatters() {
+        val locale =
+            DateTimeAxisLocale(
+                monthNamesShort = GERMAN_MONTHS,
+                formatTime = { hour, minute -> "${hour}h$minute" },
+                formatDay = { monthName, day -> "$day. $monthName" },
+            )
+        val start = dateToEpochDay(year = 2026, month = 3, day = 2) * 86_400_000L
+        val hourly =
+            selectDateTimeTicks(
+                startEpochMillis = start,
+                endEpochMillis = start + 4 * 3_600_000L,
+                maxTicks = 6,
+                locale = locale,
+            ).map { it.label }
+        assertEquals(listOf("0h0", "1h0", "2h0", "3h0", "4h0"), hourly)
+        val daily =
+            selectDateTimeTicks(
+                startEpochMillis = start,
+                endEpochMillis = start + 3 * 86_400_000L,
+                maxTicks = 5,
+                locale = locale,
+            ).map { it.label }
+        assertEquals(listOf("2. Mär", "3. Mär", "4. Mär", "5. Mär"), daily)
+    }
+
+    @Test
+    fun axisLabelsUseTheSuppliedLocale() {
+        val start = dateToEpochDay(year = 2026, month = 3, day = 2) * 86_400_000L
+        val values = List(4) { start + it * 86_400_000L }
+        val labels =
+            dateTimeAxisLabels(
+                epochMillisValues = values,
+                maxLabels = 4,
+                locale = DateTimeAxisLocale(monthNamesShort = GERMAN_MONTHS),
+            )
+        assertEquals(listOf("Mär 2", "Mär 3", "Mär 4", "Mär 5"), labels)
+    }
+
+    @Test
+    fun fallbackTickUsesTheSuppliedLocale() {
+        val instant = dateToEpochDay(year = 2026, month = 3, day = 2) * 86_400_000L + 30_000L
+        val ticks =
+            selectDateTimeTicks(
+                startEpochMillis = instant,
+                endEpochMillis = instant,
+                maxTicks = 3,
+                locale = DateTimeAxisLocale(formatTime = { hour, minute -> "T$hour:$minute" }),
+            )
+        assertEquals(listOf("T0:0"), ticks.map { it.label })
+    }
+
+    @Test
     fun wrongMonthNameCountIsRejected() {
         assertFailsWith<IllegalArgumentException> {
             DateTimeAxisLocale(monthNamesShort = listOf("Jan", "Feb"))

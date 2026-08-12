@@ -180,7 +180,10 @@ fun StackedAreaChart(
     val areaSegmentBounds = remember { mutableListOf<Triple<Rect, Path, StackedAreaPoint>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, LineGroup>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<LineGroup>(effectiveLineConfig.crosshairConfig != null)
+        rememberChartCrosshair<LineGroup>(
+            enabled = effectiveLineConfig.crosshairConfig != null,
+            viewPortState = interactionConfig.viewPortState,
+        )
     val textMeasurer = rememberTextMeasurer()
 
     LaunchedEffect(lineConfig.animation) {

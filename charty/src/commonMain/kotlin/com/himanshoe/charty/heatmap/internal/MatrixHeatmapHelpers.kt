@@ -65,6 +65,18 @@ internal fun computeMatrixGrid(cells: List<HeatmapCell>): MatrixGrid {
 }
 
 /**
+ * Flattens the grid into a row-major list with one entry per grid position — the cell occupying it,
+ * or `null` where there is no data. Indexing a list keeps the draw loop from allocating a
+ * `Pair` key for every position on every frame.
+ */
+internal fun MatrixGrid.flattenCells(): List<HeatmapCell?> {
+    val columns = columnLabels.size
+    return List(rowLabels.size * columns) { index ->
+        cellMap[index / columns to index % columns]
+    }
+}
+
+/**
  * Normalises [value] into the `[0, 1]` range spanned by [minValue] and [maxValue].
  *
  * When the dataset has no spread (`minValue == maxValue`, or an inverted range) every cell maps

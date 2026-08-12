@@ -170,7 +170,10 @@ fun ComboChart(
     val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, ComboChartData>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<ComboChartData>(effectiveComboConfig.crosshairConfig != null)
+        rememberChartCrosshair<ComboChartData>(
+            enabled = effectiveComboConfig.crosshairConfig != null,
+            viewPortState = interactionConfig.viewPortState,
+        )
     val textMeasurer = rememberTextMeasurer()
 
     val chartDescription =

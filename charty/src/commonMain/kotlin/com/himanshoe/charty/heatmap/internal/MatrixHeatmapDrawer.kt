@@ -26,8 +26,10 @@ private const val HALF = 2f
  * @property measuredRowLabels Pre-measured row labels, index-aligned with [MatrixGrid.rowLabels].
  * @property measuredColumnLabels Pre-measured column labels, index-aligned with
  *   [MatrixGrid.columnLabels].
- * @property measuredValues Pre-measured in-cell value texts keyed by (rowIndex, columnIndex);
- *   empty when values are hidden.
+ * @property flatCells One entry per grid position in row-major order: the cell occupying it, or
+ *   `null` where there is no data.
+ * @property measuredValues Pre-measured in-cell value texts in the same row-major order as
+ *   [flatCells]; empty when values are hidden.
  * @property animationProgress Overall entry-animation progress in `[0, 1]`.
  * @property cellBounds Cleared and refilled each frame with the bounds of visible data cells for
  *   tap hit-testing.
@@ -37,7 +39,8 @@ internal data class MatrixDrawSpec(
     val config: MatrixHeatmapConfig,
     val measuredRowLabels: List<TextLayoutResult>,
     val measuredColumnLabels: List<TextLayoutResult>,
-    val measuredValues: Map<Pair<Int, Int>, TextLayoutResult>,
+    val flatCells: List<HeatmapCell?>,
+    val measuredValues: List<TextLayoutResult?>,
     val animationProgress: Float,
     val cellBounds: MutableList<Pair<Rect, HeatmapCell>>,
 )
@@ -82,7 +85,13 @@ internal fun DrawScope.drawMatrixHeatmap(spec: MatrixDrawSpec) {
     drawMatrixColumnLabels(spec = spec, geometry = geometry, rows = rows)
     for (rowIndex in 0 until rows) {
         for (columnIndex in 0 until columns) {
-            drawMatrixCell(spec = spec, geometry = geometry, rowIndex = rowIndex, columnIndex = columnIndex)
+            drawMatrixCell(
+                spec = spec,
+                geometry = geometry,
+                rowIndex = rowIndex,
+                columnIndex = columnIndex,
+                flatIndex = rowIndex * columns + columnIndex,
+            )
         }
     }
 }
@@ -134,8 +143,9 @@ internal fun DrawScope.drawMatrixCell(
     geometry: MatrixCellGeometry,
     rowIndex: Int,
     columnIndex: Int,
+    flatIndex: Int,
 ) {
-    val cell = spec.grid.cellMap[rowIndex to columnIndex]
+    val cell = spec.flatCells[flatIndex]
     val progress =
         matrixCellProgress(
             progress = spec.animationProgress,
@@ -178,7 +188,7 @@ internal fun DrawScope.drawMatrixCell(
         drawMatrixCellValue(
             spec = spec,
             geometry = geometry,
-            cellKey = rowIndex to columnIndex,
+            flatIndex = flatIndex,
             cellBackground = color,
             cellTopLeft = Offset(left, top),
             progress = progress,
@@ -192,7 +202,7 @@ internal fun DrawScope.drawMatrixCell(
 private fun DrawScope.drawMatrixCellValue(
     spec: MatrixDrawSpec,
     geometry: MatrixCellGeometry,
-    cellKey: Pair<Int, Int>,
+    flatIndex: Int,
     cellBackground: Color,
     cellTopLeft: Offset,
     progress: Float,
@@ -200,7 +210,7 @@ private fun DrawScope.drawMatrixCellValue(
     if (!spec.config.showValues || progress < VALUE_TEXT_MIN_PROGRESS) {
         return
     }
-    val measured = spec.measuredValues[cellKey]
+    val measured = spec.measuredValues.getOrNull(flatIndex)
     if (measured == null || measured.size.width > geometry.cellWidth || measured.size.height > geometry.cellHeight) {
         return
     }

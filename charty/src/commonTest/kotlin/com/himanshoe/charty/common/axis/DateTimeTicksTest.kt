@@ -168,6 +168,59 @@ class DateTimeTicksTest {
     }
 
     @Test
+    fun tickCount_neverExceedsMaxTicks_andIsNeverEmpty() {
+        val start = millisOf(year = 2024, month = 3, day = 7, hour = 13, minute = 41)
+        val ranges =
+            listOf(
+                0L,
+                1L,
+                MINUTE_MS,
+                7 * MINUTE_MS,
+                HOUR_MS,
+                5 * HOUR_MS,
+                DAY_MS,
+                9 * DAY_MS,
+                40 * DAY_MS,
+                200 * DAY_MS,
+                900 * DAY_MS,
+                40 * 365 * DAY_MS,
+                900 * 365 * DAY_MS,
+            )
+        ranges.forEach { range ->
+            for (maxTicks in 1..8) {
+                val ticks =
+                    selectDateTimeTicks(
+                        startEpochMillis = start,
+                        endEpochMillis = start + range,
+                        maxTicks = maxTicks,
+                    )
+                assertTrue(ticks.isNotEmpty(), "range $range with maxTicks $maxTicks produced no ticks")
+                assertTrue(
+                    ticks.size <= maxTicks,
+                    "range $range with maxTicks $maxTicks produced ${ticks.size} ticks",
+                )
+                assertTrue(
+                    ticks.zipWithNext().all { (previous, next) -> next.epochMillis > previous.epochMillis },
+                    "range $range with maxTicks $maxTicks produced unordered ticks",
+                )
+                assertTrue(
+                    ticks.all { it.label.isNotEmpty() },
+                    "range $range with maxTicks $maxTicks produced an empty label",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun ticksBeforeTheEpoch_snapCorrectly() {
+        val start = millisOf(year = 1965, month = 11, day = 20)
+        val end = millisOf(year = 1966, month = 3, day = 5)
+        val ticks = selectDateTimeTicks(startEpochMillis = start, endEpochMillis = end, maxTicks = 6)
+        assertEquals(expected = listOf("Dec", "Jan '66", "Feb", "Mar"), actual = ticks.map { it.label })
+        assertEquals(expected = millisOf(year = 1965, month = 12, day = 1), actual = ticks.first().epochMillis)
+    }
+
+    @Test
     fun dateToEpochDay_isInverseOfEpochDayToDate() {
         assertEquals(expected = 0L, actual = dateToEpochDay(year = 1970, month = 1, day = 1))
         assertEquals(expected = 19723L, actual = dateToEpochDay(year = 2024, month = 1, day = 1))

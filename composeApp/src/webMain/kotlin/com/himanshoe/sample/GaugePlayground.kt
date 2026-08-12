@@ -66,6 +66,24 @@ internal fun GaugePlayground() {
             emptyList()
         }
 
+    val bandsCode =
+        if (showBands) {
+            """listOf(
+                    GaugeBand(fromValue = ${fc(
+                minValue.toFloat(),
+            )}, toValue = ${fc(minValue + range * 0.6f)}, color = ChartyColor.Solid(Color(${colorHex(bandSafeColor)}))),
+                    GaugeBand(fromValue = ${fc(
+                minValue + range * 0.6f,
+            )}, toValue = ${fc(
+                minValue + range * 0.85f,
+            )}, color = ChartyColor.Solid(Color(${colorHex(bandWarnColor)}))),
+                    GaugeBand(fromValue = ${fc(
+                minValue + range * 0.85f,
+            )}, toValue = ${fc(maxValue.toFloat())}, color = ChartyColor.Solid(Color(${colorHex(bandDangerColor)}))),
+                )"""
+        } else {
+            "emptyList()"
+        }
     val code =
         """
         AngularGaugeChart(
@@ -75,7 +93,7 @@ internal fun GaugePlayground() {
                 minValue = ${minValue}f,
                 maxValue = ${maxValue}f,
                 tickCount = $tickCount,
-                plotBands = ${if (showBands) "zoneBands" else "emptyList()"},
+                plotBands = $bandsCode,
                 needleColor = ChartyColor.Solid(Color(${colorHex(color)})),
                 showValueLabel = $showValueLabel,
                 animation = Animation.Default,

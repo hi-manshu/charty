@@ -7,10 +7,12 @@ import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.himanshoe.charty.common.viewport.ViewPortState
 
 /**
  * Holds the current position and value label for the crosshair overlay.
@@ -66,10 +68,7 @@ class CrosshairManager<T> {
     /**
      * Hides the crosshair by clearing [state] and [selectedItem].
      */
-    fun dismiss() {
-        state = null
-        selectedItem = null
-    }
+    fun dismiss() = update(newState = null, item = null)
 
     /**
      * Returns `true` when the crosshair is currently visible.
@@ -109,18 +108,37 @@ internal class AnimatedCrosshair(
  *     rememberChartCrosshair<LineData>(lineConfig.crosshairConfig != null)
  * ```
  *
+ * When the chart is inside a [CrosshairSyncScope] and [viewPortState] is supplied, the manager is
+ * also enrolled in the synced group: its own gesture is published to the group and, while another
+ * chart owns the gesture, it mirrors the shared position.
+ *
  * @param enabled Whether the crosshair is configured for this chart (typically
  *   `config.crosshairConfig != null`). When `false`, both returned values are `null`.
+ * @param viewPortState The chart's viewport state, used as the source of plot pixel geometry when
+ *   syncing across charts. `null` (the default) disables syncing for this chart.
  * @return A [Pair] of `(manager, animatedCrosshair)`.
  */
 @Composable
-internal fun <T> rememberChartCrosshair(enabled: Boolean): Pair<CrosshairManager<T>?, AnimatedCrosshair?> {
+internal fun <T> rememberChartCrosshair(
+    enabled: Boolean,
+    viewPortState: ViewPortState? = null,
+): Pair<CrosshairManager<T>?, AnimatedCrosshair?> {
     val manager =
         if (enabled) {
             rememberCrosshairManager<T>()
         } else {
             null
         }
+    val sync = LocalCrosshairSync.current
+    val ownerId = currentCompositeKeyHash.toString()
+    if (manager != null && sync != null && viewPortState != null) {
+        CrosshairSyncParticipantEffects(
+            sync = sync,
+            ownerId = ownerId,
+            manager = manager,
+            viewPortState = viewPortState,
+        )
+    }
     val animated = rememberAnimatedCrosshairState(manager?.state)
     return manager to animated
 }

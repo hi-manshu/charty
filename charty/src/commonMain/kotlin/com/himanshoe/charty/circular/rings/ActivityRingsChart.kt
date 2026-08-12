@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -63,6 +64,8 @@ private val DEFAULT_RING_PALETTE =
  *   colors every ring the same, a [ChartyColor.Gradient] assigns its colors per ring, cycling when
  *   there are more rings than colors. Defaults to a three-color activity palette.
  * @param config Appearance and behavior configuration, see [ActivityRingsConfig].
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an
+ *   empty string to suppress it.
  *
  * Example usage:
  * ```kotlin
@@ -88,13 +91,27 @@ fun ActivityRingsChart(
     modifier: Modifier = Modifier,
     colors: ChartyColor = DEFAULT_RING_PALETTE,
     config: ActivityRingsConfig = ActivityRingsConfig(),
+    accessibilityDescription: String? = null,
 ) {
     val ringsList by remember(data) { derivedStateOf { data() } }
     if (ringsList.isEmpty()) {
         ChartEmptyState(modifier = modifier)
         return
     }
-    val chartDescription = remember(ringsList) { buildActivityRingsDescription(ringsList) }
+    val chartDescription =
+        remember(ringsList, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null -> buildActivityRingsDescription(ringsList)
+                else -> accessibilityDescription
+            }
+        }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
     val ringBrushes =
         remember(ringsList, colors) {
             ringsList.fastMapIndexed { index, ring ->
@@ -103,25 +120,50 @@ fun ActivityRingsChart(
         }
     val animationProgress = rememberChartAnimation(animation = config.animation)
     val textMeasurer = rememberTextMeasurer()
+    val ringLabels = rememberRingLabels(ringsList = ringsList, config = config, textMeasurer = textMeasurer)
     Canvas(
-        modifier = modifier.semantics { contentDescription = chartDescription },
+        modifier = modifier.then(semanticsModifier),
     ) {
         drawActivityRings(
             ringsList = ringsList,
             ringBrushes = ringBrushes,
+            ringLabels = ringLabels,
             config = config,
             progress = animationProgress.value,
-            textMeasurer = textMeasurer,
         )
     }
 }
 
+/**
+ * Measures every ring's label once per data/style change, so the draw phase never formats or
+ * measures text while the sweeps animate. Returns an empty list when labels are hidden.
+ */
+@Composable
+private fun rememberRingLabels(
+    ringsList: List<RingData>,
+    config: ActivityRingsConfig,
+    textMeasurer: TextMeasurer,
+): List<TextLayoutResult?> =
+    remember(ringsList, config.showLabels, config.labelFormatter, config.labelTextStyle, textMeasurer) {
+        if (!config.showLabels) {
+            return@remember emptyList()
+        }
+        ringsList.map { ring ->
+            val text = config.labelFormatter(ring)
+            if (text.isEmpty()) {
+                null
+            } else {
+                textMeasurer.measure(text = text, style = config.labelTextStyle)
+            }
+        }
+    }
+
 private fun DrawScope.drawActivityRings(
     ringsList: List<RingData>,
     ringBrushes: List<Brush>,
+    ringLabels: List<TextLayoutResult?>,
     config: ActivityRingsConfig,
     progress: Float,
-    textMeasurer: TextMeasurer,
 ) {
     val outerRadius = size.minDimension / HALF_DIVIDER
     val center = Offset(x = size.width / HALF_DIVIDER, y = size.height / HALF_DIVIDER)
@@ -132,6 +174,9 @@ private fun DrawScope.drawActivityRings(
             thicknessFraction = config.ringThicknessFraction,
             ringGapFraction = config.ringGapFraction,
         )
+    if (layouts.isEmpty()) {
+        return
+    }
     val cap =
         if (config.roundedCaps) {
             StrokeCap.Round
@@ -167,31 +212,25 @@ private fun DrawScope.drawActivityRings(
                 style = stroke,
             )
         }
-        if (config.showLabels) {
+        val measuredLabel = ringLabels.getOrNull(index)
+        if (measuredLabel != null) {
             drawRingLabel(
-                ring = ring,
+                textLayoutResult = measuredLabel,
                 layout = layout,
                 center = center,
-                config = config,
-                textMeasurer = textMeasurer,
+                startAngleDegrees = config.startAngleDegrees,
             )
         }
     }
 }
 
 private fun DrawScope.drawRingLabel(
-    ring: RingData,
+    textLayoutResult: TextLayoutResult,
     layout: RingLayout,
     center: Offset,
-    config: ActivityRingsConfig,
-    textMeasurer: TextMeasurer,
+    startAngleDegrees: Float,
 ) {
-    val text = config.labelFormatter(ring)
-    if (text.isEmpty()) {
-        return
-    }
-    val textLayoutResult = textMeasurer.measure(text = text, style = config.labelTextStyle)
-    val angleRad = config.startAngleDegrees * DEGREES_TO_RADIANS
+    val angleRad = startAngleDegrees * DEGREES_TO_RADIANS
     val labelX = center.x + cos(angleRad).toFloat() * layout.centerRadius - textLayoutResult.size.width / HALF_DIVIDER
     val labelY = center.y + sin(angleRad).toFloat() * layout.centerRadius - textLayoutResult.size.height / HALF_DIVIDER
     drawText(

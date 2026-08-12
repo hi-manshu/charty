@@ -13,7 +13,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.accessibility.toReadableString
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
@@ -32,7 +35,8 @@ private const val CENTER_FRACTION = 0.5f
  * @property fillAlpha Opacity of the fill in the range `[0, 1]`. Only used when [showFill] is `true`.
  * @property showLastPointDot Whether to emphasise the most recent value with a dot at the end of the line.
  * @property lastPointDotRadius Radius of the last-point dot in pixels. Only used when
- *   [showLastPointDot] is `true`.
+ *   [showLastPointDot] is `true`. The dot's centre is kept one radius inside the draw area so the
+ *   dot is never half-clipped by the edge the line ends on.
  * @property smoothCurve When `true`, connects values with a cubic-bezier curve instead of straight
  *   segments.
  * @property animation Entry animation revealing the path from left to right. [Animation.Disabled]
@@ -69,6 +73,9 @@ data class SparklineConfig(
  * @param color The line colour defined by [ChartyColor]; a [ChartyColor.Gradient] paints both the
  *   stroke and the fill with the gradient.
  * @param config Appearance and behaviour configuration for the sparkline.
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an
+ *   empty string to suppress it, which is the right choice when the sparkline merely repeats a
+ *   value already announced next to it.
  *
  * Example:
  * ```kotlin
@@ -85,12 +92,27 @@ fun Sparkline(
     modifier: Modifier = Modifier,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     config: SparklineConfig = SparklineConfig(),
+    accessibilityDescription: String? = null,
 ) {
     val values by remember(data) { derivedStateOf { data() } }
     val yFractions = remember(values) { normalizeToYFractions(values) }
     val animationProgress = rememberChartAnimation(config.animation)
+    val chartDescription =
+        remember(values, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null -> buildSparklineDescription(values)
+                else -> accessibilityDescription
+            }
+        }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
 
-    Canvas(modifier = modifier) {
+    Canvas(modifier = modifier.then(semanticsModifier)) {
         if (yFractions.isNotEmpty()) {
             drawSparkline(
                 yFractions = yFractions,
@@ -141,13 +163,32 @@ private fun DrawScope.drawSparkline(
         )
     }
     if (config.showLastPointDot) {
+        val lastPoint = points.last()
+        val radius = config.lastPointDotRadius
         drawCircle(
             brush = lineBrush,
-            radius = config.lastPointDotRadius,
-            center = points.last(),
+            radius = radius,
+            center =
+                Offset(
+                    x = lastPoint.x.coerceIn(radius, (size.width - radius).coerceAtLeast(radius)),
+                    y = lastPoint.y.coerceIn(radius, (size.height - radius).coerceAtLeast(radius)),
+                ),
             alpha = animationProgress.coerceIn(0f, 1f),
         )
     }
+}
+
+/**
+ * Builds the screen-reader description for a sparkline: how many values it covers, where it starts
+ * and ends, and its span. An empty series yields the empty-chart wording.
+ */
+internal fun buildSparklineDescription(values: List<Float>): String {
+    if (values.isEmpty()) {
+        return "Empty sparkline."
+    }
+    return "Sparkline, ${values.size} values from ${values.first().toReadableString()} " +
+        "to ${values.last().toReadableString()}. " +
+        "Range: ${values.min().toReadableString()} to ${values.max().toReadableString()}."
 }
 
 /**

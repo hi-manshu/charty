@@ -16,12 +16,18 @@ internal data class RingLayout(
 
 /**
  * Fraction of a full revolution the ring for [value] toward [target] sweeps, coerced into `[0, 1]`
- * so overshooting values cap at one full circle.
+ * so overshooting values cap at one full circle. A non-positive [target] yields `0` rather than
+ * letting a division by zero leak a `NaN` sweep into the draw calls.
  */
 internal fun ringSweepFraction(
     value: Float,
     target: Float,
-): Float = (value / target).coerceIn(0f, 1f)
+): Float =
+    if (target <= 0f) {
+        0f
+    } else {
+        (value / target).coerceIn(0f, 1f)
+    }
 
 /**
  * Fraction of the outer radius consumed by [ringCount] rings of [thicknessFraction] thickness

@@ -128,7 +128,10 @@ fun WavyChart(
     val textMeasurer = rememberTextMeasurer()
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<BarData>(crosshairConfig != null)
+        rememberChartCrosshair<BarData>(
+            enabled = crosshairConfig != null,
+            viewPortState = interactionConfig.viewPortState,
+        )
 
     syncInteractionDataSizes(
         viewPortState = interactionConfig.viewPortState,

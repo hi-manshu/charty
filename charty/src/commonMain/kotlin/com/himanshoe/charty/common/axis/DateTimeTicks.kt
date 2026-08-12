@@ -56,7 +56,7 @@ private enum class DateTimeGranularity(
 /**
  * Selects smart, nicely snapped ticks for a datetime range using pure epoch-millisecond math.
  *
- * The coarsest-fitting granularity is chosen from minute, 15-minute, hour, 6-hour, day, week,
+ * The finest granularity that still fits is chosen from minute, 15-minute, hour, 6-hour, day, week,
  * month, quarter, and year so that the resulting tick count never exceeds [maxTicks]; ranges too
  * long even for yearly ticks fall back to multi-year steps (2, 5, 10, ... years). Ticks snap to
  * natural boundaries — whole minutes, the top of the hour, midnight (UTC), Monday, the 1st of the
@@ -71,6 +71,8 @@ private enum class DateTimeGranularity(
  * @param endEpochMillis Inclusive end of the range, in milliseconds since 1970-01-01T00:00:00Z;
  *   must be `>=` [startEpochMillis].
  * @param maxTicks The maximum number of ticks to produce; must be positive.
+ * @param locale The month names and per-granularity formatters used to render the labels; defaults
+ *   to English with 24-hour times.
  * @return The selected ticks in ascending order, each carrying its instant and formatted label.
  */
 fun selectDateTimeTicks(
@@ -126,11 +128,14 @@ fun selectDateTimeTicks(
  * assigned to the data point whose timestamp is nearest to it (earliest point wins a tie). Points
  * are assumed to be roughly evenly sampled; with irregular sampling the labels still appear, but on
  * the nearest point rather than at the tick's exact position, so they may sit slightly off the true
- * boundary.
+ * boundary. Two ticks whose nearest point is the same one collapse into a single label, so sparsely
+ * sampled data can yield fewer labels than there are ticks.
  *
  * @param epochMillisValues Each data point's timestamp in milliseconds since 1970-01-01T00:00:00Z,
  *   in the same order as the chart's data points.
  * @param maxLabels The maximum number of non-empty labels to produce; must be positive.
+ * @param locale The month names and per-granularity formatters used to render the labels; defaults
+ *   to English with 24-hour times.
  * @return A list the same size as [epochMillisValues] with tick labels at tick positions and `""`
  *   everywhere else; empty when [epochMillisValues] is empty.
  */

@@ -157,7 +157,10 @@ fun MultilineChart(
     val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<MultilinePoint>(effectiveLineConfig.crosshairConfig != null)
+        rememberChartCrosshair<MultilinePoint>(
+            enabled = effectiveLineConfig.crosshairConfig != null,
+            viewPortState = interactionConfig.viewPortState,
+        )
     val textMeasurer = rememberTextMeasurer()
 
     LaunchedEffect(lineConfig.animation) {

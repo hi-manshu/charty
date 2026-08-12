@@ -175,7 +175,10 @@ fun AreaChart(
     val textMeasurer = rememberTextMeasurer()
 
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<LineData>(effectiveLineConfig.crosshairConfig != null)
+        rememberChartCrosshair<LineData>(
+            enabled = effectiveLineConfig.crosshairConfig != null,
+            viewPortState = interactionConfig.viewPortState,
+        )
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {

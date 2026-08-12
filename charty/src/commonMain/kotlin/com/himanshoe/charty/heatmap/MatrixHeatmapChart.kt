@@ -24,6 +24,7 @@ import com.himanshoe.charty.heatmap.internal.MatrixGrid
 import com.himanshoe.charty.heatmap.internal.buildMatrixHeatmapDescription
 import com.himanshoe.charty.heatmap.internal.computeMatrixGrid
 import com.himanshoe.charty.heatmap.internal.drawMatrixHeatmap
+import com.himanshoe.charty.heatmap.internal.flattenCells
 
 /**
  * A composable function that displays a general-purpose matrix heatmap: a grid of rounded cells
@@ -43,6 +44,8 @@ import com.himanshoe.charty.heatmap.internal.drawMatrixHeatmap
  * @param modifier Modifier applied to the chart canvas; it determines the area the grid fills.
  * @param config Chart appearance and behaviour; see [MatrixHeatmapConfig].
  * @param onCellClick Optional callback invoked when the user taps a grid position that has data.
+ * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an
+ *   empty string to suppress it.
  *
  * Example usage:
  * ```kotlin
@@ -65,13 +68,20 @@ fun MatrixHeatmapChart(
     modifier: Modifier = Modifier,
     config: MatrixHeatmapConfig = MatrixHeatmapConfig(),
     onCellClick: ((HeatmapCell) -> Unit)? = null,
+    accessibilityDescription: String? = null,
 ) {
     val cells by remember(data) { derivedStateOf { data() } }
     val grid = remember(cells) { computeMatrixGrid(cells) }
     if (grid.rowLabels.isEmpty()) {
         ChartEmptyState(modifier = modifier)
     } else {
-        MatrixHeatmapContent(grid = grid, onCellClick = onCellClick, modifier = modifier, config = config)
+        MatrixHeatmapContent(
+            grid = grid,
+            onCellClick = onCellClick,
+            accessibilityDescription = accessibilityDescription,
+            modifier = modifier,
+            config = config,
+        )
     }
 }
 
@@ -79,6 +89,7 @@ fun MatrixHeatmapChart(
 private fun MatrixHeatmapContent(
     grid: MatrixGrid,
     onCellClick: ((HeatmapCell) -> Unit)?,
+    accessibilityDescription: String?,
     modifier: Modifier = Modifier,
     config: MatrixHeatmapConfig = MatrixHeatmapConfig(),
 ) {
@@ -95,14 +106,28 @@ private fun MatrixHeatmapContent(
         remember(grid.columnLabels, config.labelTextStyle) {
             grid.columnLabels.map { label -> textMeasurer.measure(text = label, style = config.labelTextStyle) }
         }
+    val flatCells = remember(grid) { grid.flattenCells() }
     val measuredValues =
-        rememberMeasuredValues(grid = grid, config = config, textMeasurer = textMeasurer)
-    val chartDescription = remember(grid) { buildMatrixHeatmapDescription(grid) }
+        rememberMeasuredValues(flatCells = flatCells, config = config, textMeasurer = textMeasurer)
+    val chartDescription =
+        remember(grid, accessibilityDescription) {
+            when (accessibilityDescription) {
+                "" -> null
+                null -> buildMatrixHeatmapDescription(grid)
+                else -> accessibilityDescription
+            }
+        }
+    val semanticsModifier =
+        if (chartDescription != null) {
+            Modifier.semantics { contentDescription = chartDescription }
+        } else {
+            Modifier
+        }
 
     Canvas(
         modifier =
             modifier
-                .semantics { contentDescription = chartDescription }
+                .then(semanticsModifier)
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->
                         val hit = cellBounds.firstOrNull { (rect, _) -> rect.contains(offset) }
@@ -118,6 +143,7 @@ private fun MatrixHeatmapContent(
                 config = config,
                 measuredRowLabels = measuredRowLabels,
                 measuredColumnLabels = measuredColumnLabels,
+                flatCells = flatCells,
                 measuredValues = measuredValues,
                 animationProgress = animationProgress.value,
                 cellBounds = cellBounds,
@@ -128,16 +154,18 @@ private fun MatrixHeatmapContent(
 
 @Composable
 private fun rememberMeasuredValues(
-    grid: MatrixGrid,
+    flatCells: List<HeatmapCell?>,
     config: MatrixHeatmapConfig,
     textMeasurer: TextMeasurer,
-): Map<Pair<Int, Int>, TextLayoutResult> {
-    return remember(grid, config.showValues, config.valueFormatter, config.labelTextStyle) {
+): List<TextLayoutResult?> {
+    return remember(flatCells, config.showValues, config.valueFormatter, config.labelTextStyle) {
         if (!config.showValues) {
-            return@remember emptyMap()
+            return@remember emptyList()
         }
-        grid.cellMap.mapValues { (_, cell) ->
-            textMeasurer.measure(text = config.valueFormatter(cell.value), style = config.labelTextStyle)
+        flatCells.map { cell ->
+            cell?.let {
+                textMeasurer.measure(text = config.valueFormatter(it.value), style = config.labelTextStyle)
+            }
         }
     }
 }

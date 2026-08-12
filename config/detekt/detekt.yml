@@ -420,3 +420,4 @@ Compose:
     active: true
     allowedCompositionLocals:
       - LocalChartyTheme
+      - LocalCrosshairSync
