@@ -8,7 +8,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.draw.drawReferenceBand
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.MultilinePoint
@@ -143,6 +147,93 @@ private fun DrawScope.drawPointsForSeries(
                 radius = lineConfig.pointRadius,
                 center = position,
                 alpha = (pointProgress.coerceIn(0f, 1f) * lineConfig.pointAlpha),
+            )
+        }
+    }
+}
+
+/**
+ * Draws one full multiline pass: the optional reference band, the crosshair snap points, every
+ * series back to front, the canvas tooltip when no crosshair is active, the interaction overlays,
+ * and finally the crosshair itself.
+ *
+ * @param p The data, geometry, styling, and interaction state for this pass.
+ */
+internal fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
+    p.pointBounds.clear()
+    p.crosshairBounds.clear()
+    p.lineConfig.referenceBand?.let { band ->
+        drawReferenceBand(
+            chartContext = p.chartContext,
+            orientation = ChartOrientation.VERTICAL,
+            config = band,
+            textMeasurer = p.textMeasurer,
+        )
+    }
+    val seriesCount =
+        p.dataList
+            .getOrNull(0)
+            ?.values
+            ?.size ?: 0
+
+    if (p.crosshairManager != null) {
+        p.chartContext.calculateSeriesPointPositions(p.dataList, 0).fastForEachIndexed { index, pos ->
+            val group = p.dataList.getOrNull(index) ?: return@fastForEachIndexed
+            p.crosshairBounds.add(
+                pos to
+                    MultilinePoint(
+                        lineGroup = group,
+                        seriesIndex = 0,
+                        dataIndex = index,
+                        value =
+                            group.values.getOrNull(0) ?: 0f,
+                    ),
+            )
+        }
+    }
+
+    for (seriesIndex in 0 until seriesCount) {
+        drawLineSeries(
+            seriesIndex = seriesIndex,
+            dataList = p.dataList,
+            chartContext = p.chartContext,
+            lineConfig = p.lineConfig,
+            colorList = p.colorList,
+            animationProgress = p.animationProgress,
+            pointBounds =
+                p.pointBounds.takeIf { p.onPointClick != null },
+        )
+    }
+
+    if (p.crosshairManager == null) {
+        p.tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = p.lineConfig.tooltipConfig,
+                textMeasurer = p.textMeasurer,
+                chartWidth = p.chartContext.right,
+                chartTop = p.chartContext.top,
+                chartBottom = p.chartContext.bottom,
+            )
+        }
+    }
+    drawInteractionOverlays(
+        interactionConfig = p.interactionConfig,
+        chartContext = p.chartContext,
+        totalItems = p.dataList.size,
+        textMeasurer = p.textMeasurer,
+    )
+
+    p.crosshairState?.let { state ->
+        p.lineConfig.crosshairConfig?.let { config ->
+            drawMultilineChartCrosshair(
+                state = state,
+                config = config,
+                chartContext = p.chartContext,
+                dataList = p.dataList,
+                colorList = p.colorList,
+                textMeasurer = p.textMeasurer,
+                drawLabel = p.drawCrosshairLabel,
             )
         }
     }

@@ -30,17 +30,14 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -92,41 +89,28 @@ fun ComparisonBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each comparison group must have at least one value" }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = comparisonConfig.animation,
             visibleWindow = comparisonConfig.visibleWindow,
-            animation = comparisonConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) = rememberComparisonChartValues(dataList)
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = comparisonConfig.animation,
-            active = visible.streaming != null,
-        )
+            displayData = {
+                rememberAnimatedBarGroups(
+                    dataList = it,
+                    animation = comparisonConfig.animation,
+                    enabled = comparisonConfig.animateValueChanges,
+                )
+            },
+        ) { windowed, _ -> rememberComparisonChartValues(windowed) }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = rememberChartAnimation(comparisonConfig.animation)
-    val displayList =
-        rememberAnimatedBarGroups(
-            dataList = dataList,
-            animation = comparisonConfig.animation,
-            enabled = comparisonConfig.animateValueChanges,
-        )
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, ComparisonBarSegment>()
     val textMeasurer = rememberTextMeasurer()
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createComparisonChartModifier(
@@ -146,7 +130,7 @@ fun ComparisonBarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -164,7 +148,7 @@ fun ComparisonBarChart(
                             values = dataList.fastMap { it.values.sum() },
                         ),
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =

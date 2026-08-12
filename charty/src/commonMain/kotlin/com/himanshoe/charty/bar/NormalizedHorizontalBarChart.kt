@@ -29,7 +29,6 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -37,10 +36,9 @@ import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -86,33 +84,26 @@ fun NormalizedHorizontalBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = config.animation,
             visibleWindow = config.visibleWindow,
-            animation = config.animation,
-            streamingState = interactionConfig.streamingState,
+            displayData = {
+                rememberAnimatedBarGroups(
+                    dataList = it,
+                    animation = config.animation,
+                    enabled = config.animateValueChanges,
+                )
+            },
         )
-    val dataList = visible.data
-
-    val displayList =
-        rememberAnimatedBarGroups(
-            dataList = dataList,
-            animation = config.animation,
-            enabled = config.animateValueChanges,
-        )
+    val dataList = chartState.data
+    val displayList = chartState.displayData
     val colorList = rememberNormalizedHorizontalColors(dataList = displayList, colors = colors)
-    val animationProgress = rememberChartAnimation(config.animation)
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, NormalizedHorizontalBarSegment>()
     val textMeasurer = rememberTextMeasurer()
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createNormalizedHorizontalBarChartModifier(
@@ -131,7 +122,11 @@ fun NormalizedHorizontalBarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.HORIZONTAL)
+    val pan =
+        interactionConfig.streamingPan(
+            streaming = chartState.streaming,
+            orientation = ChartOrientation.HORIZONTAL,
+        )
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -149,7 +144,7 @@ fun NormalizedHorizontalBarChart(
                             values = dataList.fastMap { it.values.sum() },
                         ),
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig = createNormalizedHorizontalAxisConfig(),

@@ -18,7 +18,6 @@ import com.himanshoe.charty.bar.internal.bar.lollipop.createLollipopChartModifie
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipops
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipHighlightIfNeeded
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipIfNeeded
-import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopAnimation
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopValueRange
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
 import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
@@ -28,7 +27,6 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -36,10 +34,9 @@ import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -96,40 +93,27 @@ fun LollipopBarChart(
         return
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = config.animation,
             visibleWindow = config.visibleWindow,
-            animation = config.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) = rememberLollipopValueRange(dataList)
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = config.animation,
-            active = visible.streaming != null,
-        )
-    val animationProgress = rememberLollipopAnimation(config.animation)
-    val displayList =
-        rememberAnimatedBarValues(
-            dataList = dataList,
-            animation = config.animation,
-            enabled = config.animateValueChanges,
-        )
+            displayData = {
+                rememberAnimatedBarValues(
+                    dataList = it,
+                    animation = config.animation,
+                    enabled = config.animateValueChanges,
+                )
+            },
+        ) { windowed, _ -> rememberLollipopValueRange(windowed) }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Offset, BarData>()
     val textMeasurer = rememberTextMeasurer()
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createLollipopChartModifier(
@@ -148,7 +132,7 @@ fun LollipopBarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -166,7 +150,7 @@ fun LollipopBarChart(
                             values = dataList.fastMap { it.value },
                         ),
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig = createAxisConfig(minValue, maxValue),

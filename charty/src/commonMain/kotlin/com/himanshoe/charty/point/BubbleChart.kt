@@ -23,9 +23,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBubbleChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
@@ -41,11 +39,9 @@ import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
@@ -103,9 +99,29 @@ fun BubbleChart(
     val crosshairConfig = crosshair?.config ?: config.crosshairConfig
     val activeCrosshair = crosshair ?: config.crosshairConfig?.let { ChartCrosshair<BubbleData>(config = it) }
 
-    val visible =
-        rememberBubbleVisibleData(fullDataList = fullDataList, config = config, interactionConfig = interactionConfig)
-    val dataList = visible.data
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = config.animation,
+            visibleWindow = config.visibleWindow,
+            displayData = {
+                rememberAnimatedBubbleData(
+                    dataList = it,
+                    animation = config.animation,
+                    enabled = config.animateValueChanges,
+                )
+            },
+            describe = { series, _, _ -> generateBubbleChartDescription(series) },
+        ) { windowed, _ ->
+            remember(windowed) {
+                calculateBubbleSizeInfo(windowed).let { it.minValue to it.maxValue }
+            }
+        }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
 
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
@@ -115,36 +131,11 @@ fun BubbleChart(
             viewPortState = interactionConfig.viewPortState,
         )
     val sizeInfo = remember(dataList) { calculateBubbleSizeInfo(dataList) }
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = sizeInfo.minValue,
-            maxValue = sizeInfo.maxValue,
-            animation = config.animation,
-            active = visible.streaming != null,
-        )
     val textMeasurer = rememberTextMeasurer()
 
     val isBelowAxisMode = config.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    val animationProgress = rememberChartAnimation(config.animation)
-    val displayList =
-        rememberAnimatedBubbleData(
-            dataList = dataList,
-            animation = config.animation,
-            enabled = config.animateValueChanges,
-        )
-
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateBubbleChartDescription(it)
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
+    val animationProgress = chartState.animationProgress
 
     val gestureBase =
         when {
@@ -170,12 +161,12 @@ fun BubbleChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
-            accessibility = bubbleChartAccessibility(chartDescription = chartDescription, dataList = dataList),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            accessibility = bubbleChartAccessibility(chartDescription = chartState.description, dataList = dataList),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =
@@ -399,20 +390,3 @@ private fun DrawScope.drawAllBubbles(
         }
     }
 }
-
-/**
- * The bubbles the chart should draw: the viewport or rolling window of [fullDataList], together with
- * the [com.himanshoe.charty.common.StreamingLayout] that slides them while streaming.
- */
-@Composable
-private fun rememberBubbleVisibleData(
-    fullDataList: List<BubbleData>,
-    config: PointChartConfig,
-    interactionConfig: ChartInteractionConfig,
-) = rememberWindowedData(
-    fullDataList = fullDataList,
-    viewPortState = interactionConfig.viewPortState,
-    visibleWindow = config.visibleWindow,
-    animation = config.animation,
-    streamingState = interactionConfig.streamingState,
-)

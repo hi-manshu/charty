@@ -29,9 +29,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
@@ -40,9 +38,8 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
 
@@ -90,47 +87,35 @@ fun CandlestickChart(
         return
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = candlestickConfig.animation,
             visibleWindow = candlestickConfig.visibleWindow,
-            animation = candlestickConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) =
-        remember(dataList) {
-            calculateMinValue(dataList) to calculateMaxValue(dataList)
+            displayData = {
+                rememberAnimatedCandleData(
+                    dataList = it,
+                    animation = candlestickConfig.animation,
+                    enabled = candlestickConfig.animateValueChanges,
+                )
+            },
+        ) { windowed, _ ->
+            remember(windowed) {
+                calculateMinValue(windowed) to calculateMaxValue(windowed)
+            }
         }
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = candlestickConfig.animation,
-            active = visible.streaming != null,
-        )
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
     val xLabels =
         remember(dataList) {
             calculateOptimizedLabels(dataList.getLabels())
         }
 
-    val animationProgress = rememberChartAnimation(candlestickConfig.animation)
-    val displayList =
-        rememberAnimatedCandleData(
-            dataList = dataList,
-            animation = candlestickConfig.animation,
-            enabled = candlestickConfig.animateValueChanges,
-        )
+    val animationProgress = chartState.animationProgress
     val textMeasurer = rememberTextMeasurer()
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val chartModifier =
         buildInteractionModifier(
@@ -151,7 +136,7 @@ fun CandlestickChart(
                         values = dataList.fastMap { it.close },
                     ),
             ),
-        streaming = interactionConfig.streamingRender(visible.streaming),
+        streaming = interactionConfig.streamingRender(chartState.streaming),
         modifier = chartModifier,
         xLabels = xLabels,
         yAxisConfig =

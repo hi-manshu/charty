@@ -30,8 +30,6 @@ import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -40,10 +38,9 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -103,40 +100,27 @@ fun SpanChart(
         return
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = barConfig.animation,
             visibleWindow = barConfig.visibleWindow,
-            animation = barConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val displayList =
-        rememberAnimatedSpanValues(
-            dataList = dataList,
-            animation = barConfig.animation,
-            enabled = barConfig.animateValueChanges,
-        )
-    val (rawMinValue, rawMaxValue) = rememberSpanValueRange(dataList = displayList, colors = colors)
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = barConfig.animation,
-            active = visible.streaming != null,
-        )
-    val animationProgress = rememberChartAnimation(barConfig.animation)
+            displayData = {
+                rememberAnimatedSpanValues(
+                    dataList = it,
+                    animation = barConfig.animation,
+                    enabled = barConfig.animateValueChanges,
+                )
+            },
+        ) { _, display -> rememberSpanValueRange(dataList = display, colors = colors) }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, SpanData>()
     val textMeasurer = rememberTextMeasurer()
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createSpanChartModifier(
@@ -156,7 +140,11 @@ fun SpanChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.HORIZONTAL)
+    val pan =
+        interactionConfig.streamingPan(
+            streaming = chartState.streaming,
+            orientation = ChartOrientation.HORIZONTAL,
+        )
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -170,7 +158,7 @@ fun SpanChart(
                                 "${item.startValue} to ${item.endValue}"
                         },
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig = createAxisConfig(minValue, maxValue),

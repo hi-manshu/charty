@@ -1,12 +1,9 @@
 package com.himanshoe.charty.bar.internal.bar.horizontal
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
-import com.himanshoe.charty.common.animation.rememberChartAnimation
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.util.baselineValueRange
 
@@ -18,6 +15,3 @@ internal fun rememberHorizontalValueRange(
     remember(dataList, negativeValuesDrawMode) {
         baselineValueRange(dataList.getValues())
     }
-
-@Composable
-internal fun rememberHorizontalAnimation(animation: Animation): Animatable<Float, *> = rememberChartAnimation(animation)

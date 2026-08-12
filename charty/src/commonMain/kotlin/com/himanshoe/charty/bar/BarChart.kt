@@ -29,9 +29,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -41,11 +39,9 @@ import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -111,50 +107,36 @@ fun BarChart(
         return
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = barConfig.animation,
             visibleWindow = barConfig.visibleWindow,
-            animation = barConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) =
-        rememberBarValueRange(
-            dataList = dataList,
-            negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
-        )
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = barConfig.animation,
-            active = visible.streaming != null,
-        )
+            displayData = {
+                rememberAnimatedBarData(
+                    dataList = it,
+                    animation = barConfig.animation,
+                    enabled = barConfig.animateValueChanges,
+                )
+            },
+            describe = { series, min, max ->
+                generateBarChartDescription(data = series, minValue = min, maxValue = max)
+            },
+        ) { windowed, _ ->
+            rememberBarValueRange(
+                dataList = windowed,
+                negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
+            )
+        }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = rememberChartAnimation(barConfig.animation)
-    val displayList =
-        rememberAnimatedBarData(
-            dataList = dataList,
-            animation = barConfig.animation,
-            enabled = barConfig.animateValueChanges,
-        )
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
-
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateBarChartDescription(data = it, minValue = minValue, maxValue = maxValue)
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createBarChartModifier(
@@ -174,16 +156,16 @@ fun BarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
-                    contentDescription = chartDescription,
+                    contentDescription = chartState.description,
                     dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =

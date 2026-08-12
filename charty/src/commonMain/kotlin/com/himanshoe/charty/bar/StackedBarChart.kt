@@ -30,8 +30,6 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarGroupChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -40,11 +38,9 @@ import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -111,45 +107,30 @@ fun StackedBarChart(
         "Stacked bar chart does not support negative values"
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val colorList = remember(colors) { colors.value }
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = stackedConfig.animation,
             visibleWindow = stackedConfig.visibleWindow,
-            animation = stackedConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val displayList =
-        rememberAnimatedBarGroups(
-            dataList = dataList,
-            animation = stackedConfig.animation,
-            enabled = stackedConfig.animateValueChanges,
-        )
-    val (rawMaxTotal, colorList) = rememberStackedMaxTotal(dataList = displayList, colors = colors)
-    val (_, maxTotal) =
-        rememberAnimatedRange(
-            minValue = 0f,
-            maxValue = rawMaxTotal,
-            animation = stackedConfig.animation,
-            active = visible.streaming != null,
-        )
-    val animationProgress = rememberChartAnimation(stackedConfig.animation)
+            displayData = {
+                rememberAnimatedBarGroups(
+                    dataList = it,
+                    animation = stackedConfig.animation,
+                    enabled = stackedConfig.animateValueChanges,
+                )
+            },
+            describe = { series, _, _ ->
+                generateBarGroupChartDescription(data = series, chartTypeName = "stacked bar")
+            },
+        ) { _, display -> 0f to rememberStackedMaxTotal(dataList = display, colors = colors).first }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val maxTotal = chartState.maxValue
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, StackedBarSegment>()
     val textMeasurer = rememberTextMeasurer()
-
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateBarGroupChartDescription(data = it, chartTypeName = "stacked bar")
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createStackedBarChartModifier(
@@ -168,20 +149,20 @@ fun StackedBarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
-                    contentDescription = chartDescription,
+                    contentDescription = chartState.description,
                     dataPointDescriptions =
                         buildDataPointDescriptions(
                             labels = dataList.fastMap { it.label },
                             values = dataList.fastMap { it.values.sum() },
                         ),
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =

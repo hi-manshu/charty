@@ -6,7 +6,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -14,65 +13,38 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.WavyChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
+import com.himanshoe.charty.bar.internal.bar.wavy.WAVY_CHART_PHASE_TARGET_MULTIPLIER
+import com.himanshoe.charty.bar.internal.bar.wavy.WavyChartOverlays
+import com.himanshoe.charty.bar.internal.bar.wavy.drawWavyBars
+import com.himanshoe.charty.bar.internal.bar.wavy.populateWavyCrosshairBounds
 import com.himanshoe.charty.color.ChartyColor
-import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.draw.drawPersistentMarkers
-import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
-import com.himanshoe.charty.common.gesture.ChartCrosshairHost
-import com.himanshoe.charty.common.gesture.CrosshairManager
-import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sin
-
-private const val WAVY_CHART_PHASE_TARGET_MULTIPLIER = 2f
-private const val MIN_WAVE_SEGMENTS = 4
-private const val MIN_BAR_WIDTH_FRACTION = 0.1f
-
-/** Precomputed wave rendering parameters, passed as a bundle to avoid long parameter lists. */
-private data class WaveDrawContext(
-    val barSpacing: Float,
-    val baselineY: Float,
-    val waveAmplitude: Float,
-    val segments: Int,
-    val basePhase: Float,
-    val strokeWidthPx: Float,
-    val wavyConfig: WavyChartConfig,
-    val color: ChartyColor,
-)
 
 /**
  * Wavy Chart - Bar-like chart with animated sine wave lines for each bar.
@@ -121,15 +93,31 @@ fun WavyChart(
     }
     val crosshairConfig = crosshair?.config
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
-            visibleWindow = wavyConfig.visibleWindow,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
             animation = Animation.Default,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
+            visibleWindow = wavyConfig.visibleWindow,
+            displayData = {
+                rememberAnimatedBarValues(
+                    dataList = it,
+                    animation = Animation.Default,
+                    enabled = wavyConfig.animateValueChanges,
+                )
+            },
+        ) { windowed, _ ->
+            remember(windowed) {
+                val values = windowed.fastMap { it.value }
+                val rawMin = values.minOrNull() ?: 0f
+                val rawMax = values.maxOrNull() ?: 0f
+                min(rawMin, 0f) to max(rawMax, rawMin.coerceAtLeast(0f))
+            }
+        }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
 
     val textMeasurer = rememberTextMeasurer()
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
@@ -137,37 +125,6 @@ fun WavyChart(
         rememberChartCrosshair<BarData>(
             enabled = crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
-        )
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
-
-    val (rawMinValue, rawMaxValue) =
-        remember(dataList) {
-            val values = dataList.fastMap { it.value }
-            val rawMin = values.minOrNull() ?: 0f
-            val rawMax = values.maxOrNull() ?: 0f
-            val minVal = min(rawMin, 0f)
-            val maxVal = max(rawMax, rawMin.coerceAtLeast(0f))
-            minVal to maxVal
-        }
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = Animation.Default,
-            active = visible.streaming != null,
-        )
-
-    val displayList =
-        rememberAnimatedBarValues(
-            dataList = dataList,
-            animation = Animation.Default,
-            enabled = wavyConfig.animateValueChanges,
         )
 
     val basePhase = rememberWavyBasePhase(wavyConfig)
@@ -191,7 +148,7 @@ fun WavyChart(
             interactionConfig = interactionConfig,
             dataList = dataList,
         )
-    Box(modifier = chartModifier.then(interactionConfig.streamingPan(visible.streaming))) {
+    Box(modifier = chartModifier.then(interactionConfig.streamingPan(chartState.streaming))) {
         ChartScaffold(
             accessibility =
                 barAccessibility(
@@ -200,7 +157,7 @@ fun WavyChart(
                     values = dataList.fastMap { it.value },
                     fallbackDescription = "Wavy chart, ${fullDataList.size} data points.",
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =
@@ -247,11 +204,11 @@ fun WavyChart(
             animatedCrosshairState?.resolve()?.let { state ->
                 crosshairConfig?.let { cfg ->
                     drawLineChartCrosshair(
-                        state,
-                        cfg,
-                        chartContext,
-                        textMeasurer,
-                        color,
+                        state = state,
+                        config = cfg,
+                        chartContext = chartContext,
+                        textMeasurer = textMeasurer,
+                        chartColor = color,
                         drawLabel = false,
                     )
                 }
@@ -262,22 +219,6 @@ fun WavyChart(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             crosshair = crosshair,
-        )
-    }
-}
-
-@Composable
-private fun BoxScope.WavyChartOverlays(
-    crosshairManager: CrosshairManager<BarData>?,
-    animatedCrosshairState: CrosshairState?,
-    crosshair: ChartCrosshair<BarData>?,
-) {
-    if (crosshair != null) {
-        ChartCrosshairHost(
-            crosshair = crosshair,
-            item = crosshairManager?.selectedItem,
-            state = animatedCrosshairState,
-            modifier = Modifier.matchParentSize(),
         )
     }
 }
@@ -300,137 +241,4 @@ private fun rememberWavyBasePhase(wavyConfig: WavyChartConfig): Float {
         label = "wave-phase",
     )
     return basePhase
-}
-
-private fun wavyPointPositions(
-    chartContext: ChartContext,
-    values: List<Float>,
-): List<Offset> {
-    val barSpacing = chartContext.width / (values.size * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
-    return List(values.size) { index ->
-        Offset(
-            x = chartContext.left + barSpacing * (1 + index * 2),
-            y = chartContext.convertValueToYPosition(values[index]),
-        )
-    }
-}
-
-private fun populateWavyCrosshairBounds(
-    chartContext: ChartContext,
-    dataList: List<BarData>,
-    crosshairManager: CrosshairManager<BarData>?,
-    crosshairBounds: MutableList<Pair<Offset, BarData>>,
-) {
-    crosshairBounds.clear()
-    if (crosshairManager == null) {
-        return
-    }
-    val barCount = dataList.size
-    if (barCount == 0) {
-        return
-    }
-    val positions = wavyPointPositions(chartContext = chartContext, values = dataList.fastMap { it.value })
-    dataList.fastForEachIndexed { index, barData ->
-        crosshairBounds.add(positions[index] to barData)
-    }
-}
-
-private fun DrawScope.drawWavyBars(
-    dataList: List<BarData>,
-    chartContext: ChartContext,
-    wavyConfig: WavyChartConfig,
-    color: ChartyColor,
-    minValue: Float,
-    basePhase: Float,
-    strokeWidthPx: Float,
-    textMeasurer: TextMeasurer,
-) {
-    val barCount = dataList.size
-    val barSpacing = chartContext.width / (barCount * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
-    val barWidth = barSpacing * wavyConfig.barWidthFraction.coerceIn(MIN_BAR_WIDTH_FRACTION, 1f)
-    val waveCtx =
-        WaveDrawContext(
-            barSpacing = barSpacing,
-            baselineY =
-                if (minValue < 0f) {
-                    chartContext.convertValueToYPosition(0f)
-                } else {
-                    chartContext.bottom
-                },
-            waveAmplitude = barWidth * wavyConfig.waveAmplitudeFractionOfBarWidth,
-            segments = wavyConfig.waveSegments.coerceAtLeast(MIN_WAVE_SEGMENTS),
-            basePhase = basePhase,
-            strokeWidthPx = strokeWidthPx,
-            wavyConfig = wavyConfig,
-            color = color,
-        )
-    dataList.fastForEachIndexed { index, barData ->
-        drawSingleWave(index = index, barData = barData, chartContext = chartContext, waveCtx = waveCtx)
-    }
-    val values = dataList.fastMap { it.value }
-    drawPersistentMarkers(
-        chartContext = chartContext,
-        markers = wavyConfig.markers,
-        pointPositions = wavyPointPositions(chartContext = chartContext, values = values),
-        valueLabelFor = { index -> formatMarkerValue(values[index]) },
-        textMeasurer = textMeasurer,
-    )
-}
-
-private fun DrawScope.drawSingleWave(
-    index: Int,
-    barData: BarData,
-    chartContext: ChartContext,
-    waveCtx: WaveDrawContext,
-) {
-    val barSpacing = waveCtx.barSpacing
-    val baselineY = waveCtx.baselineY
-    val waveAmplitude = waveCtx.waveAmplitude
-    val segments = waveCtx.segments
-    val basePhase = waveCtx.basePhase
-    val wavyConfig = waveCtx.wavyConfig
-    val strokeWidthPx = waveCtx.strokeWidthPx
-    val xCenter = chartContext.left + barSpacing * (1 + index * 2)
-    val valueTop = chartContext.convertValueToYPosition(barData.value)
-
-    val top: Float
-    val bottom: Float
-
-    if (barData.value >= 0f) {
-        top = valueTop
-        bottom = baselineY
-    } else {
-        top = baselineY
-        bottom = valueTop
-    }
-
-    val barHeight = bottom - top
-    if (barHeight == 0f) {
-        return
-    }
-
-    val path = Path()
-    val dy = barHeight / segments
-
-    val phase = basePhase + index * wavyConfig.phaseOffsetPerBar
-
-    var y = top
-    for (i in 0..segments) {
-        val progress = i / segments.toFloat()
-        val angle = (progress * 2f * PI + phase).toFloat()
-        val dx = sin(angle) * waveAmplitude
-        val point = Offset(xCenter + dx, y)
-        if (i == 0) {
-            path.moveTo(point.x, point.y)
-        } else {
-            path.lineTo(point.x, point.y)
-        }
-        y += dy
-    }
-    val brush = Brush.verticalGradient(barData.color?.value ?: waveCtx.color.value)
-    drawPath(
-        path = path,
-        brush = brush,
-        style = Stroke(width = strokeWidthPx),
-    )
 }

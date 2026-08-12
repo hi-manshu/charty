@@ -27,9 +27,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generatePointChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -54,11 +52,9 @@ import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.createPointTooltipState
 import com.himanshoe.charty.common.gesture.pointChartClickHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberVisibleData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -307,44 +303,37 @@ fun PointChart(
     val effectiveCrosshairConfig = crosshair?.config ?: pointConfig.crosshairConfig
     val activeCrosshair = crosshair ?: pointConfig.crosshairConfig?.let { ChartCrosshair<PointData>(config = it) }
 
-    val visible =
-        rememberVisibleData(
-            fullDataList = fullDataList,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
             interactionConfig = interactionConfig,
-            downsampleThreshold = pointConfig.downsampleThreshold,
+            animation = pointConfig.animation,
             visibleWindow = pointConfig.visibleWindow,
-            animation = pointConfig.animation,
-        ) { it.value }
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) =
-        remember(dataList, pointConfig.negativeValuesDrawMode) {
-            val values = dataList.getValues()
-            calculateMinValue(values) to calculateMaxValue(values)
+            downsampleThreshold = pointConfig.downsampleThreshold,
+            downsampleValue = { it.value },
+            displayData = {
+                rememberAnimatedPointData(
+                    dataList = it,
+                    animation = pointConfig.animation,
+                    enabled = pointConfig.animateValueChanges,
+                )
+            },
+            describe = { series, min, max ->
+                generatePointChartDescription(data = series, minValue = min, maxValue = max)
+            },
+        ) { windowed, _ ->
+            remember(windowed, pointConfig.negativeValuesDrawMode) {
+                val values = windowed.getValues()
+                calculateMinValue(values) to calculateMaxValue(values)
+            }
         }
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = pointConfig.animation,
-            active = visible.streaming != null,
-        )
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
 
     val isBelowAxisMode = pointConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-
-    val animationProgress =
-        rememberChartAnimation(
-            animation = pointConfig.animation,
-            initialValue = null,
-            targetValue = MAX_ANIMATION_PROGRESS,
-        )
-
-    val displayList =
-        rememberAnimatedPointData(
-            dataList = dataList,
-            animation = pointConfig.animation,
-            enabled = pointConfig.animateValueChanges,
-        )
+    val animationProgress = chartState.animationProgress
 
     val tooltipManager = rememberTooltipManager<Offset, PointData>()
     val textMeasurer = rememberTextMeasurer()
@@ -354,18 +343,6 @@ fun PointChart(
             enabled = effectiveCrosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
         )
-
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generatePointChartDescription(data = it, minValue = minValue, maxValue = maxValue)
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val chartModifier =
         modifier.then(
@@ -380,12 +357,12 @@ fun PointChart(
             ),
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
-            accessibility = pointChartAccessibility(chartDescription = chartDescription, dataList = dataList),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            accessibility = pointChartAccessibility(chartDescription = chartState.description, dataList = dataList),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =

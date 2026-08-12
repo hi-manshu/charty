@@ -2,8 +2,14 @@ package com.himanshoe.charty.line.internal.area
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import com.himanshoe.charty.common.config.ChartInteractionConfig
+import com.himanshoe.charty.common.gesture.CrosshairManager
+import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
+import com.himanshoe.charty.common.gesture.chartCrosshairHandler
+import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.createPointTooltipState
 import com.himanshoe.charty.common.gesture.pointChartClickHandler
+import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
@@ -40,3 +46,59 @@ internal fun createAreaChartModifier(
     } else {
         modifier
     }
+
+/**
+ * Chains the area chart's pointer handling in the order the chart expects: the crosshair drag wins
+ * when a crosshair is enabled, otherwise tap-to-tooltip is installed when a click listener is set,
+ * and brush selection plus zoom/pan are layered on top when their state holders are configured.
+ *
+ * @param crosshairManager The crosshair state holder, or `null` when the crosshair is off.
+ * @param dataList The points currently drawn, which the handlers hit-test against.
+ * @param tooltipManager Owns the point bounds the tap handler tests and the tooltip it raises.
+ * @param lineConfig Supplies the tooltip formatter and the crosshair's dismiss behaviour.
+ * @param onPointClick Invoked when a point is tapped, or `null` when taps are ignored.
+ * @param interactionConfig Supplies the brush-selection and viewport state holders.
+ * @return The chained [Modifier] to apply to the chart.
+ */
+internal fun buildAreaModifier(
+    crosshairManager: CrosshairManager<LineData>?,
+    dataList: List<LineData>,
+    tooltipManager: TooltipManager<Offset, LineData>,
+    lineConfig: LineChartConfig,
+    onPointClick: ((LineData) -> Unit)?,
+    interactionConfig: ChartInteractionConfig,
+): Modifier {
+    var mod: Modifier =
+        if (crosshairManager != null) {
+            Modifier.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = tooltipManager.bounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = lineConfig.tooltipFormatter,
+                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+            )
+        } else if (onPointClick != null) {
+            createAreaChartModifier(
+                modifier = Modifier,
+                onPointClick = onPointClick,
+                dataList = dataList,
+                lineConfig = lineConfig,
+                pointBounds = tooltipManager.bounds,
+                onTooltipUpdate = tooltipManager::updateTooltip,
+            )
+        } else {
+            Modifier
+        }
+    if (interactionConfig.brushSelectionState != null) {
+        mod =
+            mod.chartBrushSelectionHandler(
+                dataList = dataList,
+                brushState = interactionConfig.brushSelectionState,
+                onRangeSelect = interactionConfig.onRangeSelect,
+            )
+    }
+    if (interactionConfig.viewPortState != null) {
+        mod = mod.chartZoomAndPan(interactionConfig.viewPortState)
+    }
+    return mod
+}

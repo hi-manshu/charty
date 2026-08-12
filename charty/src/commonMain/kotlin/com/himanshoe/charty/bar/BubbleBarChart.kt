@@ -28,8 +28,6 @@ import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -38,9 +36,8 @@ import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -89,47 +86,35 @@ fun BubbleBarChart(
         return
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = bubbleConfig.animation,
             visibleWindow = bubbleConfig.visibleWindow,
-            animation = bubbleConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) =
-        rememberValueRange(
-            dataList = dataList,
-            negativeValuesDrawMode = bubbleConfig.negativeValuesDrawMode,
-        )
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = bubbleConfig.animation,
-            active = visible.streaming != null,
-        )
+            displayData = {
+                rememberAnimatedBarValues(
+                    dataList = it,
+                    animation = bubbleConfig.animation,
+                    enabled = bubbleConfig.animateValueChanges,
+                )
+            },
+        ) { windowed, _ ->
+            rememberValueRange(
+                dataList = windowed,
+                negativeValuesDrawMode = bubbleConfig.negativeValuesDrawMode,
+            )
+        }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    val animationProgress = rememberChartAnimation(bubbleConfig.animation)
-    val displayList =
-        rememberAnimatedBarValues(
-            dataList = dataList,
-            animation = bubbleConfig.animation,
-            enabled = bubbleConfig.animateValueChanges,
-        )
+    val animationProgress = chartState.animationProgress
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
     val textMeasurer = rememberTextMeasurer()
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createBubbleChartModifier(
@@ -164,7 +149,7 @@ fun BubbleBarChart(
                         values = dataList.fastMap { it.value },
                     ),
             ),
-        streaming = interactionConfig.streamingRender(visible.streaming),
+        streaming = interactionConfig.streamingRender(chartState.streaming),
         modifier = chartModifier,
         xLabels = dataList.getLabels(),
         yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),

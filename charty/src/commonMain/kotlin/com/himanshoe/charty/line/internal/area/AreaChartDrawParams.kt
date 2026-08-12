@@ -1,23 +1,26 @@
 package com.himanshoe.charty.line.internal.area
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 
 /**
- * Parameters for drawing area chart.
+ * Everything [drawAreaChart] needs for one canvas pass, bundled so the drawing entry point keeps a
+ * single parameter.
  *
- * @property dataList List of line data points
- * @property pointPositions Calculated positions for each point
- * @property baselineY Y-coordinate of the baseline (bottom of filled area)
- * @property config Line chart configuration
- * @property color Color configuration for the area
- * @property fillAlpha Transparency of the filled area
- * @property animationProgress Current animation progress (0.0 to 1.0)
- * @property chartContext Chart drawing context
- * @property onBarBoundCalculated Callback for bound calculation
+ * @property dataList The points being drawn, in the order they appear along the x-axis.
+ * @property pointPositions The pixel position of every point in [dataList], at the same indices.
+ * @property baselineY The y pixel the filled area closes down to.
+ * @property config The line/point styling, markers, and reference band to honour.
+ * @property color The area's colour or gradient.
+ * @property fillAlpha The opacity applied to the area fill, from `0f` to `1f`.
+ * @property animationProgress The reveal progress, from `0f` (nothing drawn) to `1f` (fully drawn).
+ * @property chartContext The pixel bounds and value range of the plotting area.
+ * @property textMeasurer Measurer used for reference-band and marker labels.
+ * @property onBarBoundCalculated Receives every point position paired with its data, for hit-testing.
  */
 internal data class AreaChartDrawParams(
     val dataList: List<LineData>,
@@ -28,5 +31,6 @@ internal data class AreaChartDrawParams(
     val fillAlpha: Float,
     val animationProgress: Float,
     val chartContext: ChartContext,
+    val textMeasurer: TextMeasurer,
     val onBarBoundCalculated: (Pair<Offset, LineData>) -> Unit,
 )

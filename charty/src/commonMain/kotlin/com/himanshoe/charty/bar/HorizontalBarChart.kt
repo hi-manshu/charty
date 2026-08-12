@@ -19,30 +19,24 @@ import com.himanshoe.charty.bar.internal.bar.horizontal.createHorizontalAxisConf
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalBars
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalTooltipIfNeeded
-import com.himanshoe.charty.bar.internal.bar.horizontal.rememberHorizontalAnimation
+import com.himanshoe.charty.bar.internal.bar.horizontal.horizontalBarScrubModifier
 import com.himanshoe.charty.bar.internal.bar.horizontal.rememberHorizontalValueRange
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.gesture.createRectangularTooltipState
-import com.himanshoe.charty.common.gesture.rectangularChartScrubHandler
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -90,60 +84,47 @@ fun HorizontalBarChart(
         return
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
-            visibleWindow = barConfig.visibleWindow,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
             animation = barConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val (minValue, maxValue) =
-        rememberHorizontalDisplayRange(dataList = dataList, barConfig = barConfig, streaming = visible.streaming)
+            visibleWindow = barConfig.visibleWindow,
+            displayData = {
+                rememberAnimatedBarValues(
+                    dataList = it,
+                    animation = barConfig.animation,
+                    enabled = barConfig.animateValueChanges,
+                )
+            },
+            describe = { series, min, max ->
+                generateBarChartDescription(data = series, minValue = min, maxValue = max)
+            },
+        ) { windowed, _ ->
+            rememberHorizontalValueRange(
+                dataList = windowed,
+                negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
+            )
+        }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
 
-    val animationProgress = rememberHorizontalAnimation(barConfig.animation)
-    val displayList =
-        rememberAnimatedBarValues(
-            dataList = dataList,
-            animation = barConfig.animation,
-            enabled = barConfig.animateValueChanges,
-        )
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateBarChartDescription(data = it, minValue = minValue, maxValue = maxValue)
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
-
     val scrubModifier =
-        if (interactionConfig.dragTooltipActive) {
-            modifier.rectangularChartScrubHandler(
-                dataList = dataList,
-                bounds = tooltipManager.bounds,
-                onTooltipStateChange = tooltipManager::updateTooltip,
-                createTooltipContent = { barData, rect ->
-                    createRectangularTooltipState(
-                        content = barConfig.tooltipFormatter(barData),
-                        rect = rect,
-                        position = barConfig.tooltipPosition,
-                    )
-                },
-            )
-        } else {
-            modifier
-        }
+        horizontalBarScrubModifier(
+            base = modifier,
+            interactionConfig = interactionConfig,
+            dataList = dataList,
+            barConfig = barConfig,
+            tooltipManager = tooltipManager,
+        )
 
     val chartModifier =
         buildInteractionModifier(
@@ -152,20 +133,24 @@ fun HorizontalBarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.HORIZONTAL)
+    val pan =
+        interactionConfig.streamingPan(
+            streaming = chartState.streaming,
+            orientation = ChartOrientation.HORIZONTAL,
+        )
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
-                    contentDescription = chartDescription,
+                    contentDescription = chartState.description,
                     dataPointDescriptions =
                         buildDataPointDescriptions(
                             labels = dataList.fastMap { it.label },
                             values = dataList.fastMap { it.value },
                         ),
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =
@@ -235,27 +220,4 @@ fun HorizontalBarChart(
             modifier = Modifier.matchParentSize(),
         )
     }
-}
-
-/**
- * The min/max the chart lays out with: the raw range of [dataList], eased through
- * [rememberAnimatedRange] while a rolling window is sliding so rescales glide instead of jumping.
- */
-@Composable
-private fun rememberHorizontalDisplayRange(
-    dataList: List<BarData>,
-    barConfig: BarChartConfig,
-    streaming: StreamingLayout?,
-): Pair<Float, Float> {
-    val (rawMinValue, rawMaxValue) =
-        rememberHorizontalValueRange(
-            dataList = dataList,
-            negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
-        )
-    return rememberAnimatedRange(
-        minValue = rawMinValue,
-        maxValue = rawMaxValue,
-        animation = barConfig.animation,
-        active = streaming != null,
-    )
 }

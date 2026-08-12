@@ -1,7 +1,6 @@
 package com.himanshoe.charty.combo
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -14,7 +13,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
@@ -22,68 +20,33 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.ext.getLabels
 import com.himanshoe.charty.combo.internal.ComboChartConstants
-import com.himanshoe.charty.combo.internal.calculateLinePointPositions
-import com.himanshoe.charty.combo.internal.comboChartClickHandler
+import com.himanshoe.charty.combo.internal.ComboChartOverlays
+import com.himanshoe.charty.combo.internal.ComboDrawParams
+import com.himanshoe.charty.combo.internal.buildComboModifier
+import com.himanshoe.charty.combo.internal.comboChartAccessibility
 import com.himanshoe.charty.combo.internal.comboLineRange
 import com.himanshoe.charty.combo.internal.comboPrimaryRange
-import com.himanshoe.charty.combo.internal.drawComboBars
-import com.himanshoe.charty.combo.internal.drawComboLine
+import com.himanshoe.charty.combo.internal.drawComboContent
 import com.himanshoe.charty.combo.internal.toSecondaryAxisConfig
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateComboChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.draw.drawPersistentMarkers
-import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
-import com.himanshoe.charty.common.draw.drawReferenceLine
-import com.himanshoe.charty.common.draw.formatMarkerValue
-import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
-import com.himanshoe.charty.common.gesture.ChartCrosshairHost
-import com.himanshoe.charty.common.gesture.CrosshairManager
-import com.himanshoe.charty.common.gesture.CrosshairState
-import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.updateInteractionBounds
-import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
-
-private data class ComboDrawParams(
-    val dataList: List<ComboChartData>,
-    val chartContext: com.himanshoe.charty.common.ChartContext,
-    val comboConfig: com.himanshoe.charty.combo.config.ComboChartConfig,
-    val barColor: ChartyColor,
-    val lineColor: ChartyColor,
-    val minValue: Float,
-    val lineRange: Pair<Float, Float>?,
-    val isBelowAxisMode: Boolean,
-    val animationProgress: Float,
-    val onDataClick: ((ComboChartData) -> Unit)?,
-    val dataBounds: MutableList<Pair<androidx.compose.ui.geometry.Rect, ComboChartData>>,
-    val crosshairBounds: MutableList<Pair<Offset, ComboChartData>>?,
-    val crosshairManager: CrosshairManager<ComboChartData>?,
-    val crosshairState: CrosshairState?,
-    val tooltipState: com.himanshoe.charty.common.tooltip.TooltipState?,
-    val textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    val interactionConfig: com.himanshoe.charty.common.config.ChartInteractionConfig,
-    val drawCrosshairLabel: Boolean,
-)
 
 /**
  * A composable function that displays a combo chart, combining a bar chart and a line chart.
@@ -131,31 +94,33 @@ fun ComboChart(
     val effectiveComboConfig = crosshair?.let { comboConfig.copy(crosshairConfig = it.config) } ?: comboConfig
     val activeCrosshair = crosshair ?: comboConfig.crosshairConfig?.let { ChartCrosshair<ComboChartData>(config = it) }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = comboConfig.animation,
             visibleWindow = comboConfig.visibleWindow,
-            animation = comboConfig.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) =
-        remember(dataList, comboConfig.negativeValuesDrawMode, comboConfig.secondaryAxisForLine) {
-            comboPrimaryRange(
-                dataList = dataList,
-                negativeValuesDrawMode = comboConfig.negativeValuesDrawMode,
-                secondaryAxisForLine = comboConfig.secondaryAxisForLine,
-            )
+            displayData = {
+                rememberAnimatedComboData(
+                    dataList = it,
+                    animation = comboConfig.animation,
+                    enabled = comboConfig.animateValueChanges,
+                )
+            },
+            describe = { series, _, _ -> generateComboChartDescription(series) },
+        ) { windowed, _ ->
+            remember(windowed, comboConfig.negativeValuesDrawMode, comboConfig.secondaryAxisForLine) {
+                comboPrimaryRange(
+                    dataList = windowed,
+                    negativeValuesDrawMode = comboConfig.negativeValuesDrawMode,
+                    secondaryAxisForLine = comboConfig.secondaryAxisForLine,
+                )
+            }
         }
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = comboConfig.animation,
-            active = visible.streaming != null,
-        )
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
 
     val rawSecondaryLineRange =
         remember(dataList, comboConfig.secondaryAxisForLine) {
@@ -167,18 +132,11 @@ fun ComboChart(
                 minValue = rawLineMin,
                 maxValue = rawLineMax,
                 animation = comboConfig.animation,
-                active = visible.streaming != null,
+                active = chartState.streaming != null,
             )
         }
 
     val isBelowAxisMode = comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = rememberChartAnimation(comboConfig.animation)
-    val displayList =
-        rememberAnimatedComboData(
-            dataList = dataList,
-            animation = comboConfig.animation,
-            enabled = comboConfig.animateValueChanges,
-        )
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, ComboChartData>>() }
@@ -188,18 +146,6 @@ fun ComboChart(
             viewPortState = interactionConfig.viewPortState,
         )
     val textMeasurer = rememberTextMeasurer()
-
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateComboChartDescription(it)
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         buildComboModifier(
@@ -219,12 +165,12 @@ fun ComboChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
-            accessibility = comboChartAccessibility(chartDescription = chartDescription, dataList = dataList),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            accessibility = comboChartAccessibility(chartDescription = chartState.description, dataList = dataList),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =
@@ -249,7 +195,7 @@ fun ComboChart(
                     minValue = minValue,
                     lineRange = secondaryLineRange,
                     isBelowAxisMode = isBelowAxisMode,
-                    animationProgress = animationProgress.value,
+                    animationProgress = chartState.animationProgress.value,
                     onDataClick = onDataClick,
                     dataBounds = dataBounds,
                     crosshairBounds =
@@ -271,20 +217,6 @@ fun ComboChart(
         )
     }
 }
-
-/** Builds the combo chart's accessibility payload: a chart summary plus one entry per drawn point. */
-private fun comboChartAccessibility(
-    chartDescription: String?,
-    dataList: List<ComboChartData>,
-): ChartAccessibility =
-    ChartAccessibility(
-        contentDescription = chartDescription,
-        dataPointDescriptions =
-            dataList.fastMapIndexed { index, item ->
-                "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
-                    "bar ${item.barValue}, line ${item.lineValue}"
-            },
-    )
 
 /**
  * Returns [dataList] with both the bar value and the line value of every point tweened toward their
@@ -317,135 +249,3 @@ private fun rememberAnimatedComboData(
         }
     }
 }
-
-@Composable
-private fun BoxScope.ComboChartOverlays(
-    crosshairManager: CrosshairManager<ComboChartData>?,
-    animatedCrosshairState: CrosshairState?,
-    crosshair: ChartCrosshair<ComboChartData>?,
-) {
-    if (crosshair != null) {
-        ChartCrosshairHost(
-            crosshair = crosshair,
-            item = crosshairManager?.selectedItem,
-            state = animatedCrosshairState,
-            modifier = Modifier.matchParentSize(),
-        )
-    }
-}
-
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p: ComboDrawParams) {
-    val baselineY =
-        if (p.minValue < 0f && p.isBelowAxisMode) {
-            p.chartContext.convertValueToYPosition(0f)
-        } else {
-            p.chartContext.bottom
-        }
-    drawReferenceBandIfNeeded(
-        referenceBandConfig = p.comboConfig.referenceBand,
-        chartContext = p.chartContext,
-        orientation = ChartOrientation.VERTICAL,
-        textMeasurer = p.textMeasurer,
-    )
-    drawComboBars(
-        dataList = p.dataList,
-        chartContext = p.chartContext,
-        comboConfig = p.comboConfig,
-        barColor = p.barColor,
-        baselineY = baselineY,
-        animationProgress = p.animationProgress,
-        isBelowAxisMode = p.isBelowAxisMode,
-        dataBounds =
-            p.dataBounds.takeIf { p.onDataClick != null },
-    )
-    val pointPositions = p.chartContext.calculateLinePointPositions(dataList = p.dataList, lineRange = p.lineRange)
-    p.crosshairBounds?.let { bounds ->
-        bounds.clear()
-        pointPositions.fastForEachIndexed { index, pos ->
-            p.dataList.getOrNull(index)?.let { bounds.add(pos to it) }
-        }
-    }
-    drawComboLine(
-        pointPositions = pointPositions,
-        lineColor = p.lineColor,
-        comboConfig = p.comboConfig,
-        animationProgress = p.animationProgress,
-        dataList = p.dataList,
-        dataBounds =
-            p.dataBounds.takeIf { p.onDataClick != null },
-    )
-    drawPersistentMarkers(
-        chartContext = p.chartContext,
-        markers = p.comboConfig.markers,
-        pointPositions = pointPositions,
-        valueLabelFor = { index -> formatMarkerValue(p.dataList[index].lineValue) },
-        textMeasurer = p.textMeasurer,
-    )
-    p.comboConfig.referenceLine?.let { referenceLineConfig ->
-        drawReferenceLine(
-            chartContext = p.chartContext,
-            orientation = ChartOrientation.VERTICAL,
-            config = referenceLineConfig,
-            textMeasurer = p.textMeasurer,
-        )
-    }
-    if (p.crosshairManager == null) {
-        p.tooltipState?.let { state ->
-            drawTooltip(
-                tooltipState = state,
-                config = p.comboConfig.tooltipConfig,
-                textMeasurer = p.textMeasurer,
-                chartWidth = p.chartContext.right,
-                chartTop = p.chartContext.top,
-                chartBottom = p.chartContext.bottom,
-            )
-        }
-    }
-    drawInteractionOverlays(
-        interactionConfig = p.interactionConfig,
-        chartContext = p.chartContext,
-        totalItems = p.dataList.size,
-        textMeasurer = p.textMeasurer,
-    )
-    p.crosshairState?.let { state ->
-        p.comboConfig.crosshairConfig?.let { config ->
-            drawLineChartCrosshair(
-                state,
-                config,
-                p.chartContext,
-                p.textMeasurer,
-                p.lineColor,
-                drawLabel = p.drawCrosshairLabel,
-            )
-        }
-    }
-}
-
-private fun buildComboModifier(
-    crosshairManager: CrosshairManager<ComboChartData>?,
-    comboConfig: ComboChartConfig,
-    dataList: List<ComboChartData>,
-    crosshairBounds: MutableList<Pair<Offset, ComboChartData>>,
-    dataBounds: MutableList<Pair<Rect, ComboChartData>>,
-    onDataClick: ((ComboChartData) -> Unit)?,
-    onTooltipStateChange: (TooltipState?, ComboChartData?) -> Unit,
-): Modifier =
-    when {
-        crosshairManager != null ->
-            Modifier.chartCrosshairHandler(
-                dataList = dataList,
-                pointBounds = crosshairBounds,
-                onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = { data -> "${data.label}: ${data.lineValue}" },
-                dismissOnRelease = comboConfig.crosshairConfig?.dismissOnRelease ?: true,
-            )
-        onDataClick != null ->
-            Modifier.comboChartClickHandler(
-                dataList = dataList,
-                comboConfig = comboConfig,
-                dataBounds = dataBounds,
-                onDataClick = onDataClick,
-                onTooltipStateChange = onTooltipStateChange,
-            )
-        else -> Modifier
-    }

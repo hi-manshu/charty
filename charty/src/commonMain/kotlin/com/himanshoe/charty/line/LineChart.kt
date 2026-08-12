@@ -23,13 +23,10 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -48,11 +45,9 @@ import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberVisibleData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -123,26 +118,36 @@ fun LineChart(
     val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
 
-    val visible =
-        rememberVisibleData(
-            fullDataList = fullDataList,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
             interactionConfig = interactionConfig,
-            downsampleThreshold = lineConfig.downsampleThreshold,
+            animation = lineConfig.animation,
             visibleWindow = lineConfig.visibleWindow,
-            animation = lineConfig.animation,
-        ) { it.value }
-    val dataList = visible.data
-
-    val (minValue, maxValue) =
-        rememberLineDisplayRange(dataList = dataList, lineConfig = lineConfig, streaming = visible.streaming)
+            downsampleThreshold = lineConfig.downsampleThreshold,
+            downsampleValue = { it.value },
+            displayData = {
+                rememberAnimatedLineData(
+                    dataList = it,
+                    animation = lineConfig.animation,
+                    enabled = lineConfig.animateValueChanges,
+                )
+            },
+            describe = { series, min, max ->
+                generateLineChartDescription(data = series, minValue = min, maxValue = max)
+            },
+        ) { windowed, _ ->
+            rememberLineValueRange(
+                dataList = windowed,
+                negativeValuesDrawMode = lineConfig.negativeValuesDrawMode,
+            )
+        }
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
+    val animationProgress = chartState.animationProgress
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = rememberChartAnimation(lineConfig.animation)
-    val displayList =
-        rememberAnimatedLineData(
-            dataList = dataList,
-            animation = lineConfig.animation,
-            enabled = lineConfig.animateValueChanges,
-        )
 
     val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
@@ -153,17 +158,6 @@ fun LineChart(
             viewPortState = interactionConfig.viewPortState,
         )
 
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateLineChartDescription(data = it, minValue = minValue, maxValue = maxValue)
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
     AutoScrollToLatestEffect(
         viewPortState = interactionConfig.viewPortState,
         fullDataSize = fullDataList.size,
@@ -183,16 +177,16 @@ fun LineChart(
         )
 
     val zoomModifier = interactionConfig.viewPortState?.let { Modifier.chartZoomAndPan(it) } ?: Modifier
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = modifier.then(interactionModifier).then(zoomModifier).then(pan)) {
         ChartScaffold(
-            accessibility = lineChartAccessibility(chartDescription = chartDescription, dataList = dataList),
+            accessibility = lineChartAccessibility(chartDescription = chartState.description, dataList = dataList),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig = lineAxisConfig(minValue = minValue, maxValue = maxValue, drawAxisAtZero = isBelowAxisMode),
             config = scaffoldConfig,
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
@@ -436,29 +430,6 @@ private fun rememberLineValueRange(
         val values = dataList.getValues()
         calculateMinValue(values) to calculateMaxValue(values)
     }
-
-/**
- * The min/max the chart lays out with: the raw range of [dataList], eased through
- * [rememberAnimatedRange] while a rolling window is sliding so rescales glide instead of jumping.
- */
-@Composable
-private fun rememberLineDisplayRange(
-    dataList: List<LineData>,
-    lineConfig: LineChartConfig,
-    streaming: StreamingLayout?,
-): Pair<Float, Float> {
-    val (rawMinValue, rawMaxValue) =
-        rememberLineValueRange(
-            dataList = dataList,
-            negativeValuesDrawMode = lineConfig.negativeValuesDrawMode,
-        )
-    return rememberAnimatedRange(
-        minValue = rawMinValue,
-        maxValue = rawMaxValue,
-        animation = lineConfig.animation,
-        active = streaming != null,
-    )
-}
 
 /**
  * Returns [dataList] with each point's value tweened toward its target whenever the data changes, so

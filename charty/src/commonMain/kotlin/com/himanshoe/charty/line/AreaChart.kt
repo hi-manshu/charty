@@ -1,7 +1,6 @@
 package com.himanshoe.charty.line
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -9,15 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.util.fastFirstOrNull
-import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
@@ -27,69 +18,34 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
-import com.himanshoe.charty.common.animation.rememberChartAnimation
-import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
-import com.himanshoe.charty.common.draw.drawPersistentMarkers
-import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
-import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
-import com.himanshoe.charty.common.gesture.ChartCrosshairHost
-import com.himanshoe.charty.common.gesture.CrosshairManager
-import com.himanshoe.charty.common.gesture.CrosshairState
-import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
-import com.himanshoe.charty.common.gesture.chartCrosshairHandler
-import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
-import com.himanshoe.charty.common.rememberChartDescription
-import com.himanshoe.charty.common.rememberVisibleData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
-import com.himanshoe.charty.common.tooltip.ChartTooltipHost
-import com.himanshoe.charty.common.tooltip.TooltipManager
-import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
-import com.himanshoe.charty.line.ext.createAreaBrush
-import com.himanshoe.charty.line.ext.createLineBrush
-import com.himanshoe.charty.line.internal.area.createAreaChartModifier
+import com.himanshoe.charty.line.internal.area.AreaChartDrawParams
+import com.himanshoe.charty.line.internal.area.AreaChartOverlays
+import com.himanshoe.charty.line.internal.area.buildAreaModifier
+import com.himanshoe.charty.line.internal.area.calculateBaselineY
+import com.himanshoe.charty.line.internal.area.calculatePointPositions
+import com.himanshoe.charty.line.internal.area.createAxisConfig
+import com.himanshoe.charty.line.internal.area.drawAreaChart
+import com.himanshoe.charty.line.internal.area.drawTooltipHighlightIfNeeded
+import com.himanshoe.charty.line.internal.area.drawTooltipIfNeeded
+import com.himanshoe.charty.line.internal.area.rememberAreaValueRange
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
-import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
-import com.himanshoe.charty.line.internal.path.interpolatedLinePath
-
-private const val DEFAULT_AXIS_STEPS = 6
-private const val HIGHLIGHT_LINE_ALPHA = 0.1f
-private const val HIGHLIGHT_LINE_WIDTH = 1.5f
-private const val HIGHLIGHT_CIRCLE_OUTER_PADDING = 3f
-private const val HIGHLIGHT_CIRCLE_INNER_PADDING = 2f
-
-/**
- * Parameters for drawing area chart
- */
-private data class AreaChartDrawParams(
-    val dataList: List<LineData>,
-    val pointPositions: List<Offset>,
-    val baselineY: Float,
-    val config: LineChartConfig,
-    val color: ChartyColor,
-    val fillAlpha: Float,
-    val animationProgress: Float,
-    val chartContext: com.himanshoe.charty.common.ChartContext,
-    val textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    val onBarBoundCalculated: (Pair<Offset, LineData>) -> Unit,
-)
 
 /**
  * A composable function that displays an area chart.
@@ -149,30 +105,27 @@ fun AreaChart(
     val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
 
-    val visible =
-        rememberVisibleData(
-            fullDataList = fullDataList,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
             interactionConfig = interactionConfig,
-            downsampleThreshold = lineConfig.downsampleThreshold,
+            animation = lineConfig.animation,
             visibleWindow = lineConfig.visibleWindow,
-            animation = lineConfig.animation,
-        ) { it.value }
-    val dataList = visible.data
-
-    val (rawMinValue, rawMaxValue) =
-        rememberAreaValueRange(
-            dataList = dataList,
-            negativeValuesDrawMode = lineConfig.negativeValuesDrawMode,
-        )
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = lineConfig.animation,
-            active = visible.streaming != null,
-        )
+            downsampleThreshold = lineConfig.downsampleThreshold,
+            downsampleValue = { it.value },
+            describe = { series, min, max ->
+                generateLineChartDescription(data = series, minValue = min, maxValue = max)
+            },
+        ) { windowed, _ ->
+            rememberAreaValueRange(
+                dataList = windowed,
+                negativeValuesDrawMode = lineConfig.negativeValuesDrawMode,
+            )
+        }
+    val dataList = chartState.data
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val animationProgress = rememberChartAnimation(lineConfig.animation)
     val tooltipManager = rememberTooltipManager<Offset, LineData>()
     val textMeasurer = rememberTextMeasurer()
 
@@ -181,18 +134,6 @@ fun AreaChart(
             enabled = effectiveLineConfig.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
         )
-
-    val chartDescription =
-        rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
-            generateLineChartDescription(data = it, minValue = minValue, maxValue = maxValue)
-        }
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val chartModifier =
         modifier.then(
@@ -206,25 +147,38 @@ fun AreaChart(
             ),
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
-                    contentDescription = chartDescription,
+                    contentDescription = chartState.description,
                     dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
-            yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
+            yAxisConfig =
+                createAxisConfig(
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    isBelowAxisMode = isBelowAxisMode,
+                ),
             config = scaffoldConfig,
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
             tooltipManager.clearBounds()
-            val pointPositions = calculatePointPositions(dataList, chartContext) { tooltipManager.bounds.add(it) }
-            val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
+            val pointPositions =
+                calculatePointPositions(dataList = dataList, chartContext = chartContext) {
+                    tooltipManager.bounds.add(it)
+                }
+            val baselineY =
+                calculateBaselineY(
+                    minValue = minValue,
+                    isBelowAxisMode = isBelowAxisMode,
+                    chartContext = chartContext,
+                )
             drawAreaChart(
                 params =
                     AreaChartDrawParams(
@@ -234,7 +188,7 @@ fun AreaChart(
                         config = lineConfig,
                         color = color,
                         fillAlpha = fillAlpha,
-                        animationProgress = animationProgress.value,
+                        animationProgress = chartState.animationProgress.value,
                         chartContext = chartContext,
                         textMeasurer = textMeasurer,
                         onBarBoundCalculated = { if (onPointClick != null) tooltipManager.bounds.add(it) },
@@ -242,14 +196,19 @@ fun AreaChart(
             )
             if (crosshairManager == null) {
                 drawTooltipHighlightIfNeeded(
-                    tooltipManager.tooltipState,
-                    lineConfig,
-                    tooltipManager.bounds,
-                    chartContext,
-                    color,
+                    tooltipState = tooltipManager.tooltipState,
+                    lineConfig = lineConfig,
+                    pointBounds = tooltipManager.bounds,
+                    chartContext = chartContext,
+                    color = color,
                 )
                 if (tooltip.isCanvas()) {
-                    drawTooltipIfNeeded(tooltipManager.tooltipState, lineConfig, textMeasurer, chartContext)
+                    drawTooltipIfNeeded(
+                        tooltipState = tooltipManager.tooltipState,
+                        lineConfig = lineConfig,
+                        textMeasurer = textMeasurer,
+                        chartContext = chartContext,
+                    )
                 }
             }
             drawInteractionOverlays(
@@ -261,11 +220,11 @@ fun AreaChart(
             animatedCrosshairState?.resolve()?.let { crosshairState ->
                 effectiveLineConfig.crosshairConfig?.let { crosshairConfig ->
                     drawLineChartCrosshair(
-                        crosshairState,
-                        crosshairConfig,
-                        chartContext,
-                        textMeasurer,
-                        color,
+                        state = crosshairState,
+                        config = crosshairConfig,
+                        chartContext = chartContext,
+                        textMeasurer = textMeasurer,
+                        chartColor = color,
                         drawLabel = false,
                     )
                 }
@@ -278,261 +237,6 @@ fun AreaChart(
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             tooltip = tooltip,
             crosshair = activeCrosshair,
-        )
-    }
-}
-
-@Composable
-private fun BoxScope.AreaChartOverlays(
-    tooltipManager: TooltipManager<Offset, LineData>,
-    crosshairManager: CrosshairManager<LineData>?,
-    animatedCrosshairState: CrosshairState?,
-    tooltip: ChartTooltip<LineData>,
-    crosshair: ChartCrosshair<LineData>?,
-) {
-    ChartTooltipHost(
-        tooltip = tooltip,
-        item = tooltipManager.selectedItem,
-        anchor = tooltipManager.tooltipState,
-        modifier = Modifier.matchParentSize(),
-    )
-
-    if (crosshair != null) {
-        ChartCrosshairHost(
-            crosshair = crosshair,
-            item = crosshairManager?.selectedItem,
-            state = animatedCrosshairState,
-            modifier = Modifier.matchParentSize(),
-        )
-    }
-}
-
-private fun buildAreaModifier(
-    crosshairManager: CrosshairManager<LineData>?,
-    dataList: List<LineData>,
-    tooltipManager: TooltipManager<Offset, LineData>,
-    lineConfig: LineChartConfig,
-    onPointClick: ((LineData) -> Unit)?,
-    interactionConfig: ChartInteractionConfig,
-): Modifier {
-    var mod: Modifier =
-        if (crosshairManager != null) {
-            Modifier.chartCrosshairHandler(
-                dataList = dataList,
-                pointBounds = tooltipManager.bounds,
-                onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = lineConfig.tooltipFormatter,
-                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
-            )
-        } else if (onPointClick != null) {
-            createAreaChartModifier(
-                modifier = Modifier,
-                onPointClick = onPointClick,
-                dataList = dataList,
-                lineConfig = lineConfig,
-                pointBounds = tooltipManager.bounds,
-                onTooltipUpdate = tooltipManager::updateTooltip,
-            )
-        } else {
-            Modifier
-        }
-    if (interactionConfig.brushSelectionState != null) {
-        mod =
-            mod.chartBrushSelectionHandler(
-                dataList = dataList,
-                brushState = interactionConfig.brushSelectionState,
-                onRangeSelect = interactionConfig.onRangeSelect,
-            )
-    }
-    if (interactionConfig.viewPortState != null) {
-        mod = mod.chartZoomAndPan(interactionConfig.viewPortState)
-    }
-    return mod
-}
-
-@Composable
-private fun rememberAreaValueRange(
-    dataList: List<LineData>,
-    negativeValuesDrawMode: NegativeValuesDrawMode,
-): Pair<Float, Float> =
-    remember(dataList, negativeValuesDrawMode) {
-        val values = dataList.getValues()
-        val minValue =
-            com.himanshoe.charty.common.util
-                .calculateMinValue(values)
-        val maxValue =
-            com.himanshoe.charty.common.util
-                .calculateMaxValue(values)
-        minValue to maxValue
-    }
-
-private fun createAxisConfig(
-    minValue: Float,
-    maxValue: Float,
-    isBelowAxisMode: Boolean,
-): AxisConfig =
-    AxisConfig(
-        minValue = minValue,
-        maxValue = maxValue,
-        steps = DEFAULT_AXIS_STEPS,
-        drawAxisAtZero = isBelowAxisMode,
-    )
-
-private fun calculatePointPositions(
-    dataList: List<LineData>,
-    chartContext: com.himanshoe.charty.common.ChartContext,
-    onPointCalculated: (Pair<Offset, LineData>) -> Unit,
-): List<Offset> =
-    dataList.fastMapIndexed { index, point ->
-        val position =
-            Offset(
-                x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                y = chartContext.convertValueToYPosition(point.value),
-            )
-        onPointCalculated(position to point)
-        position
-    }
-
-private fun calculateBaselineY(
-    minValue: Float,
-    isBelowAxisMode: Boolean,
-    chartContext: com.himanshoe.charty.common.ChartContext,
-): Float =
-    if (minValue < 0f && isBelowAxisMode) {
-        chartContext.convertValueToYPosition(0f)
-    } else {
-        chartContext.bottom
-    }
-
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(params: AreaChartDrawParams) {
-    if (params.pointPositions.isEmpty()) {
-        return
-    }
-
-    drawReferenceBandIfNeeded(
-        referenceBandConfig = params.config.referenceBand,
-        chartContext = params.chartContext,
-        orientation = ChartOrientation.VERTICAL,
-        textMeasurer = params.textMeasurer,
-    )
-
-    val startX = params.pointPositions.first().x
-    val endX = params.pointPositions.last().x
-    val clipRight = startX + (endX - startX) * params.animationProgress
-
-    val interpolation = resolveLineInterpolation(params.config)
-    val areaPath =
-        interpolatedAreaPath(
-            points = params.pointPositions,
-            baselineY = params.baselineY,
-            interpolation = interpolation,
-        )
-    val areaBrush =
-        createAreaBrush(
-            color = params.color,
-            fillAlpha = params.fillAlpha,
-            chartTop = params.chartContext.top,
-            chartBottom = params.chartContext.bottom,
-        )
-    val linePath = interpolatedLinePath(points = params.pointPositions, interpolation = interpolation)
-    val lineBrush = createLineBrush(params.color)
-
-    clipRect(right = clipRight) {
-        drawPath(path = areaPath, brush = areaBrush, style = Fill)
-
-        drawPath(
-            path = linePath,
-            brush = lineBrush,
-            style = Stroke(width = params.config.lineWidth, cap = params.config.strokeCap),
-        )
-    }
-
-    if (params.config.showPoints) {
-        drawAreaPoints(
-            pointPositions = params.pointPositions,
-            lineBrush = lineBrush,
-            config = params.config,
-            animationProgress = params.animationProgress,
-        )
-    }
-
-    drawPersistentMarkers(
-        chartContext = params.chartContext,
-        markers = params.config.markers,
-        pointPositions = params.pointPositions,
-        valueLabelFor = { index -> formatMarkerValue(params.dataList[index].value) },
-        textMeasurer = params.textMeasurer,
-    )
-}
-
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaPoints(
-    pointPositions: List<Offset>,
-    lineBrush: Brush,
-    config: LineChartConfig,
-    animationProgress: Float,
-) {
-    pointPositions.fastForEachIndexed { index, position ->
-        val pointProgress = index.toFloat() / (pointPositions.size - 1).coerceAtLeast(1)
-        if (pointProgress <= animationProgress) {
-            drawCircle(
-                brush = lineBrush,
-                radius = config.pointRadius,
-                center = position,
-                alpha = config.pointAlpha,
-            )
-        }
-    }
-}
-
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipHighlightIfNeeded(
-    tooltipState: TooltipState?,
-    lineConfig: LineChartConfig,
-    pointBounds: List<Pair<Offset, LineData>>,
-    chartContext: com.himanshoe.charty.common.ChartContext,
-    color: ChartyColor,
-) {
-    tooltipState?.let { state ->
-        val clickedPosition =
-            pointBounds
-                .fastFirstOrNull { (_, data) ->
-                    lineConfig.tooltipFormatter(data) == state.content
-                }?.first
-
-        clickedPosition?.let { position ->
-            drawLine(
-                color = Color.Black.copy(alpha = HIGHLIGHT_LINE_ALPHA),
-                start = Offset(position.x, chartContext.top),
-                end = Offset(position.x, chartContext.bottom),
-                strokeWidth = HIGHLIGHT_LINE_WIDTH,
-            )
-            drawCircle(
-                color = Color.White,
-                radius = lineConfig.pointRadius + HIGHLIGHT_CIRCLE_OUTER_PADDING,
-                center = position,
-            )
-            drawCircle(
-                brush = Brush.linearGradient(color.value),
-                radius = lineConfig.pointRadius + HIGHLIGHT_CIRCLE_INNER_PADDING,
-                center = position,
-            )
-        }
-    }
-}
-
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTooltipIfNeeded(
-    tooltipState: TooltipState?,
-    lineConfig: LineChartConfig,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    chartContext: com.himanshoe.charty.common.ChartContext,
-) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = lineConfig.tooltipConfig,
-            textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
         )
     }
 }

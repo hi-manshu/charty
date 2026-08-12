@@ -9,6 +9,7 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.ext.getAllValues
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.axis.AxisConfig
 
 private const val COMBO_SECONDARY_AXIS_STEPS = 6
@@ -145,3 +146,24 @@ internal fun calculateAnimatedBarDimensions(
             height = animatedBarHeight,
         )
     }
+
+/**
+ * Builds the combo chart's accessibility payload: a chart summary plus one entry per drawn point,
+ * so a screen reader can traverse the points one by one instead of hearing only the summary.
+ *
+ * @param chartDescription The chart-level summary, or `null` when it is suppressed.
+ * @param dataList The points currently drawn, in the order they are announced.
+ * @return The accessibility payload to hand to the chart scaffold.
+ */
+internal fun comboChartAccessibility(
+    chartDescription: String?,
+    dataList: List<ComboChartData>,
+): ChartAccessibility =
+    ChartAccessibility(
+        contentDescription = chartDescription,
+        dataPointDescriptions =
+            dataList.fastMapIndexed { index, item ->
+                "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
+                    "bar ${item.barValue}, line ${item.lineValue}"
+            },
+    )

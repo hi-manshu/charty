@@ -8,6 +8,14 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
+import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.draw.formatMarkerValue
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 
 /**
  * Draw all bars in the combo chart
@@ -111,5 +119,99 @@ internal fun DrawScope.drawComboLine(
             comboConfig = comboConfig,
             animationProgress = animationProgress,
         )
+    }
+}
+
+/**
+ * Draws one full combo pass: the optional reference band, the bars, the line and its markers, the
+ * optional reference line, the canvas tooltip when no crosshair is active, the interaction
+ * overlays, and finally the crosshair itself.
+ *
+ * @param p The data, geometry, styling, and interaction state for this pass.
+ */
+internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
+    val baselineY =
+        if (p.minValue < 0f && p.isBelowAxisMode) {
+            p.chartContext.convertValueToYPosition(0f)
+        } else {
+            p.chartContext.bottom
+        }
+    drawReferenceBandIfNeeded(
+        referenceBandConfig = p.comboConfig.referenceBand,
+        chartContext = p.chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = p.textMeasurer,
+    )
+    drawComboBars(
+        dataList = p.dataList,
+        chartContext = p.chartContext,
+        comboConfig = p.comboConfig,
+        barColor = p.barColor,
+        baselineY = baselineY,
+        animationProgress = p.animationProgress,
+        isBelowAxisMode = p.isBelowAxisMode,
+        dataBounds =
+            p.dataBounds.takeIf { p.onDataClick != null },
+    )
+    val pointPositions = p.chartContext.calculateLinePointPositions(dataList = p.dataList, lineRange = p.lineRange)
+    p.crosshairBounds?.let { bounds ->
+        bounds.clear()
+        pointPositions.fastForEachIndexed { index, pos ->
+            p.dataList.getOrNull(index)?.let { bounds.add(pos to it) }
+        }
+    }
+    drawComboLine(
+        pointPositions = pointPositions,
+        lineColor = p.lineColor,
+        comboConfig = p.comboConfig,
+        animationProgress = p.animationProgress,
+        dataList = p.dataList,
+        dataBounds =
+            p.dataBounds.takeIf { p.onDataClick != null },
+    )
+    drawPersistentMarkers(
+        chartContext = p.chartContext,
+        markers = p.comboConfig.markers,
+        pointPositions = pointPositions,
+        valueLabelFor = { index -> formatMarkerValue(p.dataList[index].lineValue) },
+        textMeasurer = p.textMeasurer,
+    )
+    p.comboConfig.referenceLine?.let { referenceLineConfig ->
+        drawReferenceLine(
+            chartContext = p.chartContext,
+            orientation = ChartOrientation.VERTICAL,
+            config = referenceLineConfig,
+            textMeasurer = p.textMeasurer,
+        )
+    }
+    if (p.crosshairManager == null) {
+        p.tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = p.comboConfig.tooltipConfig,
+                textMeasurer = p.textMeasurer,
+                chartWidth = p.chartContext.right,
+                chartTop = p.chartContext.top,
+                chartBottom = p.chartContext.bottom,
+            )
+        }
+    }
+    drawInteractionOverlays(
+        interactionConfig = p.interactionConfig,
+        chartContext = p.chartContext,
+        totalItems = p.dataList.size,
+        textMeasurer = p.textMeasurer,
+    )
+    p.crosshairState?.let { state ->
+        p.comboConfig.crosshairConfig?.let { config ->
+            drawLineChartCrosshair(
+                state = state,
+                config = config,
+                chartContext = p.chartContext,
+                textMeasurer = p.textMeasurer,
+                chartColor = p.lineColor,
+                drawLabel = p.drawCrosshairLabel,
+            )
+        }
     }
 }

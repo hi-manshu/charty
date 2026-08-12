@@ -2,13 +2,20 @@ package com.himanshoe.charty.line.internal.stackedarea
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastForEachIndexed
+import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.draw.drawReferenceBand
+import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
+import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
 import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 import com.himanshoe.charty.line.resolveLineInterpolation
@@ -111,6 +118,108 @@ private fun addSegmentBounds(
                         cumulativeValue = cumulativeValue,
                     ),
                 ),
+            )
+        }
+    }
+}
+
+/**
+ * Draws one full stacked area pass: the optional reference band, the crosshair snap points, every
+ * band from the top of the stack down so lower bands overlap correctly, the canvas tooltip when no
+ * crosshair is active, the interaction overlays, and finally the crosshair itself.
+ *
+ * @param params The data, geometry, styling, and interaction state for this pass.
+ */
+internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
+    val dataList = params.dataList
+    val chartContext = params.chartContext
+    val colorList = params.colorList
+    val lineConfig = params.lineConfig
+    val fillAlpha = params.fillAlpha
+    val animationProgress = params.animationProgress
+    val onAreaClick = params.onAreaClick
+    val areaSegmentBounds = params.areaSegmentBounds
+    val tooltipState = params.tooltipState
+    val textMeasurer = params.textMeasurer
+    val interactionConfig = params.interactionConfig
+    val baselineY = chartContext.bottom
+    val startX = chartContext.left
+    val seriesCount = dataList.getOrNull(0)?.values?.size ?: 0
+
+    lineConfig.referenceBand?.let { band ->
+        drawReferenceBand(
+            chartContext = chartContext,
+            orientation = ChartOrientation.VERTICAL,
+            config = band,
+            textMeasurer = textMeasurer,
+        )
+    }
+
+    params.crosshairBounds?.let { bounds ->
+        bounds.clear()
+        if (seriesCount > 0) {
+            chartContext.calculateCumulativePositions(dataList, seriesCount - 1).fastForEachIndexed { idx, pos ->
+                dataList.getOrNull(idx)?.let { bounds.add(pos to it) }
+            }
+        }
+    }
+
+    for (seriesIndex in seriesCount - 1 downTo 0) {
+        val seriesColor = colorList[seriesIndex % colorList.size]
+        val cumulativePositions = chartContext.calculateCumulativePositions(dataList, seriesIndex)
+        val lowerPositions = chartContext.calculateLowerPositions(dataList, seriesIndex, baselineY)
+
+        drawStackedAreaSeries(
+            StackedAreaSeriesParams(
+                seriesIndex = seriesIndex,
+                seriesColor = seriesColor,
+                cumulativePositions = cumulativePositions,
+                lowerPositions = lowerPositions,
+                startX = startX,
+                baselineY = baselineY,
+                lineConfig = lineConfig,
+                fillAlpha = fillAlpha,
+                animationProgress = animationProgress,
+                dataList = dataList,
+                onSegmentBoundsCalculated =
+                    if (onAreaClick != null) {
+                        { bounds -> areaSegmentBounds.add(bounds) }
+                    } else {
+                        null
+                    },
+            ),
+        )
+    }
+
+    if (params.crosshairManager == null) {
+        tooltipState?.let { state ->
+            drawTooltip(
+                tooltipState = state,
+                config = lineConfig.tooltipConfig,
+                textMeasurer = textMeasurer,
+                chartWidth = chartContext.right,
+                chartTop = chartContext.top,
+                chartBottom = chartContext.bottom,
+            )
+        }
+    }
+    drawInteractionOverlays(
+        interactionConfig = interactionConfig,
+        chartContext = chartContext,
+        totalItems = dataList.size,
+        textMeasurer = textMeasurer,
+    )
+
+    params.crosshairState?.let { state ->
+        lineConfig.crosshairConfig?.let { config ->
+            val dotColor = ChartyColor.Solid(colorList.firstOrNull() ?: Color.Transparent)
+            drawLineChartCrosshair(
+                state = state,
+                config = config,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+                chartColor = dotColor,
+                drawLabel = params.drawCrosshairLabel,
             )
         }
     }

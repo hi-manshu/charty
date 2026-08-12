@@ -16,6 +16,7 @@ import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.drawVerticalBarMarkers
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
+import com.himanshoe.charty.bar.internal.bar.waterfall.calculateCumulativeValues
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallBarParams
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallBarTopValues
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallRange
@@ -25,18 +26,15 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.animation.rememberAnimatedRange
-import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
-import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
-import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
@@ -90,45 +88,31 @@ fun WaterfallChart(
         return
     }
 
-    val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
+    val chartState =
+        rememberCartesianChartState(
+            fullData = fullDataList,
+            interactionConfig = interactionConfig,
+            animation = config.animation,
             visibleWindow = config.visibleWindow,
-            animation = config.animation,
-            streamingState = interactionConfig.streamingState,
-        )
-    val dataList = visible.data
-
-    val displayList =
-        rememberAnimatedBarValues(
-            dataList = dataList,
-            animation = config.animation,
-            enabled = config.animateValueChanges,
-        )
-    val cumulativeValues = rememberCumulativeValues(displayList)
-    val (rawMinValue, rawMaxValue) =
-        remember(cumulativeValues) {
-            calculateWaterfallRange(cumulativeValues)
+            displayData = {
+                rememberAnimatedBarValues(
+                    dataList = it,
+                    animation = config.animation,
+                    enabled = config.animateValueChanges,
+                )
+            },
+        ) { _, display ->
+            remember(display) { calculateWaterfallRange(calculateCumulativeValues(display)) }
         }
-    val (minValue, maxValue) =
-        rememberAnimatedRange(
-            minValue = rawMinValue,
-            maxValue = rawMaxValue,
-            animation = config.animation,
-            active = visible.streaming != null,
-        )
+    val dataList = chartState.data
+    val displayList = chartState.displayData
+    val cumulativeValues = rememberCumulativeValues(displayList)
+    val minValue = chartState.minValue
+    val maxValue = chartState.maxValue
 
-    val animationProgress = rememberChartAnimation(config.animation)
+    val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
-
-    syncInteractionDataSizes(
-        viewPortState = interactionConfig.viewPortState,
-        brushSelectionState = interactionConfig.brushSelectionState,
-        fullDataSize = fullDataList.size,
-        dataSize = dataList.size,
-    )
 
     val clickModifier =
         createWaterfallClickModifier(
@@ -147,7 +131,7 @@ fun WaterfallChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -158,7 +142,7 @@ fun WaterfallChart(
                     values = dataList.fastMap { it.value },
                     fallbackDescription = "Waterfall chart, ${fullDataList.size} data points.",
                 ),
-            streaming = interactionConfig.streamingRender(visible.streaming),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =
