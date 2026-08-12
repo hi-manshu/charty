@@ -66,10 +66,11 @@ internal fun DrawScope.drawStraightLine(
 ) {
     val segmentsToDraw = ((pointPositions.size - 1) * animationProgress).toInt()
     val segmentProgress = ((pointPositions.size - 1) * animationProgress) - segmentsToDraw
+    val brush = Brush.linearGradient(lineColor.value)
 
     for (i in 0 until segmentsToDraw) {
         drawLine(
-            brush = Brush.linearGradient(lineColor.value),
+            brush = brush,
             start = pointPositions[i],
             end = pointPositions[i + 1],
             strokeWidth = comboConfig.lineWidth,
@@ -86,7 +87,7 @@ internal fun DrawScope.drawStraightLine(
                 y = start.y + (end.y - start.y) * segmentProgress,
             )
         drawLine(
-            brush = Brush.linearGradient(lineColor.value),
+            brush = brush,
             start = start,
             end = partialEnd,
             strokeWidth = comboConfig.lineWidth,
@@ -104,11 +105,12 @@ internal fun DrawScope.drawLinePoints(
     comboConfig: ComboChartConfig,
     animationProgress: Float,
 ) {
+    val brush = Brush.linearGradient(lineColor.value)
     pointPositions.fastForEachIndexed { index, position ->
         val pointProgress = index.toFloat() / (pointPositions.size - 1).coerceAtLeast(1)
         if (pointProgress <= animationProgress) {
             drawCircle(
-                brush = Brush.linearGradient(lineColor.value),
+                brush = brush,
                 radius = comboConfig.pointRadius,
                 center = position,
                 alpha = comboConfig.pointAlpha,

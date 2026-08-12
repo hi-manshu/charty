@@ -150,6 +150,8 @@ fun CandlestickChart(
     ) { chartContext ->
         updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
+        val bullishBrush = Brush.verticalGradient(bullishColor.value)
+        val bearishBrush = Brush.verticalGradient(bearishColor.value)
         displayList.fastForEachIndexed { index, candle ->
             drawCandleBar(
                 index = index,
@@ -157,24 +159,26 @@ fun CandlestickChart(
                 dataList = displayList,
                 chartContext = chartContext,
                 candlestickConfig = candlestickConfig,
-                bullishColor = bullishColor,
-                bearishColor = bearishColor,
+                bullishBrush = bullishBrush,
+                bearishBrush = bearishBrush,
                 animationProgress = animationProgress.value,
             )
         }
 
-        drawPersistentMarkers(
-            chartContext = chartContext,
-            markers = candlestickConfig.markers,
-            pointPositions =
-                candleMarkerPositions(
-                    chartContext = chartContext,
-                    dataList = displayList,
-                    candleWidthFraction = candlestickConfig.candleWidthFraction,
-                ),
-            valueLabelFor = { index -> formatMarkerValue(displayList[index].close) },
-            textMeasurer = textMeasurer,
-        )
+        if (candlestickConfig.markers.isNotEmpty()) {
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = candlestickConfig.markers,
+                pointPositions =
+                    candleMarkerPositions(
+                        chartContext = chartContext,
+                        dataList = displayList,
+                        candleWidthFraction = candlestickConfig.candleWidthFraction,
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].close) },
+                textMeasurer = textMeasurer,
+            )
+        }
 
         drawInteractionOverlays(
             interactionConfig = interactionConfig,
@@ -249,8 +253,8 @@ private fun DrawScope.drawCandleBar(
     dataList: List<CandleData>,
     chartContext: ChartContext,
     candlestickConfig: CandlestickChartConfig,
-    bullishColor: ChartyColor,
-    bearishColor: ChartyColor,
+    bullishBrush: Brush,
+    bearishBrush: Brush,
     animationProgress: Float,
 ) {
     val candleX =
@@ -269,11 +273,11 @@ private fun DrawScope.drawCandleBar(
     val lowY = chartContext.convertValueToYPosition(candle.low)
     val closeY = chartContext.convertValueToYPosition(candle.close)
     val isBullish = candle.isBullish
-    val candleColor =
+    val candleBrush =
         if (isBullish) {
-            bullishColor.value
+            bullishBrush
         } else {
-            bearishColor.value
+            bearishBrush
         }
 
     val bodyTop = minOf(openY, closeY)
@@ -300,7 +304,7 @@ private fun DrawScope.drawCandleBar(
 
     drawCandlestick(
         CandlestickDrawParams(
-            brush = Brush.verticalGradient(candleColor),
+            brush = candleBrush,
             centerX = candleX + candleWidth / CandlestickChartConstants.TWO,
             bodyTop = animatedBodyTop,
             bodyHeight = animatedBodyHeight,

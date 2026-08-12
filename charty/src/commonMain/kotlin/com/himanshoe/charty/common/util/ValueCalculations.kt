@@ -23,15 +23,19 @@ private const val NICE_RANGE_ROUND_HALF = 0.5f
  * Calculates an appropriate maximum value with "nice" rounding, suitable for a chart axis.
  *
  * This function rounds the maximum value in the list up to the nearest multiple of [stepSize].
+ * An empty list has no maximum and yields `0f`.
  *
  * @param values The list of values from which to find the maximum.
- * @param stepSize The step size for rounding.
+ * @param stepSize The step size for rounding. Must be positive.
  * @return The rounded maximum value.
+ * @throws IllegalArgumentException if [stepSize] is not positive, which would otherwise divide by
+ *   zero and round to an arbitrary value.
  */
 fun calculateMaxValue(
     values: List<Float>,
     stepSize: Int = 10,
 ): Float {
+    require(stepSize > 0) { "stepSize must be positive but was $stepSize" }
     val maxData = values.maxOrNull() ?: 0f
     return ceil(maxData / stepSize).toInt() * stepSize.toFloat()
 }
@@ -40,15 +44,19 @@ fun calculateMaxValue(
  * Calculates an appropriate minimum value with "nice" rounding, suitable for a chart axis.
  *
  * This function rounds the minimum value in the list down to the nearest multiple of [stepSize].
+ * An empty list has no minimum and yields `0f`.
  *
  * @param values The list of values from which to find the minimum.
- * @param stepSize The step size for rounding.
+ * @param stepSize The step size for rounding. Must be positive.
  * @return The rounded minimum value.
+ * @throws IllegalArgumentException if [stepSize] is not positive, which would otherwise divide by
+ *   zero and round to an arbitrary value.
  */
 fun calculateMinValue(
     values: List<Float>,
     stepSize: Int = 10,
 ): Float {
+    require(stepSize > 0) { "stepSize must be positive but was $stepSize" }
     val minData = values.minOrNull() ?: 0f
     return floor(minData / stepSize).toInt() * stepSize.toFloat()
 }
@@ -57,6 +65,11 @@ fun calculateMinValue(
  * Calculates the minimum and maximum values with percentage-based padding.
  *
  * This is useful for charts like candlestick charts where padding is preferred over step-based rounding.
+ *
+ * The padding is always applied **outwards**, scaled by each bound's magnitude: the minimum moves
+ * down by `|min| * paddingMultiplier` and the maximum up by `|max| * paddingMultiplier`. Scaling by
+ * the signed bound instead would pull a negative minimum *up*, cropping the very extreme the padding
+ * exists to reveal. An empty list yields `0f to 0f`.
  *
  * @param values The list of values from which to calculate the range.
  * @param paddingMultiplier The padding as a fraction (e.g., 0.05 for 5% padding).
@@ -68,7 +81,7 @@ fun calculateMinMaxWithPadding(
 ): Pair<Float, Float> {
     val min = values.minOrNull() ?: 0f
     val max = values.maxOrNull() ?: 0f
-    return (min * (1f - paddingMultiplier)) to (max * (1f + paddingMultiplier))
+    return (min - abs(min) * paddingMultiplier) to (max + abs(max) * paddingMultiplier)
 }
 
 /**
@@ -81,7 +94,9 @@ fun calculateMinMaxWithPadding(
 fun calculateMinMaxValue(
     values: List<Float>,
     stepSize: Int = 10,
-): Pair<Float, Float> = calculateMinValue(values, stepSize) to calculateMaxValue(values, stepSize)
+): Pair<Float, Float> =
+    calculateMinValue(values = values, stepSize = stepSize) to
+        calculateMaxValue(values = values, stepSize = stepSize)
 
 /**
  * Computes the `(min, max)` value range for a chart whose bars grow from a zero baseline.

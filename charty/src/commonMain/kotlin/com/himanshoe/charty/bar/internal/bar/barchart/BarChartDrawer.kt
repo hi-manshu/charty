@@ -64,13 +64,15 @@ internal fun DrawScope.drawBars(params: BarDrawParams) {
     val barBounds = params.barBounds
     val textMeasurer = params.textMeasurer
     val recordBounds = params.recordBounds
+    val barCount = dataList.size
+    val fullBarWidth = chartContext.calculateBarWidth(barCount, barConfig.barWidthFraction)
+    val barWidth = effectiveBarWidth(fullBarWidth = fullBarWidth, barSpacing = barConfig.barSpacing)
+    val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
+    val cornerRadius = barConfig.cornerRadius.value
     dataList.fastForEachIndexed { index, bar ->
-        val fullBarWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
-        val barWidth = effectiveBarWidth(fullBarWidth = fullBarWidth, barSpacing = barConfig.barSpacing)
-        val barX = chartContext.calculateCenteredXPosition(index, dataList.size) - barWidth / 2f
+        val barX = chartContext.calculateCenteredXPosition(index, barCount) - barWidth / 2f
         val barValueY = chartContext.convertValueToYPosition(bar.value)
         val isNegative = bar.value < 0f
-        val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
         val (barTop, barHeight) =
             calculateVerticalBarDimensions(
@@ -102,8 +104,8 @@ internal fun DrawScope.drawBars(params: BarDrawParams) {
             width = barWidth,
             height = barHeight,
             isNegative = isNegative,
-            isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS,
-            cornerRadius = barConfig.cornerRadius.value,
+            isBelowAxisMode = isBelowAxisMode,
+            cornerRadius = cornerRadius,
         )
 
         if (barConfig.showDataLabels && textMeasurer != null && animationProgress >= 1f) {
@@ -122,12 +124,14 @@ internal fun DrawScope.drawBars(params: BarDrawParams) {
             )
         }
     }
-    drawVerticalBarMarkers(
-        chartContext = chartContext,
-        markers = barConfig.markers,
-        values = dataList.fastMap { it.value },
-        textMeasurer = textMeasurer,
-    )
+    if (barConfig.markers.isNotEmpty()) {
+        drawVerticalBarMarkers(
+            chartContext = chartContext,
+            markers = barConfig.markers,
+            values = dataList.fastMap { it.value },
+            textMeasurer = textMeasurer,
+        )
+    }
 }
 
 /**

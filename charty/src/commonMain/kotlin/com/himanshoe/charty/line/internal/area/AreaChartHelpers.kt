@@ -1,13 +1,12 @@
 package com.himanshoe.charty.line.internal.area
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.util.fastMapIndexed
+import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.line.data.LineData
-
-internal const val DEFAULT_AXIS_STEPS = 6
-internal const val TAP_RADIUS_MULTIPLIER = 2.5f
+import com.himanshoe.charty.line.internal.line.calculatePointPositions
 
 /**
  * Creates axis configuration for area chart.
@@ -20,27 +19,25 @@ internal fun createAxisConfig(
     AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
-        steps = DEFAULT_AXIS_STEPS,
+        steps = ChartConstants.DEFAULT_AXIS_STEPS,
         drawAxisAtZero = isBelowAxisMode,
     )
 
 /**
- * Calculates point positions for all data points.
+ * The plotted position of every point in [dataList], reporting each one to [onPointCalculated] as it
+ * is produced so the caller can record hit-test bounds in the same pass. The geometry itself comes
+ * from the shared line-chart mapping, so an area's fill can never sit at a different x than the line
+ * charts draw.
  */
 internal fun calculatePointPositions(
     dataList: List<LineData>,
     chartContext: ChartContext,
     onPointCalculated: (Pair<Offset, LineData>) -> Unit,
-): List<Offset> =
-    dataList.fastMapIndexed { index, point ->
-        val position =
-            Offset(
-                x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                y = chartContext.convertValueToYPosition(point.value),
-            )
-        onPointCalculated(position to point)
-        position
-    }
+): List<Offset> {
+    val positions = chartContext.calculatePointPositions(dataList)
+    positions.fastForEachIndexed { index, position -> onPointCalculated(position to dataList[index]) }
+    return positions
+}
 
 /**
  * Calculates baseline Y position for the area fill.

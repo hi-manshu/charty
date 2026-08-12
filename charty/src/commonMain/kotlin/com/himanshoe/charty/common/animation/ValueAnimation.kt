@@ -44,6 +44,10 @@ fun lerpValues(
  * displayed values and [targetValues]. A change in list size snaps to the new values (see
  * [lerpValues]).
  *
+ * Every hook runs on every composition — the pass-through case is a branch in the returned value
+ * rather than an early return — so a chart that toggles [enabled] or swaps its [animation] keeps a
+ * stable composition structure and does not discard the values it was mid-way through tweening.
+ *
  * @param targetValues The current data values to display.
  * @param animation The animation configuration driving the transition.
  * @param enabled Opt-in switch; when `false` the [targetValues] pass through untouched.
@@ -56,14 +60,16 @@ fun rememberAnimatedValues(
     animation: Animation,
     enabled: Boolean,
 ): List<Float> {
-    if (!enabled || !animation.isAnimated) {
-        return targetValues
-    }
-
+    val tweening = enabled && animation.isAnimated
     val previous = remember { PreviousValues(targetValues) }
     val progress = remember { Animatable(1f) }
 
-    LaunchedEffect(targetValues) {
+    LaunchedEffect(targetValues, animation, tweening) {
+        if (!tweening) {
+            previous.values = targetValues
+            progress.snapTo(1f)
+            return@LaunchedEffect
+        }
         if (previous.values == targetValues) {
             return@LaunchedEffect
         }
@@ -73,9 +79,7 @@ fun rememberAnimatedValues(
             progress.animateTo(targetValue = 1f, animationSpec = animation.toFloatSpec())
         } finally {
             previous.values =
-                if (progress.value ==
-                    1f
-                ) {
+                if (progress.value == 1f) {
                     targetValues
                 } else {
                     lerpValues(from = startValues, to = targetValues, fraction = progress.value)
@@ -83,7 +87,11 @@ fun rememberAnimatedValues(
         }
     }
 
-    return lerpValues(from = previous.values, to = targetValues, fraction = progress.value)
+    return if (tweening) {
+        lerpValues(from = previous.values, to = targetValues, fraction = progress.value)
+    } else {
+        targetValues
+    }
 }
 
 /** Non-observable holder for the previously displayed values; recomposition is driven by the progress [Animatable]. */

@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.radar.config.RadarGridStyle
 import kotlin.math.PI
 import kotlin.math.cos
@@ -20,16 +19,16 @@ private const val DEGREES_TO_RADIANS = PI.toFloat() / 180f
  * @param center The center of the grid.
  * @param radius The radius of the circular grid line.
  * @param gridLineWidth The width of the grid line.
- * @param gridLineColor The color of the grid line.
+ * @param gridLineBrush The brush painting the grid line.
  */
 internal fun DrawScope.drawCircularGridLine(
     center: Offset,
     radius: Float,
     gridLineWidth: Float,
-    gridLineColor: ChartyColor,
+    gridLineBrush: Brush,
 ) {
     drawCircle(
-        brush = Brush.linearGradient(gridLineColor.value),
+        brush = gridLineBrush,
         radius = radius,
         center = center,
         style = Stroke(width = gridLineWidth),
@@ -43,7 +42,7 @@ internal fun DrawScope.drawCircularGridLine(
  * @param radius The radius of the polygonal grid line.
  * @param numberOfAxes The number of axes in the radar chart.
  * @param gridLineWidth The width of the grid line.
- * @param gridLineColor The color of the grid line.
+ * @param gridLineBrush The brush painting the grid line.
  * @param startAngle The starting angle for drawing the polygon.
  */
 internal fun DrawScope.drawPolygonalGridLine(
@@ -51,13 +50,13 @@ internal fun DrawScope.drawPolygonalGridLine(
     radius: Float,
     numberOfAxes: Int,
     gridLineWidth: Float,
-    gridLineColor: ChartyColor,
+    gridLineBrush: Brush,
     startAngle: Float,
 ) {
     val path = createPolygonPath(center = center, radius = radius, numberOfAxes = numberOfAxes, startAngle = startAngle)
     drawPath(
         path = path,
-        brush = Brush.linearGradient(gridLineColor.value),
+        brush = gridLineBrush,
         style = Stroke(width = gridLineWidth),
     )
 }
@@ -95,7 +94,7 @@ private fun createPolygonPath(
  * @param numberOfAxes The number of axes in the radar chart.
  * @param gridStyle The style of the grid, either [RadarGridStyle.CIRCULAR] or [RadarGridStyle.POLYGON].
  * @param gridLineWidth The width of the grid line.
- * @param gridLineColor The color of the grid line.
+ * @param gridLineBrush The brush painting the grid line.
  * @param startAngle The starting angle for drawing the grid.
  */
 internal fun DrawScope.drawGridLevel(
@@ -104,7 +103,7 @@ internal fun DrawScope.drawGridLevel(
     numberOfAxes: Int,
     gridStyle: RadarGridStyle,
     gridLineWidth: Float,
-    gridLineColor: ChartyColor,
+    gridLineBrush: Brush,
     startAngle: Float,
 ) {
     when (gridStyle) {
@@ -113,7 +112,7 @@ internal fun DrawScope.drawGridLevel(
                 center = center,
                 radius = radius,
                 gridLineWidth = gridLineWidth,
-                gridLineColor = gridLineColor,
+                gridLineBrush = gridLineBrush,
             )
         }
 
@@ -123,7 +122,7 @@ internal fun DrawScope.drawGridLevel(
                 radius = radius,
                 numberOfAxes = numberOfAxes,
                 gridLineWidth = gridLineWidth,
-                gridLineColor = gridLineColor,
+                gridLineBrush = gridLineBrush,
                 startAngle = startAngle,
             )
         }

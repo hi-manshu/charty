@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastAll
@@ -129,7 +129,12 @@ fun RadarChart(
         }
     val animationProgress = rememberChartAnimation(config.animation)
     val textMeasurer = rememberTextMeasurer()
-    val axisLabels = remember(dataSets) { dataSets.first().axes.fastMap { it.label } }
+    val measuredAxisLabels =
+        remember(dataSets, textMeasurer, config.labelConfig.labelTextStyle) {
+            dataSets.first().axes.fastMap { axis ->
+                textMeasurer.measure(text = axis.label, style = config.labelConfig.labelTextStyle)
+            }
+        }
 
     val clickModifier =
         if (onAxisClick != null) {
@@ -193,10 +198,9 @@ fun RadarChart(
                 drawAxisLabels(
                     center = Offset(centerX, centerY),
                     maxRadius = maxRadius,
-                    labels = axisLabels,
+                    measuredLabels = measuredAxisLabels,
                     numberOfAxes = numberOfAxes,
                     config = config,
-                    textMeasurer = textMeasurer,
                     startAngle = config.startAngleDegrees,
                 )
             }
@@ -216,10 +220,10 @@ private fun DrawScope.drawCircularGrid(
     center: Offset,
     radius: Float,
     gridLineWidth: Float,
-    gridLineColor: ChartyColor,
+    gridLineBrush: Brush,
 ) {
     drawCircle(
-        brush = Brush.linearGradient(gridLineColor.value),
+        brush = gridLineBrush,
         radius = radius,
         center = center,
         style = Stroke(width = gridLineWidth),
@@ -258,7 +262,7 @@ private fun DrawScope.drawPolygonGrid(
     radius: Float,
     numberOfAxes: Int,
     gridLineWidth: Float,
-    gridLineColor: ChartyColor,
+    gridLineBrush: Brush,
     startAngle: Float,
 ) {
     val path = Path()
@@ -277,7 +281,7 @@ private fun DrawScope.drawPolygonGrid(
 
     drawPath(
         path = path,
-        brush = Brush.linearGradient(gridLineColor.value),
+        brush = gridLineBrush,
         style = Stroke(width = gridLineWidth),
     )
 }
@@ -295,6 +299,7 @@ private fun DrawScope.drawRadarGrid(
     gridLineColor: ChartyColor,
     startAngle: Float,
 ) {
+    val gridLineBrush = Brush.linearGradient(gridLineColor.value)
     for (level in 1..numberOfLevels) {
         val radius = (maxRadius * level) / numberOfLevels
 
@@ -304,7 +309,7 @@ private fun DrawScope.drawRadarGrid(
                     center = center,
                     radius = radius,
                     gridLineWidth = gridLineWidth,
-                    gridLineColor = gridLineColor,
+                    gridLineBrush = gridLineBrush,
                 )
             }
 
@@ -314,7 +319,7 @@ private fun DrawScope.drawRadarGrid(
                     radius = radius,
                     numberOfAxes = numberOfAxes,
                     gridLineWidth = gridLineWidth,
-                    gridLineColor = gridLineColor,
+                    gridLineBrush = gridLineBrush,
                     startAngle = startAngle,
                 )
             }
@@ -333,13 +338,14 @@ private fun DrawScope.drawAxisLines(
     axisLineColor: ChartyColor,
     startAngle: Float,
 ) {
+    val axisLineBrush = Brush.linearGradient(axisLineColor.value)
     for (i in 0 until numberOfAxes) {
         val angle = (startAngle + (FULL_CIRCLE_DEGREES * i / numberOfAxes)) * DEGREES_TO_RADIANS
         val endX = center.x + maxRadius * cos(angle)
         val endY = center.y + maxRadius * sin(angle)
 
         drawLine(
-            brush = Brush.linearGradient(axisLineColor.value),
+            brush = axisLineBrush,
             start = center,
             end = Offset(endX, endY),
             strokeWidth = axisLineWidth,
@@ -414,24 +420,17 @@ private fun DrawScope.drawRadarDataSet(
 private fun DrawScope.drawAxisLabels(
     center: Offset,
     maxRadius: Float,
-    labels: List<String>,
+    measuredLabels: List<TextLayoutResult>,
     numberOfAxes: Int,
     config: RadarChartConfig,
-    textMeasurer: TextMeasurer,
     startAngle: Float,
 ) {
     val labelDistance = maxRadius * config.labelConfig.labelDistanceMultiplier
-    val textStyle = config.labelConfig.labelTextStyle
 
-    labels.fastForEachIndexed { index, label ->
+    measuredLabels.fastForEachIndexed { index, textLayoutResult ->
         val angle = (startAngle + (FULL_CIRCLE_DEGREES * index / numberOfAxes)) * DEGREES_TO_RADIANS
         val x = center.x + labelDistance * cos(angle)
         val y = center.y + labelDistance * sin(angle)
-        val textLayoutResult =
-            textMeasurer.measure(
-                text = label,
-                style = textStyle,
-            )
         val textX = x - textLayoutResult.size.width / 2f
         val textY = y - textLayoutResult.size.height / 2f
 

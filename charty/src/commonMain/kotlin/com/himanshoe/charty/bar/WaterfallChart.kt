@@ -184,12 +184,14 @@ fun WaterfallChart(
                 )
             }
 
-            drawVerticalBarMarkers(
-                chartContext = chartContext,
-                markers = config.markers,
-                values = calculateWaterfallBarTopValues(cumulativeValues),
-                textMeasurer = textMeasurer,
-            )
+            if (config.markers.isNotEmpty()) {
+                drawVerticalBarMarkers(
+                    chartContext = chartContext,
+                    markers = config.markers,
+                    values = calculateWaterfallBarTopValues(cumulativeValues),
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             if (tooltip.isCanvas()) {
                 tooltipManager.tooltipState?.let { state ->

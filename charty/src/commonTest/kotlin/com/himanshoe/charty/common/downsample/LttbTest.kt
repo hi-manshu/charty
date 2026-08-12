@@ -45,7 +45,6 @@ class LttbTest {
     fun keepsOriginalOrderAndMembership() {
         val data = series(300) { sin(it / 7.0).toFloat() }
         val reduced = lttbDownsample(data = data, threshold = 40) { it }
-        // every kept point is from the source, and indices are strictly increasing
         var prevIndex = -1
         reduced.forEach { point ->
             val idx = data.indexOf(point)
@@ -56,11 +55,27 @@ class LttbTest {
 
     @Test
     fun retainsAGlobalPeak() {
-        // a flat line with a single sharp spike in the middle — LTTB must keep the spike
         val spikeIndex = 250
         val data = series(500) { if (it == spikeIndex) 100f else 0f }
         val reduced = lttbDownsample(data = data, threshold = 20) { it }
         assertTrue(reduced.any { it == 100f }, "the global peak must survive downsampling")
+    }
+
+    @Test
+    fun smallestUsefulThreshold_keepsBothEndpointsAndOneMiddlePoint() {
+        val data = series(4) { it.toFloat() }
+        val reduced = lttbDownsample(data = data, threshold = 3) { it }
+        assertEquals(3, reduced.size)
+        assertEquals(data.first(), reduced.first())
+        assertEquals(data.last(), reduced.last())
+    }
+
+    @Test
+    fun allEqualValues_stillReducesToTheThresholdWithoutRepeatingAPoint() {
+        val data = List(200) { index -> index to 5f }
+        val reduced = lttbDownsample(data = data, threshold = 20) { it.second }
+        assertEquals(20, reduced.size)
+        assertEquals(reduced.size, reduced.distinct().size, "a flat series must not collapse onto one point")
     }
 
     @Test

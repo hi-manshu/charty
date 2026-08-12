@@ -64,7 +64,8 @@ class ViewPortState : PlotBoundsSource {
     /**
      * Returns the range of data indices currently visible in the viewport.
      *
-     * The result is always non-empty and clamped to `[0, totalItems)`.
+     * The result is clamped to `[0, totalItems)` and is non-empty for any non-empty dataset; a
+     * [totalItems] of `0` has no indices to return and yields an empty range.
      *
      * @param totalItems The total number of items in the full dataset.
      * @return An [IntRange] of indices whose data should be rendered.

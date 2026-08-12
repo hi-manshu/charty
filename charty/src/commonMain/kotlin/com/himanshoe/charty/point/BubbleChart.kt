@@ -197,13 +197,15 @@ fun BubbleChart(
                 bubbleBounds = bubbleBounds,
             )
 
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = config.markers,
-                pointPositions = bubbleMarkerPositions(chartContext = chartContext, dataList = displayList),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].yValue) },
-                textMeasurer = textMeasurer,
-            )
+            if (config.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = config.markers,
+                    pointPositions = bubbleMarkerPositions(chartContext = chartContext, dataList = displayList),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].yValue) },
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             drawInteractionOverlays(
                 interactionConfig = interactionConfig,

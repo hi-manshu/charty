@@ -31,6 +31,7 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
@@ -392,8 +393,6 @@ private fun DrawScope.drawLineContent(
     )
 }
 
-private const val LINE_AXIS_STEPS = 6
-
 /** Builds the line chart's value axis configuration. */
 private fun lineAxisConfig(
     minValue: Float,
@@ -403,7 +402,7 @@ private fun lineAxisConfig(
     AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
-        steps = LINE_AXIS_STEPS,
+        steps = ChartConstants.DEFAULT_AXIS_STEPS,
         drawAxisAtZero = drawAxisAtZero,
     )
 

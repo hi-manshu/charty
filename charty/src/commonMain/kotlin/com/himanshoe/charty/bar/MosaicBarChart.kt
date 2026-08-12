@@ -166,17 +166,19 @@ fun MosaicBarChart(
                 recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
             )
 
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = config.markers,
-                pointPositions =
-                    verticalBarMarkerPositions(
-                        chartContext = chartContext,
-                        values = List(displayList.size) { chartContext.maxValue },
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
-                textMeasurer = textMeasurer,
-            )
+            if (config.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = config.markers,
+                    pointPositions =
+                        verticalBarMarkerPositions(
+                            chartContext = chartContext,
+                            values = List(displayList.size) { chartContext.maxValue },
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             if (tooltip.isCanvas()) {
                 tooltipManager.tooltipState?.let { state ->

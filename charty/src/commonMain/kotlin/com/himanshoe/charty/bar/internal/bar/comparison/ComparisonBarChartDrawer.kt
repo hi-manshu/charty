@@ -85,12 +85,14 @@ internal fun DrawScope.drawComparisonBars(params: ComparisonBarDrawParams) {
             )
         }
     }
-    drawVerticalBarMarkers(
-        chartContext = params.chartContext,
-        markers = params.comparisonConfig.markers,
-        values = params.dataList.fastMap { group -> group.values.maxOrNull() ?: 0f },
-        textMeasurer = params.textMeasurer,
-    )
+    if (params.comparisonConfig.markers.isNotEmpty()) {
+        drawVerticalBarMarkers(
+            chartContext = params.chartContext,
+            markers = params.comparisonConfig.markers,
+            values = params.dataList.fastMap { group -> group.values.maxOrNull() ?: 0f },
+            textMeasurer = params.textMeasurer,
+        )
+    }
 }
 
 private fun getComparisonBarColor(

@@ -127,14 +127,16 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
             )
         }
     }
-    drawHorizontalBarMarkers(
-        chartContext = params.chartContext,
-        markers = params.config.markers,
-        values = params.dataList.fastMap { group -> group.values.maxOrNull() ?: 0f },
-        minValue = params.minValue,
-        maxValue = params.maxValue,
-        textMeasurer = params.textMeasurer,
-    )
+    if (params.config.markers.isNotEmpty()) {
+        drawHorizontalBarMarkers(
+            chartContext = params.chartContext,
+            markers = params.config.markers,
+            values = params.dataList.fastMap { group -> group.values.maxOrNull() ?: 0f },
+            minValue = params.minValue,
+            maxValue = params.maxValue,
+            textMeasurer = params.textMeasurer,
+        )
+    }
 }
 
 /**

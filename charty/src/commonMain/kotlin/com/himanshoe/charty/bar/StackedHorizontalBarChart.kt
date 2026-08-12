@@ -176,19 +176,21 @@ fun StackedHorizontalBarChart(
                 ),
             )
 
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = config.markers,
-                pointPositions =
-                    horizontalBarMarkerPositions(
-                        chartContext = chartContext,
-                        values = displayList.fastMap { group -> group.values.sum() },
-                        minValue = 0f,
-                        maxValue = maxTotal,
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
-                textMeasurer = textMeasurer,
-            )
+            if (config.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = config.markers,
+                    pointPositions =
+                        horizontalBarMarkerPositions(
+                            chartContext = chartContext,
+                            values = displayList.fastMap { group -> group.values.sum() },
+                            minValue = 0f,
+                            maxValue = maxTotal,
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             drawStackedHorizontalReferenceLineIfNeeded(
                 config = config,

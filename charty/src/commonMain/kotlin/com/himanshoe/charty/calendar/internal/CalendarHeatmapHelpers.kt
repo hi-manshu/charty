@@ -29,7 +29,7 @@ private const val JDN_MONTH_ADJUST_M = 3
 private const val PREV_YEAR_MONTH_THRESHOLD = 3
 
 private val SAKAMOTO_TABLE = intArrayOf(0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4)
-private const val DAYS_PER_WEEK = 7
+internal const val DAYS_PER_WEEK = 7
 
 private const val MONTH_KEY_BASE = 100L
 
@@ -98,14 +98,16 @@ internal data class GridCell(
  * The fully computed grid layout for [com.himanshoe.charty.calendar.CalendarHeatmapChart].
  *
  * @property cells All cells that have data.
- * @property cellMap Pre-computed O(1) lookup from (weekIndex, dayIndex) to [GridCell].
- *   Avoids rebuilding a [HashMap] on every draw frame.
+ * @property cellSlots One entry per grid position in `weekIndex * 7 + dayIndex` order: the
+ *   [GridCell] occupying it, or `null` where there is no data. Indexing this flat list keeps the
+ *   draw phase free of the key allocation a `Map<Pair<Int, Int>, …>` lookup would need on every
+ *   cell of every frame.
  * @property totalWeeks Total number of week-columns to render.
  * @property monthBoundaries Pairs of (weekIndex, monthLabel) where a new month starts.
  */
 internal data class GridLayout(
     val cells: List<GridCell>,
-    val cellMap: Map<Pair<Int, Int>, GridCell>,
+    val cellSlots: List<GridCell?>,
     val totalWeeks: Int,
     val monthBoundaries: List<Pair<Int, String>>,
 )
@@ -151,7 +153,7 @@ internal fun computeGridLayout(
     visibleWeeks: Int?,
 ): GridLayout {
     if (dataList.isEmpty()) {
-        return GridLayout(cells = emptyList(), cellMap = emptyMap(), totalWeeks = 0, monthBoundaries = emptyList())
+        return GridLayout(cells = emptyList(), cellSlots = emptyList(), totalWeeks = 0, monthBoundaries = emptyList())
     }
 
     val startOffset =
@@ -211,9 +213,14 @@ internal fun computeGridLayout(
         }
     }
 
+    val cellSlots = arrayOfNulls<GridCell>(effectiveTotalWeeks * DAYS_PER_WEEK)
+    cells.forEach { cell ->
+        cellSlots[cell.weekIndex * DAYS_PER_WEEK + cell.dayIndex] = cell
+    }
+
     return GridLayout(
         cells = cells,
-        cellMap = cells.associateBy { it.weekIndex to it.dayIndex },
+        cellSlots = cellSlots.asList(),
         totalWeeks = effectiveTotalWeeks,
         monthBoundaries = monthBoundaries.sortedBy { it.first },
     )

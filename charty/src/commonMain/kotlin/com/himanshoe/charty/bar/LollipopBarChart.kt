@@ -170,17 +170,19 @@ fun LollipopBarChart(
                 lollipopBounds = tooltipManager.bounds,
             )
 
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = config.markers,
-                pointPositions =
-                    verticalBarMarkerPositions(
-                        chartContext = chartContext,
-                        values = displayList.fastMap { it.value },
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
-                textMeasurer = textMeasurer,
-            )
+            if (config.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = config.markers,
+                    pointPositions =
+                        verticalBarMarkerPositions(
+                            chartContext = chartContext,
+                            values = displayList.fastMap { it.value },
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             drawTooltipHighlightIfNeeded(tooltipManager.tooltipState, config, chartContext)
             if (tooltip.isCanvas()) {

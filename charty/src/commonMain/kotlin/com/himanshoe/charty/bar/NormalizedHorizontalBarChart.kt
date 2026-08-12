@@ -168,19 +168,21 @@ fun NormalizedHorizontalBarChart(
                 ),
             )
 
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = config.markers,
-                pointPositions =
-                    horizontalBarMarkerPositions(
-                        chartContext = chartContext,
-                        values = List(displayList.size) { 1f },
-                        minValue = 0f,
-                        maxValue = 1f,
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
-                textMeasurer = textMeasurer,
-            )
+            if (config.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = config.markers,
+                    pointPositions =
+                        horizontalBarMarkerPositions(
+                            chartContext = chartContext,
+                            values = List(displayList.size) { 1f },
+                            minValue = 0f,
+                            maxValue = 1f,
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             if (tooltip.isCanvas()) {
                 drawNormalizedHorizontalTooltipIfNeeded(

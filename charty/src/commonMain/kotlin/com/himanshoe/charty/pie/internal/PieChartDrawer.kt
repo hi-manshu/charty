@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -72,7 +73,8 @@ internal data class PieChartContentParams(
  * Parameters for drawing pie slices
  *
  * @property dataList The slices to render.
- * @property colors One resolved colour per slice.
+ * @property brushes One [Brush] per slice, resolved once per composition so no brush is built while
+ *   drawing.
  * @property total Sum of every slice value.
  * @property center Centre of the pie in canvas pixels.
  * @property radius Outer radius of the pie in pixels.
@@ -84,7 +86,7 @@ internal data class PieChartContentParams(
  */
 internal data class PieSliceDrawParams(
     val dataList: List<PieData>,
-    val colors: List<ChartyColor>,
+    val brushes: List<Brush>,
     val total: Float,
     val center: Offset,
     val radius: Float,
@@ -123,6 +125,7 @@ internal fun PieChartContent(
     modifier: Modifier = Modifier,
 ) {
     val textMeasurer = rememberTextMeasurer()
+    val sliceBrushes = remember(params.sliceColors) { params.sliceColors.map { it.toSliceBrush() } }
 
     Box(
         modifier = modifier,
@@ -160,7 +163,7 @@ internal fun PieChartContent(
                 params =
                     PieSliceDrawParams(
                         dataList = params.dataList,
-                        colors = params.sliceColors,
+                        brushes = sliceBrushes,
                         total = params.total,
                         center = center,
                         radius = radius,
@@ -199,7 +202,7 @@ private fun DrawScope.drawPieSlices(params: PieSliceDrawParams) {
     params.dataList.fastForEachIndexed { index, slice ->
         val sweepAngle = slice.calculateSweepAngle(params.total) * params.animationProgress
         val percentage = slice.calculatePercentage(params.total)
-        val sliceColor = params.colors.getOrElse(index) { params.colors.first() }
+        val sliceBrush = params.brushes.getOrElse(index) { params.brushes.first() }
 
         if (sweepAngle > 0) {
             val isSelected = index == params.selectedSliceIndex
@@ -232,7 +235,7 @@ private fun DrawScope.drawPieSlices(params: PieSliceDrawParams) {
             when (params.config.style) {
                 PieChartStyle.PIE -> {
                     drawArc(
-                        brush = sliceColor.toSliceBrush(),
+                        brush = sliceBrush,
                         startAngle = currentAngle + params.config.sliceSpacingDegrees / HALF_DIVIDER,
                         sweepAngle = max(0f, sweepAngle - params.config.sliceSpacingDegrees),
                         useCenter = true,
@@ -251,7 +254,7 @@ private fun DrawScope.drawPieSlices(params: PieSliceDrawParams) {
                     val arcRadius = actualRadius - strokeWidth / HALF_DIVIDER
 
                     drawArc(
-                        brush = sliceColor.toSliceBrush(),
+                        brush = sliceBrush,
                         startAngle = currentAngle + params.config.sliceSpacingDegrees / HALF_DIVIDER,
                         sweepAngle = max(0f, sweepAngle - params.config.sliceSpacingDegrees),
                         useCenter = false,

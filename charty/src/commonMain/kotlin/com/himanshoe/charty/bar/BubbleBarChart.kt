@@ -175,17 +175,19 @@ fun BubbleBarChart(
             )
 
         drawBubbleBars(drawParams)
-        drawPersistentMarkers(
-            chartContext = chartContext,
-            markers = bubbleConfig.markers,
-            pointPositions =
-                verticalBarMarkerPositions(
-                    chartContext = chartContext,
-                    values = displayList.fastMap { it.value },
-                ),
-            valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
-            textMeasurer = textMeasurer,
-        )
+        if (bubbleConfig.markers.isNotEmpty()) {
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = bubbleConfig.markers,
+                pointPositions =
+                    verticalBarMarkerPositions(
+                        chartContext = chartContext,
+                        values = displayList.fastMap { it.value },
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
+                textMeasurer = textMeasurer,
+            )
+        }
         drawReferenceLineIfNeeded(drawParams)
         drawTooltipIfNeeded(drawParams, tooltipState)
 

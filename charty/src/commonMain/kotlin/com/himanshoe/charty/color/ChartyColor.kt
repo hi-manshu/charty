@@ -20,8 +20,11 @@ sealed class ChartyColor {
     data class Solid(
         val color: Color,
     ) : ChartyColor() {
-        override val value: List<Color>
-            get() = listOf(color, color)
+        /**
+         * Held rather than computed, because chart drawers read this on every frame for every item
+         * they paint; a computed getter would allocate a two-element list per read.
+         */
+        override val value: List<Color> = listOf(color, color)
     }
 
     /**

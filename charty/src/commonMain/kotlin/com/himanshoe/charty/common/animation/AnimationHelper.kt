@@ -66,7 +66,7 @@ fun rememberChartAnimation(
             Animatable(initial)
         }
 
-    LaunchedEffect(animation) {
+    LaunchedEffect(animation, targetValue) {
         if (animation.isAnimated) {
             animationProgress.animateTo(
                 targetValue = targetValue,

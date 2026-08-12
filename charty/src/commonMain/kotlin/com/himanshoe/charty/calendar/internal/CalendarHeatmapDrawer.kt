@@ -205,7 +205,7 @@ internal fun DrawScope.drawCell(
  * Draws the complete cell grid — both empty background cells and data cells — applying a
  * left-to-right sweep reveal animation driven by [animationProgress].
  *
- * Uses [GridLayout.cellMap] for O(1) per-cell data lookup, avoiding any allocations during
+ * Uses [GridLayout.cellSlots] for O(1) per-cell data lookup, avoiding any allocations during
  * the draw phase.
  *
  * Data cells that have become visible are appended to [cellBoundsOutput] for tap hit-testing.
@@ -239,6 +239,7 @@ internal fun DrawScope.drawCalendarGrid(
     }
 
     val animWeeks = animationProgress * totalWeeks
+    val cellSlots = gridLayout.cellSlots
 
     for (weekIndex in 0 until totalWeeks) {
         val cellAlpha = (animWeeks - weekIndex).coerceIn(0f, 1f)
@@ -247,7 +248,7 @@ internal fun DrawScope.drawCalendarGrid(
             val cellLeft = leftPadding + weekIndex * cellStridePx
             val cellTop = topPadding + dayIndex * cellStridePx
 
-            val gridCell = gridLayout.cellMap[weekIndex to dayIndex]
+            val gridCell = cellSlots.getOrNull(weekIndex * DAYS_PER_WEEK + dayIndex)
             val color =
                 if (gridCell != null) {
                     config.resolveColor(gridCell.calendarData.value, maxValue)

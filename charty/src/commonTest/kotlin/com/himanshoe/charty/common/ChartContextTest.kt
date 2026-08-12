@@ -2,6 +2,7 @@ package com.himanshoe.charty.common
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 private const val TOL = 0.001f
 
@@ -64,5 +65,40 @@ class ChartContextTest {
         val c = context()
         assertEquals(12.5f, c.calculateCenteredXPosition(index = 0, totalItems = 4), TOL)
         assertEquals(37.5f, c.calculateCenteredXPosition(index = 1, totalItems = 4), TOL)
+    }
+
+    @Test
+    fun calculateSlotHeight_dividesPlotAmongRows() {
+        assertEquals(25f, context().calculateSlotHeight(totalItems = 4), TOL)
+    }
+
+    @Test
+    fun calculateSlotTopPosition_stacksRowsFromTheTop() {
+        val c = context()
+        assertEquals(0f, c.calculateSlotTopPosition(index = 0, totalItems = 4), TOL)
+        assertEquals(50f, c.calculateSlotTopPosition(index = 2, totalItems = 4), TOL)
+    }
+
+    @Test
+    fun horizontalPositions_withoutItems_stayInsideThePlot() {
+        val c = context()
+        assertEquals(0f, c.calculateBarWidth(totalBars = 0), TOL)
+        assertEquals(c.left, c.calculateBarLeftPosition(index = 0, totalBars = 0), TOL)
+        assertEquals(c.left, c.calculateCenteredXPosition(index = 0, totalItems = 0), TOL)
+    }
+
+    @Test
+    fun verticalPositions_withoutItems_stayInsideThePlot() {
+        val c = context()
+        assertEquals(0f, c.calculateSlotHeight(totalItems = 0), TOL)
+        assertEquals(c.top, c.calculateSlotTopPosition(index = 0, totalItems = 0), TOL)
+    }
+
+    @Test
+    fun positions_withNegativeItemCount_stayFinite() {
+        val c = context()
+        assertTrue(c.calculateBarWidth(totalBars = -3).isFinite())
+        assertTrue(c.calculateCenteredXPosition(index = 0, totalItems = -3).isFinite())
+        assertTrue(c.calculateSlotHeight(totalItems = -3).isFinite())
     }
 }

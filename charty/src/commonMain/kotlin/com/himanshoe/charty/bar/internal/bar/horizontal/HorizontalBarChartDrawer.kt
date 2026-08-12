@@ -97,14 +97,16 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
             )
         }
     }
-    drawHorizontalBarMarkers(
-        chartContext = params.chartContext,
-        markers = params.barConfig.markers,
-        values = params.dataList.fastMap { it.value },
-        minValue = params.minValue,
-        maxValue = params.maxValue,
-        textMeasurer = params.textMeasurer,
-    )
+    if (params.barConfig.markers.isNotEmpty()) {
+        drawHorizontalBarMarkers(
+            chartContext = params.chartContext,
+            markers = params.barConfig.markers,
+            values = params.dataList.fastMap { it.value },
+            minValue = params.minValue,
+            maxValue = params.maxValue,
+            textMeasurer = params.textMeasurer,
+        )
+    }
 }
 
 internal fun DrawScope.drawHorizontalReferenceLineIfNeeded(

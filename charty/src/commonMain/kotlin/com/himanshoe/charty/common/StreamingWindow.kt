@@ -58,9 +58,10 @@ data class StreamingLayout internal constructor(
  * bursts of appends catch up smoothly instead of restarting. When [animation] is disabled the scroll
  * snaps, matching the plain "show last N" behaviour.
  *
- * Only `windowSize + 2` points are ever materialised for drawing regardless of how large the full
+ * At most `windowSize + 3` points are ever materialised for drawing regardless of how large the full
  * series grows: the slice spans the visible slots plus one margin slot on each edge so the outgoing
- * and incoming points exist to be clipped.
+ * and incoming points exist to be clipped, and one more while a fractional scroll straddles two
+ * slots mid-slide.
  *
  * @param fullDataList The complete, append-accumulating series (the source of truth).
  * @param windowSize The configured rolling window size; clamped to at least 1 and to the data size.

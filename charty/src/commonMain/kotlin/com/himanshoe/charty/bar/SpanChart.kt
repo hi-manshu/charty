@@ -186,20 +186,22 @@ fun SpanChart(
                 ),
             )
 
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = barConfig.markers,
-                pointPositions =
-                    spanEndMarkerPositions(
-                        chartContext = chartContext,
-                        endValues = displayList.fastMap { it.endValue },
-                        minValue = minValue,
-                        maxValue = maxValue,
-                        axisOffset = axisOffset,
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].endValue) },
-                textMeasurer = textMeasurer,
-            )
+            if (barConfig.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = barConfig.markers,
+                    pointPositions =
+                        spanEndMarkerPositions(
+                            chartContext = chartContext,
+                            endValues = displayList.fastMap { it.endValue },
+                            minValue = minValue,
+                            maxValue = maxValue,
+                            axisOffset = axisOffset,
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].endValue) },
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             if (tooltip.isCanvas()) {
                 drawTooltipIfNeeded(

@@ -141,6 +141,7 @@ private fun DrawScope.drawAllPoints(
         color = pointConfig.selectionColumnColor,
         chartContext = chartContext,
     )
+    val pointBrush = Brush.linearGradient(color.value)
     displayList.fastForEachIndexed { index, point ->
         drawPointWithAnimation(
             point = point,
@@ -149,7 +150,7 @@ private fun DrawScope.drawAllPoints(
             animationProgress = animationProgress,
             chartContext = chartContext,
             pointConfig = pointConfig,
-            color = color,
+            brush = pointBrush,
         )
     }
     if (pointConfig.markers.isNotEmpty()) {
@@ -185,7 +186,7 @@ private fun DrawScope.drawPointWithAnimation(
     animationProgress: Float,
     chartContext: ChartContext,
     pointConfig: PointChartConfig,
-    color: ChartyColor,
+    brush: Brush,
 ) {
     val pointProgress = index.toFloat() / dataListSize
     val progressOffset = (animationProgress - pointProgress) * dataListSize
@@ -201,7 +202,7 @@ private fun DrawScope.drawPointWithAnimation(
 
     if (pointAnimationProgress > MIN_ANIMATION_PROGRESS) {
         drawCircle(
-            brush = Brush.linearGradient(color.value),
+            brush = brush,
             radius = pointConfig.pointRadius * pointAnimationProgress,
             center = position,
             alpha = pointConfig.pointAlpha * pointAnimationProgress,

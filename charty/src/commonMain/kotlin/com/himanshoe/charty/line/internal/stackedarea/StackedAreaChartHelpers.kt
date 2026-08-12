@@ -8,53 +8,45 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.line.data.LineGroup
 
 /**
- * Calculate cumulative positions for a series
+ * The upper edge of the band for [seriesIndex]: the running total through that series, plotted at
+ * each group's centred x.
  */
 internal fun ChartContext.calculateCumulativePositions(
     dataList: List<LineGroup>,
     seriesIndex: Int,
 ): List<Offset> =
     dataList.fastMapIndexed { index, group ->
-        var cumulativeValue = 0f
-        for (i in 0..seriesIndex) {
-            cumulativeValue += group.values.getOrNull(i) ?: 0f
-        }
         Offset(
             x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
-            y = convertValueToYPosition(cumulativeValue),
+            y = convertValueToYPosition(group.calculateCumulativeValue(seriesIndex)),
         )
     }
 
 /**
- * Calculate lower bound positions (previous series cumulative or baseline)
+ * The lower edge of the band for [seriesIndex]: the upper edge of the series beneath it, or
+ * [baselineY] for the bottom-most series, which has nothing beneath it to stack on.
  */
 internal fun ChartContext.calculateLowerPositions(
     dataList: List<LineGroup>,
     seriesIndex: Int,
     baselineY: Float,
 ): List<Offset> =
-    if (seriesIndex > 0) {
-        dataList.fastMapIndexed { index, group ->
-            var cumulativeValue = 0f
-            for (i in 0 until seriesIndex) {
-                cumulativeValue += group.values.getOrNull(i) ?: 0f
-            }
-            Offset(
-                x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
-                y = convertValueToYPosition(cumulativeValue),
-            )
-        }
-    } else {
-        dataList.fastMapIndexed { index, _ ->
-            Offset(
-                x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
-                y = baselineY,
-            )
-        }
+    dataList.fastMapIndexed { index, group ->
+        Offset(
+            x = calculateCenteredXPosition(index = index, totalItems = dataList.size),
+            y =
+                if (seriesIndex > 0) {
+                    convertValueToYPosition(group.calculateCumulativeValue(seriesIndex - 1))
+                } else {
+                    baselineY
+                },
+        )
     }
 
 /**
- * Calculate cumulative value up to a series index
+ * The running total of this group's values through [seriesIndex] inclusive. Missing series count as
+ * zero, and a negative [seriesIndex] totals nothing, which is what the bottom-most band's lower edge
+ * asks for.
  */
 internal fun LineGroup.calculateCumulativeValue(seriesIndex: Int): Float {
     var cumulativeValue = 0f

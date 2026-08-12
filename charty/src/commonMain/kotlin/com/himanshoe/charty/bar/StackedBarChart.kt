@@ -191,17 +191,19 @@ fun StackedBarChart(
                 ),
             )
 
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = stackedConfig.markers,
-                pointPositions =
-                    verticalBarMarkerPositions(
-                        chartContext = chartContext,
-                        values = displayList.fastMap { group -> group.values.sum() },
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
-                textMeasurer = textMeasurer,
-            )
+            if (stackedConfig.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = stackedConfig.markers,
+                    pointPositions =
+                        verticalBarMarkerPositions(
+                            chartContext = chartContext,
+                            values = displayList.fastMap { group -> group.values.sum() },
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                    textMeasurer = textMeasurer,
+                )
+            }
 
             drawStackedReferenceLineIfNeeded(
                 stackedConfig = stackedConfig,

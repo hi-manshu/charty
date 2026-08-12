@@ -52,12 +52,15 @@ internal data class MatrixDrawSpec(
  * @property cellWidth Width (px) of each cell.
  * @property cellHeight Height (px) of each cell.
  * @property spacing Gap (px) between adjacent cells.
+ * @property emptyColor The colour painted where the matrix has no data, resolved once per frame
+ *   rather than per empty cell.
  */
 internal data class MatrixCellGeometry(
     val leftPadding: Float,
     val cellWidth: Float,
     val cellHeight: Float,
     val spacing: Float,
+    val emptyColor: Color,
 )
 
 /**
@@ -80,6 +83,9 @@ internal fun DrawScope.drawMatrixHeatmap(spec: MatrixDrawSpec) {
             cellWidth = ((size.width - leftPadding - (columns - 1) * spacing) / columns).coerceAtLeast(0f),
             cellHeight = ((size.height - bottomPadding - (rows - 1) * spacing) / rows).coerceAtLeast(0f),
             spacing = spacing,
+            emptyColor =
+                spec.config.emptyCellColor.value
+                    .first(),
         )
     drawMatrixRowLabels(spec = spec, geometry = geometry)
     drawMatrixColumnLabels(spec = spec, geometry = geometry, rows = rows)
@@ -167,8 +173,7 @@ internal fun DrawScope.drawMatrixCell(
                 )
             interpolateHeatmapColor(colorScale = spec.config.colorScale, fraction = fraction)
         } else {
-            spec.config.emptyCellColor.value
-                .first()
+            geometry.emptyColor
         }
     val left = geometry.leftPadding + columnIndex * (geometry.cellWidth + geometry.spacing)
     val top = rowIndex * (geometry.cellHeight + geometry.spacing)

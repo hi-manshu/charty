@@ -63,14 +63,16 @@ internal fun DrawScope.drawWavyBars(
     dataList.fastForEachIndexed { index, barData ->
         drawSingleWave(index = index, barData = barData, chartContext = chartContext, waveCtx = waveCtx)
     }
-    val values = dataList.fastMap { it.value }
-    drawPersistentMarkers(
-        chartContext = chartContext,
-        markers = wavyConfig.markers,
-        pointPositions = wavyPointPositions(chartContext = chartContext, values = values),
-        valueLabelFor = { index -> formatMarkerValue(values[index]) },
-        textMeasurer = textMeasurer,
-    )
+    if (wavyConfig.markers.isNotEmpty()) {
+        val values = dataList.fastMap { it.value }
+        drawPersistentMarkers(
+            chartContext = chartContext,
+            markers = wavyConfig.markers,
+            pointPositions = wavyPointPositions(chartContext = chartContext, values = values),
+            valueLabelFor = { index -> formatMarkerValue(values[index]) },
+            textMeasurer = textMeasurer,
+        )
+    }
 }
 
 /**
