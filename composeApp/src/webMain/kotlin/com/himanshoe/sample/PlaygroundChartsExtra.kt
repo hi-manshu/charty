@@ -34,6 +34,7 @@ import com.himanshoe.charty.circular.config.CircularProgressConfig
 import com.himanshoe.charty.circular.config.RingDirection
 import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.line.MultilineChart
 import com.himanshoe.charty.line.StackedAreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -84,7 +85,31 @@ internal fun CandlestickPlayground() {
             }
         }
 
+    val code =
+        """
+        val data = listOf(
+            ${data.joinToString(
+            ",\n            ",
+        ) {
+            "CandleData(\"${it.label}\", open = ${fc(
+                it.open,
+            )}, high = ${fc(it.high)}, low = ${fc(it.low)}, close = ${fc(it.close)})"
+        }},
+        )
+
+        CandlestickChart(
+            data = { data },
+            bullishColor = ChartyColor.Solid(Color(${colorHex(bullish)})),
+            bearishColor = ChartyColor.Solid(Color(${colorHex(bearish)})),
+            candlestickConfig = CandlestickChartConfig(
+                candleWidthFraction = ${fc(candleWidthFraction)},
+                wickWidthFraction = ${fc(wickWidthFraction)},
+                showWicks = $showWicks,
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             CandlestickChart(
                 modifier = Modifier.fillMaxSize(),
@@ -96,6 +121,7 @@ internal fun CandlestickPlayground() {
                         candleWidthFraction = candleWidthFraction,
                         wickWidthFraction = wickWidthFraction,
                         showWicks = showWicks,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -149,7 +175,31 @@ internal fun RadarPlayground() {
             )
         }
 
+    val code =
+        """
+        val dataSet = RadarDataSet(
+            label = "Player",
+            axes = listOf(
+                ${dataSet.axes.joinToString(
+            ",\n                ",
+        ) { "RadarAxisData(\"${it.label}\", ${fc(it.value)})" }},
+            ),
+            color = ChartyColor.Solid(Color(${colorHex(color)})),
+            fillAlpha = ${fc(fillAlpha)},
+        )
+
+        RadarChart(
+            data = { listOf(dataSet) },
+            config = RadarChartConfig(
+                dataLineWidth = ${fc(dataLineWidth)},
+                showDataPoints = $showDataPoints,
+                dataPointRadius = ${fc(dataPointRadius)},
+                gridConfig = RadarGridConfig(gridStyle = RadarGridStyle.${gridStyle.name}),
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             RadarChart(
                 modifier = Modifier.fillMaxSize(),
@@ -160,6 +210,7 @@ internal fun RadarPlayground() {
                         showDataPoints = showDataPoints,
                         dataPointRadius = dataPointRadius,
                         gridConfig = RadarGridConfig(gridStyle = gridStyle),
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -214,7 +265,25 @@ internal fun CircularPlayground() {
             }
         }
 
+    val code =
+        """
+        val rings = listOf(
+            ${data.joinToString(
+            ",\n            ",
+        ) { "CircularRingData(\"${it.label}\", progress = ${fc(it.progress)})" }},
+        )
+
+        CircularProgressIndicator(
+            rings = { rings },
+            config = CircularProgressConfig(
+                gapBetweenRings = ${fc(gapBetweenRings)},
+                centerHoleRatio = ${fc(centerHoleRatio)},
+                ringDirection = RingDirection.${direction.name},
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             CircularProgressIndicator(
                 modifier = Modifier.fillMaxSize(),
@@ -224,6 +293,7 @@ internal fun CircularPlayground() {
                         gapBetweenRings = gapBetweenRings,
                         centerHoleRatio = centerHoleRatio,
                         ringDirection = direction,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -269,7 +339,22 @@ internal fun BlockPlayground() {
             }
         }
 
+    val code =
+        """
+        val data = listOf(${data.joinToString(", ") { fc(it.value) }})
+            .map { BlockData(it, ChartyColor.Solid(Color(0xFF2962FF))) }
+
+        BlockBarChart(
+            data = { data },
+            blockBarConfig = BlockBarChartConfig(
+                cornerRadius = CornerRadius.${cornerName(corner)},
+                gapBetweenBlocks = ${fc(gap)}.dp,
+                barHeight = ${fc(barHeight)}.dp,
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             BlockBarChart(
                 modifier = Modifier.fillMaxSize(),
@@ -311,7 +396,23 @@ internal fun WavyPlayground() {
     val data =
         remember(bars, tick) { randomValues(bars, tick).mapIndexed { i, v -> BarData(label = "W${i + 1}", value = v) } }
 
+    val code =
+        """
+        val data = listOf(${data.joinToString(", ") { fc(it.value) }})
+            .mapIndexed { i, v -> BarData("W${'$'}{i + 1}", v) }
+
+        WavyChart(
+            data = { data },
+            color = ChartyColor.Solid(Color(${colorHex(color)})),
+            wavyConfig = WavyChartConfig(
+                barWidthFraction = ${fc(barWidthFraction)},
+                waveAmplitudeFractionOfBarWidth = ${fc(amplitude)},
+                strokeWidthDp = ${fc(strokeWidth)},
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             WavyChart(
                 modifier = Modifier.fillMaxSize(),
@@ -363,7 +464,27 @@ internal fun MultilinePlayground() {
 
     val data = remember(points, series, tick) { randomGroups(points, series, tick) }
 
+    val code =
+        """
+        val data = listOf(
+            ${data.joinToString(
+            ",\n            ",
+        ) { g -> "LineGroup(\"${g.label}\", listOf(${g.values.joinToString(", ") { fc(it) }}))" }},
+        )
+
+        MultilineChart(
+            data = { data },
+            colors = ChartyColor.Gradient(seriesColors),
+            lineConfig = LineChartConfig(
+                lineWidth = ${fc(lineWidth)},
+                showPoints = $showPoints,
+                interpolation = LineInterpolation.${interpolation.name},
+                showGradientFill = $showGradientFill,
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             MultilineChart(
                 modifier = Modifier.fillMaxSize(),
@@ -375,6 +496,7 @@ internal fun MultilinePlayground() {
                         showPoints = showPoints,
                         interpolation = interpolation,
                         showGradientFill = showGradientFill,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -408,13 +530,37 @@ internal fun StackedAreaPlayground() {
 
     val data = remember(points, series, tick) { randomGroups(points, series, tick) }
 
+    val code =
+        """
+        val data = listOf(
+            ${data.joinToString(
+            ",\n            ",
+        ) { g -> "LineGroup(\"${g.label}\", listOf(${g.values.joinToString(", ") { fc(it) }}))" }},
+        )
+
+        StackedAreaChart(
+            data = { data },
+            colors = ChartyColor.Gradient(seriesColors),
+            lineConfig = LineChartConfig(
+                lineWidth = ${fc(lineWidth)},
+                interpolation = LineInterpolation.${interpolation.name},
+            ),
+            fillAlpha = ${fc(fillAlpha)},
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             StackedAreaChart(
                 modifier = Modifier.fillMaxSize(),
                 data = { data },
                 colors = ChartyColor.Gradient(playgroundPalette.take(series.coerceAtLeast(2))),
-                lineConfig = LineChartConfig(lineWidth = lineWidth, interpolation = interpolation),
+                lineConfig =
+                    LineChartConfig(
+                        lineWidth = lineWidth,
+                        interpolation = interpolation,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                    ),
                 fillAlpha = fillAlpha,
             )
         },
@@ -458,7 +604,30 @@ internal fun CalendarPlayground() {
             }
         }
 
+    val code =
+        """
+        // ${data.size} days (year 2024, months 1-3); first few shown:
+        val data = listOf(
+            ${data.take(
+            4,
+        ).joinToString(
+            ",\n            ",
+        ) { "CalendarData(year = ${it.year}, month = ${it.month}, day = ${it.day}, value = ${fc(it.value)})" }},
+            // ...
+        )
+
+        CalendarHeatmapChart(
+            data = { data },
+            config = CalendarHeatmapConfig(
+                cellSize = ${fc(cellSize)}.dp,
+                cellSpacing = ${fc(cellSpacing)}.dp,
+                showMonthLabels = $showMonthLabels,
+                showDayLabels = $showDayLabels,
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             CalendarHeatmapChart(
                 modifier = Modifier.fillMaxSize(),
@@ -469,6 +638,7 @@ internal fun CalendarPlayground() {
                         cellSpacing = cellSpacing.dp,
                         showMonthLabels = showMonthLabels,
                         showDayLabels = showDayLabels,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },

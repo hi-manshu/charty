@@ -34,10 +34,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,7 +50,8 @@ import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.theme.ChartyTheme
 import com.himanshoe.charty.common.theme.ChartyThemeProvider
 
-internal enum class WebTab { Playground, Gallery }
+/** When `true`, playground charts play their entry animation; when `false` they render instantly. */
+internal val LocalPlaygroundAnimate = staticCompositionLocalOf { false }
 
 /** A configurable chart shown in the playground: its name, accent, and the interactive screen. */
 internal enum class PlaygroundFamily(
@@ -75,12 +78,12 @@ internal enum class PlaygroundFamily(
 
 /**
  * The web-only entry point: an interactive playground where every control maps to a real Charty
- * config or data change and the chart re-renders live. Also exposes the static gallery via a tab.
+ * config or data change, the chart re-renders live, and the current code (with data) is shown.
  */
 @Composable
 fun WebApp() {
     var dark by remember { mutableStateOf(false) }
-    var tab by remember { mutableStateOf(WebTab.Playground) }
+    var animate by remember { mutableStateOf(false) }
     var family by remember { mutableStateOf<PlaygroundFamily?>(null) }
 
     MaterialTheme(
@@ -102,19 +105,20 @@ fun WebApp() {
             Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     WebTopBar(
-                        tab = tab,
-                        onTab = { tab = it },
-                        showBack = tab == WebTab.Playground && family != null,
                         backTitle = family?.title,
                         onBack = { family = null },
                         dark = dark,
                         onToggleDark = { dark = !dark },
+                        animate = animate,
+                        onToggleAnimate = { animate = !animate },
                     )
                     Box(modifier = Modifier.weight(1f).fillMaxSize()) {
-                        when {
-                            tab == WebTab.Gallery -> AllChartsShowcase(modifier = Modifier.fillMaxSize())
-                            family != null -> PlaygroundContent(family = family!!)
-                            else -> PlaygroundHome(onOpen = { family = it })
+                        CompositionLocalProvider(LocalPlaygroundAnimate provides animate) {
+                            if (family != null) {
+                                PlaygroundContent(family = family!!)
+                            } else {
+                                PlaygroundHome(onOpen = { family = it })
+                            }
                         }
                     }
                 }
@@ -125,13 +129,12 @@ fun WebApp() {
 
 @Composable
 private fun WebTopBar(
-    tab: WebTab,
-    onTab: (WebTab) -> Unit,
-    showBack: Boolean,
     backTitle: String?,
     onBack: () -> Unit,
     dark: Boolean,
     onToggleDark: () -> Unit,
+    animate: Boolean,
+    onToggleAnimate: () -> Unit,
 ) {
     Row(
         modifier =
@@ -141,7 +144,7 @@ private fun WebTopBar(
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (showBack) {
+        if (backTitle != null) {
             Text(
                 text = "‹ $backTitle",
                 fontWeight = FontWeight.SemiBold,
@@ -149,57 +152,60 @@ private fun WebTopBar(
                 modifier = Modifier.clickable(onClick = onBack).padding(end = 12.dp),
             )
         } else {
-            Text(text = "Charty", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Text(text = "Charty Playground", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
         }
         Spacer(modifier = Modifier.weight(1f))
-        TabPill(label = "Playground", selected = tab == WebTab.Playground, onClick = { onTab(WebTab.Playground) })
-        Spacer(modifier = Modifier.width(6.dp))
-        TabPill(label = "Gallery", selected = tab == WebTab.Gallery, onClick = { onTab(WebTab.Gallery) })
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
+        TopBarPill(
+            text =
+                if (animate) {
+                    "◐ Animation: on"
+                } else {
+                    "◐ Animation: off"
+                },
+            highlighted = animate,
+            onClick = onToggleAnimate,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        TopBarPill(
             text =
                 if (dark) {
-                    "☀︎"
+                    "☀︎ Light"
                 } else {
-                    "☾"
+                    "☾ Dark"
                 },
-            modifier =
-                Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .clickable(onClick = onToggleDark)
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+            highlighted = false,
+            onClick = onToggleDark,
         )
     }
 }
 
 @Composable
-private fun TabPill(
-    label: String,
-    selected: Boolean,
+private fun TopBarPill(
+    text: String,
+    highlighted: Boolean,
     onClick: () -> Unit,
 ) {
     Text(
-        text = label,
+        text = text,
         style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.SemiBold,
         color =
-            if (selected) {
+            if (highlighted) {
                 MaterialTheme.colorScheme.onPrimary
             } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
+                MaterialTheme.colorScheme.primary
             },
         modifier =
             Modifier
                 .clip(RoundedCornerShape(50))
                 .background(
-                    if (selected) {
+                    if (highlighted) {
                         MaterialTheme.colorScheme.primary
                     } else {
-                        MaterialTheme.colorScheme.surfaceVariant
+                        MaterialTheme.colorScheme.primaryContainer
                     },
                 ).clickable(onClick = onClick)
-                .padding(horizontal = 14.dp, vertical = 6.dp),
+                .padding(horizontal = 12.dp, vertical = 6.dp),
     )
 }
 

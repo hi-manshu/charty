@@ -13,6 +13,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -39,10 +40,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 import kotlin.random.Random
+
+private val codeBackground = Color(0xFF1E1E2E)
+private val codeForeground = Color(0xFFE4E6F1)
+private val codeLabel = Color(0xFF9AA0B4)
+
+/** Formats a [Color] as a Kotlin `0xAARRGGBB` literal for the code panel. */
+internal fun colorHex(color: Color): String =
+    "0x" +
+        color
+            .toArgb()
+            .toUInt()
+            .toString(radix = 16)
+            .uppercase()
+            .padStart(8, '0')
+
+/** Formats a [Float] as a Kotlin float literal (e.g. `3f`, `0.6f`) for the code panel. */
+internal fun fc(value: Float): String {
+    val rounded = (value * 100).roundToInt() / 100.0
+    val text =
+        if (rounded == rounded.toLong().toDouble()) {
+            rounded.toLong().toString()
+        } else {
+            rounded.toString()
+        }
+    return text + "f"
+}
 
 /** Accent colors offered by the playground color pickers. */
 internal val playgroundPalette: List<Color> =
@@ -75,17 +107,29 @@ internal fun randomValues(
 @Composable
 internal fun PlaygroundScaffold(
     chart: @Composable () -> Unit,
+    code: String,
     controls: @Composable ColumnScope.() -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val wide = maxWidth > 720.dp
         if (wide) {
             Row(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier.weight(1f).fillMaxSize().padding(16.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    chart()
+                Column(modifier = Modifier.weight(1f).fillMaxSize()) {
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        chart()
+                    }
+                    CodePanel(
+                        code = code,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(
+                                    190.dp,
+                                ).padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    )
                 }
                 Column(
                     modifier =
@@ -102,7 +146,7 @@ internal fun PlaygroundScaffold(
         } else {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(300.dp).padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().height(280.dp).padding(16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     chart()
@@ -115,9 +159,58 @@ internal fun PlaygroundScaffold(
                             .verticalScroll(rememberScrollState())
                             .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
-                    content = controls,
-                )
+                ) {
+                    controls()
+                    CodePanel(code = code, modifier = Modifier.fillMaxWidth().height(200.dp))
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun CodePanel(
+    code: String,
+    modifier: Modifier = Modifier,
+) {
+    if (code.isBlank()) {
+        return
+    }
+    val clipboard = LocalClipboardManager.current
+    Column(modifier = modifier.clip(RoundedCornerShape(12.dp)).background(codeBackground)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "CODE",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = codeLabel,
+            )
+            Text(
+                text = "Copy",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = codeForeground,
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFF3B3B54))
+                        .clickable { clipboard.setText(AnnotatedString(code)) }
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+            )
+        }
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .horizontalScroll(rememberScrollState())
+                    .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+        ) {
+            Text(text = code, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = codeForeground)
         }
     }
 }

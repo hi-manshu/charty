@@ -23,6 +23,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.ComboChart
 import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
@@ -52,6 +53,16 @@ internal fun cornerLabel(corner: CornerRadius): String =
         else -> "Custom"
     }
 
+internal fun cornerName(corner: CornerRadius): String =
+    when (corner) {
+        CornerRadius.None -> "None"
+        CornerRadius.Small -> "Small"
+        CornerRadius.Medium -> "Medium"
+        CornerRadius.Large -> "Large"
+        CornerRadius.ExtraLarge -> "ExtraLarge"
+        else -> "Custom"
+    }
+
 @Composable
 internal fun LinePlayground() {
     var points by remember { mutableStateOf(12) }
@@ -68,7 +79,24 @@ internal fun LinePlayground() {
             tick,
         ) { randomValues(points, tick).mapIndexed { i, v -> LineData(label = i.toString(), value = v) } }
 
+    val code =
+        """
+        val data = listOf(${data.joinToString(", ") { fc(it.value) }})
+            .mapIndexed { i, v -> LineData(i.toString(), v) }
+
+        LineChart(
+            data = { data },
+            color = ChartyColor.Solid(Color(${colorHex(color)})),
+            lineConfig = LineChartConfig(
+                lineWidth = ${fc(lineWidth)},
+                showPoints = $showPoints,
+                pointRadius = ${fc(pointRadius)},
+                interpolation = LineInterpolation.${interpolation.name},
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             LineChart(
                 modifier = Modifier.fillMaxSize(),
@@ -80,6 +108,7 @@ internal fun LinePlayground() {
                         showPoints = showPoints,
                         pointRadius = pointRadius,
                         interpolation = interpolation,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -124,7 +153,24 @@ internal fun AreaPlayground() {
             tick,
         ) { randomValues(points, tick).mapIndexed { i, v -> LineData(label = i.toString(), value = v) } }
 
+    val code =
+        """
+        val data = listOf(${data.joinToString(", ") { fc(it.value) }})
+            .mapIndexed { i, v -> LineData(i.toString(), v) }
+
+        AreaChart(
+            data = { data },
+            color = ChartyColor.Solid(Color(${colorHex(color)})),
+            lineConfig = LineChartConfig(
+                lineWidth = ${fc(lineWidth)},
+                showPoints = $showPoints,
+                interpolation = LineInterpolation.${interpolation.name},
+                fillAlpha = ${fc(fillAlpha)},
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             AreaChart(
                 modifier = Modifier.fillMaxSize(),
@@ -136,6 +182,7 @@ internal fun AreaPlayground() {
                         showPoints = showPoints,
                         interpolation = interpolation,
                         fillAlpha = fillAlpha,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -166,7 +213,6 @@ internal fun BarPlayground() {
     var points by remember { mutableStateOf(8) }
     var tick by remember { mutableStateOf(0) }
     var barWidthFraction by remember { mutableStateOf(0.6f) }
-    var barSpacing by remember { mutableStateOf(0f) }
     var corner by remember { mutableStateOf<CornerRadius>(CornerRadius.Medium) }
     var color by remember { mutableStateOf(playgroundPalette[3]) }
 
@@ -176,7 +222,22 @@ internal fun BarPlayground() {
             tick,
         ) { randomValues(points, tick).mapIndexed { i, v -> BarData(label = "B${i + 1}", value = v) } }
 
+    val code =
+        """
+        val data = listOf(${data.joinToString(", ") { fc(it.value) }})
+            .mapIndexed { i, v -> BarData("B${'$'}{i + 1}", v) }
+
+        BarChart(
+            data = { data },
+            color = ChartyColor.Solid(Color(${colorHex(color)})),
+            barConfig = BarChartConfig(
+                barWidthFraction = ${fc(barWidthFraction)},
+                cornerRadius = CornerRadius.${cornerName(corner)},
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             BarChart(
                 modifier = Modifier.fillMaxSize(),
@@ -185,8 +246,8 @@ internal fun BarPlayground() {
                 barConfig =
                     BarChartConfig(
                         barWidthFraction = barWidthFraction,
-                        barSpacing = barSpacing,
                         cornerRadius = corner,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -199,9 +260,6 @@ internal fun BarPlayground() {
                 barWidthFraction =
                     it
             }, decimals = 2)
-            SliderRow(label = "Spacing", value = barSpacing, valueRange = 0f..24f, onValueChange = {
-                barSpacing = it
-            }, decimals = 0)
             ChoiceRow(label = "Corner radius", options = cornerOptions, selected = corner, labelOf = ::cornerLabel, onSelect = {
                 corner =
                     it
@@ -227,7 +285,23 @@ internal fun PointPlayground() {
             tick,
         ) { randomValues(points, tick).mapIndexed { i, v -> PointData(label = "P${i + 1}", value = v) } }
 
+    val code =
+        """
+        val data = listOf(${data.joinToString(", ") { fc(it.value) }})
+            .mapIndexed { i, v -> PointData("P${'$'}{i + 1}", v) }
+
+        PointChart(
+            data = { data },
+            color = ChartyColor.Solid(Color(${colorHex(color)})),
+            pointConfig = PointChartConfig(
+                pointRadius = ${fc(pointRadius)},
+                pointAlpha = ${fc(pointAlpha)},
+                showLabels = $showLabels,
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             PointChart(
                 modifier = Modifier.fillMaxSize(),
@@ -238,6 +312,7 @@ internal fun PointPlayground() {
                         pointRadius = pointRadius,
                         pointAlpha = pointAlpha,
                         showLabels = showLabels,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -272,13 +347,33 @@ internal fun BubblePlayground() {
             ys.mapIndexed { i, y -> BubbleData(label = "B${i + 1}", yValue = y, size = sizes[i]) }
         }
 
+    val code =
+        """
+        val data = listOf(
+            ${data.joinToString(
+            ",\n            ",
+        ) { "BubbleData(\"${it.label}\", yValue = ${fc(it.yValue)}, size = ${fc(it.size)})" }},
+        )
+
+        BubbleChart(
+            data = { data },
+            color = ChartyColor.Solid(Color(${colorHex(color)})),
+            config = PointChartConfig(pointRadius = ${fc(maxRadius)}),
+            minBubbleRadius = ${fc(minRadius)},
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             BubbleChart(
                 modifier = Modifier.fillMaxSize(),
                 data = { data },
                 color = ChartyColor.Solid(color),
-                config = PointChartConfig(pointRadius = maxRadius),
+                config =
+                    PointChartConfig(
+                        pointRadius = maxRadius,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
+                    ),
                 minBubbleRadius = minRadius,
             )
         },
@@ -324,7 +419,22 @@ internal fun PiePlayground() {
             }
         }
 
+    val code =
+        """
+        val data = listOf(${data.joinToString(", ") { fc(it.value) }})
+            .mapIndexed { i, v -> PieData("S${'$'}{i + 1}", v) }
+
+        PieChart(
+            data = { data },
+            config = PieChartConfig(
+                style = PieChartStyle.${style.name},
+                donutHoleRatio = ${fc(donutHoleRatio)},
+                sliceSpacingDegrees = ${fc(sliceSpacing)},
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             PieChart(
                 modifier = Modifier.fillMaxSize(),
@@ -334,6 +444,7 @@ internal fun PiePlayground() {
                         style = style,
                         donutHoleRatio = donutHoleRatio,
                         sliceSpacingDegrees = sliceSpacing,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
@@ -381,7 +492,29 @@ internal fun ComboPlayground() {
             bars.mapIndexed { i, b -> ComboChartData(label = "M${i + 1}", barValue = b, lineValue = lines[i]) }
         }
 
+    val code =
+        """
+        val data = listOf(
+            ${data.joinToString(
+            ",\n            ",
+        ) { "ComboChartData(\"${it.label}\", barValue = ${fc(it.barValue)}, lineValue = ${fc(it.lineValue)})" }},
+        )
+
+        ComboChart(
+            data = { data },
+            barColor = ChartyColor.Solid(Color(${colorHex(barColor)})),
+            lineColor = ChartyColor.Solid(Color(${colorHex(lineColor)})),
+            comboConfig = ComboChartConfig(
+                barWidthFraction = ${fc(barWidthFraction)},
+                lineWidth = ${fc(lineWidth)},
+                showPoints = $showPoints,
+                smoothCurve = $smoothCurve,
+                secondaryAxisForLine = $secondaryAxis,
+            ),
+        )
+        """.trimIndent()
     PlaygroundScaffold(
+        code = code,
         chart = {
             ComboChart(
                 modifier = Modifier.fillMaxSize(),
@@ -395,6 +528,7 @@ internal fun ComboPlayground() {
                         showPoints = showPoints,
                         smoothCurve = smoothCurve,
                         secondaryAxisForLine = secondaryAxis,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },
