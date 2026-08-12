@@ -60,6 +60,7 @@ internal enum class PlaygroundFamily(
     val accent: Color,
 ) {
     Streaming("Streaming (live)", "Rolling window — slides on new data", Color(0xFF00ACC1)),
+    StreamingDashboard("Streaming dashboard", "One feed, three synced charts", Color(0xFF00838F)),
     Gauge("Angular gauge", "Needle dial with plot bands", Color(0xFFD81B60)),
     Heatmap("Matrix heatmap", "Value grid with a color scale", Color(0xFF6D4C41)),
     Sparkline("Sparkline", "Inline mini line for cards", Color(0xFF5E35B1)),
@@ -276,6 +277,7 @@ private fun FamilyCard(
 private fun PlaygroundContent(family: PlaygroundFamily) {
     when (family) {
         PlaygroundFamily.Streaming -> StreamingLinePlayground()
+        PlaygroundFamily.StreamingDashboard -> StreamingDashboardPlayground()
         PlaygroundFamily.Gauge -> GaugePlayground()
         PlaygroundFamily.Heatmap -> HeatmapPlayground()
         PlaygroundFamily.Sparkline -> SparklinePlayground()

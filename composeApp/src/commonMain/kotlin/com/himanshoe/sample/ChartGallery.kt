@@ -463,6 +463,42 @@ private fun SelectionColumn(
     }
 }
 
+/**
+ * Wraps a chart with a button that swaps its data, so `animateValueChanges` demos can be watched
+ * tweening from the old values to the new ones. [chart] receives the modifier to apply to the chart.
+ */
+@Composable
+private fun ReshuffleColumn(
+    label: String,
+    onReshuffle: () -> Unit,
+    chart: @Composable (Modifier) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable(onClick = onReshuffle)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            chart(Modifier.fillMaxSize())
+        }
+    }
+}
+
+/** Deterministic per-[tick] weekday series, so an animated-value demo has something to tween to. */
+private fun reshuffledLine(tick: Int): List<LineData> =
+    listOf("Mon", "Tue", "Wed", "Thu", "Fri").mapIndexed { index, label ->
+        LineData(label = label, value = 20f + ((tick * 37 + index * 53) % 60).toFloat())
+    }
+
 private fun buildGalleryDemos(): List<ChartDemo> {
     val blue = ChartyColors.Blue
     val green = ChartyColors.Green
@@ -595,6 +631,26 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         MatrixHeatmapChart(
                             data = { heatmapCells },
                             config = MatrixHeatmapConfig(showValues = true),
+                            modifier = chartFill,
+                        )
+                    },
+                    ChartVariant("Tap a cell (tooltip + onCellClick)") {
+                        var selected by remember { mutableStateOf<String?>(null) }
+                        SelectionColumn(hint = "Tap a cell", selected = selected) { chartModifier ->
+                            MatrixHeatmapChart(
+                                data = { heatmapCells },
+                                onCellClick = { cell ->
+                                    selected = "${cell.rowLabel} · ${cell.columnLabel} = ${cell.value}"
+                                },
+                                tooltip = ChartTooltip.canvas(),
+                                modifier = chartModifier,
+                            )
+                        }
+                    },
+                    ChartVariant("Tooltip: pill (compose)") {
+                        MatrixHeatmapChart(
+                            data = { heatmapCells },
+                            tooltip = ChartTooltip.compose { PillTooltip() },
                             modifier = chartFill,
                         )
                     },
@@ -1104,6 +1160,29 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         modifier = chartFill,
                     )
                 },
+                ChartVariant("Label the latest value (dataIndex = -1)") {
+                    LineChart(
+                        data = {
+                            line
+                        },
+                        lineConfig =
+                            LineChartConfig(
+                                markers = listOf(PersistentMarker(dataIndex = -1)),
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Animated value changes (tap to reshuffle)") {
+                    var tick by remember { mutableStateOf(0) }
+                    val shuffling = remember(tick) { reshuffledLine(tick = tick) }
+                    ReshuffleColumn(label = "Reshuffle values", onReshuffle = { tick += 1 }) { chartModifier ->
+                        LineChart(
+                            data = { shuffling },
+                            lineConfig = LineChartConfig(animateValueChanges = true),
+                            modifier = chartModifier,
+                        )
+                    }
+                },
                 ChartVariant("Reference band") {
                     LineChart(
                         data = {
@@ -1165,6 +1244,20 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                 ChartVariant("Smooth curve") {
                     AreaChart(data = { line }, lineConfig = LineChartConfig(smoothCurve = true), modifier = chartFill)
                 },
+                ChartVariant("Interpolation: SMOOTH") {
+                    AreaChart(
+                        data = { line },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.SMOOTH),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Interpolation: STEP") {
+                    AreaChart(
+                        data = { line },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.STEP),
+                        modifier = chartFill,
+                    )
+                },
                 ChartVariant(
                     "Warm gradient",
                 ) { AreaChart(data = { line }, color = warmGradient, modifier = chartFill) },
@@ -1209,6 +1302,20 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         modifier = chartFill,
                     )
                 },
+                ChartVariant("Interpolation: SMOOTH") {
+                    MultilineChart(
+                        data = { lineGroups },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.SMOOTH),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Interpolation: STEP") {
+                    MultilineChart(
+                        data = { lineGroups },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.STEP),
+                        modifier = chartFill,
+                    )
+                },
             ),
         ),
         ChartDemo(
@@ -1221,6 +1328,20 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                 ChartVariant(
                     "Custom palette",
                 ) { StackedAreaChart(data = { lineGroups }, colors = palette, modifier = chartFill) },
+                ChartVariant("Interpolation: SMOOTH") {
+                    StackedAreaChart(
+                        data = { lineGroups },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.SMOOTH),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Interpolation: STEP") {
+                    StackedAreaChart(
+                        data = { lineGroups },
+                        lineConfig = LineChartConfig(interpolation = LineInterpolation.STEP),
+                        modifier = chartFill,
+                    )
+                },
             ),
         ),
         ChartDemo(
