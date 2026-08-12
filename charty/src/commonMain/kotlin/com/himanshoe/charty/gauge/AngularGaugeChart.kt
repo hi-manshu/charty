@@ -154,6 +154,12 @@ fun AngularGaugeChart(
             animatedValue.snapTo(targetValue)
         }
     }
+    val displayedValue =
+        if (config.animation.isAnimated) {
+            animatedValue.value
+        } else {
+            targetValue
+        }
     val textMeasurer = rememberTextMeasurer()
     val ticks = rememberGaugeTicks(config = config, textMeasurer = textMeasurer)
     Box(
@@ -164,7 +170,7 @@ fun AngularGaugeChart(
             drawGauge(
                 params =
                     GaugeDrawParams(
-                        displayedValue = animatedValue.value,
+                        displayedValue = displayedValue,
                         progressColor = color,
                         config = config,
                         ticks = ticks,

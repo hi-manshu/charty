@@ -61,12 +61,9 @@ internal enum class PlaygroundFamily(
 ) {
     Streaming("Streaming (live)", "Rolling window — slides on new data", Color(0xFF00ACC1)),
     Gauge("Angular gauge", "Needle dial with plot bands", Color(0xFFD81B60)),
-    Rings("Activity rings", "Concentric goal progress", Color(0xFF43A047)),
     Heatmap("Matrix heatmap", "Value grid with a color scale", Color(0xFF6D4C41)),
     Sparkline("Sparkline", "Inline mini line for cards", Color(0xFF5E35B1)),
-    RangeSelector("Range selector", "Preset period buttons", Color(0xFF1E88E5)),
     Synced("Synced crosshair", "One crosshair, two charts", Color(0xFF00897B)),
-    Callouts("Callouts & shapes", "Anchored bubbles and bands", Color(0xFFC62828)),
     Export("Export PNG", "Capture the chart as an image", Color(0xFF455A64)),
     Line("Line", "Trend over an index", Color(0xFF2962FF)),
     Area("Area", "Filled line", Color(0xFF00BFA5)),
@@ -280,12 +277,9 @@ private fun PlaygroundContent(family: PlaygroundFamily) {
     when (family) {
         PlaygroundFamily.Streaming -> StreamingLinePlayground()
         PlaygroundFamily.Gauge -> GaugePlayground()
-        PlaygroundFamily.Rings -> RingsPlayground()
         PlaygroundFamily.Heatmap -> HeatmapPlayground()
         PlaygroundFamily.Sparkline -> SparklinePlayground()
-        PlaygroundFamily.RangeSelector -> RangeSelectorPlayground()
         PlaygroundFamily.Synced -> SyncedPlayground()
-        PlaygroundFamily.Callouts -> CalloutPlayground()
         PlaygroundFamily.Export -> ExportPlayground()
         PlaygroundFamily.Line -> LinePlayground()
         PlaygroundFamily.Area -> AreaPlayground()

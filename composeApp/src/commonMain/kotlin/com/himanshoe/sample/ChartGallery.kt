@@ -76,8 +76,6 @@ import com.himanshoe.charty.candlestick.CandlestickChart
 import com.himanshoe.charty.candlestick.data.CandleData
 import com.himanshoe.charty.circular.CircularProgressIndicator
 import com.himanshoe.charty.circular.data.CircularRingData
-import com.himanshoe.charty.circular.rings.ActivityRingsChart
-import com.himanshoe.charty.circular.rings.data.RingData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.combo.ComboChart
@@ -580,38 +578,6 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                                             GaugeBand(fromValue = 75f, toValue = 100f, color = ChartyColor.Solid(red)),
                                         ),
                                 ),
-                            modifier = chartFill,
-                        )
-                    },
-                ),
-        ),
-        ChartDemo(
-            title = "Activity Rings",
-            description = "Concentric progress toward goals",
-            category = "Gauge",
-            accent = green,
-            variants =
-                listOf(
-                    ChartVariant("Default") {
-                        ActivityRingsChart(
-                            data = {
-                                listOf(
-                                    RingData(label = "Move", value = 420f, target = 500f),
-                                    RingData(label = "Exercise", value = 25f, target = 30f),
-                                    RingData(label = "Stand", value = 9f, target = 12f),
-                                )
-                            },
-                            modifier = chartFill,
-                        )
-                    },
-                    ChartVariant("Goal exceeded (clamped)") {
-                        ActivityRingsChart(
-                            data = {
-                                listOf(
-                                    RingData(label = "Move", value = 780f, target = 500f),
-                                    RingData(label = "Exercise", value = 12f, target = 30f),
-                                )
-                            },
                             modifier = chartFill,
                         )
                     },
