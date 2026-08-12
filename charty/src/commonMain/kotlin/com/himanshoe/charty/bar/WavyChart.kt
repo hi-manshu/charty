@@ -125,6 +125,7 @@ fun WavyChart(
         rememberChartCrosshair<BarData>(
             enabled = crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
+            streamingState = interactionConfig.streamingState,
         )
 
     val basePhase = rememberWavyBasePhase(wavyConfig)

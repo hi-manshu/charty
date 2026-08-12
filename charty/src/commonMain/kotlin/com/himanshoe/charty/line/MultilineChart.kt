@@ -120,6 +120,7 @@ fun MultilineChart(
         rememberChartCrosshair<MultilinePoint>(
             enabled = effectiveLineConfig.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
+            streamingState = interactionConfig.streamingState,
         )
     val textMeasurer = rememberTextMeasurer()
 

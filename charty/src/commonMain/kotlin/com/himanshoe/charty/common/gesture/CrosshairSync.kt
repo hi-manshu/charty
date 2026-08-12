@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.himanshoe.charty.common.viewport.ViewPortState
+import com.himanshoe.charty.common.PlotBoundsSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -167,9 +167,11 @@ fun rememberCrosshairSync(): CrosshairSyncState = remember { CrosshairSyncState(
  * Each participating chart publishes its own crosshair while the user drags it, and every other
  * chart in the scope mirrors that position as a guide line. Ownership is last-writer-wins, so
  * moving to a different chart hands the crosshair over. Charts enrol automatically — no per-chart
- * parameter is needed — but a chart only participates when it has a crosshair configured **and** an
- * [com.himanshoe.charty.common.viewport.ViewPortState] in its `interactionConfig`, which supplies
- * the plot geometry the shared fraction is resolved against.
+ * parameter is needed — but a chart only participates when it has a crosshair configured **and** a
+ * source of plot geometry in its `interactionConfig`: either a
+ * [com.himanshoe.charty.common.viewport.ViewPortState] for a pan/zoom chart, or a
+ * [com.himanshoe.charty.common.streaming.StreamingState] for a rolling-window one. Streaming charts
+ * therefore mirror each other without giving up their window.
  *
  * A mirrored guide carries no snapped data item, so no label is drawn for it; the vertical guide
  * line is the shared element.
@@ -208,10 +210,10 @@ internal fun <T> CrosshairSyncParticipantEffects(
     sync: CrosshairSyncState,
     ownerId: String,
     manager: CrosshairManager<T>,
-    viewPortState: ViewPortState,
+    bounds: PlotBoundsSource,
 ) {
-    SyncPublishEffect(sync = sync, ownerId = ownerId, manager = manager, viewPortState = viewPortState)
-    SyncMirrorEffect(sync = sync, ownerId = ownerId, manager = manager, viewPortState = viewPortState)
+    SyncPublishEffect(sync = sync, ownerId = ownerId, manager = manager, bounds = bounds)
+    SyncMirrorEffect(sync = sync, ownerId = ownerId, manager = manager, bounds = bounds)
 }
 
 /**
@@ -225,9 +227,9 @@ private fun <T> SyncPublishEffect(
     sync: CrosshairSyncState,
     ownerId: String,
     manager: CrosshairManager<T>,
-    viewPortState: ViewPortState,
+    bounds: PlotBoundsSource,
 ) {
-    LaunchedEffect(sync, ownerId, manager, viewPortState) {
+    LaunchedEffect(sync, ownerId, manager, bounds) {
         snapshotFlow { manager.state?.takeIf { manager.selectedItem != null } }
             .collect { ownState ->
                 if (ownState != null) {
@@ -236,8 +238,8 @@ private fun <T> SyncPublishEffect(
                         fraction =
                             normalizedCrosshairFraction(
                                 x = ownState.x,
-                                plotLeft = viewPortState.chartLeft,
-                                plotWidth = viewPortState.chartWidth,
+                                plotLeft = bounds.plotLeft,
+                                plotWidth = bounds.plotWidth,
                             ),
                     )
                 } else {
@@ -259,16 +261,16 @@ private fun <T> SyncMirrorEffect(
     sync: CrosshairSyncState,
     ownerId: String,
     manager: CrosshairManager<T>,
-    viewPortState: ViewPortState,
+    bounds: PlotBoundsSource,
 ) {
     val shared by sync.shared.collectAsState()
-    LaunchedEffect(sync, ownerId, manager, viewPortState) {
+    LaunchedEffect(sync, ownerId, manager, bounds) {
         snapshotFlow {
             shared?.takeIf { it.ownerId != ownerId }?.let { active ->
                 crosshairXForFraction(
                     fraction = active.fraction,
-                    plotLeft = viewPortState.chartLeft,
-                    plotWidth = viewPortState.chartWidth,
+                    plotLeft = bounds.plotLeft,
+                    plotWidth = bounds.plotWidth,
                 )
             }
         }.collect { mirroredX ->

@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.himanshoe.charty.common.PlotBoundsSource
 import com.himanshoe.charty.common.animation.isAnimated
 import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.config.Animation
@@ -33,7 +34,21 @@ import com.himanshoe.charty.common.config.Animation
  * a resize.
  */
 @Stable
-class StreamingState internal constructor() {
+class StreamingState internal constructor() : PlotBoundsSource {
+    private var plotLeftState by mutableFloatStateOf(0f)
+    private var plotWidthState by mutableFloatStateOf(0f)
+
+    override val plotLeft: Float get() = plotLeftState
+    override val plotWidth: Float get() = plotWidthState
+
+    internal fun updatePlotBounds(
+        left: Float,
+        width: Float,
+    ) {
+        plotLeftState = left
+        plotWidthState = width
+    }
+
     internal val scroll: Animatable<Float, AnimationVector1D> = Animatable(0f)
 
     private var followingState by mutableStateOf(true)

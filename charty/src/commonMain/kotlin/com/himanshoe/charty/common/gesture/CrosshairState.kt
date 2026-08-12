@@ -12,6 +12,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.himanshoe.charty.common.PlotBoundsSource
+import com.himanshoe.charty.common.config.ChartInteractionConfig
+import com.himanshoe.charty.common.streaming.StreamingState
 import com.himanshoe.charty.common.viewport.ViewPortState
 
 /**
@@ -115,13 +118,17 @@ internal class AnimatedCrosshair(
  * @param enabled Whether the crosshair is configured for this chart (typically
  *   `config.crosshairConfig != null`). When `false`, both returned values are `null`.
  * @param viewPortState The chart's viewport state, used as the source of plot pixel geometry when
- *   syncing across charts. `null` (the default) disables syncing for this chart.
+ *   syncing across charts.
+ * @param streamingState The chart's streaming state, used as the geometry source when the chart has
+ *   a rolling window rather than a viewport. Syncing needs one of the two; with neither, this chart
+ *   keeps its crosshair to itself.
  * @return A [Pair] of `(manager, animatedCrosshair)`.
  */
 @Composable
 internal fun <T> rememberChartCrosshair(
     enabled: Boolean,
     viewPortState: ViewPortState? = null,
+    streamingState: StreamingState? = null,
 ): Pair<CrosshairManager<T>?, AnimatedCrosshair?> {
     val manager =
         if (enabled) {
@@ -131,12 +138,13 @@ internal fun <T> rememberChartCrosshair(
         }
     val sync = LocalCrosshairSync.current
     val ownerId = currentCompositeKeyHashCode.toString()
-    if (manager != null && sync != null && viewPortState != null) {
+    val bounds: PlotBoundsSource? = viewPortState ?: streamingState
+    if (manager != null && sync != null && bounds != null) {
         CrosshairSyncParticipantEffects(
             sync = sync,
             ownerId = ownerId,
             manager = manager,
-            viewPortState = viewPortState,
+            bounds = bounds,
         )
     }
     val animated = rememberAnimatedCrosshairState(manager?.state)
@@ -162,3 +170,23 @@ internal fun rememberAnimatedCrosshairState(
     val animatedY = animateFloatAsState(targetValue = state.y, animationSpec = animationSpec)
     return AnimatedCrosshair(animatedX = animatedX, animatedY = animatedY, label = state.label)
 }
+
+/**
+ * Convenience over [rememberChartCrosshair] that takes the geometry sources straight from
+ * [interactionConfig], so a chart enrols in a [CrosshairSyncScope] whether it pans a viewport or
+ * rolls a streaming window.
+ *
+ * @param enabled Whether the crosshair is configured for this chart.
+ * @param interactionConfig The chart's interaction config, supplying the viewport or streaming state.
+ * @return A [Pair] of `(manager, animatedCrosshair)`.
+ */
+@Composable
+internal fun <T> rememberChartCrosshair(
+    enabled: Boolean,
+    interactionConfig: ChartInteractionConfig,
+): Pair<CrosshairManager<T>?, AnimatedCrosshair?> =
+    rememberChartCrosshair(
+        enabled = enabled,
+        viewPortState = interactionConfig.viewPortState,
+        streamingState = interactionConfig.streamingState,
+    )

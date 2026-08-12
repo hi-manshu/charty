@@ -129,6 +129,7 @@ fun StackedAreaChart(
         rememberChartCrosshair<LineGroup>(
             enabled = effectiveLineConfig.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
+            streamingState = interactionConfig.streamingState,
         )
     val textMeasurer = rememberTextMeasurer()
 

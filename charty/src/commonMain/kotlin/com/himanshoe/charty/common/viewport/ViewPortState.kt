@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.himanshoe.charty.common.PlotBoundsSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -31,13 +32,17 @@ private const val SCROLL_ANIMATION_MILLIS = 600
  *
  * Use [rememberViewPortState] to create an instance bound to the composition lifecycle.
  */
-class ViewPortState {
+class ViewPortState : PlotBoundsSource {
     var startFraction by mutableFloatStateOf(0f)
         private set
     var endFraction by mutableFloatStateOf(1f)
         private set
 
     /** Pixel x-coordinate of the chart's left edge — set by ChartScaffold each draw. */
+    override val plotLeft: Float get() = chartLeft
+
+    override val plotWidth: Float get() = chartWidth
+
     internal var chartLeft by mutableFloatStateOf(0f)
 
     /** Pixel width of the chart drawing area — set by ChartScaffold each draw. */

@@ -144,6 +144,7 @@ fun ComboChart(
         rememberChartCrosshair<ComboChartData>(
             enabled = effectiveComboConfig.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
+            streamingState = interactionConfig.streamingState,
         )
     val textMeasurer = rememberTextMeasurer()
 

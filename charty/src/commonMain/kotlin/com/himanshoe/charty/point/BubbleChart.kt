@@ -129,6 +129,7 @@ fun BubbleChart(
         rememberChartCrosshair<BubbleData>(
             enabled = crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
+            streamingState = interactionConfig.streamingState,
         )
     val sizeInfo = remember(dataList) { calculateBubbleSizeInfo(dataList) }
     val textMeasurer = rememberTextMeasurer()

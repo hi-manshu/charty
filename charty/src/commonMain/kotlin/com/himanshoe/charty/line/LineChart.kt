@@ -156,6 +156,7 @@ fun LineChart(
         rememberChartCrosshair<LineData>(
             enabled = effectiveLineConfig.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
+            streamingState = interactionConfig.streamingState,
         )
 
     AutoScrollToLatestEffect(

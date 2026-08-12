@@ -236,6 +236,7 @@ internal fun updateInteractionBounds(
         bs.chartLeft = chartContext.left
         bs.chartRight = chartContext.right
     }
+    interactionConfig.streamingState?.updatePlotBounds(left = chartContext.left, width = chartContext.width)
 }
 
 /** Draws annotation markers and the brush-selection overlay as the last canvas pass. */

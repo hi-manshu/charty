@@ -342,6 +342,7 @@ fun PointChart(
         rememberChartCrosshair<PointData>(
             enabled = effectiveCrosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
+            streamingState = interactionConfig.streamingState,
         )
 
     val chartModifier =
