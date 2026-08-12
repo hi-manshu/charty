@@ -2,6 +2,8 @@ package com.himanshoe.charty.heatmap
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -17,6 +19,11 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.heatmap.config.MatrixHeatmapConfig
 import com.himanshoe.charty.heatmap.data.HeatmapCell
 import com.himanshoe.charty.heatmap.internal.MatrixDrawSpec
@@ -25,6 +32,8 @@ import com.himanshoe.charty.heatmap.internal.buildMatrixHeatmapDescription
 import com.himanshoe.charty.heatmap.internal.computeMatrixGrid
 import com.himanshoe.charty.heatmap.internal.drawMatrixHeatmap
 import com.himanshoe.charty.heatmap.internal.flattenCells
+import com.himanshoe.charty.heatmap.internal.heatmapTooltipState
+import com.himanshoe.charty.heatmap.internal.resolveHeatmapCellAt
 
 /**
  * A composable function that displays a general-purpose matrix heatmap: a grid of rounded cells
@@ -46,6 +55,9 @@ import com.himanshoe.charty.heatmap.internal.flattenCells
  * @param onCellClick Optional callback invoked when the user taps a grid position that has data.
  * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an
  *   empty string to suppress it.
+ * @param tooltip How a tapped cell is presented: the built-in canvas bubble (the default), a custom
+ *   Compose overlay, or [ChartTooltip.none] to disable it. Its text comes from
+ *   [MatrixHeatmapConfig.tooltipFormatter] and it is shown alongside [onCellClick], not instead of it.
  *
  * Example usage:
  * ```kotlin
@@ -69,6 +81,7 @@ fun MatrixHeatmapChart(
     config: MatrixHeatmapConfig = MatrixHeatmapConfig(),
     onCellClick: ((HeatmapCell) -> Unit)? = null,
     accessibilityDescription: String? = null,
+    tooltip: ChartTooltip<HeatmapCell> = ChartTooltip.canvas(),
 ) {
     val cells by remember(data) { derivedStateOf { data() } }
     val grid = remember(cells) { computeMatrixGrid(cells) }
@@ -81,6 +94,7 @@ fun MatrixHeatmapChart(
             accessibilityDescription = accessibilityDescription,
             modifier = modifier,
             config = config,
+            tooltip = tooltip,
         )
     }
 }
@@ -92,11 +106,12 @@ private fun MatrixHeatmapContent(
     accessibilityDescription: String?,
     modifier: Modifier = Modifier,
     config: MatrixHeatmapConfig = MatrixHeatmapConfig(),
+    tooltip: ChartTooltip<HeatmapCell> = ChartTooltip.canvas(),
 ) {
     val textMeasurer = rememberTextMeasurer()
     val animationProgress = rememberChartAnimation(config.animation)
     val currentOnCellClick by rememberUpdatedState(onCellClick)
-    val cellBounds = remember { mutableListOf<Pair<Rect, HeatmapCell>>() }
+    val tooltipManager = rememberTooltipManager<Rect, HeatmapCell>()
 
     val measuredRowLabels =
         remember(grid.rowLabels, config.labelTextStyle) {
@@ -124,30 +139,60 @@ private fun MatrixHeatmapContent(
             Modifier
         }
 
-    Canvas(
+    Box(
         modifier =
             modifier
                 .then(semanticsModifier)
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->
-                        val hit = cellBounds.firstOrNull { (rect, _) -> rect.contains(offset) }
-                        if (hit != null) {
+                        val hit = resolveHeatmapCellAt(cellBounds = tooltipManager.bounds, position = offset)
+                        if (hit == null) {
+                            tooltipManager.dismiss()
+                        } else {
                             currentOnCellClick?.invoke(hit.second)
+                            tooltipManager.updateTooltip(
+                                state =
+                                    heatmapTooltipState(
+                                        bounds = hit.first,
+                                        content = config.tooltipFormatter(hit.second),
+                                    ),
+                                item = hit.second,
+                            )
                         }
                     }
                 },
     ) {
-        drawMatrixHeatmap(
-            MatrixDrawSpec(
-                grid = grid,
-                config = config,
-                measuredRowLabels = measuredRowLabels,
-                measuredColumnLabels = measuredColumnLabels,
-                flatCells = flatCells,
-                measuredValues = measuredValues,
-                animationProgress = animationProgress.value,
-                cellBounds = cellBounds,
-            ),
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawMatrixHeatmap(
+                MatrixDrawSpec(
+                    grid = grid,
+                    config = config,
+                    measuredRowLabels = measuredRowLabels,
+                    measuredColumnLabels = measuredColumnLabels,
+                    flatCells = flatCells,
+                    measuredValues = measuredValues,
+                    animationProgress = animationProgress.value,
+                    cellBounds = tooltipManager.bounds,
+                ),
+            )
+            if (tooltip.isCanvas()) {
+                tooltipManager.tooltipState?.let { state ->
+                    drawTooltip(
+                        tooltipState = state,
+                        config = config.tooltipConfig,
+                        textMeasurer = textMeasurer,
+                        chartWidth = size.width,
+                        chartTop = 0f,
+                        chartBottom = size.height,
+                    )
+                }
+            }
+        }
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
         )
     }
 }

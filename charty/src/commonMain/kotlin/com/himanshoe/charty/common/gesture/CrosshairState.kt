@@ -7,7 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -130,7 +130,7 @@ internal fun <T> rememberChartCrosshair(
             null
         }
     val sync = LocalCrosshairSync.current
-    val ownerId = currentCompositeKeyHash.toString()
+    val ownerId = currentCompositeKeyHashCode.toString()
     if (manager != null && sync != null && viewPortState != null) {
         CrosshairSyncParticipantEffects(
             sync = sync,

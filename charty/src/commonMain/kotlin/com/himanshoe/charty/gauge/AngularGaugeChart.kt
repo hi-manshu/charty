@@ -292,7 +292,7 @@ private fun DrawScope.drawPlotBands(
                 sweepAngleDegrees = arc.sweepAngleDegrees,
                 radius = bandRadius,
                 strokeWidth = bandWidth,
-                cap = StrokeCap.Butt,
+                cap = StrokeCap.Round,
             )
         }
     }

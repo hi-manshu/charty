@@ -57,6 +57,9 @@ internal fun resolveMarkerLabelTopLeft(
  * @param chartContext The chart's drawing context.
  * @param markers The markers to draw; an empty list draws nothing.
  * @param pointPositions Pixel positions of every drawn data point, indexed the same as the data.
+ *   A marker's negative index counts back from the end of this list, so `-1` marks the newest
+ *   drawn point — the position a rolling [com.himanshoe.charty.common.config.Animation]-driven
+ *   window leaves the latest value in.
  * @param valueLabelFor Supplies the formatted value text for a data index when a marker has no label.
  * @param textMeasurer Measures the callout label.
  */
@@ -71,12 +74,13 @@ fun DrawScope.drawPersistentMarkers(
         return
     }
     markers.fastForEach { marker ->
-        if (marker.dataIndex in pointPositions.indices) {
+        val resolvedIndex = resolveMarkerIndex(dataIndex = marker.dataIndex, pointCount = pointPositions.size)
+        if (resolvedIndex in pointPositions.indices) {
             drawSingleMarker(
                 chartContext = chartContext,
                 marker = marker,
-                position = pointPositions[marker.dataIndex],
-                labelText = marker.label ?: valueLabelFor(marker.dataIndex),
+                position = pointPositions[resolvedIndex],
+                labelText = marker.label ?: valueLabelFor(resolvedIndex),
                 textMeasurer = textMeasurer,
             )
         }
@@ -157,4 +161,19 @@ private fun ChartyColor.toMarkerBrush(): Brush =
     when (this) {
         is ChartyColor.Solid -> SolidColor(color)
         is ChartyColor.Gradient -> Brush.verticalGradient(colors)
+    }
+
+/**
+ * Resolves a marker's [dataIndex] against the number of drawn points: a negative index counts back
+ * from the end, so `-1` is the last drawn point and `-2` the one before it. Non-negative indices are
+ * returned unchanged; out-of-range results are left out of range so the caller skips them.
+ */
+internal fun resolveMarkerIndex(
+    dataIndex: Int,
+    pointCount: Int,
+): Int =
+    if (dataIndex < 0) {
+        pointCount + dataIndex
+    } else {
+        dataIndex
     }

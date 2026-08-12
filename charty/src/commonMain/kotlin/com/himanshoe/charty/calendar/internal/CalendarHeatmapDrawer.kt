@@ -14,14 +14,20 @@ import com.himanshoe.charty.calendar.config.CellShape
 import com.himanshoe.charty.calendar.data.CalendarData
 
 private const val DAY_LABEL_END_GAP = 4f
+private const val MONTH_LABEL_MIN_GAP = 4f
+private const val DAY_LABEL_MIN_GAP = 2f
 
 /**
  * Draws the month abbreviation labels along the top of the calendar grid.
  *
- * Labels are pre-measured in the composable and passed in to keep this function allocation-free
- * during animation frames.
+ * Labels are pre-measured in the composable and passed in so no text layout happens during
+ * animation frames. Consecutive months whose week columns sit too close together — a short month,
+ * a narrow chart, or the grid's leading partial month followed immediately by the next one — would
+ * otherwise be drawn on top of each other, so [selectNonOverlappingLabels] decides which of them
+ * are skipped.
  *
- * @param monthBoundaries Pairs of (weekIndex, label) from [GridLayout.monthBoundaries].
+ * @param monthBoundaries Pairs of (weekIndex, label) from [GridLayout.monthBoundaries], ordered by
+ *   week index.
  * @param measuredLabels Pre-measured [TextLayoutResult] keyed by month label string.
  * @param leftPadding Horizontal offset (px) reserved for day-of-week labels.
  * @param topPadding Vertical offset (px) reserved for month labels.
@@ -34,21 +40,36 @@ internal fun DrawScope.drawMonthLabels(
     topPadding: Float,
     cellStridePx: Float,
 ) {
-    for ((weekIndex, label) in monthBoundaries) {
-        val measured = measuredLabels[label] ?: continue
-        val x = leftPadding + weekIndex * cellStridePx
-        val y = (topPadding - measured.size.height) / 2f
-        drawText(textLayoutResult = measured, topLeft = Offset(x, y.coerceAtLeast(0f)))
+    val drawable = monthBoundaries.mapNotNull { (weekIndex, label) -> measuredLabels[label]?.let { weekIndex to it } }
+    if (drawable.isEmpty()) {
+        return
+    }
+    val positions = drawable.map { (weekIndex, _) -> leftPadding + weekIndex * cellStridePx }
+    val keep =
+        selectNonOverlappingLabels(
+            positions = positions,
+            sizes = drawable.map { (_, measured) -> measured.size.width.toFloat() },
+            minimumGap = MONTH_LABEL_MIN_GAP,
+        )
+    drawable.forEachIndexed { index, (_, measured) ->
+        if (keep[index]) {
+            val y = (topPadding - measured.size.height) / 2f
+            drawText(textLayoutResult = measured, topLeft = Offset(x = positions[index], y = y.coerceAtLeast(0f)))
+        }
     }
 }
 
 /**
  * Draws Mon, Wed, and Fri labels on the left side of the calendar grid (GitHub-style).
  *
- * Labels are pre-measured in the composable and passed in to keep this function allocation-free
- * during animation frames.
+ * Labels are pre-measured in the composable and passed in so no text layout happens during
+ * animation frames. The rows are two cell strides apart, so a small
+ * [com.himanshoe.charty.calendar.config.CalendarHeatmapConfig.cellSize] combined with a large label
+ * font can make them collide vertically; [selectNonOverlappingLabels] then drops the offending rows
+ * rather than letting the text overlap.
  *
- * @param dayLabelRows Pre-measured day labels as (dayIndex, [TextLayoutResult]) pairs.
+ * @param dayLabelRows Pre-measured day labels as (dayIndex, [TextLayoutResult]) pairs, ordered by
+ *   day index.
  * @param topPadding Vertical offset (px) reserved for month labels.
  * @param leftPadding Horizontal space (px) reserved for these labels.
  * @param cellStridePx Distance (px) between the top edges of adjacent day rows.
@@ -59,10 +80,24 @@ internal fun DrawScope.drawDayLabels(
     leftPadding: Float,
     cellStridePx: Float,
 ) {
-    for ((dayIndex, measured) in dayLabelRows) {
-        val x = leftPadding - measured.size.width - DAY_LABEL_END_GAP
-        val y = topPadding + dayIndex * cellStridePx + (cellStridePx - measured.size.height) / 2f
-        drawText(textLayoutResult = measured, topLeft = Offset(x.coerceAtLeast(0f), y))
+    if (dayLabelRows.isEmpty()) {
+        return
+    }
+    val positions =
+        dayLabelRows.map { (dayIndex, measured) ->
+            topPadding + dayIndex * cellStridePx + (cellStridePx - measured.size.height) / 2f
+        }
+    val keep =
+        selectNonOverlappingLabels(
+            positions = positions,
+            sizes = dayLabelRows.map { (_, measured) -> measured.size.height.toFloat() },
+            minimumGap = DAY_LABEL_MIN_GAP,
+        )
+    dayLabelRows.forEachIndexed { index, (_, measured) ->
+        if (keep[index]) {
+            val x = leftPadding - measured.size.width - DAY_LABEL_END_GAP
+            drawText(textLayoutResult = measured, topLeft = Offset(x = x.coerceAtLeast(0f), y = positions[index]))
+        }
     }
 }
 

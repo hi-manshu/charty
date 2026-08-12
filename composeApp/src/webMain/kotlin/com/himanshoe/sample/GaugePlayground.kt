@@ -116,7 +116,7 @@ internal fun GaugePlayground() {
                         plotBands = bands,
                         needleColor = ChartyColor.Solid(color),
                         showValueLabel = showValueLabel,
-                        animation = Animation.Default,
+                        animation = if (LocalPlaygroundAnimate.current) Animation.Default else Animation.Disabled,
                     ),
             )
         },

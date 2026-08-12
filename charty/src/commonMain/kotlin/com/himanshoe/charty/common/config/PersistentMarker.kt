@@ -20,8 +20,10 @@ private const val DEFAULT_GUIDE_LINE_ARGB = 0x552962FF
  * Pass a list of these to a chart's config (e.g. `LineChartConfig.markers`); an empty list draws
  * nothing.
  *
- * @property dataIndex Zero-based index of the point to mark. Markers whose index falls outside the
- *   currently drawn data are skipped.
+ * @property dataIndex Zero-based index of the point to mark. A negative index counts back from the
+ *   end of the drawn data, so `-1` marks the newest point — the way to keep a label pinned to the
+ *   latest value of a rolling `visibleWindow`. Markers whose index falls outside the currently
+ *   drawn data are skipped.
  * @property label Text shown in the callout. When `null`, the point's formatted value is used.
  * @property showDot Whether to draw the emphasized dot on the point.
  * @property dotRadius Radius of the dot, in pixels.
@@ -62,7 +64,7 @@ data class PersistentMarker(
     val guideLineWidth: Float = 1f,
 ) {
     init {
-        require(dataIndex >= 0) { "Marker dataIndex must be non-negative" }
+        require(dataIndex != Int.MIN_VALUE) { "Marker dataIndex must be a resolvable index" }
         require(dotRadius >= 0f) { "Marker dotRadius must be non-negative" }
         require(dotRingWidth >= 0f) { "Marker dotRingWidth must be non-negative" }
         require(labelPadding >= 0f) { "Marker labelPadding must be non-negative" }

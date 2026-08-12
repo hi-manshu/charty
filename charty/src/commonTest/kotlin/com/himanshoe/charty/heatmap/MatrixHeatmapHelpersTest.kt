@@ -1,5 +1,7 @@
 package com.himanshoe.charty.heatmap
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.color.ChartyColor
@@ -9,15 +11,19 @@ import com.himanshoe.charty.heatmap.internal.HEATMAP_MIN_RAMP_ALPHA
 import com.himanshoe.charty.heatmap.internal.buildMatrixHeatmapDescription
 import com.himanshoe.charty.heatmap.internal.computeMatrixGrid
 import com.himanshoe.charty.heatmap.internal.flattenCells
+import com.himanshoe.charty.heatmap.internal.formatHeatmapTooltip
 import com.himanshoe.charty.heatmap.internal.formatHeatmapValue
 import com.himanshoe.charty.heatmap.internal.heatmapContrastTextColor
+import com.himanshoe.charty.heatmap.internal.heatmapTooltipState
 import com.himanshoe.charty.heatmap.internal.interpolateHeatmapColor
 import com.himanshoe.charty.heatmap.internal.lerpColorLinear
 import com.himanshoe.charty.heatmap.internal.matrixCellProgress
 import com.himanshoe.charty.heatmap.internal.normalizeHeatmapValue
+import com.himanshoe.charty.heatmap.internal.resolveHeatmapCellAt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private const val CHANNEL_TOLERANCE = 0.01f
@@ -291,5 +297,55 @@ class MatrixHeatmapHelpersTest {
         val config = MatrixHeatmapConfig()
         assertTrue(config.colorScale is ChartyColor.Gradient)
         assertEquals("7.5", config.valueFormatter(7.5f))
+    }
+
+    @Test
+    fun tooltipFormatter_defaultShowsRowColumnAndValue() {
+        val cell = HeatmapCell(rowLabel = "Mon", columnLabel = "9", value = 12f)
+        assertEquals("Mon · 9: 12", MatrixHeatmapConfig().tooltipFormatter(cell))
+        assertEquals(
+            "Mon · 9: 12.5",
+            formatHeatmapTooltip(HeatmapCell(rowLabel = "Mon", columnLabel = "9", value = 12.45f)),
+        )
+    }
+
+    @Test
+    fun resolveHeatmapCellAt_returnsCellContainingPosition() {
+        val first = HeatmapCell(rowLabel = "Mon", columnLabel = "9", value = 1f)
+        val second = HeatmapCell(rowLabel = "Mon", columnLabel = "10", value = 2f)
+        val bounds =
+            listOf(
+                Rect(left = 0f, top = 0f, right = 10f, bottom = 10f) to first,
+                Rect(left = 12f, top = 0f, right = 22f, bottom = 10f) to second,
+            )
+        assertEquals(
+            second,
+            resolveHeatmapCellAt(cellBounds = bounds, position = Offset(x = 15f, y = 5f))?.second,
+        )
+        assertEquals(
+            first,
+            resolveHeatmapCellAt(cellBounds = bounds, position = Offset(x = 1f, y = 1f))?.second,
+        )
+    }
+
+    @Test
+    fun resolveHeatmapCellAt_returnsNullOutsideEveryCell() {
+        val cell = HeatmapCell(rowLabel = "Mon", columnLabel = "9", value = 1f)
+        val bounds = listOf(Rect(left = 0f, top = 0f, right = 10f, bottom = 10f) to cell)
+        assertNull(resolveHeatmapCellAt(cellBounds = bounds, position = Offset(x = 11f, y = 11f)))
+        assertNull(resolveHeatmapCellAt(cellBounds = emptyList(), position = Offset(x = 1f, y = 1f)))
+    }
+
+    @Test
+    fun heatmapTooltipState_anchorsToCellTopCentre() {
+        val state =
+            heatmapTooltipState(
+                bounds = Rect(left = 10f, top = 20f, right = 30f, bottom = 50f),
+                content = "Mon · 9: 12",
+            )
+        assertEquals("Mon · 9: 12", state.content)
+        assertEquals(20f, state.x)
+        assertEquals(20f, state.y)
+        assertEquals(20f, state.barWidth)
     }
 }

@@ -27,6 +27,7 @@ import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -66,6 +67,7 @@ internal fun StreamingLinePlayground() {
     var auto by remember { mutableStateOf(true) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
     var chartType by remember { mutableStateOf(StreamChartType.Line) }
+    var labelNewest by remember { mutableStateOf(true) }
 
     val values = remember { mutableStateListOf<Float>().apply { repeat(SEED_COUNT) { add(nextValue()) } } }
 
@@ -103,6 +105,7 @@ internal fun StreamingLinePlayground() {
         }}(
                 visibleWindow = $windowSize,    // show only the last $windowSize points
                 animation = Animation.Fast,     // drives the slide easing
+                markers = listOf(PersistentMarker(dataIndex = -1)),  // pin a label to the latest value
             ),
         )
         """.trimIndent()
@@ -115,6 +118,7 @@ internal fun StreamingLinePlayground() {
                 values = values,
                 windowSize = windowSize,
                 color = ChartyColor.Solid(color),
+                labelNewest = labelNewest,
             )
         },
         controls = {
@@ -128,6 +132,7 @@ internal fun StreamingLinePlayground() {
             )
             ControlSection(title = "Stream")
             SwitchRow(label = "Auto (add every 0.7s)", checked = auto, onCheckedChange = { auto = it })
+            SwitchRow(label = "Label newest point", checked = labelNewest, onCheckedChange = { labelNewest = it })
             PlaygroundActionRow(
                 primaryLabel = "Add point",
                 onPrimary = { append() },
@@ -161,7 +166,14 @@ private fun StreamingChart(
     values: List<Float>,
     windowSize: Int,
     color: ChartyColor,
+    labelNewest: Boolean,
 ) {
+    val markers =
+        if (labelNewest) {
+            listOf(PersistentMarker(dataIndex = -1))
+        } else {
+            emptyList()
+        }
     val lineData = values.mapIndexed { i, v -> LineData(label = (i + 1).toString(), value = v) }
     val barData = values.mapIndexed { i, v -> BarData(label = (i + 1).toString(), value = v) }
     val pointData = values.mapIndexed { i, v -> PointData(label = (i + 1).toString(), value = v) }
@@ -171,7 +183,7 @@ private fun StreamingChart(
                 data = { lineData },
                 modifier = Modifier.fillMaxSize(),
                 color = color,
-                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast, markers = markers),
             )
 
         StreamChartType.Area ->
@@ -179,7 +191,7 @@ private fun StreamingChart(
                 data = { lineData },
                 modifier = Modifier.fillMaxSize(),
                 color = color,
-                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast, markers = markers),
             )
 
         StreamChartType.Bar ->
@@ -203,7 +215,12 @@ private fun StreamingChart(
                 data = { pointData },
                 modifier = Modifier.fillMaxSize(),
                 color = color,
-                pointConfig = PointChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+                pointConfig =
+                    PointChartConfig(
+                        visibleWindow = windowSize,
+                        animation = Animation.Fast,
+                        markers = markers,
+                    ),
             )
     }
 }

@@ -9,6 +9,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.heatmap.data.HeatmapCell
+import com.himanshoe.charty.heatmap.internal.formatHeatmapTooltip
 import com.himanshoe.charty.heatmap.internal.formatHeatmapValue
 
 private val DEFAULT_SCALE_LOW = Color(0xFFE3F2FD)
@@ -36,6 +40,10 @@ private const val DEFAULT_LABEL_FONT_SIZE_SP = 10
  *   enabled. Defaults to integers without decimals and one decimal place otherwise.
  * @property labelTextStyle [TextStyle] applied to row, column, and in-cell value labels. The label
  *   padding around the grid adapts automatically to the measured text size.
+ * @property tooltipFormatter Builds the tooltip text for a tapped cell. Defaults to
+ *   `row · column: value`.
+ * @property tooltipConfig Appearance of the built-in canvas tooltip: shape, colors, padding, and
+ *   arrow. Ignored when the chart's `tooltip` is a Compose overlay or [ChartTooltip.none].
  * @property animation Entry animation; cells fade and scale in along a diagonal sweep. See [Animation].
  *
  * Example usage:
@@ -63,6 +71,8 @@ data class MatrixHeatmapConfig(
             fontWeight = FontWeight.Normal,
             color = DEFAULT_LABEL_COLOR,
         ),
+    val tooltipFormatter: (HeatmapCell) -> String = ::formatHeatmapTooltip,
+    val tooltipConfig: TooltipConfig = TooltipConfig(),
     val animation: Animation = Animation.Default,
 ) {
     init {

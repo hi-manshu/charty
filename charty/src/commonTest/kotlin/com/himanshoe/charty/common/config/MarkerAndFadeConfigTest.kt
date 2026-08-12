@@ -13,8 +13,13 @@ class MarkerAndFadeConfigTest {
     }
 
     @Test
-    fun persistentMarker_negativeIndex_throws() {
-        assertFailsWith<IllegalArgumentException> { PersistentMarker(dataIndex = -1) }
+    fun persistentMarker_negativeIndexCountsBackFromTheEnd() {
+        assertEquals(-1, PersistentMarker(dataIndex = -1).dataIndex)
+    }
+
+    @Test
+    fun persistentMarker_unresolvableIndex_throws() {
+        assertFailsWith<IllegalArgumentException> { PersistentMarker(dataIndex = Int.MIN_VALUE) }
     }
 
     @Test

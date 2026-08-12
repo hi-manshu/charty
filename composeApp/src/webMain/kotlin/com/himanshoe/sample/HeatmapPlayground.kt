@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.heatmap.MatrixHeatmapChart
 import com.himanshoe.charty.heatmap.config.MatrixHeatmapConfig
 import com.himanshoe.charty.heatmap.data.HeatmapCell
@@ -59,7 +60,8 @@ private fun demoCells(tick: Int): List<HeatmapCell> {
 
 /**
  * Interactive demo for [MatrixHeatmapChart]: a day-of-week × hour activity grid with a color-scale
- * chooser, a show-values toggle, spacing/corner sliders, and a tap readout of the clicked cell.
+ * chooser, a show-values toggle, spacing/corner sliders, a tap tooltip toggle, and a tap readout of
+ * the clicked cell.
  */
 @Composable
 internal fun HeatmapPlayground() {
@@ -70,6 +72,7 @@ internal fun HeatmapPlayground() {
     var cornerRadius by remember { mutableStateOf(4) }
     var tick by remember { mutableStateOf(0) }
     var clicked by remember { mutableStateOf<HeatmapCell?>(null) }
+    var showTooltip by remember { mutableStateOf(true) }
 
     val cells = remember(tick) { demoCells(tick) }
     val colorScale =
@@ -94,8 +97,10 @@ internal fun HeatmapPlayground() {
                 cellSpacing = $spacing.dp,
                 cellCornerRadius = ${fc(cornerRadius.toFloat())},
                 showValues = $showValues,
+                tooltipFormatter = { cell -> "${'$'}{cell.rowLabel} ${'$'}{cell.columnLabel}:00 → ${'$'}{cell.value.toInt()}" },
             ),
             onCellClick = { cell -> /* ${clicked?.let { "${it.rowLabel} ${it.columnLabel}h" } ?: "tap a cell"} */ },
+            tooltip = ${if (showTooltip) "ChartTooltip.canvas()" else "ChartTooltip.none()"},
         )
         """.trimIndent()
 
@@ -111,9 +116,13 @@ internal fun HeatmapPlayground() {
                         cellSpacing = spacing.dp,
                         cellCornerRadius = cornerRadius.toFloat(),
                         showValues = showValues,
+                        tooltipFormatter = { cell ->
+                            "${cell.rowLabel} ${cell.columnLabel}:00 → ${cell.value.toInt()}"
+                        },
                         animation = animation,
                     ),
                 onCellClick = { clicked = it },
+                tooltip = if (showTooltip) ChartTooltip.canvas() else ChartTooltip.none(),
             )
         },
         controls = {
@@ -141,6 +150,12 @@ internal fun HeatmapPlayground() {
                 value = cornerRadius,
                 valueRange = 0..12,
                 onValueChange = { cornerRadius = it },
+            )
+            ControlSection(title = "Tooltip")
+            SwitchRow(
+                label = "Tap tooltip",
+                checked = showTooltip,
+                onCheckedChange = { showTooltip = it },
             )
             ControlSection(title = "Data")
             PlaygroundActionRow(primaryLabel = "Shuffle data", onPrimary = { tick++ })
