@@ -21,6 +21,8 @@ import com.himanshoe.charty.bar.internal.bar.bubblebar.drawBubbleBars
 import com.himanshoe.charty.bar.internal.bar.bubblebar.drawReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.bubblebar.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.bubblebar.rememberValueRange
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
+import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
@@ -33,6 +35,8 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.dragTooltipActive
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -108,6 +112,12 @@ fun BubbleBarChart(
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
     val animationProgress = rememberChartAnimation(bubbleConfig.animation)
+    val displayList =
+        rememberAnimatedBarValues(
+            dataList = dataList,
+            animation = bubbleConfig.animation,
+            enabled = bubbleConfig.animateValueChanges,
+        )
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
     val textMeasurer = rememberTextMeasurer()
@@ -165,7 +175,7 @@ fun BubbleBarChart(
 
         val drawParams =
             BubbleBarDrawParams(
-                dataList = dataList,
+                dataList = displayList,
                 chartContext = chartContext,
                 bubbleConfig = bubbleConfig,
                 baselineY = baselineY,
@@ -178,6 +188,17 @@ fun BubbleBarChart(
             )
 
         drawBubbleBars(drawParams)
+        drawPersistentMarkers(
+            chartContext = chartContext,
+            markers = bubbleConfig.markers,
+            pointPositions =
+                verticalBarMarkerPositions(
+                    chartContext = chartContext,
+                    values = displayList.fastMap { it.value },
+                ),
+            valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
+            textMeasurer = textMeasurer,
+        )
         drawReferenceLineIfNeeded(drawParams)
         drawTooltipIfNeeded(drawParams, tooltipState)
 

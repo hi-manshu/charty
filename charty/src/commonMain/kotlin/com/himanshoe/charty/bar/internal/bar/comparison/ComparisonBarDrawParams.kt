@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar.internal.bar.comparison
 
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
@@ -18,4 +19,5 @@ internal data class ComparisonBarDrawParams(
     val onBarClick: ((ComparisonBarSegment) -> Unit)?,
     val barBounds: MutableList<Pair<Rect, ComparisonBarSegment>>,
     val recordBounds: Boolean = onBarClick != null,
+    val textMeasurer: TextMeasurer? = null,
 )

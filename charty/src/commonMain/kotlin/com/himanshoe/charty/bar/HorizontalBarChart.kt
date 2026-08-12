@@ -21,6 +21,7 @@ import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalReferenceL
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.horizontal.rememberHorizontalAnimation
 import com.himanshoe.charty.bar.internal.bar.horizontal.rememberHorizontalValueRange
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
@@ -102,6 +103,12 @@ fun HorizontalBarChart(
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
 
     val animationProgress = rememberHorizontalAnimation(barConfig.animation)
+    val displayList =
+        rememberAnimatedBarValues(
+            dataList = dataList,
+            animation = barConfig.animation,
+            enabled = barConfig.animateValueChanges,
+        )
     val tooltipManager = rememberTooltipManager<Rect, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
@@ -178,7 +185,7 @@ fun HorizontalBarChart(
 
             drawHorizontalBars(
                 HorizontalBarDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     barConfig = barConfig,
                     baselineX = baselineX,

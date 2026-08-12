@@ -10,7 +10,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BarChartConfig
+import com.himanshoe.charty.bar.internal.bar.drawHorizontalBarMarkers
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.draw.drawReferenceLine
@@ -95,6 +97,14 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
             )
         }
     }
+    drawHorizontalBarMarkers(
+        chartContext = params.chartContext,
+        markers = params.barConfig.markers,
+        values = params.dataList.fastMap { it.value },
+        minValue = params.minValue,
+        maxValue = params.maxValue,
+        textMeasurer = params.textMeasurer,
+    )
 }
 
 internal fun DrawScope.drawHorizontalReferenceLineIfNeeded(

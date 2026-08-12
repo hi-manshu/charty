@@ -13,15 +13,17 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.WaterfallChartConfig
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.bar.internal.bar.barAccessibility
+import com.himanshoe.charty.bar.internal.bar.drawVerticalBarMarkers
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallBarParams
+import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallBarTopValues
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallRange
 import com.himanshoe.charty.bar.internal.bar.waterfall.createWaterfallClickModifier
 import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallBar
 import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -94,7 +96,13 @@ fun WaterfallChart(
         )
     val dataList = visible.data
 
-    val cumulativeValues = rememberCumulativeValues(dataList)
+    val displayList =
+        rememberAnimatedBarValues(
+            dataList = dataList,
+            animation = config.animation,
+            enabled = config.animateValueChanges,
+        )
+    val cumulativeValues = rememberCumulativeValues(displayList)
     val (rawMinValue, rawMaxValue) =
         remember(cumulativeValues) {
             calculateWaterfallRange(cumulativeValues)
@@ -138,18 +146,11 @@ fun WaterfallChart(
     Box(modifier = chartModifier) {
         ChartScaffold(
             accessibility =
-                ChartAccessibility(
-                    contentDescription =
-                        interactionConfig.accessibilityDescription
-                            ?: "Waterfall chart, ${fullDataList.size} data points.",
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels =
-                                dataList.fastMap {
-                                    it.label
-                                },
-                            values = dataList.fastMap { it.value },
-                        ),
+                barAccessibility(
+                    description = interactionConfig.accessibilityDescription,
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.value },
+                    fallbackDescription = "Waterfall chart, ${fullDataList.size} data points.",
                 ),
             streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
@@ -167,12 +168,12 @@ fun WaterfallChart(
 
             tooltipManager.clearBounds()
 
-            dataList.fastForEachIndexed { index, bar ->
+            displayList.fastForEachIndexed { index, bar ->
                 val barParams =
                     calculateWaterfallBarParams(
                         index = index,
                         bar = bar,
-                        items = dataList,
+                        items = displayList,
                         cumulativeValues = cumulativeValues,
                         config = config,
                         chartContext = chartContext,
@@ -180,7 +181,7 @@ fun WaterfallChart(
                     )
 
                 if (onBarClick != null || interactionConfig.dragTooltipActive) {
-                    tooltipManager.bounds.add(barParams.bounds to bar)
+                    tooltipManager.bounds.add(barParams.bounds to dataList[index])
                 }
 
                 drawWaterfallBar(
@@ -192,6 +193,13 @@ fun WaterfallChart(
                     cornerRadius = config.cornerRadius.value,
                 )
             }
+
+            drawVerticalBarMarkers(
+                chartContext = chartContext,
+                markers = config.markers,
+                values = calculateWaterfallBarTopValues(cumulativeValues),
+                textMeasurer = textMeasurer,
+            )
 
             if (tooltip.isCanvas()) {
                 tooltipManager.tooltipState?.let { state ->

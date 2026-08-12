@@ -6,6 +6,7 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
@@ -26,8 +27,17 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @property smoothCurve Whether to draw smooth curves instead of straight lines
  * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property animateValueChanges When `true`, both the bar values and the line values tween from their
+ *   previous positions to the new ones whenever the data changes (using [animation]); the two series
+ *   share one progress so they stay in step. When `false` (default) new data appears instantly. Has
+ *   no effect if [animation] is [Animation.Disabled].
  * @property referenceLine Optional reference line configuration to draw a shared target/avg line across the combo chart
  * @property referenceBand Optional shaded value region drawn behind the combo data (see [ReferenceBandConfig])
+ * @property markers Persistent markers pinned to specific data points, drawn at all times regardless
+ *   of touch (see [PersistentMarker]). A marker is anchored on the line point, the same anchor
+ *   [com.himanshoe.charty.line.LineChart] uses, so the callout reads against the trend series rather
+ *   than the bars. `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value —
+ *   the rightmost point. Empty (the default) draws none.
  * @property secondaryAxisForLine When `true`, the line is plotted against its own secondary Y axis on
  *   the right (scaled to the line values), while the bars keep the left axis (scaled to the bar
  *   values). Useful when bar and line series have very different magnitudes.
@@ -51,8 +61,10 @@ data class ComboChartConfig(
     val smoothCurve: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
+    val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
+    val markers: List<PersistentMarker> = emptyList(),
     val secondaryAxisForLine: Boolean = false,
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,

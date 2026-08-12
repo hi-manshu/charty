@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
@@ -46,6 +47,13 @@ enum class NegativeValuesDrawMode {
  *   instantly. Has no effect if [animation] is [Animation.Disabled].
  * @property referenceLine Optional reference line configuration (target/average line)
  * @property referenceBand Optional shaded value region drawn behind the bars (see [ReferenceBandConfig])
+ * @property markers Persistent markers pinned to specific bars, drawn at all times regardless of
+ *   touch (see [PersistentMarker]). A marker is anchored at the top-centre of its bar in
+ *   [com.himanshoe.charty.bar.BarChart], and at the centre of its bar's value end (the end away from
+ *   the axis) in [com.himanshoe.charty.bar.HorizontalBarChart] and
+ *   [com.himanshoe.charty.bar.SpanChart], where a span is marked at its end value.
+ *   `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value: the rightmost
+ *   bar for the vertical chart, the bottom bar for the horizontal ones. Empty (the default) draws none.
  * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
@@ -65,6 +73,7 @@ data class BarChartConfig(
     val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
+    val markers: List<PersistentMarker> = emptyList(),
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (BarData) -> String = { barData ->

@@ -14,12 +14,14 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
 import com.himanshoe.charty.bar.internal.bar.rememberStackedMaxTotal
 import com.himanshoe.charty.bar.internal.bar.stacked.StackedBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.stacked.createStackedBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedBars
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.stacked.drawStackedTooltipIfNeeded
+import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
@@ -34,6 +36,8 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
@@ -113,7 +117,13 @@ fun StackedBarChart(
         )
     val dataList = visible.data
 
-    val (rawMaxTotal, colorList) = rememberStackedMaxTotal(dataList = dataList, colors = colors)
+    val displayList =
+        rememberAnimatedBarGroups(
+            dataList = dataList,
+            animation = stackedConfig.animation,
+            enabled = stackedConfig.animateValueChanges,
+        )
+    val (rawMaxTotal, colorList) = rememberStackedMaxTotal(dataList = displayList, colors = colors)
     val (_, maxTotal) =
         rememberAnimatedRange(
             minValue = 0f,
@@ -182,7 +192,7 @@ fun StackedBarChart(
 
             drawStackedBars(
                 StackedBarDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     stackedConfig = stackedConfig,
                     colorList = colorList,
@@ -192,6 +202,18 @@ fun StackedBarChart(
                     textMeasurer = textMeasurer,
                     recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
                 ),
+            )
+
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = stackedConfig.markers,
+                pointPositions =
+                    verticalBarMarkerPositions(
+                        chartContext = chartContext,
+                        values = displayList.fastMap { group -> group.values.sum() },
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                textMeasurer = textMeasurer,
             )
 
             drawStackedReferenceLineIfNeeded(

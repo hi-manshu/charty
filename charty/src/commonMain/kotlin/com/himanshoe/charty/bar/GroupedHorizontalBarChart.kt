@@ -15,6 +15,7 @@ import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarEntry
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.GroupedHorizontalBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.calculateGroupedHorizontalBaselineX
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.createGroupedHorizontalAxisConfig
@@ -23,13 +24,12 @@ import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.drawGroupedHorizo
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.drawGroupedHorizontalReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.drawGroupedHorizontalTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.rememberGroupedHorizontalState
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -92,9 +92,15 @@ fun GroupedHorizontalBarChart(
         )
     val dataList = visible.data
 
+    val displayList =
+        rememberAnimatedBarGroups(
+            dataList = dataList,
+            animation = config.animation,
+            enabled = config.animateValueChanges,
+        )
     val rawState =
         rememberGroupedHorizontalState(
-            dataList = dataList,
+            dataList = displayList,
             negativeValuesDrawMode = config.negativeValuesDrawMode,
             colors = colors,
         )
@@ -141,18 +147,11 @@ fun GroupedHorizontalBarChart(
     Box(modifier = chartModifier) {
         ChartScaffold(
             accessibility =
-                ChartAccessibility(
-                    contentDescription =
-                        interactionConfig.accessibilityDescription
-                            ?: "Grouped horizontal bar chart, ${fullDataList.size} data points.",
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels =
-                                dataList.fastMap {
-                                    it.label
-                                },
-                            values = dataList.fastMap { it.values.sum() },
-                        ),
+                barAccessibility(
+                    description = interactionConfig.accessibilityDescription,
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.values.sum() },
+                    fallbackDescription = "Grouped horizontal bar chart, ${fullDataList.size} data points.",
                 ),
             streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
@@ -180,7 +179,7 @@ fun GroupedHorizontalBarChart(
 
             drawGroupedHorizontalBars(
                 GroupedHorizontalBarDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     config = config,
                     colorList = state.colorList,
@@ -191,6 +190,7 @@ fun GroupedHorizontalBarChart(
                     onBarClick = onBarClick,
                     barBounds = tooltipManager.bounds,
                     recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
+                    textMeasurer = textMeasurer,
                 ),
             )
 

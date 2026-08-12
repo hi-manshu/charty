@@ -24,6 +24,7 @@ import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonBars
 import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonChartValues
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
@@ -107,6 +108,12 @@ fun ComparisonBarChart(
         )
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(comparisonConfig.animation)
+    val displayList =
+        rememberAnimatedBarGroups(
+            dataList = dataList,
+            animation = comparisonConfig.animation,
+            enabled = comparisonConfig.animateValueChanges,
+        )
     val tooltipManager = rememberTooltipManager<Rect, ComparisonBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
@@ -174,7 +181,7 @@ fun ComparisonBarChart(
 
             drawComparisonBars(
                 ComparisonBarDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     comparisonConfig = comparisonConfig,
                     baselineY = baselineY,
@@ -182,6 +189,7 @@ fun ComparisonBarChart(
                     onBarClick = onBarClick,
                     barBounds = tooltipManager.bounds,
                     recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
+                    textMeasurer = textMeasurer,
                 ),
             )
 

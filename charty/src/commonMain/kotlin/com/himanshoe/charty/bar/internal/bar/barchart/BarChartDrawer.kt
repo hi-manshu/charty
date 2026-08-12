@@ -10,9 +10,11 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.bar.internal.bar.drawVerticalBarMarkers
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
@@ -119,6 +121,12 @@ internal fun DrawScope.drawBars(params: BarDrawParams) {
             )
         }
     }
+    drawVerticalBarMarkers(
+        chartContext = chartContext,
+        markers = barConfig.markers,
+        values = dataList.fastMap { it.value },
+        textMeasurer = textMeasurer,
+    )
 }
 
 /**

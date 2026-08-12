@@ -14,6 +14,8 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.StackedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.StackedHorizontalBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.horizontalBarMarkerPositions
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
 import com.himanshoe.charty.bar.internal.bar.rememberStackedMaxTotal
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.StackedHorizontalBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.stackedhorizontal.createStackedHorizontalAxisConfig
@@ -34,6 +36,8 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -96,7 +100,13 @@ fun StackedHorizontalBarChart(
         )
     val dataList = visible.data
 
-    val (rawMaxTotal, colorList) = rememberStackedMaxTotal(dataList = dataList, colors = colors)
+    val displayList =
+        rememberAnimatedBarGroups(
+            dataList = dataList,
+            animation = config.animation,
+            enabled = config.animateValueChanges,
+        )
+    val (rawMaxTotal, colorList) = rememberStackedMaxTotal(dataList = displayList, colors = colors)
     val (_, maxTotal) =
         rememberAnimatedRange(
             minValue = 0f,
@@ -161,7 +171,7 @@ fun StackedHorizontalBarChart(
 
             drawStackedHorizontalBars(
                 StackedHorizontalBarDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     config = config,
                     colorList = colorList,
@@ -171,6 +181,20 @@ fun StackedHorizontalBarChart(
                     segmentBounds = tooltipManager.bounds,
                     recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
                 ),
+            )
+
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = config.markers,
+                pointPositions =
+                    horizontalBarMarkerPositions(
+                        chartContext = chartContext,
+                        values = displayList.fastMap { group -> group.values.sum() },
+                        minValue = 0f,
+                        maxValue = maxTotal,
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                textMeasurer = textMeasurer,
             )
 
             drawStackedHorizontalReferenceLineIfNeeded(

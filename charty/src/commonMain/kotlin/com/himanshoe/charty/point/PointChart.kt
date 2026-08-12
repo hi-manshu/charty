@@ -16,6 +16,8 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
@@ -26,8 +28,10 @@ import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generatePointChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
+import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.constants.ChartConstants
@@ -112,12 +116,11 @@ private fun createChartModifier(
 
 private fun DrawScope.drawAllPoints(
     dataList: List<PointData>,
+    displayList: List<PointData>,
     animationProgress: Float,
     chartContext: ChartContext,
     pointConfig: PointChartConfig,
     color: ChartyColor,
-    pointBounds: MutableList<Pair<Offset, PointData>>,
-    addToBounds: Boolean,
     textMeasurer: TextMeasurer,
     selectedItem: PointData?,
 ) {
@@ -140,36 +143,42 @@ private fun DrawScope.drawAllPoints(
         color = pointConfig.selectionColumnColor,
         chartContext = chartContext,
     )
-    dataList.fastForEachIndexed { index, point ->
+    displayList.fastForEachIndexed { index, point ->
         drawPointWithAnimation(
             point = point,
             index = index,
-            dataListSize = dataList.size,
+            dataListSize = displayList.size,
             animationProgress = animationProgress,
             chartContext = chartContext,
             pointConfig = pointConfig,
             color = color,
-            pointBounds = pointBounds,
-            addToBounds = addToBounds,
         )
     }
     if (pointConfig.markers.isNotEmpty()) {
-        val markerPositions =
-            List(dataList.size) { index ->
-                Offset(
-                    x = chartContext.calculateCenteredXPosition(index, dataList.size),
-                    y = chartContext.convertValueToYPosition(dataList[index].value),
-                )
-            }
         drawPersistentMarkers(
             chartContext = chartContext,
             markers = pointConfig.markers,
-            pointPositions = markerPositions,
-            valueLabelFor = { index -> formatMarkerValue(dataList[index].value) },
+            pointPositions = pointChartPositions(chartContext = chartContext, dataList = displayList),
+            valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
             textMeasurer = textMeasurer,
         )
     }
 }
+
+/**
+ * Pixel positions of every drawn point, ordered the same as [dataList] so a marker index of `-1`
+ * lands on the rightmost point.
+ */
+private fun pointChartPositions(
+    chartContext: ChartContext,
+    dataList: List<PointData>,
+): List<Offset> =
+    List(dataList.size) { index ->
+        Offset(
+            x = chartContext.calculateCenteredXPosition(index = index, totalItems = dataList.size),
+            y = chartContext.convertValueToYPosition(dataList[index].value),
+        )
+    }
 
 private fun DrawScope.drawPointWithAnimation(
     point: PointData,
@@ -179,8 +188,6 @@ private fun DrawScope.drawPointWithAnimation(
     chartContext: ChartContext,
     pointConfig: PointChartConfig,
     color: ChartyColor,
-    pointBounds: MutableList<Pair<Offset, PointData>>,
-    addToBounds: Boolean,
 ) {
     val pointProgress = index.toFloat() / dataListSize
     val progressOffset = (animationProgress - pointProgress) * dataListSize
@@ -193,10 +200,6 @@ private fun DrawScope.drawPointWithAnimation(
     val pointX = chartContext.calculateCenteredXPosition(index, dataListSize)
     val pointY = chartContext.convertValueToYPosition(point.value)
     val position = Offset(pointX, pointY)
-
-    if (addToBounds) {
-        pointBounds.add(position to point)
-    }
 
     if (pointAnimationProgress > MIN_ANIMATION_PROGRESS) {
         drawCircle(
@@ -334,6 +337,13 @@ fun PointChart(
             targetValue = MAX_ANIMATION_PROGRESS,
         )
 
+    val displayList =
+        rememberAnimatedPointData(
+            dataList = dataList,
+            animation = pointConfig.animation,
+            enabled = pointConfig.animateValueChanges,
+        )
+
     val tooltipManager = rememberTooltipManager<Offset, PointData>()
     val textMeasurer = rememberTextMeasurer()
 
@@ -370,11 +380,7 @@ fun PointChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
-            accessibility =
-                ChartAccessibility(
-                    contentDescription = chartDescription,
-                    dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
-                ),
+            accessibility = pointChartAccessibility(chartDescription = chartDescription, dataList = dataList),
             streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
@@ -391,14 +397,20 @@ fun PointChart(
 
             tooltipManager.clearBounds()
 
+            if (onPointClick != null || crosshairManager != null) {
+                pointChartPositions(chartContext = chartContext, dataList = dataList)
+                    .fastForEachIndexed { index, position ->
+                        tooltipManager.bounds.add(position to dataList[index])
+                    }
+            }
+
             drawAllPoints(
                 dataList = dataList,
+                displayList = displayList,
                 animationProgress = animationProgress.value,
                 chartContext = chartContext,
                 pointConfig = pointConfig,
                 color = color,
-                pointBounds = tooltipManager.bounds,
-                addToBounds = onPointClick != null || crosshairManager != null,
                 textMeasurer = textMeasurer,
                 selectedItem = tooltipManager.selectedItem,
             )
@@ -501,6 +513,39 @@ private fun DrawScope.drawPointTooltipAndCrosshair(
                 drawLabel = drawCrosshairLabel,
             )
         }
+    }
+}
+
+/** Builds the point chart's accessibility payload: a chart summary plus one entry per drawn point. */
+private fun pointChartAccessibility(
+    chartDescription: String?,
+    dataList: List<PointData>,
+): ChartAccessibility =
+    ChartAccessibility(
+        contentDescription = chartDescription,
+        dataPointDescriptions =
+            buildDataPointDescriptions(labels = dataList.getLabels(), values = dataList.getValues()),
+    )
+
+/**
+ * Returns [dataList] with each point's value tweened toward its target whenever the data changes, so
+ * points glide to their new positions. When [enabled] is `false` or [animation] is disabled the list
+ * is returned unchanged. See [rememberAnimatedValues].
+ */
+@Composable
+private fun rememberAnimatedPointData(
+    dataList: List<PointData>,
+    animation: Animation,
+    enabled: Boolean,
+): List<PointData> {
+    val animatedValues =
+        rememberAnimatedValues(
+            targetValues = dataList.fastMap { it.value },
+            animation = animation,
+            enabled = enabled,
+        )
+    return remember(dataList, animatedValues) {
+        dataList.fastMapIndexed { index, point -> point.copy(value = animatedValues[index]) }
     }
 }
 

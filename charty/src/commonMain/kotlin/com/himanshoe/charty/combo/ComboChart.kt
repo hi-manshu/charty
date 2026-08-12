@@ -35,13 +35,17 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateComboChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
+import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairHost
@@ -166,6 +170,12 @@ fun ComboChart(
 
     val isBelowAxisMode = comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(comboConfig.animation)
+    val displayList =
+        rememberAnimatedComboData(
+            dataList = dataList,
+            animation = comboConfig.animation,
+            enabled = comboConfig.animateValueChanges,
+        )
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
     val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, ComboChartData>>() }
@@ -208,15 +218,7 @@ fun ComboChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
-            accessibility =
-                ChartAccessibility(
-                    contentDescription = chartDescription,
-                    dataPointDescriptions =
-                        dataList.fastMapIndexed { index, item ->
-                            "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
-                                "bar ${item.barValue}, line ${item.lineValue}"
-                        },
-                ),
+            accessibility = comboChartAccessibility(chartDescription = chartDescription, dataList = dataList),
             streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
@@ -234,7 +236,7 @@ fun ComboChart(
             dataBounds.clear()
             drawComboContent(
                 ComboDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     comboConfig = effectiveComboConfig,
                     barColor = barColor,
@@ -262,6 +264,52 @@ fun ComboChart(
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             crosshair = activeCrosshair,
         )
+    }
+}
+
+/** Builds the combo chart's accessibility payload: a chart summary plus one entry per drawn point. */
+private fun comboChartAccessibility(
+    chartDescription: String?,
+    dataList: List<ComboChartData>,
+): ChartAccessibility =
+    ChartAccessibility(
+        contentDescription = chartDescription,
+        dataPointDescriptions =
+            dataList.fastMapIndexed { index, item ->
+                "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
+                    "bar ${item.barValue}, line ${item.lineValue}"
+            },
+    )
+
+/**
+ * Returns [dataList] with both the bar value and the line value of every point tweened toward their
+ * targets whenever the data changes. The two series share one progress, so they never drift apart
+ * mid-transition. When [enabled] is `false` or [animation] is disabled the list is returned unchanged.
+ */
+@Composable
+private fun rememberAnimatedComboData(
+    dataList: List<ComboChartData>,
+    animation: Animation,
+    enabled: Boolean,
+): List<ComboChartData> {
+    val flattened = remember(dataList) { dataList.flatMap { listOf(it.barValue, it.lineValue) } }
+    val animatedValues =
+        rememberAnimatedValues(
+            targetValues = flattened,
+            animation = animation,
+            enabled = enabled,
+        )
+    return remember(dataList, animatedValues) {
+        if (animatedValues.size != flattened.size) {
+            dataList
+        } else {
+            dataList.fastMapIndexed { index, item ->
+                item.copy(
+                    barValue = animatedValues[index * 2],
+                    lineValue = animatedValues[index * 2 + 1],
+                )
+            }
+        }
     }
 }
 
@@ -320,6 +368,13 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawComboContent(p:
         dataList = p.dataList,
         dataBounds =
             p.dataBounds.takeIf { p.onDataClick != null },
+    )
+    drawPersistentMarkers(
+        chartContext = p.chartContext,
+        markers = p.comboConfig.markers,
+        pointPositions = pointPositions,
+        valueLabelFor = { index -> formatMarkerValue(p.dataList[index].lineValue) },
+        textMeasurer = p.textMeasurer,
     )
     p.comboConfig.referenceLine?.let { referenceLineConfig ->
         drawReferenceLine(

@@ -3,6 +3,7 @@ package com.himanshoe.charty.bar.config
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.runtime.Stable
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
 
 private const val DEFAULT_BAR_WIDTH_FRACTION = 0.8f
@@ -28,6 +29,14 @@ private const val DEFAULT_STROKE_WIDTH_DP = 3f
  * @property strokeWidthDp Stroke width of the wavy line in dp.
  * @property phaseOffsetPerBar Optional additional phase offset applied per bar index.
  * Use `0f` to keep all bars in sync, or a small positive value to create a cascading effect.
+ * @property animateValueChanges When `true`, wave heights tween from their previous values to the
+ *   new ones whenever the data changes, using the same default spec that eases the chart's value
+ *   axis; when `false` (default) new data appears instantly. This is independent of the continuous
+ *   wave motion driven by [animationDurationMillis].
+ * @property markers Persistent markers pinned to specific waves, drawn at all times regardless of
+ *   touch (see [PersistentMarker]). A marker is anchored at the top-centre of its wave.
+ *   `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value — the rightmost
+ *   wave. Empty (the default) draws none.
  * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
  *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
@@ -40,6 +49,8 @@ data class WavyChartConfig(
     val animationEasing: Easing = FastOutSlowInEasing,
     val strokeWidthDp: Float = DEFAULT_STROKE_WIDTH_DP,
     val phaseOffsetPerBar: Float = 0f,
+    val animateValueChanges: Boolean = false,
+    val markers: List<PersistentMarker> = emptyList(),
     val visibleWindow: Int? = null,
 ) {
     init {

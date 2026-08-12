@@ -20,6 +20,8 @@ import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipHighlightIfNeed
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopAnimation
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopValueRange
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
+import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
@@ -30,6 +32,8 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -107,6 +111,12 @@ fun LollipopBarChart(
             active = visible.streaming != null,
         )
     val animationProgress = rememberLollipopAnimation(config.animation)
+    val displayList =
+        rememberAnimatedBarValues(
+            dataList = dataList,
+            animation = config.animation,
+            enabled = config.animateValueChanges,
+        )
     val tooltipManager = rememberTooltipManager<Offset, BarData>()
     val textMeasurer = rememberTextMeasurer()
 
@@ -161,13 +171,25 @@ fun LollipopBarChart(
             tooltipManager.clearBounds()
 
             drawLollipops(
-                dataList = dataList,
+                dataList = displayList,
                 chartContext = chartContext,
                 config = config,
                 animationProgress = animationProgress.value,
                 colors = colors,
                 onBarClick = onBarClick,
                 lollipopBounds = tooltipManager.bounds,
+            )
+
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = config.markers,
+                pointPositions =
+                    verticalBarMarkerPositions(
+                        chartContext = chartContext,
+                        values = displayList.fastMap { it.value },
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
+                textMeasurer = textMeasurer,
             )
 
             drawTooltipHighlightIfNeeded(tooltipManager.tooltipState, config, chartContext)

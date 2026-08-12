@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
@@ -31,17 +32,28 @@ data class ComparisonBarSegment(
  * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @property cornerRadius Corner radius for bar corners (None, Small, Medium, Large, ExtraLarge, or Custom)
  * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property animateValueChanges When `true`, every series in every group tweens from its previous
+ *   value to the new one whenever the data changes (using [animation]); when `false` (default) new
+ *   data appears instantly. Has no effect if [animation] is [Animation.Disabled].
  * @property referenceLine Optional reference line configuration
+ * @property markers Persistent markers pinned to specific groups, drawn at all times regardless of
+ *   touch (see [PersistentMarker]). A marker is anchored at the top-centre of its group, level with
+ *   the group's tallest bar. `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the
+ *   latest value — the rightmost group. Empty (the default) draws none.
  * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property visibleWindow Rolling "show last N" window; `null` (default) shows every group and
+ *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
 @Stable
 data class ComparisonBarChartConfig(
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val cornerRadius: CornerRadius = CornerRadius.Medium,
     val animation: Animation = Animation.Default,
+    val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
+    val markers: List<PersistentMarker> = emptyList(),
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (ComparisonBarSegment) -> String = { segment ->

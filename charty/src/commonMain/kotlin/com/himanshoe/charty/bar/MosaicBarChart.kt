@@ -17,6 +17,8 @@ import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicAxisConfig
 import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosaic.drawMosaicBars
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
+import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
@@ -26,6 +28,8 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -95,6 +99,12 @@ fun MosaicBarChart(
     val dataList = visible.data
 
     val animationProgress = rememberChartAnimation(config.animation)
+    val displayList =
+        rememberAnimatedBarGroups(
+            dataList = dataList,
+            animation = config.animation,
+            enabled = config.animateValueChanges,
+        )
     val tooltipManager = rememberTooltipManager<Rect, MosaicBarSegment>()
     val textMeasurer = rememberTextMeasurer()
 
@@ -150,13 +160,25 @@ fun MosaicBarChart(
             tooltipManager.clearBounds()
 
             drawMosaicBars(
-                groups = dataList,
+                groups = displayList,
                 chartContext = chartContext,
                 config = config,
                 animationProgress = animationProgress.value,
                 onSegmentClick = onSegmentClick,
                 onSegmentBoundCalculated = { tooltipManager.bounds.add(it) },
                 recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
+            )
+
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = config.markers,
+                pointPositions =
+                    verticalBarMarkerPositions(
+                        chartContext = chartContext,
+                        values = List(displayList.size) { chartContext.maxValue },
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                textMeasurer = textMeasurer,
             )
 
             if (tooltip.isCanvas()) {

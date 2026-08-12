@@ -2,6 +2,7 @@ package com.himanshoe.charty.bar.internal.bar.groupedhorizontal
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarEntry
 import com.himanshoe.charty.bar.data.BarGroup
@@ -27,4 +28,6 @@ internal data class GroupedHorizontalBarDrawParams(
     val onBarClick: ((GroupedHorizontalBarEntry) -> Unit)?,
     val barBounds: MutableList<Pair<Rect, GroupedHorizontalBarEntry>>,
     val recordBounds: Boolean = onBarClick != null,
+    /** Measures persistent-marker labels; `null` skips marker drawing. */
+    val textMeasurer: TextMeasurer? = null,
 )

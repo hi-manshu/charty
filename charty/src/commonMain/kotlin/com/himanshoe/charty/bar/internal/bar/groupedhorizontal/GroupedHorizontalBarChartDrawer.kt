@@ -8,9 +8,11 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarEntry
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.bar.internal.bar.drawHorizontalBarMarkers
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
@@ -125,6 +127,14 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
             )
         }
     }
+    drawHorizontalBarMarkers(
+        chartContext = params.chartContext,
+        markers = params.config.markers,
+        values = params.dataList.fastMap { group -> group.values.maxOrNull() ?: 0f },
+        minValue = params.minValue,
+        maxValue = params.maxValue,
+        textMeasurer = params.textMeasurer,
+    )
 }
 
 /**

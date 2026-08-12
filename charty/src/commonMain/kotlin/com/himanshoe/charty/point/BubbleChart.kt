@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
@@ -22,11 +23,15 @@ import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBubbleChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
+import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
@@ -124,6 +129,12 @@ fun BubbleChart(
     val isBelowAxisMode = config.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
     val animationProgress = rememberChartAnimation(config.animation)
+    val displayList =
+        rememberAnimatedBubbleData(
+            dataList = dataList,
+            animation = config.animation,
+            enabled = config.animateValueChanges,
+        )
 
     val chartDescription =
         rememberChartDescription(fullDataList, interactionConfig.accessibilityDescription) {
@@ -163,15 +174,7 @@ fun BubbleChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
-            accessibility =
-                ChartAccessibility(
-                    contentDescription = chartDescription,
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels = dataList.fastMap { it.label },
-                            values = dataList.fastMap { it.yValue },
-                        ),
-                ),
+            accessibility = bubbleChartAccessibility(chartDescription = chartDescription, dataList = dataList),
             streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
@@ -187,16 +190,15 @@ fun BubbleChart(
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             bubbleBounds.clear()
-            crosshairBounds.clear()
-            if (crosshairManager != null) {
-                dataList.fastForEachIndexed { index, bubble ->
-                    val x = chartContext.calculateCenteredXPosition(index, dataList.size)
-                    crosshairBounds.add(Offset(x, chartContext.convertValueToYPosition(bubble.yValue)) to bubble)
-                }
-            }
+            populateBubbleCrosshairBounds(
+                chartContext = chartContext,
+                dataList = dataList,
+                enabled = crosshairManager != null,
+                crosshairBounds = crosshairBounds,
+            )
 
             drawAllBubbles(
-                dataList = dataList,
+                dataList = displayList,
                 chartContext = chartContext,
                 sizeInfo = sizeInfo,
                 minBubbleRadius = minBubbleRadius,
@@ -206,6 +208,14 @@ fun BubbleChart(
                 onBubbleClick =
                     onBubbleClick.takeIf { crosshairManager == null },
                 bubbleBounds = bubbleBounds,
+            )
+
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = config.markers,
+                pointPositions = bubbleMarkerPositions(chartContext = chartContext, dataList = displayList),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].yValue) },
+                textMeasurer = textMeasurer,
             )
 
             drawInteractionOverlays(
@@ -232,6 +242,75 @@ fun BubbleChart(
         )
     }
 }
+
+/** Builds the bubble chart's accessibility payload: a chart summary plus one entry per drawn bubble. */
+private fun bubbleChartAccessibility(
+    chartDescription: String?,
+    dataList: List<BubbleData>,
+): ChartAccessibility =
+    ChartAccessibility(
+        contentDescription = chartDescription,
+        dataPointDescriptions =
+            buildDataPointDescriptions(
+                labels = dataList.fastMap { it.label },
+                values = dataList.fastMap { it.yValue },
+            ),
+    )
+
+/**
+ * Refreshes the crosshair hit-test anchors from the real (untweened) data, so dragging always snaps
+ * to true point positions. Clears them and does nothing more when [enabled] is `false`.
+ */
+private fun populateBubbleCrosshairBounds(
+    chartContext: ChartContext,
+    dataList: List<BubbleData>,
+    enabled: Boolean,
+    crosshairBounds: MutableList<Pair<Offset, BubbleData>>,
+) {
+    crosshairBounds.clear()
+    if (!enabled) {
+        return
+    }
+    bubbleMarkerPositions(chartContext = chartContext, dataList = dataList)
+        .fastForEachIndexed { index, position -> crosshairBounds.add(position to dataList[index]) }
+}
+
+/**
+ * Returns [dataList] with each bubble's y value tweened toward its target whenever the data changes,
+ * so bubbles glide to their new heights. Bubble sizes are untouched — they encode a separate
+ * dimension. When [enabled] is `false` or [animation] is disabled the list is returned unchanged.
+ */
+@Composable
+private fun rememberAnimatedBubbleData(
+    dataList: List<BubbleData>,
+    animation: Animation,
+    enabled: Boolean,
+): List<BubbleData> {
+    val animatedValues =
+        rememberAnimatedValues(
+            targetValues = dataList.fastMap { it.yValue },
+            animation = animation,
+            enabled = enabled,
+        )
+    return remember(dataList, animatedValues) {
+        dataList.fastMapIndexed { index, bubble -> bubble.copy(yValue = animatedValues[index]) }
+    }
+}
+
+/**
+ * Pixel centres of every drawn bubble, ordered the same as [dataList] so a marker index of `-1` lands
+ * on the rightmost bubble.
+ */
+private fun bubbleMarkerPositions(
+    chartContext: ChartContext,
+    dataList: List<BubbleData>,
+): List<Offset> =
+    List(dataList.size) { index ->
+        Offset(
+            x = chartContext.calculateCenteredXPosition(index = index, totalItems = dataList.size),
+            y = chartContext.convertValueToYPosition(dataList[index].yValue),
+        )
+    }
 
 @Composable
 private fun BoxScope.BubbleChartOverlay(

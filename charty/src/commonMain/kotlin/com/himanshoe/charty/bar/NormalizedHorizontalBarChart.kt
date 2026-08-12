@@ -14,12 +14,14 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.horizontalBarMarkerPositions
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.NormalizedHorizontalBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.createNormalizedHorizontalAxisConfig
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.createNormalizedHorizontalBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.drawNormalizedHorizontalBars
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.drawNormalizedHorizontalTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.rememberNormalizedHorizontalColors
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
@@ -32,6 +34,8 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -89,7 +93,13 @@ fun NormalizedHorizontalBarChart(
         )
     val dataList = visible.data
 
-    val colorList = rememberNormalizedHorizontalColors(dataList = dataList, colors = colors)
+    val displayList =
+        rememberAnimatedBarGroups(
+            dataList = dataList,
+            animation = config.animation,
+            enabled = config.animateValueChanges,
+        )
+    val colorList = rememberNormalizedHorizontalColors(dataList = displayList, colors = colors)
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, NormalizedHorizontalBarSegment>()
     val textMeasurer = rememberTextMeasurer()
@@ -147,7 +157,7 @@ fun NormalizedHorizontalBarChart(
 
             drawNormalizedHorizontalBars(
                 NormalizedHorizontalBarDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     config = config,
                     colorList = colorList,
@@ -156,6 +166,20 @@ fun NormalizedHorizontalBarChart(
                     segmentBounds = tooltipManager.bounds,
                     recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
                 ),
+            )
+
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = config.markers,
+                pointPositions =
+                    horizontalBarMarkerPositions(
+                        chartContext = chartContext,
+                        values = List(displayList.size) { 1f },
+                        minValue = 0f,
+                        maxValue = 1f,
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].values.sum()) },
+                textMeasurer = textMeasurer,
             )
 
             if (tooltip.isCanvas()) {

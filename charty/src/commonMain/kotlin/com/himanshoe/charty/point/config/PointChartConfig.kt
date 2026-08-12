@@ -25,10 +25,16 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  * @property showLabels Whether to show data labels on points
  * @property negativeValuesDrawMode How to draw negative values (BELOW_AXIS or FROM_MIN_VALUE)
  * @property animation Animation configuration (Disabled or Enabled with duration)
+ * @property animateValueChanges When `true`, point values tween from their previous positions to the
+ *   new ones whenever the data changes (using [animation]); when `false` (default) new data appears
+ *   instantly. Has no effect if [animation] is [Animation.Disabled]. In
+ *   [com.himanshoe.charty.point.BubbleChart] this tweens the y values; bubble sizes are unaffected.
  * @property referenceLine Optional reference line configuration for reusable target/avg line support
  * @property referenceBand Optional shaded value region drawn behind the points (see [ReferenceBandConfig])
  * @property markers Persistent markers pinned to specific points, always drawn regardless of touch
- *   (see [PersistentMarker]). Empty (the default) draws none.
+ *   (see [PersistentMarker]). A marker is anchored on its point's centre.
+ *   `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value — the rightmost
+ *   point. Empty (the default) draws none.
  * @property tooltipConfig Configuration for tooltip appearance when a point is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Function to format tooltip content from PointData
@@ -55,6 +61,7 @@ data class PointChartConfig(
     val showLabels: Boolean = false,
     val negativeValuesDrawMode: NegativeValuesDrawMode = NegativeValuesDrawMode.BELOW_AXIS,
     val animation: Animation = Animation.Default,
+    val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
     val markers: List<PersistentMarker> = emptyList(),

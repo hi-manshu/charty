@@ -8,10 +8,12 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.drawVerticalBarMarkers
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
@@ -83,6 +85,12 @@ internal fun DrawScope.drawComparisonBars(params: ComparisonBarDrawParams) {
             )
         }
     }
+    drawVerticalBarMarkers(
+        chartContext = params.chartContext,
+        markers = params.comparisonConfig.markers,
+        values = params.dataList.fastMap { group -> group.values.maxOrNull() ?: 0f },
+        textMeasurer = params.textMeasurer,
+    )
 }
 
 private fun getComparisonBarColor(

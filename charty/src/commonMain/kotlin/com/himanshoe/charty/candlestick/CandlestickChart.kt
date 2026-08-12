@@ -5,12 +5,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
 import com.himanshoe.charty.candlestick.data.CandleData
 import com.himanshoe.charty.candlestick.ext.calculateMaxValue
@@ -28,16 +30,22 @@ import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
+import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
+
+private const val CANDLE_PRICE_COUNT = 4
 
 /**
  * A composable function that displays a candlestick chart.
@@ -107,6 +115,12 @@ fun CandlestickChart(
         }
 
     val animationProgress = rememberChartAnimation(candlestickConfig.animation)
+    val displayList =
+        rememberAnimatedCandleData(
+            dataList = dataList,
+            animation = candlestickConfig.animation,
+            enabled = candlestickConfig.animateValueChanges,
+        )
     val textMeasurer = rememberTextMeasurer()
 
     syncInteractionDataSizes(
@@ -149,11 +163,11 @@ fun CandlestickChart(
     ) { chartContext ->
         updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
-        dataList.fastForEachIndexed { index, candle ->
+        displayList.fastForEachIndexed { index, candle ->
             drawCandleBar(
                 index = index,
                 candle = candle,
-                dataList = dataList,
+                dataList = displayList,
                 chartContext = chartContext,
                 candlestickConfig = candlestickConfig,
                 bullishColor = bullishColor,
@@ -162,11 +176,82 @@ fun CandlestickChart(
             )
         }
 
+        drawPersistentMarkers(
+            chartContext = chartContext,
+            markers = candlestickConfig.markers,
+            pointPositions =
+                candleMarkerPositions(
+                    chartContext = chartContext,
+                    dataList = displayList,
+                    candleWidthFraction = candlestickConfig.candleWidthFraction,
+                ),
+            valueLabelFor = { index -> formatMarkerValue(displayList[index].close) },
+            textMeasurer = textMeasurer,
+        )
+
         drawInteractionOverlays(
             interactionConfig = interactionConfig,
             chartContext = chartContext,
             totalItems = dataList.size,
             textMeasurer = textMeasurer,
+        )
+    }
+}
+
+/**
+ * Returns [dataList] with every candle's open, high, low, and close tweened toward their targets
+ * whenever the data changes. All four prices share one progress, so a candle never renders an
+ * inconsistent body or wick mid-transition. When [enabled] is `false` or [animation] is disabled the
+ * list is returned unchanged.
+ */
+@Composable
+private fun rememberAnimatedCandleData(
+    dataList: List<CandleData>,
+    animation: Animation,
+    enabled: Boolean,
+): List<CandleData> {
+    val flattened =
+        remember(dataList) {
+            dataList.flatMap { listOf(it.open, it.high, it.low, it.close) }
+        }
+    val animatedValues =
+        rememberAnimatedValues(
+            targetValues = flattened,
+            animation = animation,
+            enabled = enabled,
+        )
+    return remember(dataList, animatedValues) {
+        if (animatedValues.size != flattened.size) {
+            dataList
+        } else {
+            dataList.fastMapIndexed { index, candle ->
+                candle.copy(
+                    open = animatedValues[index * CANDLE_PRICE_COUNT],
+                    high = animatedValues[index * CANDLE_PRICE_COUNT + 1],
+                    low = animatedValues[index * CANDLE_PRICE_COUNT + 2],
+                    close = animatedValues[index * CANDLE_PRICE_COUNT + 3],
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Pixel positions of every drawn candle's close price, centred on the candle and ordered the same as
+ * [dataList], so a marker index of `-1` lands on the rightmost candle.
+ */
+private fun candleMarkerPositions(
+    chartContext: ChartContext,
+    dataList: List<CandleData>,
+    candleWidthFraction: Float,
+): List<Offset> {
+    val candleWidth = chartContext.calculateBarWidth(dataList.size, candleWidthFraction)
+    return List(dataList.size) { index ->
+        Offset(
+            x =
+                chartContext.calculateBarLeftPosition(index, dataList.size, candleWidthFraction) +
+                    candleWidth / CandlestickChartConstants.TWO,
+            y = chartContext.convertValueToYPosition(dataList[index].close),
         )
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.data.SpanData
+import com.himanshoe.charty.bar.internal.bar.rememberAnimatedSpanValues
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_BLUE
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_GREEN
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_ORANGE
@@ -23,6 +24,7 @@ import com.himanshoe.charty.bar.internal.span.createAxisConfig
 import com.himanshoe.charty.bar.internal.span.createSpanChartModifier
 import com.himanshoe.charty.bar.internal.span.drawSpans
 import com.himanshoe.charty.bar.internal.span.rememberSpanValueRange
+import com.himanshoe.charty.bar.internal.span.spanEndMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
@@ -34,7 +36,9 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
 import com.himanshoe.charty.common.syncInteractionDataSizes
@@ -106,7 +110,13 @@ fun SpanChart(
         )
     val dataList = visible.data
 
-    val (rawMinValue, rawMaxValue) = rememberSpanValueRange(dataList = dataList, colors = colors)
+    val displayList =
+        rememberAnimatedSpanValues(
+            dataList = dataList,
+            animation = barConfig.animation,
+            enabled = barConfig.animateValueChanges,
+        )
+    val (rawMinValue, rawMaxValue) = rememberSpanValueRange(dataList = displayList, colors = colors)
     val (minValue, maxValue) =
         rememberAnimatedRange(
             minValue = rawMinValue,
@@ -169,7 +179,7 @@ fun SpanChart(
 
             drawSpans(
                 SpanDrawParams(
-                    dataList = dataList,
+                    dataList = displayList,
                     chartContext = chartContext,
                     barConfig = barConfig,
                     axisOffset = axisOffset,
@@ -181,6 +191,21 @@ fun SpanChart(
                     onSpanBoundCalculated = { tooltipManager.bounds.add(it) },
                     recordBounds = onSpanClick != null || interactionConfig.dragTooltipActive,
                 ),
+            )
+
+            drawPersistentMarkers(
+                chartContext = chartContext,
+                markers = barConfig.markers,
+                pointPositions =
+                    spanEndMarkerPositions(
+                        chartContext = chartContext,
+                        endValues = displayList.fastMap { it.endValue },
+                        minValue = minValue,
+                        maxValue = maxValue,
+                        axisOffset = axisOffset,
+                    ),
+                valueLabelFor = { index -> formatMarkerValue(displayList[index].endValue) },
+                textMeasurer = textMeasurer,
             )
 
             if (tooltip.isCanvas()) {

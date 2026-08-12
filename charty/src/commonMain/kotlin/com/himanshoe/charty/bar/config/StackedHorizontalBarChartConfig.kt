@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
@@ -31,7 +32,15 @@ data class StackedHorizontalBarSegment(
  * @property barSpacing Spacing between bars in pixels. Must be non-negative.
  * @property rightCornerRadius Corner radius applied to the right (trailing) end of each stacked bar.
  * @property animation Animation configuration ([Animation.Disabled] or [Animation.Enabled] with duration).
+ * @property animateValueChanges When `true`, every segment tweens from its previous value to the new
+ *   one whenever the data changes (using [animation]), so a bar glides to its new composition as a
+ *   unit; when `false` (default) new data appears instantly. Has no effect if [animation] is
+ *   [Animation.Disabled].
  * @property referenceLine Optional configuration for a vertical reference line (e.g., a target or average line).
+ * @property markers Persistent markers pinned to specific rows, drawn at all times regardless of
+ *   touch (see [PersistentMarker]). A marker is anchored at the centre of its row's value end, level
+ *   with the stacked total, which is also its default label. `PersistentMarker(dataIndex = -1)` is
+ *   the idiomatic way to label the latest value — the bottom row. Empty (the default) draws none.
  * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked.
  * @property tooltipPosition Preferred position for tooltips ([TooltipPosition.ABOVE], [TooltipPosition.BELOW], or [TooltipPosition.AUTO]).
  * @property tooltipFormatter Lambda that formats the tooltip label for a clicked [StackedHorizontalBarSegment].
@@ -44,7 +53,9 @@ data class StackedHorizontalBarChartConfig(
     val barSpacing: Float = 0f,
     val rightCornerRadius: CornerRadius = CornerRadius.Medium,
     val animation: Animation = Animation.Default,
+    val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
+    val markers: List<PersistentMarker> = emptyList(),
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (StackedHorizontalBarSegment) -> String = { segment ->
