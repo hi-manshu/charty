@@ -1,6 +1,28 @@
 # Interactions
 
-Charty supports several interaction modes: crosshair inspection, tap-to-click with tooltips, zoom and pan, and brush (range) selection. This page explains each mode, how to enable it, and how the modes relate to each other.
+Charty supports several interaction modes: crosshair inspection, tap-to-click with tooltips, zoom and pan, brush (range) selection, and streaming scrollback. This page explains each mode, how to enable it, and — most importantly — which modes can share one chart.
+
+## Which gestures can coexist
+
+Compose delivers one gesture stream per chart, so the rules come down to *which gesture type* each feature uses.
+
+| Feature | Gesture | Coexists with a tap tooltip? |
+|---|---|---|
+| Tap tooltip (`onXxxClick`) | Tap | — |
+| Crosshair (`crosshair = ChartCrosshair()`) | Drag | ✅ Yes |
+| Streaming scrollback (`streamingState`) | Drag | ✅ Yes |
+| Zoom / pan (`viewPortState`) | Drag + pinch | ✅ Yes |
+| Brush selection (`brushSelectionState`) | Drag | ✅ Yes |
+| Drag-to-track tooltip (`dragTooltipEnabled`) | Drag | — |
+
+**A tap tooltip always coexists with a drag feature.** Drag detection only reports movement once the pointer has travelled past touch slop, so a plain tap falls through to the tooltip handler untouched.
+
+**Two drag features on one chart do not coexist.** In particular:
+
+- **Crosshair vs. streaming scrollback** — the crosshair wins. While a crosshair is configured, the streaming pan gesture consumes nothing and moves nothing: the window keeps following the newest data, never detaches, and no "jump to latest" control appears. See [Streaming](../guides/streaming.md#the-one-real-limitation-crosshair-vs-scrollback).
+- **`dragTooltipEnabled` vs. zoom/pan or brush** — drag-to-track tooltips are automatically suppressed whenever `viewPortState` or `brushSelectionState` is set.
+
+Zoom/pan also takes precedence over a rolling `visibleWindow`: with a `viewPortState` configured, the window is ignored and the chart draws statically.
 
 ---
 
@@ -35,7 +57,7 @@ The parameter name varies by chart type but the pattern is always the same:
 
 ```kotlin
 BarChart(
-    data = barData,
+    data = { barData },
     barConfig = BarChartConfig(
         tooltipConfig = TooltipConfig(
             backgroundColor = Color.Black.copy(alpha = 0.85f),
@@ -50,7 +72,7 @@ BarChart(
 
 ```kotlin
 LineChart(
-    data = lineData,
+    data = { lineData },
     lineConfig = LineChartConfig(
         tooltipFormatter = { point -> "${point.label}: ${point.value}" },
     ),
@@ -60,131 +82,169 @@ LineChart(
 )
 ```
 
-> If no click handler is provided, the chart is non-interactive and no tooltip is shown.
+> If no click handler is provided, no hit bounds are recorded and no tap tooltip is shown. The chart may still be interactive through a crosshair, zoom/pan, brush selection, or streaming scrollback — those are independent of the click callback.
 
 ---
 
 ## Tooltip
 
-Tooltips are shown automatically at the tapped position whenever a click handler is registered. You do not need to manage tooltip state manually.
+Tooltips are shown automatically at the tapped position whenever a click handler is registered. You do not need to manage tooltip state manually. Without a click handler no hit bounds are recorded, so no tooltip appears.
 
-`TooltipConfig` controls the visual appearance:
+`TooltipConfig` controls the visual appearance. Note that the bubble is styled with a Compose `Shape` and a `TooltipPadding`, not raw pixel values:
 
 ```kotlin
-TooltipConfig(
-    backgroundColor = Color.Black.copy(alpha = 0.8f),
-    textColor = Color.White,
-    cornerRadius = 8f,
-    padding = 8f,
-    textStyle = TextStyle(fontSize = 12.sp),
+data class TooltipConfig(
+    val shape: Shape = RoundedCornerShape(8.dp),
+    val backgroundColor: Color = Color(0xFF2D2D2D),
+    val borderColor: Color? = null,
+    val borderWidth: Dp = 1.dp,
+    val textStyle: TextStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+    val padding: TooltipPadding = TooltipPadding(),
+    val elevation: Dp = 4.dp,
+    val offsetY: Dp = 8.dp,
+    val minDistanceFromEdge: Dp = 16.dp,
+    val showArrow: Boolean = true,
+    val arrowSize: Dp = 8.dp,
+)
+
+data class TooltipPadding(
+    val horizontal: Dp = 12.dp,
+    val vertical: Dp = 8.dp,
 )
 ```
+
+There is no `textColor` or `cornerRadius` property — set the text colour through `textStyle.color` and the rounding through `shape`.
 
 Pass it through the chart's config object:
 
 ```kotlin
 BarChart(
-    data = barData,
+    data = { barData },
     barConfig = BarChartConfig(
         tooltipConfig = TooltipConfig(
             backgroundColor = Color(0xFF1A237E),
-            cornerRadius = 12f,
+            shape = RoundedCornerShape(12.dp),
+            textStyle = TextStyle(color = Color.White, fontSize = 13.sp),
+            padding = TooltipPadding(horizontal = 14.dp, vertical = 10.dp),
         ),
-        tooltipFormatter = { barData -> "%.2f".format(barData.value) },
+        tooltipFormatter = { bar -> "${bar.label}: ${bar.value}" },
     ),
     onBarClick = { },
 )
 ```
 
-**Tooltip position** — Charty automatically positions the tooltip above or below the data point to keep it on screen (`AUTO` mode). This behaviour is built into the library and does not require configuration.
+**Tooltip position** — `tooltipPosition` on the chart config takes `TooltipPosition.ABOVE`, `BELOW`, or `AUTO` (the default), which places the tooltip to keep it on screen.
+
+### Choosing how the tooltip is rendered
+
+Every chart takes a `tooltip: ChartTooltip<T>` parameter that selects the rendering strategy:
+
+```kotlin
+tooltip = ChartTooltip.canvas()                  // built-in bubble drawn on the canvas (default)
+tooltip = ChartTooltip.none()                    // no tooltip
+tooltip = ChartTooltip.compose { MyCard(title = text, value = data.value) }  // your Composable
+```
+
+`ChartTooltip.compose { }` positions your composable over the selected point with edge-collision handling. Inside the block you have a `TooltipScope<T>` exposing `data`, the formatted `text`, and the `anchor` position.
+
+### Drag-to-track tooltips
+
+Set `dragTooltipEnabled = true` on `ChartInteractionConfig` and dragging across a rectangular chart tracks the item under the finger and shows its tooltip, dismissing on release. It is automatically suppressed whenever `viewPortState` or `brushSelectionState` is set, since those consume drags too.
 
 ---
 
 ## Crosshair
 
-The crosshair is an inspection mode where a vertical and optional horizontal line follows the user's finger or pointer across the chart. A tooltip snaps to the nearest data point. This is more useful than tap-to-click for continuous inspection of line or area data.
+The crosshair is an inspection mode where a vertical and optional horizontal line follows the user's finger or pointer across the chart, snapping to the nearest data point and showing a label. This is more useful than tap-to-click for continuous inspection of line or area data.
+
+### Enabling it
+
+Every crosshair-capable chart takes a unified `crosshair: ChartCrosshair<T>?` parameter. `null` (the default) turns it off.
+
+```kotlin
+import com.himanshoe.charty.common.gesture.ChartCrosshair
+
+LineChart(
+    data = { lineData },
+    color = ChartyColor.Solid(ChartyColors.Blue),
+    crosshair = ChartCrosshair(),
+)
+```
+
+```kotlin
+data class ChartCrosshair<T>(
+    val config: ChartCrosshairConfig = ChartCrosshairConfig(),
+    val label: (@Composable CrosshairScope<T>.() -> Unit)? = null,
+)
+```
+
+`config` styles the guide line; `label` is a **Composable drawn over the line** at the snapped point. Leave it `null` for the built-in pill label.
+
+```kotlin
+LineChart(
+    data = { lineData },
+    color = ChartyColor.Solid(ChartyColors.Blue),
+    crosshair =
+        ChartCrosshair(
+            config = ChartCrosshairConfig(
+                verticalLineColor = ChartyColor.Solid(ChartyColors.Purple),
+                showHorizontalLine = false,
+                dismissOnRelease = false,
+            ),
+            label = { Text(text = "${data.label}: ${data.value}") },
+        ),
+)
+```
+
+Inside the `label` block you are in a `CrosshairScope<T>`, which exposes `data` (the point under the crosshair) and `text` (the chart's formatted label for it).
+
+**Charts with a `crosshair` parameter:** `LineChart`, `AreaChart`, `MultilineChart`, `StackedAreaChart`, `PointChart`, `BubbleChart`, `BarChart`, `HorizontalBarChart`, `WavyChart`, and `ComboChart`.
 
 ### ChartCrosshairConfig
 
 ```kotlin
 data class ChartCrosshairConfig(
-    val verticalLineColor: ChartyColor = ChartyColor.Solid(Color.Gray),
-    val horizontalLineColor: ChartyColor = ChartyColor.Solid(Color.Gray),
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val verticalLineColor: ChartyColor = ChartyColor.Solid(Color.Black.copy(alpha = 0.4f)),
+    val horizontalLineColor: ChartyColor = ChartyColor.Solid(Color.Black.copy(alpha = 0.15f)),
+    val lineWidth: Float = 1.5f,
+    val showHorizontalLine: Boolean = true,
+    val dotRadius: Float = 8f,
+    val showLabel: Boolean = true,
+    val tooltipConfig: TooltipConfig = TooltipConfig(showArrow = false),
     val dismissOnRelease: Boolean = true,
 )
 ```
 
 | Property | Default | Description |
 |---|---|---|
-| `verticalLineColor` | Gray | Color of the vertical crosshair line. Accepts `ChartyColor.Solid` or `ChartyColor.Gradient`. |
-| `horizontalLineColor` | Gray | Color of the horizontal crosshair line. |
-| `tooltipConfig` | Default tooltip | Controls the tooltip that appears at the snap point. |
-| `dismissOnRelease` | `true` | When `true`, the crosshair disappears when the pointer/finger is lifted. Set to `false` to keep it visible. |
+| `verticalLineColor` | 40% black | Colour of the vertical line. A gradient is applied top-to-bottom along it. |
+| `horizontalLineColor` | 15% black | Colour of the horizontal line. A gradient is applied left-to-right. |
+| `lineWidth` | `1.5f` | Stroke width for both lines, in pixels. |
+| `showHorizontalLine` | `true` | Whether to draw the horizontal line at all. |
+| `dotRadius` | `8f` | Radius of the highlight circle at the snapped point. |
+| `showLabel` | `true` | Whether to display the value label. |
+| `tooltipConfig` | Arrow-less default | Appearance of the built-in label bubble. |
+| `dismissOnRelease` | `true` | Hide the crosshair when the finger lifts. `false` pins it after release. |
 
-### Where to pass it
+You can also set `crosshairConfig` directly inside a chart's config (`LineChartConfig`, `BarChartConfig`, `ComboChartConfig`, …). Passing a `crosshair` to the composable is the preferred form — it also gives you the custom-label slot — and it overrides the config's `crosshairConfig` when both are set.
 
-The crosshair config is a direct parameter on some charts and lives inside the chart config on others:
+### A crosshair does **not** disable tap-to-click
 
-**Inside the chart config (`LineChartConfig`):**
+A crosshair is a **drag** gesture and a tooltip is a **tap**, so the two coexist happily: tapping a point still raises its tooltip while dragging still moves the guide line.
 
 ```kotlin
-// LineChart, AreaChart, MultilineChart, StackedAreaChart — pass through LineChartConfig
 LineChart(
-    data = lineData,
-    lineConfig = LineChartConfig(
-        crosshairConfig = ChartCrosshairConfig(
-            verticalLineColor = ChartyColor.Solid(Color(0xFF6200EE)),
-            tooltipConfig = TooltipConfig(
-                backgroundColor = Color(0xFF6200EE).copy(alpha = 0.9f),
-            ),
-            dismissOnRelease = false,
-        ),
-    ),
+    data = { lineData },
+    crosshair = ChartCrosshair(),
+    onPointClick = { point -> selected = point },   // still fires
 )
 ```
 
-**Direct composable parameter:**
+What a crosshair *does* displace is **streaming scrollback** — the other drag gesture. See the coexistence table at the top of this page and [Streaming](../guides/streaming.md#the-one-real-limitation-crosshair-vs-scrollback).
 
-```kotlin
-// PointChart, BubbleChart — direct parameter on the composable
-PointChart(
-    data = pointData,
-    crosshairConfig = ChartCrosshairConfig(),
-)
-```
+### Sharing one crosshair across stacked charts
 
-**Inside a chart-specific config:**
-
-```kotlin
-// MultilineChart example (still uses LineChartConfig)
-MultilineChart(
-    data = seriesData,
-    lineConfig = LineChartConfig(
-        crosshairConfig = ChartCrosshairConfig(),
-    ),
-)
-
-// ComboChart — pass through ComboChartConfig
-ComboChart(
-    data = comboData,
-    comboConfig = ComboChartConfig(
-        crosshairConfig = ChartCrosshairConfig(
-            verticalLineColor = ChartyColor.Solid(Color.DarkGray),
-        ),
-    ),
-)
-
-// WavyChart — direct parameter
-WavyChart(
-    data = wavyData,
-    crosshairConfig = ChartCrosshairConfig(),
-)
-```
-
-### Mutual exclusion with click
-
-**When a crosshair config is active, the tap-to-click interaction is replaced by drag-to-snap crosshair.** You cannot use both simultaneously on the same chart. If you need a click handler, omit `crosshairConfig` (or pass `null`).
+Wrap several charts in `CrosshairSyncScope { }` and they mirror a single guide position. Charts enrol automatically, but only when they have both a crosshair and a `ViewPortState` or `StreamingState` in their `interactionConfig`. See the [synced crosshair guide](../guides/synced-crosshair.md).
 
 ---
 
@@ -198,7 +258,7 @@ Create the state in a `@Composable` scope and pass it via `ChartInteractionConfi
 val viewPortState = rememberViewPortState(initialVisibleItems = 10)
 
 BarChart(
-    data = barData,
+    data = { barData },
     interactionConfig = ChartInteractionConfig(
         viewPortState = viewPortState,
     ),
@@ -212,7 +272,7 @@ BarChart(
 val viewPortState = rememberViewPortState(initialVisibleItems = 7)
 
 LineChart(
-    data = lineData,
+    data = { lineData },
     interactionConfig = ChartInteractionConfig(
         viewPortState = viewPortState,
     ),
@@ -231,7 +291,7 @@ Brush selection lets the user drag across the chart to select a range of data. T
 val brushState = rememberBrushSelectionState()
 
 LineChart(
-    data = lineData,
+    data = { lineData },
     interactionConfig = ChartInteractionConfig(
         brushSelectionState = brushState,
     ),
@@ -255,17 +315,47 @@ ChartInteractionConfig(
 
 ---
 
+## Streaming scrollback
+
+On a chart with a rolling `visibleWindow`, a `StreamingState` lets the reader drag back through history while new data keeps accumulating off-screen instead of yanking the view to the newest point.
+
+```kotlin
+val streaming = rememberStreamingState()
+
+LineChart(
+    data = { points },
+    color = ChartyColor.Solid(ChartyColors.Blue),
+    lineConfig = LineChartConfig(visibleWindow = 30),
+    interactionConfig =
+        ChartInteractionConfig(
+            streamingState = streaming,
+            jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+        ),
+)
+```
+
+The drag settles on the nearest whole data index when the finger lifts, and `jumpToLatest` renders only while the window is detached. Requires **both** a `streamingState` and a `visibleWindow`; a chart with neither gains no gesture it did not already have.
+
+A crosshair on the same chart makes scrollback inert. Full details in the [streaming guide](../guides/streaming.md).
+
+---
+
 ## ChartInteractionConfig
 
 All interaction states are grouped into a single `ChartInteractionConfig` object passed to Cartesian charts:
 
 ```kotlin
-data class ChartInteractionConfig(
+class ChartInteractionConfig(
     val viewPortState: ViewPortState? = null,
     val brushSelectionState: BrushSelectionState? = null,
     val onRangeSelect: ((startIndex: Int, endIndex: Int) -> Unit)? = null,
     val annotations: List<ChartAnnotation> = emptyList(),
     val accessibilityDescription: String? = null,
+    val dragTooltipEnabled: Boolean = false,
+    val autoScrollToLatest: Boolean = false,
+    val edgeFade: ScrollEdgeFadeConfig? = null,
+    val streamingState: StreamingState? = null,
+    val jumpToLatest: (@Composable (StreamingState) -> Unit)? = null,
 )
 ```
 
@@ -276,6 +366,13 @@ data class ChartInteractionConfig(
 | `onRangeSelect` | Called with `(startIndex, endIndex)` when a brush selection gesture completes. |
 | `annotations` | List of `ChartAnnotation` markers rendered on top of the chart content. |
 | `accessibilityDescription` | Overrides the auto-generated `contentDescription` for screen readers. Pass `""` to suppress the description entirely. |
+| `dragTooltipEnabled` | Dragging tracks the item under the finger and shows its tooltip. Automatically suppressed while `viewPortState` or `brushSelectionState` is set. |
+| `autoScrollToLatest` | With `viewPortState` set, the viewport follows the end of the data as it grows, keeping the current zoom. No effect without a viewport. |
+| `edgeFade` | With `viewPortState` set, draws a scrim at the edges while data is scrolled off-screen, hinting there is more to pan to. |
+| `streamingState` | Enables scrollback on a chart with a rolling `visibleWindow`. Create with `rememberStreamingState()`. Inert when a crosshair is configured. |
+| `jumpToLatest` | Your "jump to latest" control, rendered over the bottom centre of the plot while the window is detached. Requires both `streamingState` and a `visibleWindow`. |
+
+Note it is a plain `class`, not a `data class` — there is no `copy()`.
 
 ### Full example
 
@@ -286,9 +383,9 @@ fun SalesChart(data: List<BarData>) {
     val brushState = rememberBrushSelectionState()
 
     BarChart(
-        data = data,
+        data = { data },
+        color = ChartyColor.Solid(ChartyColors.Blue),
         barConfig = BarChartConfig(
-            tooltipConfig = TooltipConfig(),
             tooltipFormatter = { bar -> "Sales: ${bar.value}" },
         ),
         interactionConfig = ChartInteractionConfig(
@@ -315,13 +412,13 @@ All Charty charts generate a `contentDescription` automatically from the data, e
 ```kotlin
 // Override description on a PieChart
 PieChart(
-    data = pieData,
+    data = { pieData },
     accessibilityDescription = "Revenue breakdown by product category",
 )
 
 // Suppress description entirely
 PieChart(
-    data = pieData,
+    data = { pieData },
     accessibilityDescription = "",
 )
 ```

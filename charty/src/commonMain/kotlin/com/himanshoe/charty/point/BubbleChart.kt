@@ -47,6 +47,8 @@ import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.BubbleData
 
+private const val MIN_RADIUS_DIVISOR = 2f
+
 /**
  * A composable function that displays a bubble chart.
  *
@@ -57,7 +59,9 @@ import com.himanshoe.charty.point.data.BubbleData
  * @param color The color or color scheme for the bubbles.
  * @param config The configuration for the bubbles' appearance.
  * @param scaffoldConfig The configuration for the chart's scaffold.
- * @param minBubbleRadius The minimum radius for a bubble in pixels.
+ * @param minBubbleRadius The radius of the smallest bubble, in pixels. Defaults to half of
+ *   [PointChartConfig.pointRadius], which is the radius of the largest bubble, so the default pair
+ *   is always valid and rescales with it. Must be positive and smaller than that maximum.
  * @param onBubbleClick A lambda function invoked when a bubble is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
@@ -88,7 +92,7 @@ fun BubbleChart(
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     config: PointChartConfig = PointChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
-    minBubbleRadius: Float = 10f,
+    minBubbleRadius: Float = config.pointRadius / MIN_RADIUS_DIVISOR,
     onBubbleClick: ((BubbleData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<BubbleData>? = null,

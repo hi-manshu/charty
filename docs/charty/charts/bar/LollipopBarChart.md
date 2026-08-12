@@ -24,9 +24,83 @@ LollipopBarChart(
 )
 ```
 
-**Key config options (`LollipopBarChartConfig`):**
-- `stemThickness` — pixel width of the vertical stem line
-- `circleRadius` — pixel radius of the lollipop circle head
-- `circleStrokeWidth` — set to `> 0f` to draw the circle as a ring instead of a filled disc
-- `circleColor` — optional `ChartyColor` override for the circle head (defaults to the chart-level `colors`)
-- `animation` — stems grow upward from the baseline on entry
+## Ring heads
+
+```kotlin
+config = LollipopBarChartConfig(
+    circleRadius = 16f,
+    circleStrokeWidth = 3f,
+    circleColor = ChartyColor.Solid(Color(0xFF1565C0)),
+)
+```
+
+`circleStrokeWidth > 0f` draws the head as a ring instead of a filled disc. `circleColor` overrides the chart-level `colors` for the head only; leave it `null` to reuse `colors`.
+
+## Rolling window
+
+```kotlin
+config = LollipopBarChartConfig(visibleWindow = 20, animation = Animation.Fast)
+```
+
+Keeps only the last N lollipops on screen; `null` or at least `2`.
+
+## Persistent markers
+
+```kotlin
+config = LollipopBarChartConfig(
+    visibleWindow = 20,
+    markers = listOf(PersistentMarker(dataIndex = -1, label = "Now")),
+)
+```
+
+A negative `dataIndex` counts back from the end of the drawn data, so `-1` marks the newest entry.
+
+## Animating value changes
+
+```kotlin
+config = LollipopBarChartConfig(animateValueChanges = true, animation = Animation.Fast)
+```
+
+## Tooltip
+
+```kotlin
+LollipopBarChart(
+    data = { series },
+    modifier = Modifier.fillMaxWidth().height(300.dp),
+    colors = ChartyColor.Solid(Color(0xFF2196F3)),
+    tooltip = ChartTooltip.canvas(),
+    config = LollipopBarChartConfig(
+        tooltipFormatter = { barData -> "${barData.label}: ${barData.value}" },
+    ),
+)
+```
+
+## Accessibility
+
+A generated summary plus one focusable node per entry.
+
+```kotlin
+interactionConfig = ChartInteractionConfig(accessibilityDescription = "Monthly signups")
+```
+
+## `LollipopBarChartConfig`
+
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `barWidthFraction` | `Float` | `0.2f` | Slot fraction each lollipop occupies; `0f..1f` |
+| `stemThickness` | `Float` | `6f` | Stem width in pixels; must be positive |
+| `circleRadius` | `Float` | `14f` | Head radius in pixels; must be positive |
+| `circleStrokeWidth` | `Float` | `0f` | `> 0f` draws the head as a ring; non-negative |
+| `circleColor` | `ChartyColor?` | `null` | Head colour override; `null` reuses `colors` |
+| `animation` | `Animation` | `Animation.Enabled()` (800 ms) | Grow-from-baseline entry animation |
+| `animateValueChanges` | `Boolean` | `false` | Tween values on data change |
+| `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels |
+| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
+| `tooltipFormatter` | `(BarData) -> String` | `"label: value"` | Tooltip text |
+| `visibleWindow` | `Int?` | `null` | Rolling "show last N" window; `null` or `>= 2` |
+
+## Limitations
+
+- No crosshair, no corner radius, no reference line, and no data labels.
+- There is no `negativeValuesDrawMode` on this config.

@@ -98,8 +98,10 @@ import com.himanshoe.charty.radar.config.MultipleRadarChartConfig
 import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
@@ -117,8 +119,13 @@ import org.robolectric.annotation.GraphicsMode
  *
  * Every chart is rendered with [Animation.Disabled] where the API allows it, so the capture shows
  * the settled end state rather than a frame of the entrance animation.
+ *
+ * Method order is pinned because [wavyChart] is the one chart whose motion is an infinite
+ * transition: it leaves Robolectric's main looper permanently non-idle, so any capture scheduled
+ * after it would spin forever. Sorting by name places it last, after every other capture.
  */
 @RunWith(RobolectricTestRunner::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [DOC_SDK], qualifiers = DOC_QUALIFIERS)
 class DocImageGenerator {

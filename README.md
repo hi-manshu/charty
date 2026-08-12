@@ -20,7 +20,7 @@
 
 > _Deploying? Enable **Settings → Pages → Source: GitHub Actions** and the `Deploy playground` workflow publishes it on every push._
 
-<!-- Tip: drop short GIFs of the interactions into img/ and embed them here. -->
+The playground includes live sandboxes for streaming, synced crosshairs, PNG export, tooltips, and interpolation — each one showing the exact Kotlin that produced what you are looking at.
 
 ---
 
@@ -28,10 +28,15 @@
 
 - 🌍 **Truly multiplatform.** Android (minSdk 24), iOS, JVM Desktop, and JS/Wasm in the browser — from a single `commonMain` API. Most Compose chart libraries are Android-only.
 - 📊 **~25 chart types** out of the box, from bar/line/area to radar, candlestick, and calendar heatmaps.
-- 👆 **Rich interactions** — a unified draggable **crosshair**, tap tooltips (canvas or your own Composable), persistent markers, zoom/pan, and brush selection.
+- 📡 **Live streaming data** — a rolling `visibleWindow` that slides as points arrive, with an easing axis rescale, drag-back-through-history scrollback, and a built-in "jump to latest" pill. [Guide →](docs/charty/guides/streaming.md)
+- 👆 **Rich interactions** — a unified draggable **crosshair**, tap tooltips (canvas or your own Composable), drag-to-track tooltips, persistent markers, zoom/pan, and brush selection.
+- 🔗 **Synced crosshair** — wrap stacked charts in `CrosshairSyncScope { }` and one guide line moves across all of them. Charts enrol themselves. [Guide →](docs/charty/guides/synced-crosshair.md)
+- 🖼️ **PNG export** — capture any chart and hand it to the platform: share sheet on iOS, browser download on the web, Downloads folder on desktop, app cache on Android. [Guide →](docs/charty/guides/exporting-charts.md)
+- 🕒 **Smart datetime axis** — adaptive tick granularity from minutes to decades, snapped to natural boundaries, fully localizable through `DateTimeAxisLocale` without the library shipping a locale database. [Guide →](docs/charty/guides/datetime-axis.md)
+- ✨ **Motion that means something** — tween, spring, or disabled entry animations; `animateValueChanges` tweens values when the data updates; three line interpolations (linear, smooth, step).
 - ⚡ **Scales to big data** — built-in **LTTB downsampling** keeps tens of thousands of points at interactive frame rates.
 - ♿ **Accessible** — whole-chart descriptions **and** per-data-point screen-reader traversal, so TalkBack/VoiceOver users can inspect each value.
-- 🎨 **Themeable** — light/dark-aware `ChartyTheme`, `ChartyColor` solids & gradients, graceful empty/loading states.
+- 🎨 **Themeable** — light/dark-aware `ChartyTheme`, `ChartyColor` solids & gradients everywhere a colour is exposed, graceful empty/loading states.
 - 📦 **Ships an Android baseline profile** in the AAR, so consuming apps get Charty's hot paths AOT-compiled at install (no first-render jank).
 
 ---
@@ -83,6 +88,25 @@ LineChart(
 )
 ```
 
+Or go live — a rolling window that slides as data arrives, with scrollback:
+
+```kotlin
+val streaming = rememberStreamingState()
+
+LineChart(
+    data = { readings },                     // just keep appending
+    color = ChartyColor.Solid(ChartyColors.Blue),
+    lineConfig = LineChartConfig(
+        visibleWindow = 30,                  // show the last 30 points
+        markers = listOf(PersistentMarker(dataIndex = -1)),   // label the newest
+    ),
+    interactionConfig = ChartInteractionConfig(
+        streamingState = streaming,          // drag back through history
+        jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+    ),
+)
+```
+
 ---
 
 ## 📈 Chart catalog
@@ -116,7 +140,9 @@ _Measured on a dev machine (JMH average time); treat as orders of magnitude, not
 
 ## ♿ Accessibility
 
-Every Cartesian chart exposes a generated whole-chart `contentDescription`, and — because charts are canvas-drawn — an overlay of invisible, focusable nodes so screen readers can **traverse the data point by point** ("Point 2 of 5: Feb, 45"). The nodes carry no pointer input, so they never change the chart's look or block touch. Opt in via `ChartScaffold`'s `dataPointDescriptions` (already wired into Line, Area, Bar, and Point).
+Every Cartesian chart exposes a generated whole-chart `contentDescription`, and — because charts are canvas-drawn — an overlay of invisible, focusable nodes so screen readers can **traverse the data point by point** ("Point 2 of 5: Feb, 45"). The nodes carry no pointer input, so they never change the chart's look or block touch.
+
+Per-point traversal is wired in by the charts themselves — no opt-in needed — across the line, area, bar (including stacked, normalized, mosaic, comparison, span, lollipop and bubble-bar variants), point, bubble, combo, and candlestick charts. Override any chart's summary with `ChartInteractionConfig(accessibilityDescription = "…")`, or pass `""` to suppress it.
 
 ---
 
@@ -128,6 +154,9 @@ Every Cartesian chart exposes a generated whole-chart `contentDescription`, and 
 | iOS / Desktop / **Web** | ✅ | ❌ | ❌ |
 | Jetpack Compose–native | ✅ | ✅ | ❌ (Views) |
 | Live in-browser demo | ✅ | ❌ | ❌ |
+| Rolling live-data window + scrollback | ✅ | partial | ❌ |
+| Crosshair synced across charts | ✅ | ❌ | ❌ |
+| Multiplatform PNG export | ✅ | ❌ | Android only |
 | Large-data downsampling | ✅ (LTTB) | partial | ❌ |
 | Per-point screen-reader traversal | ✅ | ❌ | limited |
 | Ships a baseline profile | ✅ | ❌ | ❌ |
@@ -139,6 +168,20 @@ _Vico and MPAndroidChart are excellent, mature libraries on Android — Charty's
 ## 📚 Documentation
 
 Full API reference and guides: 👉 **[himanshoe.com/docs/charty](https://himanshoe.com/docs/charty)**
+
+Start here:
+
+| Guide | What it covers |
+| --- | --- |
+| [Installation](docs/charty/getting-started/installation.md) | One dependency, five targets. |
+| [Quick start](docs/charty/getting-started/quick-start.md) | Zero to a rendered chart in two minutes. |
+| [Streaming and live data](docs/charty/guides/streaming.md) | Rolling windows, scrollback, jump-to-latest. |
+| [Exporting charts as PNG](docs/charty/guides/exporting-charts.md) | Capture and share, per platform. |
+| [Datetime axis and localization](docs/charty/guides/datetime-axis.md) | Smart time ticks in any language. |
+| [Synced crosshair](docs/charty/guides/synced-crosshair.md) | One guide line across stacked charts. |
+| [Interactions](docs/charty/configurations/interactions.md) | Which gestures can share a chart. |
+| [Common configuration](docs/charty/configurations/common-config.md) | Axes, tooltips, markers, windows. |
+| [Colors and animations](docs/charty/customization/colors-and-animations.md) | `ChartyColor`, palettes, `Animation`. |
 
 ---
 

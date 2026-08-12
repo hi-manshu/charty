@@ -1,6 +1,6 @@
 # ComparisonBarChart
 
-Best for comparing multiple values (e.g., two metrics side by side) within the same category group — each `BarGroup` renders its values as individual bars clustered together.
+Best for comparing multiple values (e.g. two metrics side by side) within the same category group — each `BarGroup` renders its values as individual bars clustered together.
 
 ```kotlin
 ComparisonBarChart(
@@ -22,14 +22,6 @@ ComparisonBarChart(
                     ChartyColor.Solid(Color(0xFFE91E63)),
                 ),
             ),
-            BarGroup(
-                label = "Q3",
-                values = listOf(95f, 160f),
-                colors = listOf(
-                    ChartyColor.Solid(Color(0xFF6650A4)),
-                    ChartyColor.Solid(Color(0xFFE91E63)),
-                ),
-            ),
         )
     },
     modifier = Modifier.fillMaxWidth().height(300.dp),
@@ -43,11 +35,82 @@ ComparisonBarChart(
 )
 ```
 
-Each `BarGroup` **must** have a `colors` list with one `ChartyColor` per value — the chart uses these per-bar colors and will throw at runtime if they are missing or shorter than `values`.
+`ComparisonBarChart` has **no chart-level colour parameter**, so every `BarGroup` must carry a `colors` list — the chart throws while drawing if `colors` is `null` or shorter than `values`. (`BarGroup` itself already rejects a `colors` list whose size differs from `values`.)
 
 **Click data:** `ComparisonBarSegment(barGroup, barIndex, barValue)`
 
-**Key config options:**
-- `cornerRadius` — rounding applied to bar tops (positive bars) or bottoms (negative bars)
-- `negativeValuesDrawMode` — `BELOW_AXIS` or `FROM_MIN_VALUE`
-- `animation` — entrance animation duration; `Animation.Default` = 800 ms
+## Corner radius
+
+```kotlin
+comparisonConfig = ComparisonBarChartConfig(cornerRadius = CornerRadius.Custom(radius = 10f))
+```
+
+Applies to bar tops for positive values and bar bottoms for negative ones. `None`, `Small`, `Medium`, `Large`, `ExtraLarge`, or `Custom(radius)`.
+
+## Rolling window
+
+```kotlin
+comparisonConfig = ComparisonBarChartConfig(visibleWindow = 12, animation = Animation.Fast)
+```
+
+Keeps only the last N groups on screen; `null` or at least `2`.
+
+## Persistent markers
+
+```kotlin
+comparisonConfig = ComparisonBarChartConfig(
+    visibleWindow = 12,
+    markers = listOf(PersistentMarker(dataIndex = -1, label = "Latest")),
+)
+```
+
+A negative `dataIndex` counts back from the end of the drawn data, so `-1` marks the newest group.
+
+## Animating value changes
+
+```kotlin
+comparisonConfig = ComparisonBarChartConfig(animateValueChanges = true, animation = Animation.Fast)
+```
+
+## Tooltip
+
+```kotlin
+ComparisonBarChart(
+    data = { groups },
+    modifier = Modifier.fillMaxWidth().height(300.dp),
+    tooltip = ChartTooltip.canvas(),
+    comparisonConfig = ComparisonBarChartConfig(
+        tooltipFormatter = { segment -> "${segment.barGroup.label}: ${segment.barValue}" },
+    ),
+)
+```
+
+## Accessibility
+
+A generated summary plus one focusable node per group.
+
+```kotlin
+interactionConfig = ChartInteractionConfig(accessibilityDescription = "Plan versus actual, by quarter")
+```
+
+## `ComparisonBarChartConfig`
+
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `negativeValuesDrawMode` | `NegativeValuesDrawMode` | `BELOW_AXIS` | `BELOW_AXIS` or `FROM_MIN_VALUE` |
+| `cornerRadius` | `CornerRadius` | `CornerRadius.Medium` | Rounds the value end of each bar |
+| `animation` | `Animation` | `Animation.Default` | Entry animation (800 ms tween) |
+| `animateValueChanges` | `Boolean` | `false` | Tween bar values on data change |
+| `referenceLine` | `ReferenceLineConfig?` | `null` | Optional horizontal guide line |
+| `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels |
+| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
+| `tooltipFormatter` | `(ComparisonBarSegment) -> String` | `"label [i]: value"` | Tooltip text |
+| `visibleWindow` | `Int?` | `null` | Rolling "show last N" window; `null` or `>= 2` |
+
+There is no `barWidthFraction` on this config — bar widths are derived from the group count.
+
+## Limitations
+
+- No crosshair: there is no `crosshair` parameter and no `crosshairConfig` on this config.
+- No data labels.

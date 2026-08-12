@@ -79,11 +79,25 @@ import com.himanshoe.charty.common.config.Animation
 BarChart(
     data = { myData },
     barConfig = BarChartConfig(
-        animation = Animation.Default,   // 800 ms  (recommended)
+        animation = Animation.Default,   // 800 ms tween (recommended)
         // animation = Animation.Fast,   // 400 ms
         // animation = Animation.Slow,   // 1 200 ms
-        // animation = Animation.Enabled(duration = 600),  // custom
+        // animation = Animation.Smooth, // physics-based spring
+        // animation = Animation.Bouncy, // spring with a gentle bounce
+        // animation = Animation.Enabled(duration = 600),  // custom tween
         // animation = Animation.Disabled,                 // no animation
+    ),
+)
+```
+
+`animation` drives the chart's **entry reveal**. To also tween whenever the *data* changes, set `animateValueChanges = true` alongside it:
+
+```kotlin
+BarChart(
+    data = { liveData },
+    barConfig = BarChartConfig(
+        animation = Animation.Fast,
+        animateValueChanges = true,
     ),
 )
 ```
@@ -128,13 +142,44 @@ BarChart(
 )
 ```
 
+## A line chart with interactions
+
+```kotlin
+import com.himanshoe.charty.common.gesture.ChartCrosshair
+import com.himanshoe.charty.line.LineChart
+import com.himanshoe.charty.line.config.LineChartConfig
+import com.himanshoe.charty.line.config.LineInterpolation
+
+LineChart(
+    data = { priceData },
+    modifier = Modifier.fillMaxWidth().height(300.dp),
+    color = ChartyColor.Solid(ChartyColors.Blue),
+    lineConfig = LineChartConfig(
+        interpolation = LineInterpolation.SMOOTH,
+        downsampleThreshold = 800,        // stay smooth over very large series
+    ),
+    crosshair = ChartCrosshair(),         // draggable guide line + label
+)
+```
+
 ## Next steps
 
+### Guides
+
+- **[Streaming and live data](../guides/streaming.md)** — rolling windows, scrollback, and "jump to latest".
+- **[Exporting charts as PNG](../guides/exporting-charts.md)** — capture and share a chart on every platform.
+- **[Datetime axis and localization](../guides/datetime-axis.md)** — smart time ticks, translated and reformatted.
+- **[Synced crosshair](../guides/synced-crosshair.md)** — one guide line across a stack of charts.
+
+### Reference
+
 - **More charts** — explore `LineChart`, `PieChart`, `StackedBarChart`, and
-  15 other chart types in the chart reference.
-- **Axes and grid** — customise labels, gridlines, and tick density via
-  `ChartScaffoldConfig`.
-- **Zoom and brush selection** — enable interactive viewport controls with
-  `ChartInteractionConfig`.
+  20 other chart types in the chart reference.
+- **[Common configuration](../configurations/common-config.md)** — axes, grid,
+  reference lines, tooltips, markers, and rolling windows.
+- **[Interactions](../configurations/interactions.md)** — crosshair, zoom/pan,
+  brush selection, and which gestures can share a chart.
+- **[Colors and animations](../customization/colors-and-animations.md)** —
+  `ChartyColor`, the palette, and the `Animation` type.
 - **Accessibility** — provide a custom content description through
   `ChartInteractionConfig.accessibilityDescription`.
