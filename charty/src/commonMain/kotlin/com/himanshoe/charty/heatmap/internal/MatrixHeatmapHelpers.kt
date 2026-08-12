@@ -11,7 +11,6 @@ import kotlin.math.roundToInt
 
 internal const val HEATMAP_MIN_RAMP_ALPHA = 0.15f
 
-private const val HALF_DIVIDER = 2f
 private const val CONTRAST_LUMINANCE_THRESHOLD = 0.5f
 private const val DARK_TEXT_COLOR = 0xFF1F2328
 private const val VALUE_DECIMAL_FACTOR = 10f
@@ -207,8 +206,11 @@ internal fun resolveHeatmapCellAt(
 ): Pair<Rect, HeatmapCell>? = cellBounds.firstOrNull { (rect, _) -> rect.contains(position) }
 
 /**
- * Builds the tooltip anchor for a tapped cell: horizontally centred on the cell, anchored to its
- * top edge, and as wide as the cell so the bubble's arrow lines up with it.
+ * Builds the tooltip anchor for a tapped cell, anchored to the cell's top edge.
+ *
+ * [TooltipState.x] is the anchor's **leading** edge, not its centre: the drawer centres the bubble
+ * itself by adding half of [TooltipState.barWidth]. Passing an already-centred x here would shift
+ * the bubble half a cell to the right.
  */
 internal fun heatmapTooltipState(
     bounds: Rect,
@@ -216,7 +218,7 @@ internal fun heatmapTooltipState(
 ): TooltipState =
     TooltipState(
         content = content,
-        x = bounds.left + bounds.width / HALF_DIVIDER,
+        x = bounds.left,
         y = bounds.top,
         barWidth = bounds.width,
     )

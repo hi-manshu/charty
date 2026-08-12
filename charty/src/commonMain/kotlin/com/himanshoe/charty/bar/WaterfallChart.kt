@@ -111,7 +111,7 @@ fun WaterfallChart(
     val maxValue = chartState.maxValue
 
     val animationProgress = chartState.animationProgress
-    val tooltipManager = rememberTooltipManager<Rect, BarData>()
+    val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val clickModifier =

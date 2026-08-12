@@ -13,24 +13,21 @@ import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 
 /**
- * Applies the appropriate interaction [Modifier]s to the line chart composable.
+ * Applies the interaction [Modifier]s the line chart is configured for.
  *
- * **Priority rules:**
- * 1. When [crosshairManager] is non-null the drag crosshair handler is installed and the
- *    tap-to-tooltip path is skipped entirely.
- * 2. Otherwise, when [onPointClick] is non-null the tap handler is installed.
- * 3. When [brushSelectionState] is non-null the brush handler is applied as an independent
- *    gesture layer on top of whichever single-touch handler above is active.
+ * Each handler is installed independently, because they answer to different gestures: the tap
+ * handler fires on a press that never travels past touch slop, while the crosshair and brush
+ * handlers only engage once it does. A chart configured with both a crosshair and [onPointClick]
+ * therefore shows a tooltip on tap *and* scrubs a crosshair on drag.
  *
  * @param dataList The chart's data list, used as a recomposition key for all gesture handlers.
  * @param lineConfig The line chart configuration, providing tap radius and formatter settings.
  * @param pointBounds The list of canvas pixel positions paired with their [LineData]; populated
  *   each draw frame by the chart's canvas pass.
- * @param onPointClick Optional callback invoked when the user taps a data point. Ignored when
- *   [crosshairManager] is non-null.
+ * @param onPointClick Optional callback invoked when the user taps a data point.
  * @param onTooltipStateChange Callback to push a new [com.himanshoe.charty.common.tooltip.TooltipState]
  *   (or `null` to dismiss) when the tap handler is active.
- * @param crosshairManager When non-null, replaces tap interaction with a draggable crosshair.
+ * @param crosshairManager When non-null, adds a draggable crosshair on top of tap interaction.
  * @param brushSelectionState When non-null, enables a horizontal drag-to-select gesture.
  * @param onRangeSelect Called with `(startIndex, endIndex)` when a brush drag completes.
  */
@@ -46,37 +43,35 @@ internal fun Modifier.lineChartInteractionHandler(
 ): Modifier {
     var result = this
 
-    when {
-        crosshairManager != null -> {
-            result =
-                result.chartCrosshairHandler(
-                    dataList = dataList,
-                    pointBounds = pointBounds,
-                    onCrosshairUpdate = crosshairManager::update,
-                    labelFormatter = lineConfig.tooltipFormatter,
-                    dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
-                )
-        }
+    if (onPointClick != null) {
+        result =
+            result.pointChartClickHandler(
+                dataList = dataList,
+                pointBounds = pointBounds,
+                tapRadius = lineConfig.pointRadius * LineChartConstants.TAP_RADIUS_MULTIPLIER,
+                onPointClick = onPointClick,
+                onTooltipStateChange = onTooltipStateChange,
+                createTooltipContent = { lineData, position ->
+                    createPointTooltipState(
+                        content = lineConfig.tooltipFormatter(lineData),
+                        position = position,
+                        pointRadius = lineConfig.pointRadius,
+                        tooltipPosition = lineConfig.tooltipPosition,
+                        pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
+                    )
+                },
+            )
+    }
 
-        onPointClick != null -> {
-            result =
-                result.pointChartClickHandler(
-                    dataList = dataList,
-                    pointBounds = pointBounds,
-                    tapRadius = lineConfig.pointRadius * LineChartConstants.TAP_RADIUS_MULTIPLIER,
-                    onPointClick = onPointClick,
-                    onTooltipStateChange = onTooltipStateChange,
-                    createTooltipContent = { lineData, position ->
-                        createPointTooltipState(
-                            content = lineConfig.tooltipFormatter(lineData),
-                            position = position,
-                            pointRadius = lineConfig.pointRadius,
-                            tooltipPosition = lineConfig.tooltipPosition,
-                            pointRadiusMultiplier = LineChartConstants.POINT_RADIUS_MULTIPLIER,
-                        )
-                    },
-                )
-        }
+    if (crosshairManager != null) {
+        result =
+            result.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = pointBounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = lineConfig.tooltipFormatter,
+                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+            )
     }
 
     if (brushSelectionState != null) {

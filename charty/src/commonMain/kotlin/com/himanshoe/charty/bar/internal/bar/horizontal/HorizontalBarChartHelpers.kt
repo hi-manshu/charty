@@ -1,6 +1,10 @@
 package com.himanshoe.charty.bar.internal.bar.horizontal
 
+import androidx.compose.ui.util.fastMap
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.axis.AxisConfig
 
 internal fun createHorizontalAxisConfig(
@@ -47,3 +51,24 @@ internal fun calculateHorizontalBarDimensions(
         val barLeft = baselineX
         barLeft to barWidth
     }
+
+/**
+ * Builds the accessibility payload for a horizontal bar chart: the chart-level summary plus one
+ * description per bar so a screen reader can traverse the data.
+ *
+ * @param description The generated chart summary, or `null` when accessibility is off.
+ * @param dataList The bars currently drawn, top to bottom.
+ * @return The accessibility payload handed to the chart scaffold.
+ */
+internal fun horizontalBarAccessibility(
+    description: String?,
+    dataList: List<BarData>,
+): ChartAccessibility =
+    ChartAccessibility(
+        contentDescription = description,
+        dataPointDescriptions =
+            buildDataPointDescriptions(
+                labels = dataList.fastMap { it.label },
+                values = dataList.fastMap { it.value },
+            ),
+    )

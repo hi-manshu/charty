@@ -184,17 +184,15 @@ internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
             textMeasurer = p.textMeasurer,
         )
     }
-    if (p.crosshairManager == null) {
-        p.tooltipState?.let { state ->
-            drawTooltip(
-                tooltipState = state,
-                config = p.comboConfig.tooltipConfig,
-                textMeasurer = p.textMeasurer,
-                chartWidth = p.chartContext.right,
-                chartTop = p.chartContext.top,
-                chartBottom = p.chartContext.bottom,
-            )
-        }
+    p.tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = p.comboConfig.tooltipConfig,
+            textMeasurer = p.textMeasurer,
+            chartWidth = p.chartContext.right,
+            chartTop = p.chartContext.top,
+            chartBottom = p.chartContext.bottom,
+        )
     }
     drawInteractionOverlays(
         interactionConfig = p.interactionConfig,

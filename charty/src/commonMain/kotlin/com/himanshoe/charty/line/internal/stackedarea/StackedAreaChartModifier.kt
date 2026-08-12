@@ -43,8 +43,10 @@ internal fun Modifier.stackedAreaChartClickHandler(
 }
 
 /**
- * Picks the stacked area chart's pointer handler: the crosshair drag when a crosshair is enabled,
- * otherwise tap-to-tooltip when a click listener is set, and no handler at all when neither is.
+ * Chains the stacked area chart's pointer handlers. Tap-to-tooltip and the crosshair drag are
+ * installed independently — a tap never travels past touch slop and a crosshair only engages once
+ * it does — so a chart configured with both answers to both, and an empty [Modifier] is returned
+ * when neither is configured.
  *
  * @param crosshairManager The crosshair state holder, or `null` when the crosshair is off.
  * @param lineConfig Supplies the crosshair's dismiss behaviour and the tooltip styling.
@@ -53,7 +55,7 @@ internal fun Modifier.stackedAreaChartClickHandler(
  * @param areaSegmentBounds The drawn segments the tap handler tests.
  * @param onAreaClick Invoked when an area is tapped, or `null` when taps are ignored.
  * @param onTooltipStateChange Receives the tooltip raised by a tap, and the point it belongs to.
- * @return The [Modifier] carrying the chosen handler, or an empty one.
+ * @return The [Modifier] carrying the configured handlers, or an empty one.
  */
 internal fun buildStackedAreaModifier(
     crosshairManager: CrosshairManager<LineGroup>?,
@@ -63,23 +65,27 @@ internal fun buildStackedAreaModifier(
     areaSegmentBounds: MutableList<Triple<Rect, Path, StackedAreaPoint>>,
     onAreaClick: ((StackedAreaPoint) -> Unit)?,
     onTooltipStateChange: (TooltipState?, StackedAreaPoint?) -> Unit,
-): Modifier =
-    when {
-        crosshairManager != null ->
-            Modifier.chartCrosshairHandler(
-                dataList = dataList,
-                pointBounds = crosshairBounds,
-                onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = { group -> "${group.label}: ${group.values.sum()}" },
-                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
-            )
-        onAreaClick != null ->
-            Modifier.stackedAreaChartClickHandler(
+): Modifier {
+    var mod: Modifier = Modifier
+    if (onAreaClick != null) {
+        mod =
+            mod.stackedAreaChartClickHandler(
                 dataList = dataList,
                 lineConfig = lineConfig,
                 areaSegmentBounds = areaSegmentBounds,
                 onAreaClick = onAreaClick,
                 onTooltipStateChange = onTooltipStateChange,
             )
-        else -> Modifier
     }
+    if (crosshairManager != null) {
+        mod =
+            mod.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = crosshairBounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = { group -> "${group.label}: ${group.values.sum()}" },
+                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+            )
+    }
+    return mod
+}

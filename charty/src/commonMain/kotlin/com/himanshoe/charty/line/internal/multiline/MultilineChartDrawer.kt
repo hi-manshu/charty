@@ -205,17 +205,15 @@ internal fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
         )
     }
 
-    if (p.crosshairManager == null) {
-        p.tooltipState?.let { state ->
-            drawTooltip(
-                tooltipState = state,
-                config = p.lineConfig.tooltipConfig,
-                textMeasurer = p.textMeasurer,
-                chartWidth = p.chartContext.right,
-                chartTop = p.chartContext.top,
-                chartBottom = p.chartContext.bottom,
-            )
-        }
+    p.tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = p.lineConfig.tooltipConfig,
+            textMeasurer = p.textMeasurer,
+            chartWidth = p.chartContext.right,
+            chartTop = p.chartContext.top,
+            chartBottom = p.chartContext.bottom,
+        )
     }
     drawInteractionOverlays(
         interactionConfig = p.interactionConfig,

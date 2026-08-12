@@ -337,15 +337,23 @@ class MatrixHeatmapHelpersTest {
     }
 
     @Test
-    fun heatmapTooltipState_anchorsToCellTopCentre() {
+    fun heatmapTooltipState_anchorsToCellTopLeadingEdge() {
         val state =
             heatmapTooltipState(
                 bounds = Rect(left = 10f, top = 20f, right = 30f, bottom = 50f),
                 content = "Mon · 9: 12",
             )
         assertEquals("Mon · 9: 12", state.content)
-        assertEquals(20f, state.x)
+        assertEquals(10f, state.x)
         assertEquals(20f, state.y)
         assertEquals(20f, state.barWidth)
+    }
+
+    @Test
+    fun heatmapTooltipResolvesToTheCellCentre() {
+        val bounds = Rect(left = 10f, top = 20f, right = 30f, bottom = 50f)
+        val state = heatmapTooltipState(bounds = bounds, content = "Mon · 9: 12")
+        val resolvedCentre = state.x + state.barWidth / 2f
+        assertEquals(bounds.left + bounds.width / 2f, resolvedCentre)
     }
 }

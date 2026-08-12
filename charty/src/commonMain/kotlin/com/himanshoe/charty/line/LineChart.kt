@@ -82,7 +82,10 @@ import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
  * @param onPointClick Invoked when the user taps a data point.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
- *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it.
+ *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it. It
+ *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
+ *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
+ *   does not, because the crosshair owns the drag.
  * @param tooltip How the tap tooltip is shown: [ChartTooltip.canvas] (the built-in bubble, styled via
  *   [LineChartConfig.tooltipConfig]), [ChartTooltip.compose] (your Composable, e.g. `PillTooltip`), or
  *   [ChartTooltip.none].
@@ -149,7 +152,7 @@ fun LineChart(
     val animationProgress = chartState.animationProgress
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
-    val tooltipManager = rememberTooltipManager<Offset, LineData>()
+    val tooltipManager = rememberTooltipManager<Offset, LineData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val (crosshairManager, animatedCrosshairState) =
@@ -323,18 +326,16 @@ private fun DrawScope.drawLineCrosshairAndTooltip(
         }
     }
 
-    if (lineConfig.crosshairConfig == null) {
-        tooltipManager.tooltipState?.let { state ->
-            drawLineChartTooltip(
-                tooltipState = state,
-                pointBounds = tooltipManager.bounds,
-                color = color,
-                lineConfig = lineConfig,
-                chartContext = chartContext,
-                textMeasurer = textMeasurer,
-                drawBubble = drawBubble,
-            )
-        }
+    tooltipManager.tooltipState?.let { state ->
+        drawLineChartTooltip(
+            tooltipState = state,
+            pointBounds = tooltipManager.bounds,
+            color = color,
+            lineConfig = lineConfig,
+            chartContext = chartContext,
+            textMeasurer = textMeasurer,
+            drawBubble = drawBubble,
+        )
     }
 }
 

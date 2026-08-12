@@ -83,7 +83,7 @@ internal fun <T> rememberVisibleWindowSlice(
     val fallbackAnimatable = remember { Animatable(target) }
     val previousSize = remember { PreviousDataSize(size) }
 
-    LaunchedEffect(target, animation, streamingState, size) {
+    LaunchedEffect(target, animation, streamingState, size, streamingState?.isFollowing) {
         if (streamingState == null) {
             if (animation.isAnimated) {
                 fallbackAnimatable.animateTo(targetValue = target, animationSpec = animation.toFloatSpec())
@@ -94,6 +94,7 @@ internal fun <T> rememberVisibleWindowSlice(
             val appended = (size - previousSize.value).coerceAtLeast(0)
             previousSize.value = size
             streamingState.onDataChanged(newMaxScroll = target, appended = appended, animation = animation)
+            streamingState.settleToLatest(animation = animation)
         }
     }
 

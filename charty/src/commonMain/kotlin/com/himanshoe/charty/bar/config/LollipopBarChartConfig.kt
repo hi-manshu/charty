@@ -8,6 +8,7 @@ import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.common.util.toChartLabel
 
 /**
  * Configuration for [com.himanshoe.charty.bar.LollipopBarChart]
@@ -44,7 +45,7 @@ data class LollipopBarChartConfig(
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (BarData) -> String = { barData ->
-        "${barData.label}: ${barData.value}"
+        "${barData.label}: ${barData.value.toChartLabel()}"
     },
     val visibleWindow: Int? = null,
 ) {

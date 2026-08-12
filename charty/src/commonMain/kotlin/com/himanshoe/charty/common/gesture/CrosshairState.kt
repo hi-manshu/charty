@@ -5,6 +5,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.currentCompositeKeyHashCode
@@ -121,7 +122,8 @@ internal class AnimatedCrosshair(
  *   syncing across charts.
  * @param streamingState The chart's streaming state, used as the geometry source when the chart has
  *   a rolling window rather than a viewport. Syncing needs one of the two; with neither, this chart
- *   keeps its crosshair to itself.
+ *   keeps its crosshair to itself. While the crosshair is enabled it also claims the chart's drag
+ *   from that state, which makes streaming scrollback unavailable for as long as this chart lives.
  * @return A [Pair] of `(manager, animatedCrosshair)`.
  */
 @Composable
@@ -136,6 +138,12 @@ internal fun <T> rememberChartCrosshair(
         } else {
             null
         }
+    if (manager != null && streamingState != null) {
+        DisposableEffect(streamingState) {
+            streamingState.crosshairOwnsDrag = true
+            onDispose { streamingState.crosshairOwnsDrag = false }
+        }
+    }
     val sync = LocalCrosshairSync.current
     val ownerId = currentCompositeKeyHashCode.toString()
     val bounds: PlotBoundsSource? = viewPortState ?: streamingState

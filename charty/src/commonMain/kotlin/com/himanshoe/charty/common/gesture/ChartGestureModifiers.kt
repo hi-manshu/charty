@@ -2,6 +2,7 @@ package com.himanshoe.charty.common.gesture
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.brush.BrushSelectionState
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -140,9 +142,17 @@ fun createPointTooltipState(
 /**
  * Tracks a draggable crosshair over a point-based chart.
  *
- * On first touch the crosshair appears immediately (no drag threshold), then follows the
- * finger horizontally, snapping to the nearest data point by x-coordinate. The crosshair
+ * The crosshair is a *drag* gesture: it engages only once the finger has travelled past touch slop,
+ * and consumes movement from that point on. A stationary tap never reaches slop and is left
+ * untouched, so a tap-to-tooltip handler chained onto the same chart keeps working — configuring a
+ * crosshair does not switch tap interaction off. Once engaged the crosshair follows the finger along
+ * the chart's category axis, snapping to the nearest data point: by x-coordinate for a
+ * [ChartOrientation.VERTICAL] chart and by y-coordinate for a [ChartOrientation.HORIZONTAL] one. It
  * is dismissed on finger lift if [dismissOnRelease] is `true`.
+ *
+ * A crosshair does, however, own the chart's drag. Another drag gesture over the same chart — most
+ * notably the streaming scrollback pan — cannot run at the same time, so when a crosshair is
+ * configured that pan is not installed at all.
  *
  * @param T The type of data associated with each point.
  * @param D The type of items in the data list.
@@ -152,6 +162,7 @@ fun createPointTooltipState(
  *   position change, or `(null, null)` when the crosshair should be dismissed.
  * @param labelFormatter Converts a data item to the string shown in the label.
  * @param dismissOnRelease When `true`, the crosshair disappears on finger lift.
+ * @param orientation The chart's orientation, which decides the axis the crosshair snaps along.
  */
 fun <T, D> Modifier.chartCrosshairHandler(
     dataList: List<D>,
@@ -159,31 +170,36 @@ fun <T, D> Modifier.chartCrosshairHandler(
     onCrosshairUpdate: (CrosshairState?, T?) -> Unit,
     labelFormatter: (T) -> String,
     dismissOnRelease: Boolean = true,
+    orientation: ChartOrientation = ChartOrientation.VERTICAL,
 ): Modifier =
-    this.pointerInput(dataList) {
+    this.pointerInput(dataList, orientation) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
-            down.consume()
-            findNearestPointByX(xOffset = down.position.x, pointBounds = pointBounds)?.let { (position, data) ->
-                onCrosshairUpdate(CrosshairState(x = position.x, y = position.y, label = labelFormatter(data)), data)
-            }
+            val dragStart =
+                awaitTouchSlopOrCancellation(pointerId = down.id) { change, _ -> change.consume() }
+                    ?: return@awaitEachGesture
+            publishCrosshair(
+                position = dragStart.position,
+                pointBounds = pointBounds,
+                orientation = orientation,
+                labelFormatter = labelFormatter,
+                onCrosshairUpdate = onCrosshairUpdate,
+            )
             var isPressed = true
             while (isPressed) {
                 val event = awaitPointerEvent()
-                val primary = event.changes.fastFirstOrNull { true } ?: break
+                val primary = event.changes.fastFirstOrNull { it.id == down.id } ?: break
                 if (primary.pressed) {
                     if (primary.positionChanged()) {
                         primary.consume()
                     }
-                    findNearestPointByX(
-                        xOffset = primary.position.x,
+                    publishCrosshair(
+                        position = primary.position,
                         pointBounds = pointBounds,
-                    )?.let { (position, data) ->
-                        onCrosshairUpdate(
-                            CrosshairState(x = position.x, y = position.y, label = labelFormatter(data)),
-                            data,
-                        )
-                    }
+                        orientation = orientation,
+                        labelFormatter = labelFormatter,
+                        onCrosshairUpdate = onCrosshairUpdate,
+                    )
                 } else {
                     isPressed = false
                 }
@@ -193,6 +209,36 @@ fun <T, D> Modifier.chartCrosshairHandler(
             }
         }
     }
+
+/**
+ * Snaps [position] to the nearest data point along the category axis and pushes the resulting
+ * crosshair state. Does nothing when there is no point to snap to.
+ *
+ * @param T The type of data associated with each point.
+ * @param position The pointer position, in canvas pixels.
+ * @param pointBounds Pixel positions and associated data.
+ * @param orientation The chart's orientation, which decides the axis the snap runs along.
+ * @param labelFormatter Converts a data item to the string shown in the label.
+ * @param onCrosshairUpdate Receives the new [CrosshairState] and the snapped data item.
+ */
+private fun <T> publishCrosshair(
+    position: Offset,
+    pointBounds: List<Pair<Offset, T>>,
+    orientation: ChartOrientation,
+    labelFormatter: (T) -> String,
+    onCrosshairUpdate: (CrosshairState?, T?) -> Unit,
+) {
+    findNearestPointAlongCategoryAxis(
+        position = position,
+        pointBounds = pointBounds,
+        orientation = orientation,
+    )?.let { (pointPosition, data) ->
+        onCrosshairUpdate(
+            CrosshairState(x = pointPosition.x, y = pointPosition.y, label = labelFormatter(data)),
+            data,
+        )
+    }
+}
 
 /**
  * Tracks a drag-to-scrub tooltip over a chart with rectangular hit areas, such as a bar chart.

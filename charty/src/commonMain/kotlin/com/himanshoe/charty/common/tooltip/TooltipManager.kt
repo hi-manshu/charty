@@ -89,3 +89,16 @@ class TooltipManager<B, T> {
  */
 @Composable
 fun <B, T> rememberTooltipManager(): TooltipManager<B, T> = remember { TooltipManager() }
+
+/**
+ * A [TooltipManager] that forgets its tooltip whenever [dataKey] changes.
+ *
+ * A tooltip is anchored to a pixel position, so once the series behind it changes — most visibly on
+ * a streaming chart, where the tapped point slides away on every append — that anchor no longer
+ * points at the data it describes. Rebuilding the manager clears the stale bubble instead of leaving
+ * it pinned over unrelated points.
+ *
+ * @param dataKey The value whose change invalidates the current tooltip, normally the drawn series.
+ */
+@Composable
+fun <B, T> rememberTooltipManager(dataKey: Any?): TooltipManager<B, T> = remember(dataKey) { TooltipManager() }

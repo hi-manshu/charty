@@ -119,7 +119,7 @@ fun SpanChart(
     val minValue = chartState.minValue
     val maxValue = chartState.maxValue
     val animationProgress = chartState.animationProgress
-    val tooltipManager = rememberTooltipManager<Rect, SpanData>()
+    val tooltipManager = rememberTooltipManager<Rect, SpanData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val clickModifier =

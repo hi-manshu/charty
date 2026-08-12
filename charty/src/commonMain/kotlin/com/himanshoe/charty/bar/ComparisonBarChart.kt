@@ -109,7 +109,7 @@ fun ComparisonBarChart(
     val maxValue = chartState.maxValue
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = chartState.animationProgress
-    val tooltipManager = rememberTooltipManager<Rect, ComparisonBarSegment>()
+    val tooltipManager = rememberTooltipManager<Rect, ComparisonBarSegment>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val clickModifier =

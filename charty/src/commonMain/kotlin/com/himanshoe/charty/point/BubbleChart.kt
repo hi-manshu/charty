@@ -37,7 +37,6 @@ import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
-import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
@@ -61,6 +60,11 @@ import com.himanshoe.charty.point.data.BubbleData
  * @param minBubbleRadius The minimum radius for a bubble in pixels.
  * @param onBubbleClick A lambda function invoked when a bubble is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it. It
+ *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
+ *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
+ *   does not, because the crosshair owns the drag.
  *
  * Example usage:
  * ```kotlin
@@ -139,22 +143,14 @@ fun BubbleChart(
     val animationProgress = chartState.animationProgress
 
     val gestureBase =
-        when {
-            crosshairManager != null ->
-                Modifier.chartCrosshairHandler(
-                    dataList = dataList,
-                    pointBounds = crosshairBounds,
-                    onCrosshairUpdate = crosshairManager::update,
-                    labelFormatter = { bubble -> "${bubble.label}: ${bubble.yValue}" },
-                    dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
-                )
-            else ->
-                createBubbleClickModifier(
-                    dataList = dataList,
-                    bubbleBounds = bubbleBounds,
-                    onBubbleClick = onBubbleClick,
-                )
-        }
+        buildBubbleGestureModifier(
+            dataList = dataList,
+            bubbleBounds = bubbleBounds,
+            crosshairBounds = crosshairBounds,
+            onBubbleClick = onBubbleClick,
+            crosshairManager = crosshairManager,
+            dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
+        )
     val chartModifier =
         buildInteractionModifier(
             base = modifier.then(gestureBase),
@@ -197,8 +193,7 @@ fun BubbleChart(
                 config = config,
                 color = color,
                 animationProgress = animationProgress.value,
-                onBubbleClick =
-                    onBubbleClick.takeIf { crosshairManager == null },
+                onBubbleClick = onBubbleClick,
                 bubbleBounds = bubbleBounds,
             )
 

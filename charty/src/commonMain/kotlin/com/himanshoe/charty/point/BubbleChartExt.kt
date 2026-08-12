@@ -6,7 +6,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastMap
+import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.calculateDistance
+import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.point.data.BubbleData
@@ -124,3 +126,43 @@ internal fun createBubbleClickModifier(
     } else {
         Modifier
     }
+
+/**
+ * Chains the bubble chart's pointer handlers. Tap-to-click and the crosshair drag are installed
+ * independently — a tap never travels past touch slop and a crosshair only engages once it does —
+ * so a chart configured with both answers to both.
+ *
+ * @param dataList The bubbles currently drawn, used as a recomposition key.
+ * @param bubbleBounds The drawn bubble circles the tap handler hit-tests.
+ * @param crosshairBounds The per-bubble anchors the crosshair snaps to.
+ * @param onBubbleClick Invoked when a bubble is tapped, or `null` when taps are ignored.
+ * @param crosshairManager The crosshair state holder, or `null` when the crosshair is off.
+ * @param dismissOnRelease When `true`, the crosshair disappears on finger lift.
+ * @return The chained [Modifier] to apply to the chart.
+ */
+internal fun buildBubbleGestureModifier(
+    dataList: List<BubbleData>,
+    bubbleBounds: List<BubbleBounds>,
+    crosshairBounds: List<Pair<Offset, BubbleData>>,
+    onBubbleClick: ((BubbleData) -> Unit)?,
+    crosshairManager: CrosshairManager<BubbleData>?,
+    dismissOnRelease: Boolean,
+): Modifier {
+    val clickModifier =
+        createBubbleClickModifier(
+            dataList = dataList,
+            bubbleBounds = bubbleBounds,
+            onBubbleClick = onBubbleClick,
+        )
+    return if (crosshairManager != null) {
+        clickModifier.chartCrosshairHandler(
+            dataList = dataList,
+            pointBounds = crosshairBounds,
+            onCrosshairUpdate = crosshairManager::update,
+            labelFormatter = { bubble -> "${bubble.label}: ${bubble.yValue}" },
+            dismissOnRelease = dismissOnRelease,
+        )
+    } else {
+        clickModifier
+    }
+}

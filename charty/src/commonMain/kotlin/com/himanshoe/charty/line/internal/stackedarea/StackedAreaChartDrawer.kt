@@ -191,17 +191,15 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
         )
     }
 
-    if (params.crosshairManager == null) {
-        tooltipState?.let { state ->
-            drawTooltip(
-                tooltipState = state,
-                config = lineConfig.tooltipConfig,
-                textMeasurer = textMeasurer,
-                chartWidth = chartContext.right,
-                chartTop = chartContext.top,
-                chartBottom = chartContext.bottom,
-            )
-        }
+    tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = lineConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
     }
     drawInteractionOverlays(
         interactionConfig = interactionConfig,

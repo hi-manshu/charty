@@ -28,7 +28,10 @@ import com.himanshoe.charty.common.viewport.ViewPortState
  *   [ScrollEdgeFadeConfig]).
  * @property streamingState Enables scrollback on a chart with a rolling `visibleWindow`: the reader
  *   can drag back through history while new data accumulates, and jump back to the newest point.
- *   `null` (the default) keeps the window pinned to the newest data.
+ *   `null` (the default) keeps the window pinned to the newest data. Scrollback needs the chart's
+ *   horizontal drag, so it is unavailable when a `crosshair` is configured on the same chart: the
+ *   crosshair owns the drag and the window simply keeps following the newest data. Tap-to-tooltip
+ *   works alongside either of them.
  * @property jumpToLatest Your "jump to latest" control, rendered over the bottom centre of the plot
  *   while the window is detached and hidden again as soon as it follows the newest data. It receives
  *   the same [StreamingState] you passed as [streamingState], so it can label itself with

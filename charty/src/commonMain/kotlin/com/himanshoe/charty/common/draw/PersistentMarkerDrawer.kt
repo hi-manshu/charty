@@ -13,16 +13,12 @@ import androidx.compose.ui.util.fastForEach
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.config.PersistentMarker
+import com.himanshoe.charty.common.util.toChartLabel
 
 private const val MARKER_LABEL_GAP = 6f
 
 /** Formats a value for a marker's default label, dropping the trailing `.0` on whole numbers. */
-fun formatMarkerValue(value: Float): String =
-    if (value == value.toLong().toFloat()) {
-        value.toLong().toString()
-    } else {
-        value.toString()
-    }
+fun formatMarkerValue(value: Float): String = value.toChartLabel()
 
 /**
  * Places a marker's callout pill so it is horizontally centred on [centerX] but stays fully within

@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastMinByOrNull
+import com.himanshoe.charty.common.ChartOrientation
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -115,6 +116,44 @@ fun <T> findNearestPointByX(
     xOffset: Float,
     pointBounds: List<Pair<Offset, T>>,
 ): Pair<Offset, T>? = pointBounds.fastMinByOrNull { (position, _) -> abs(position.x - xOffset) }
+
+/**
+ * Finds the point whose y-coordinate is closest to [yOffset], ignoring the x-axis distance.
+ *
+ * This is the horizontal-chart counterpart of [findNearestPointByX]: charts whose categories run
+ * down the plot (such as [com.himanshoe.charty.bar.HorizontalBarChart]) snap the crosshair as the
+ * user drags vertically across the rows.
+ *
+ * @param T The type of data associated with each point.
+ * @param yOffset The y position of the touch/drag event.
+ * @param pointBounds A list of pairs, where each pair contains the [Offset] position of a point
+ *   and its associated data.
+ * @return The nearest point pair, or `null` if [pointBounds] is empty.
+ */
+fun <T> findNearestPointByY(
+    yOffset: Float,
+    pointBounds: List<Pair<Offset, T>>,
+): Pair<Offset, T>? = pointBounds.fastMinByOrNull { (position, _) -> abs(position.y - yOffset) }
+
+/**
+ * Finds the point nearest to [position] along the chart's category axis: by x for a
+ * [ChartOrientation.VERTICAL] chart and by y for a [ChartOrientation.HORIZONTAL] one.
+ *
+ * @param T The type of data associated with each point.
+ * @param position The current touch/drag position.
+ * @param pointBounds Pairs of point positions and their associated data.
+ * @param orientation The chart's orientation, which decides the axis snapping runs along.
+ * @return The nearest point pair, or `null` if [pointBounds] is empty.
+ */
+fun <T> findNearestPointAlongCategoryAxis(
+    position: Offset,
+    pointBounds: List<Pair<Offset, T>>,
+    orientation: ChartOrientation,
+): Pair<Offset, T>? =
+    when (orientation) {
+        ChartOrientation.VERTICAL -> findNearestPointByX(xOffset = position.x, pointBounds = pointBounds)
+        ChartOrientation.HORIZONTAL -> findNearestPointByY(yOffset = position.y, pointBounds = pointBounds)
+    }
 
 /**
  * Finds the rectangular item under a drag [position], used by the drag-to-track tooltip gesture.

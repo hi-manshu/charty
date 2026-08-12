@@ -112,7 +112,7 @@ fun LollipopBarChart(
     val minValue = chartState.minValue
     val maxValue = chartState.maxValue
     val animationProgress = chartState.animationProgress
-    val tooltipManager = rememberTooltipManager<Offset, BarData>()
+    val tooltipManager = rememberTooltipManager<Offset, BarData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val clickModifier =

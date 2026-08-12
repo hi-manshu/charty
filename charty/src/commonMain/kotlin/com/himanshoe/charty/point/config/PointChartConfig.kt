@@ -12,6 +12,7 @@ import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.common.util.toChartLabel
 import com.himanshoe.charty.point.data.PointData
 
 private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
@@ -68,7 +69,7 @@ data class PointChartConfig(
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (PointData) -> String = { pointData ->
-        "${pointData.label}: ${pointData.value}"
+        "${pointData.label}: ${pointData.value.toChartLabel()}"
     },
     val crosshairConfig: ChartCrosshairConfig? = null,
     val highlightSelectedColumn: Boolean = false,

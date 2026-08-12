@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntSize
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.streaming.StreamingState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -48,6 +49,11 @@ internal fun panDeltaToIndexDelta(
  * into a data index delta by [panDeltaToIndexDelta] and applied through [StreamingState.scrollBy], which
  * detaches the window from the live edge and clamps the position into `0..maxScroll`.
  *
+ * A crosshair, unlike a tooltip, *is* a drag, so the two cannot coexist on one chart. The crosshair owns
+ * horizontal drag and this pan stands down: while a crosshair is configured the gesture consumes nothing
+ * and moves nothing, which makes streaming scrollback unavailable on that chart. Tap-to-tooltip keeps
+ * working in either case.
+ *
  * `scrollBy` suspends while the drag callback does not, so deltas cross into a single long-lived
  * coroutine through an unbounded channel. That keeps them strictly ordered and lossless — one coroutine
  * launched per pointer event would let the animation mutex apply them out of order, which is exactly the
@@ -70,6 +76,7 @@ internal fun Modifier.chartStreamingPan(
     state: StreamingState,
     orientation: ChartOrientation,
     windowSize: Int,
+    settleAnimation: Animation = Animation.Fast,
 ): Modifier =
     this.pointerInput(state, orientation, windowSize) {
         coroutineScope {
@@ -79,15 +86,20 @@ internal fun Modifier.chartStreamingPan(
                     state.scrollBy(delta)
                 }
             }
-            detectDragGestures { change, dragAmount ->
-                change.consume()
-                deltas.trySend(
-                    panDeltaToIndexDelta(
-                        dragPixels = axisDelta(offset = dragAmount, orientation = orientation),
-                        plotExtentPixels = categoryExtent(size = size, orientation = orientation),
-                        windowSize = windowSize,
-                    ),
-                )
+            detectDragGestures(
+                onDragEnd = { launch { state.settleToNearestIndex(animation = settleAnimation) } },
+                onDragCancel = { launch { state.settleToNearestIndex(animation = settleAnimation) } },
+            ) { change, dragAmount ->
+                if (!state.crosshairOwnsDrag) {
+                    change.consume()
+                    deltas.trySend(
+                        panDeltaToIndexDelta(
+                            dragPixels = axisDelta(offset = dragAmount, orientation = orientation),
+                            plotExtentPixels = categoryExtent(size = size, orientation = orientation),
+                            windowSize = windowSize,
+                        ),
+                    )
+                }
             }
         }
     }

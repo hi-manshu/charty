@@ -12,8 +12,10 @@ import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.common.util.toChartLabel
 
 /**
  * Defines how negative values should be drawn in bar charts
@@ -57,6 +59,10 @@ enum class NegativeValuesDrawMode {
  * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property crosshairConfig When non-null, enables a draggable [ChartCrosshairConfig] that tracks
+ *   the user's finger and snaps to the nearest bar — by x on [com.himanshoe.charty.bar.BarChart]
+ *   and by y on [com.himanshoe.charty.bar.HorizontalBarChart]. Usually set for you by passing a
+ *   `crosshair` to the chart rather than configured here directly.
  * @property showDataLabels Whether to show value labels above each bar
  * @property dataLabelFormatter Formats the bar value for the data label text
  * @property dataLabelStyle Text style for data labels
@@ -77,8 +83,9 @@ data class BarChartConfig(
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (BarData) -> String = { barData ->
-        "${barData.label}: ${barData.value}"
+        "${barData.label}: ${barData.value.toChartLabel()}"
     },
+    val crosshairConfig: ChartCrosshairConfig? = null,
     val showDataLabels: Boolean = false,
     val dataLabelFormatter: (BarData) -> String = { barData ->
         val v = barData.value

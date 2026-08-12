@@ -46,9 +46,10 @@ internal fun Modifier.multilineChartClickHandler(
     )
 
 /**
- * Chains the multiline chart's pointer handling: the crosshair drag wins when a crosshair is
- * enabled, otherwise tap-to-tooltip is installed when a click listener is set, and brush selection
- * plus zoom/pan are layered on top by [buildInteractionModifier].
+ * Chains the multiline chart's pointer handling. Tap-to-tooltip and the crosshair drag are
+ * installed independently — a tap never travels past touch slop and a crosshair only engages once
+ * it does — so a chart configured with both answers to both. Brush selection and zoom/pan are
+ * layered on top by [buildInteractionModifier].
  *
  * @param base The modifier the handlers are chained onto.
  * @param crosshairManager The crosshair state holder, or `null` when the crosshair is off.
@@ -72,29 +73,30 @@ internal fun buildMultilineModifier(
     onTooltipStateChange: (TooltipState?, MultilinePoint?) -> Unit,
     interactionConfig: ChartInteractionConfig,
 ): Modifier {
-    val mod: Modifier =
-        when {
-            crosshairManager != null ->
-                Modifier.chartCrosshairHandler(
-                    dataList = dataList,
-                    pointBounds = crosshairBounds,
-                    onCrosshairUpdate = crosshairManager::update,
-                    labelFormatter = { point ->
-                        point.lineGroup.values
-                            .mapIndexed { i, v -> "L${i + 1}: $v" }
-                            .joinToString("  ")
-                    },
-                    dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
-                )
-            onPointClick != null ->
-                Modifier.multilineChartClickHandler(
-                    dataList = dataList,
-                    lineConfig = lineConfig,
-                    pointBounds = pointBounds,
-                    onPointClick = onPointClick,
-                    onTooltipStateChange = onTooltipStateChange,
-                )
-            else -> Modifier
-        }
+    var mod: Modifier = Modifier
+    if (onPointClick != null) {
+        mod =
+            mod.multilineChartClickHandler(
+                dataList = dataList,
+                lineConfig = lineConfig,
+                pointBounds = pointBounds,
+                onPointClick = onPointClick,
+                onTooltipStateChange = onTooltipStateChange,
+            )
+    }
+    if (crosshairManager != null) {
+        mod =
+            mod.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = crosshairBounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = { point ->
+                    point.lineGroup.values
+                        .mapIndexed { i, v -> "L${i + 1}: $v" }
+                        .joinToString("  ")
+                },
+                dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
+            )
+    }
     return buildInteractionModifier(base = base.then(mod), interactionConfig = interactionConfig, dataList = dataList)
 }

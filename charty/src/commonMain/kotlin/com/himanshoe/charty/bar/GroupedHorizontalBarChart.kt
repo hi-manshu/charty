@@ -120,7 +120,7 @@ fun GroupedHorizontalBarChart(
     val drawAxisAtZero = state.minValue < 0f && state.maxValue > 0f && isBelowAxisMode
 
     val animationProgress = rememberChartAnimation(config.animation)
-    val tooltipManager = rememberTooltipManager<Rect, GroupedHorizontalBarEntry>()
+    val tooltipManager = rememberTooltipManager<Rect, GroupedHorizontalBarEntry>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     syncInteractionDataSizes(

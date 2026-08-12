@@ -75,6 +75,11 @@ import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
  *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it. It
+ *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
+ *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
+ *   does not, because the crosshair owns the drag.
  */
 @Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
@@ -126,7 +131,7 @@ fun AreaChart(
     val minValue = chartState.minValue
     val maxValue = chartState.maxValue
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    val tooltipManager = rememberTooltipManager<Offset, LineData>()
+    val tooltipManager = rememberTooltipManager<Offset, LineData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val (crosshairManager, animatedCrosshairState) =
@@ -191,22 +196,20 @@ fun AreaChart(
                         onBarBoundCalculated = { if (onPointClick != null) tooltipManager.bounds.add(it) },
                     ),
             )
-            if (crosshairManager == null) {
-                drawTooltipHighlightIfNeeded(
+            drawTooltipHighlightIfNeeded(
+                tooltipState = tooltipManager.tooltipState,
+                lineConfig = lineConfig,
+                pointBounds = tooltipManager.bounds,
+                chartContext = chartContext,
+                color = color,
+            )
+            if (tooltip.isCanvas()) {
+                drawTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
                     lineConfig = lineConfig,
-                    pointBounds = tooltipManager.bounds,
+                    textMeasurer = textMeasurer,
                     chartContext = chartContext,
-                    color = color,
                 )
-                if (tooltip.isCanvas()) {
-                    drawTooltipIfNeeded(
-                        tooltipState = tooltipManager.tooltipState,
-                        lineConfig = lineConfig,
-                        textMeasurer = textMeasurer,
-                        chartContext = chartContext,
-                    )
-                }
             }
             drawInteractionOverlays(
                 interactionConfig = interactionConfig,

@@ -14,6 +14,7 @@ import com.himanshoe.charty.common.PlotBoundsSource
 import com.himanshoe.charty.common.animation.isAnimated
 import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.config.Animation
+import kotlin.math.roundToInt
 
 /**
  * Follow-or-browse state for a chart with a rolling `visibleWindow`.
@@ -32,6 +33,11 @@ import com.himanshoe.charty.common.config.Animation
  * The scroll position is expressed in data indices — `0` shows the very first point at the plot's
  * leading edge, and [maxScroll] shows the newest — so it is independent of pixel size and survives
  * a resize.
+ *
+ * Scrollback and a crosshair cannot share a chart: both are drag gestures, and the crosshair wins.
+ * A chart configured with a crosshair keeps its window following the newest data, and a "jump to
+ * latest" control never appears because the window never detaches by dragging. Tap-to-tooltip is
+ * unaffected either way.
  */
 @Stable
 class StreamingState internal constructor() : PlotBoundsSource {
@@ -50,6 +56,8 @@ class StreamingState internal constructor() : PlotBoundsSource {
     }
 
     internal val scroll: Animatable<Float, AnimationVector1D> = Animatable(0f)
+
+    internal var crosshairOwnsDrag: Boolean = false
 
     private var followingState by mutableStateOf(true)
     private var pendingState by mutableIntStateOf(0)
@@ -84,10 +92,55 @@ class StreamingState internal constructor() : PlotBoundsSource {
     /**
      * Animates the window back to the newest point with [animation] and resumes following, clearing
      * [pendingCount]. A disabled [animation] jumps immediately.
+     *
+     * Resuming following is what makes the chart re-drive this animation itself, which matters
+     * because the overlay that triggered the jump usually disappears the moment following resumes —
+     * taking its coroutine scope, and this call, with it. The chart finishes the slide regardless.
      */
     suspend fun jumpToLatest(animation: Animation = Animation.Default) {
         followingState = true
         pendingState = 0
+        if (animation.isAnimated) {
+            scroll.animateTo(targetValue = maxScrollState, animationSpec = animation.toFloatSpec())
+        } else {
+            scroll.snapTo(maxScrollState)
+        }
+    }
+
+    /**
+     * Eases the window to the nearest whole data index, so a drag always comes to rest on aligned
+     * slots instead of leaving the leading and trailing items sliced in half by the plot edges.
+     *
+     * Called when a drag ends. While following, the window is already heading for a whole index, so
+     * this does nothing and leaves the follow animation undisturbed.
+     */
+    internal suspend fun settleToNearestIndex(animation: Animation) {
+        if (followingState) {
+            return
+        }
+        val nearest =
+            scroll.value
+                .roundToInt()
+                .toFloat()
+                .coerceIn(minimumValue = 0f, maximumValue = maxScrollState)
+        if (nearest == scroll.value) {
+            return
+        }
+        if (animation.isAnimated) {
+            scroll.animateTo(targetValue = nearest, animationSpec = animation.toFloatSpec())
+        } else {
+            scroll.snapTo(nearest)
+        }
+    }
+
+    /**
+     * Eases the window to the newest point when following has resumed but the scroll has not caught
+     * up yet, which happens when the caller's jump was cancelled with its overlay.
+     */
+    internal suspend fun settleToLatest(animation: Animation) {
+        if (!followingState || scroll.value == maxScrollState) {
+            return
+        }
         if (animation.isAnimated) {
             scroll.animateTo(targetValue = maxScrollState, animationSpec = animation.toFloatSpec())
         } else {

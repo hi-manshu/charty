@@ -31,6 +31,22 @@ class StreamingStateTest {
     }
 
     @Test
+    fun newState_leavesTheDragToTheStreamingPan() {
+        val state = StreamingState()
+        assertFalse(state.crosshairOwnsDrag)
+    }
+
+    @Test
+    fun crosshairOwningTheDrag_doesNotBlockProgrammaticScrolling() =
+        runTest {
+            val state = StreamingState()
+            state.crosshairOwnsDrag = true
+            state.growTo(maxScroll = 50f, appended = 50)
+            state.scrollBy(-10f)
+            assertEquals(40f, state.currentScroll)
+        }
+
+    @Test
     fun scrollBy_detachesAndMoves() =
         runTest {
             val state = StreamingState()

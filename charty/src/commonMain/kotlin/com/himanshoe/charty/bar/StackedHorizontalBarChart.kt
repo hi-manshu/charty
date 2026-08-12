@@ -109,7 +109,7 @@ fun StackedHorizontalBarChart(
     val displayList = chartState.displayData
     val maxTotal = chartState.maxValue
     val animationProgress = chartState.animationProgress
-    val tooltipManager = rememberTooltipManager<Rect, StackedHorizontalBarSegment>()
+    val tooltipManager = rememberTooltipManager<Rect, StackedHorizontalBarSegment>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val clickModifier =

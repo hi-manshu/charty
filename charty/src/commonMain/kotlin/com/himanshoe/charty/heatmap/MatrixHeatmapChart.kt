@@ -111,7 +111,7 @@ private fun MatrixHeatmapContent(
     val textMeasurer = rememberTextMeasurer()
     val animationProgress = rememberChartAnimation(config.animation)
     val currentOnCellClick by rememberUpdatedState(onCellClick)
-    val tooltipManager = rememberTooltipManager<Rect, HeatmapCell>()
+    val tooltipManager = rememberTooltipManager<Rect, HeatmapCell>(dataKey = grid)
 
     val measuredRowLabels =
         remember(grid.rowLabels, config.labelTextStyle) {

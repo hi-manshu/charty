@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -46,8 +47,8 @@ private val STREAMING_OVERLAY_PADDING = 12.dp
  * @param streaming When non-null, the chart is in rolling-window streaming mode: category positions
  *   (both the plotted series and the x-axis labels) are driven by [ChartStreamingRender.layout] and
  *   the plot is clipped to its bounds so points slide in and out at the edges, while
- *   [ChartStreamingRender.overlay] floats over the bottom centre of the plot. `null` (the default)
- *   draws statically.
+ *   [ChartStreamingRender.overlay] floats over the bottom centre of the plot, clear of the axis
+ *   label gutter so it never covers a label. `null` (the default) draws statically.
  * @param content A lambda function that provides a [DrawScope] and [ChartContext] for drawing the chart content.
  */
 @Composable
@@ -148,11 +149,19 @@ fun ChartScaffold(
         )
 
         streaming?.overlay?.let { overlay ->
+            val axisGutter =
+                with(LocalDensity.current) {
+                    if (config.showLabels && xLabels.isNotEmpty()) {
+                        BOTTOM_PADDING_WITH_LABELS.toDp()
+                    } else {
+                        BOTTOM_PADDING_WITHOUT_LABELS.toDp()
+                    }
+                }
             Box(
                 modifier =
                     Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = STREAMING_OVERLAY_PADDING),
+                        .padding(bottom = axisGutter + STREAMING_OVERLAY_PADDING),
             ) {
                 overlay()
             }

@@ -1,8 +1,13 @@
 package com.himanshoe.charty.bar.internal.bar.barchart
 
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.data.getLabels
+import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.util.baselineValueRange
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
@@ -88,4 +93,25 @@ internal fun createBarAxisConfig(
         maxValue = maxValue,
         steps = 6,
         drawAxisAtZero = isBelowAxisMode,
+    )
+
+/**
+ * Builds the accessibility payload for a vertical bar chart: the chart-level summary plus one
+ * description per bar so a screen reader can traverse the data.
+ *
+ * @param description The generated chart summary, or `null` when accessibility is off.
+ * @param dataList The bars currently drawn.
+ * @return The accessibility payload handed to the chart scaffold.
+ */
+internal fun barChartAccessibility(
+    description: String?,
+    dataList: List<BarData>,
+): ChartAccessibility =
+    ChartAccessibility(
+        contentDescription = description,
+        dataPointDescriptions =
+            buildDataPointDescriptions(
+                labels = dataList.getLabels(),
+                values = dataList.getValues(),
+            ),
     )

@@ -14,20 +14,24 @@ import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.bar.internal.bar.BarChartOverlays
+import com.himanshoe.charty.bar.internal.bar.barCrosshairHandler
+import com.himanshoe.charty.bar.internal.bar.barStreamingPan
 import com.himanshoe.charty.bar.internal.bar.barchart.BarDrawParams
+import com.himanshoe.charty.bar.internal.bar.barchart.barChartAccessibility
 import com.himanshoe.charty.bar.internal.bar.barchart.calculateBarBaselineY
 import com.himanshoe.charty.bar.internal.bar.barchart.createBarAxisConfig
 import com.himanshoe.charty.bar.internal.bar.barchart.createBarChartModifier
+import com.himanshoe.charty.bar.internal.bar.barchart.drawBarReferenceBandIfNeeded
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBarReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBarTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBars
 import com.himanshoe.charty.bar.internal.bar.barchart.rememberBarValueRange
+import com.himanshoe.charty.bar.internal.bar.drawBarCrosshair
+import com.himanshoe.charty.bar.internal.bar.rememberBarCrosshair
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
-import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -35,16 +39,13 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
-import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.dragTooltipActive
-import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
-import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
-import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -88,7 +89,13 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
  *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   vertical guide line that snaps to the nearest bar's centre, with a built-in or custom label
+ *   drawn over it. It is a drag gesture that leaves taps alone, so tapping a bar still raises its
+ *   tooltip; streaming scrollback ([ChartInteractionConfig.streamingState]) does not survive it,
+ *   because the crosshair owns the drag.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun BarChart(
     data: () -> List<BarData>,
@@ -100,6 +107,7 @@ fun BarChart(
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
+    crosshair: ChartCrosshair<BarData>? = null,
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -135,8 +143,10 @@ fun BarChart(
     val maxValue = chartState.maxValue
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = chartState.animationProgress
-    val tooltipManager = rememberTooltipManager<Rect, BarData>()
+    val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
+    val crosshairScope =
+        rememberBarCrosshair(barConfig = barConfig, crosshair = crosshair, interactionConfig = interactionConfig)
 
     val clickModifier =
         createBarChartModifier(
@@ -147,7 +157,7 @@ fun BarChart(
             barBounds = tooltipManager.bounds,
             onTooltipUpdate = tooltipManager::updateTooltip,
             enableScrub = interactionConfig.dragTooltipActive,
-        )
+        ).barCrosshairHandler(crosshair = crosshairScope, dataList = dataList)
 
     val chartModifier =
         buildInteractionModifier(
@@ -156,15 +166,11 @@ fun BarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.barStreamingPan(streaming = chartState.streaming, crosshair = crosshairScope)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
-            accessibility =
-                ChartAccessibility(
-                    contentDescription = chartState.description,
-                    dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
-                ),
+            accessibility = barChartAccessibility(description = chartState.description, dataList = dataList),
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
@@ -186,14 +192,11 @@ fun BarChart(
                     chartContext = chartContext,
                 )
 
-            barConfig.referenceBand?.let { band ->
-                drawReferenceBand(
-                    chartContext = chartContext,
-                    orientation = ChartOrientation.VERTICAL,
-                    config = band,
-                    textMeasurer = textMeasurer,
-                )
-            }
+            drawBarReferenceBandIfNeeded(
+                barConfig = barConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
 
             drawBars(
                 BarDrawParams(
@@ -229,14 +232,18 @@ fun BarChart(
                 totalItems = dataList.size,
                 textMeasurer = textMeasurer,
             )
+
+            drawBarCrosshair(
+                crosshair = crosshairScope,
+                dataList = dataList,
+                displayList = displayList,
+                chartContext = chartContext,
+                color = color,
+                textMeasurer = textMeasurer,
+            )
         }
 
-        ChartTooltipHost(
-            tooltip = tooltip,
-            item = tooltipManager.selectedItem,
-            anchor = tooltipManager.tooltipState,
-            modifier = Modifier.matchParentSize(),
-        )
+        BarChartOverlays(tooltip = tooltip, tooltipManager = tooltipManager, crosshair = crosshairScope)
     }
 }
 

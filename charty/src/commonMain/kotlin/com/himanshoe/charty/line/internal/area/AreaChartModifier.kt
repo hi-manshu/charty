@@ -48,9 +48,10 @@ internal fun createAreaChartModifier(
     }
 
 /**
- * Chains the area chart's pointer handling in the order the chart expects: the crosshair drag wins
- * when a crosshair is enabled, otherwise tap-to-tooltip is installed when a click listener is set,
- * and brush selection plus zoom/pan are layered on top when their state holders are configured.
+ * Chains the area chart's pointer handling. Tap-to-tooltip and the crosshair drag are installed
+ * independently — a tap never travels past touch slop and a crosshair only engages once it does —
+ * so a chart configured with both answers to both. Brush selection and zoom/pan are layered on top
+ * when their state holders are configured.
  *
  * @param crosshairManager The crosshair state holder, or `null` when the crosshair is off.
  * @param dataList The points currently drawn, which the handlers hit-test against.
@@ -69,26 +70,24 @@ internal fun buildAreaModifier(
     interactionConfig: ChartInteractionConfig,
 ): Modifier {
     var mod: Modifier =
-        if (crosshairManager != null) {
-            Modifier.chartCrosshairHandler(
+        createAreaChartModifier(
+            modifier = Modifier,
+            onPointClick = onPointClick,
+            dataList = dataList,
+            lineConfig = lineConfig,
+            pointBounds = tooltipManager.bounds,
+            onTooltipUpdate = tooltipManager::updateTooltip,
+        )
+    if (crosshairManager != null) {
+        mod =
+            mod.chartCrosshairHandler(
                 dataList = dataList,
                 pointBounds = tooltipManager.bounds,
                 onCrosshairUpdate = crosshairManager::update,
                 labelFormatter = lineConfig.tooltipFormatter,
                 dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
             )
-        } else if (onPointClick != null) {
-            createAreaChartModifier(
-                modifier = Modifier,
-                onPointClick = onPointClick,
-                dataList = dataList,
-                lineConfig = lineConfig,
-                pointBounds = tooltipManager.bounds,
-                onTooltipUpdate = tooltipManager::updateTooltip,
-            )
-        } else {
-            Modifier
-        }
+    }
     if (interactionConfig.brushSelectionState != null) {
         mod =
             mod.chartBrushSelectionHandler(

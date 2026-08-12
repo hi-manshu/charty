@@ -68,7 +68,10 @@ import com.himanshoe.charty.line.internal.multiline.drawMultilineContent
  * @param onPointClick A lambda function invoked when a point is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
- *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it.
+ *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it. It
+ *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
+ *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
+ *   does not, because the crosshair owns the drag.
  */
 @Composable
 fun MultilineChart(

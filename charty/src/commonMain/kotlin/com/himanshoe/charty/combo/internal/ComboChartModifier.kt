@@ -36,8 +36,10 @@ internal fun Modifier.comboChartClickHandler(
     )
 
 /**
- * Picks the combo chart's pointer handler: the crosshair drag when a crosshair is enabled,
- * otherwise tap-to-tooltip when a click listener is set, and no handler at all when neither is.
+ * Chains the combo chart's pointer handlers. Tap-to-tooltip and the crosshair drag are installed
+ * independently — a tap never travels past touch slop and a crosshair only engages once it does —
+ * so a chart configured with both answers to both, and an empty [Modifier] is returned when neither
+ * is configured.
  *
  * @param crosshairManager The crosshair state holder, or `null` when the crosshair is off.
  * @param comboConfig Supplies the crosshair's dismiss behaviour and the tooltip styling.
@@ -46,7 +48,7 @@ internal fun Modifier.comboChartClickHandler(
  * @param dataBounds The drawn bar and point rects the tap handler tests.
  * @param onDataClick Invoked when a point is tapped, or `null` when taps are ignored.
  * @param onTooltipStateChange Receives the tooltip raised by a tap, and the point it belongs to.
- * @return The [Modifier] carrying the chosen handler, or an empty one.
+ * @return The [Modifier] carrying the configured handlers, or an empty one.
  */
 internal fun buildComboModifier(
     crosshairManager: CrosshairManager<ComboChartData>?,
@@ -56,23 +58,27 @@ internal fun buildComboModifier(
     dataBounds: MutableList<Pair<Rect, ComboChartData>>,
     onDataClick: ((ComboChartData) -> Unit)?,
     onTooltipStateChange: (TooltipState?, ComboChartData?) -> Unit,
-): Modifier =
-    when {
-        crosshairManager != null ->
-            Modifier.chartCrosshairHandler(
-                dataList = dataList,
-                pointBounds = crosshairBounds,
-                onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = { data -> "${data.label}: ${data.lineValue}" },
-                dismissOnRelease = comboConfig.crosshairConfig?.dismissOnRelease ?: true,
-            )
-        onDataClick != null ->
-            Modifier.comboChartClickHandler(
+): Modifier {
+    var mod: Modifier = Modifier
+    if (onDataClick != null) {
+        mod =
+            mod.comboChartClickHandler(
                 dataList = dataList,
                 comboConfig = comboConfig,
                 dataBounds = dataBounds,
                 onDataClick = onDataClick,
                 onTooltipStateChange = onTooltipStateChange,
             )
-        else -> Modifier
     }
+    if (crosshairManager != null) {
+        mod =
+            mod.chartCrosshairHandler(
+                dataList = dataList,
+                pointBounds = crosshairBounds,
+                onCrosshairUpdate = crosshairManager::update,
+                labelFormatter = { data -> "${data.label}: ${data.lineValue}" },
+                dismissOnRelease = comboConfig.crosshairConfig?.dismissOnRelease ?: true,
+            )
+    }
+    return mod
+}

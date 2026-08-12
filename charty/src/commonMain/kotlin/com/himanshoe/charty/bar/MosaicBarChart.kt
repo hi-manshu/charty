@@ -107,7 +107,7 @@ fun MosaicBarChart(
     val dataList = chartState.data
     val displayList = chartState.displayData
     val animationProgress = chartState.animationProgress
-    val tooltipManager = rememberTooltipManager<Rect, MosaicBarSegment>()
+    val tooltipManager = rememberTooltipManager<Rect, MosaicBarSegment>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
 
     val clickModifier =

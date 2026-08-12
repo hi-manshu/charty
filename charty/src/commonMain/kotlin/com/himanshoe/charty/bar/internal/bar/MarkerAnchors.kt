@@ -3,7 +3,9 @@ package com.himanshoe.charty.bar.internal.bar
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
@@ -127,3 +129,52 @@ internal fun horizontalBarMarkerPositions(
         )
     }
 }
+
+/**
+ * Replaces [bounds] with one anchor per drawn bar, paired with the data item it belongs to.
+ *
+ * @param bounds The list to refill; cleared first.
+ * @param dataList The bars whose labels and values the crosshair reports.
+ * @param values The drawn value of each bar, in the same order as [dataList].
+ * @param chartContext The chart's coordinate context.
+ * @param orientation The chart's orientation, deciding which anchor geometry is used.
+ */
+internal fun recordBarCrosshairBounds(
+    bounds: MutableList<Pair<Offset, BarData>>,
+    dataList: List<BarData>,
+    values: List<Float>,
+    chartContext: ChartContext,
+    orientation: ChartOrientation,
+) {
+    bounds.clear()
+    val anchors = barCrosshairAnchors(chartContext = chartContext, values = values, orientation = orientation)
+    val count = minOf(anchors.size, dataList.size)
+    for (index in 0 until count) {
+        bounds.add(anchors[index] to dataList[index])
+    }
+}
+
+/**
+ * The crosshair anchor point of every bar: the top centre for a [ChartOrientation.VERTICAL] chart and
+ * the centre of the bar's value end for a [ChartOrientation.HORIZONTAL] one.
+ *
+ * @param chartContext The chart's coordinate context.
+ * @param values The drawn value of each bar, in drawn order.
+ * @param orientation The chart's orientation.
+ * @return One [Offset] per value.
+ */
+internal fun barCrosshairAnchors(
+    chartContext: ChartContext,
+    values: List<Float>,
+    orientation: ChartOrientation,
+): List<Offset> =
+    when (orientation) {
+        ChartOrientation.VERTICAL -> verticalBarMarkerPositions(chartContext = chartContext, values = values)
+        ChartOrientation.HORIZONTAL ->
+            horizontalBarMarkerPositions(
+                chartContext = chartContext,
+                values = values,
+                minValue = chartContext.minValue,
+                maxValue = chartContext.maxValue,
+            )
+    }
