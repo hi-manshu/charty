@@ -40,7 +40,7 @@ sealed interface ChartExportResult {
 }
 
 /**
- * Encodes [bitmap] as a PNG and hands it to the platform: the share sheet on Android and iOS, a
+ * Encodes [bitmap] as a PNG and hands it to the platform: a share sheet on iOS, a
  * browser download on JS and WasmJs, and the user's Downloads folder on JVM desktop.
  *
  * On Android this needs the application `Context` that [rememberChartExporter] registers while

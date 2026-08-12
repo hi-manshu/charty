@@ -12,6 +12,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
+private val SETTLE_ANIMATION = Animation.Fast
+
 /**
  * Converts a drag measured in pixels into a scroll delta measured in data indices.
  *
@@ -76,7 +78,6 @@ internal fun Modifier.chartStreamingPan(
     state: StreamingState,
     orientation: ChartOrientation,
     windowSize: Int,
-    settleAnimation: Animation = Animation.Fast,
 ): Modifier =
     this.pointerInput(state, orientation, windowSize) {
         coroutineScope {
@@ -87,8 +88,8 @@ internal fun Modifier.chartStreamingPan(
                 }
             }
             detectDragGestures(
-                onDragEnd = { launch { state.settleToNearestIndex(animation = settleAnimation) } },
-                onDragCancel = { launch { state.settleToNearestIndex(animation = settleAnimation) } },
+                onDragEnd = { launch { state.settleToNearestIndex(animation = SETTLE_ANIMATION) } },
+                onDragCancel = { launch { state.settleToNearestIndex(animation = SETTLE_ANIMATION) } },
             ) { change, dragAmount ->
                 if (!state.crosshairOwnsDrag) {
                     change.consume()

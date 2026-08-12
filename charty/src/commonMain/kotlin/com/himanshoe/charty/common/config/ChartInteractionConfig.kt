@@ -41,7 +41,7 @@ import com.himanshoe.charty.common.viewport.ViewPortState
  *   shows no control.
  */
 @Stable
-class ChartInteractionConfig(
+data class ChartInteractionConfig(
     val viewPortState: ViewPortState? = null,
     val brushSelectionState: BrushSelectionState? = null,
     val onRangeSelect: ((startIndex: Int, endIndex: Int) -> Unit)? = null,

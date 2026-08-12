@@ -51,6 +51,8 @@ import com.himanshoe.charty.heatmap.internal.resolveHeatmapCellAt
  *   empty, a [ChartEmptyState] placeholder is shown instead. Duplicate (row, column) pairs keep the
  *   last occurrence.
  * @param modifier Modifier applied to the chart canvas; it determines the area the grid fills.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param config Chart appearance and behaviour; see [MatrixHeatmapConfig].
  * @param onCellClick Optional callback invoked when the user taps a grid position that has data.
  * @param accessibilityDescription Overrides the auto-generated screen-reader description. Pass an
@@ -78,6 +80,7 @@ import com.himanshoe.charty.heatmap.internal.resolveHeatmapCellAt
 fun MatrixHeatmapChart(
     data: () -> List<HeatmapCell>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     config: MatrixHeatmapConfig = MatrixHeatmapConfig(),
     onCellClick: ((HeatmapCell) -> Unit)? = null,
     accessibilityDescription: String? = null,
@@ -86,7 +89,7 @@ fun MatrixHeatmapChart(
     val cells by remember(data) { derivedStateOf { data() } }
     val grid = remember(cells) { computeMatrixGrid(cells) }
     if (grid.rowLabels.isEmpty()) {
-        ChartEmptyState(modifier = modifier)
+        ChartEmptyState(modifier = modifier, content = emptyContent)
     } else {
         MatrixHeatmapContent(
             grid = grid,

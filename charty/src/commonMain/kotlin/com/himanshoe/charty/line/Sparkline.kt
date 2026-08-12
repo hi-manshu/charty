@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.toReadableString
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
@@ -38,6 +39,8 @@ private const val CENTER_FRACTION = 0.5f
  * @param data A lambda returning the raw values to plot, oldest first.
  * @param modifier Modifier applied to the sparkline; size it explicitly, e.g.
  *   `Modifier.width(120.dp).height(32.dp)`.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param color The line colour defined by [ChartyColor]; a [ChartyColor.Gradient] paints both the
  *   stroke and the fill with the gradient.
  * @param config Appearance and behaviour configuration for the sparkline.
@@ -58,11 +61,16 @@ private const val CENTER_FRACTION = 0.5f
 fun Sparkline(
     data: () -> List<Float>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     color: ChartyColor = ChartyThemeDefaults.primaryColor(),
     config: SparklineConfig = SparklineConfig(),
     accessibilityDescription: String? = null,
 ) {
     val values by remember(data) { derivedStateOf { data() } }
+    if (values.isEmpty()) {
+        ChartEmptyState(modifier = modifier, content = emptyContent)
+        return
+    }
     val yFractions = remember(values) { normalizeToYFractions(values) }
     val animationProgress = rememberChartAnimation(config.animation)
     val chartDescription =

@@ -159,13 +159,13 @@ class StreamingState internal constructor() : PlotBoundsSource {
 
     /**
      * Records the newest reachable scroll position and, when the data grew, either follows it or
-     * counts the arrivals as pending. Returns the position the window should render at.
+     * counts the arrivals as pending.
      */
     internal suspend fun onDataChanged(
         newMaxScroll: Float,
         appended: Int,
         animation: Animation,
-    ): Float {
+    ) {
         val previousMax = maxScrollState
         maxScrollState = newMaxScroll
         if (followingState) {
@@ -178,7 +178,6 @@ class StreamingState internal constructor() : PlotBoundsSource {
             pendingState += appended
             scroll.snapTo(scroll.value.coerceIn(minimumValue = 0f, maximumValue = newMaxScroll))
         }
-        return scroll.value
     }
 }
 

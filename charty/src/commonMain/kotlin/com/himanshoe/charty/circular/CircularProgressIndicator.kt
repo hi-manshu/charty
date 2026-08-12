@@ -32,6 +32,7 @@ import com.himanshoe.charty.circular.internal.drawRingBackground
 import com.himanshoe.charty.circular.internal.drawRingProgress
 import com.himanshoe.charty.circular.internal.rememberAnimatedProgress
 import com.himanshoe.charty.circular.internal.ringClickHandler
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.generateCircularProgressDescription
 
 /**
@@ -45,6 +46,8 @@ import com.himanshoe.charty.common.accessibility.generateCircularProgressDescrip
  * @param rings A lambda function that returns a list of [CircularRingData], each representing a
  *   progress ring. The first item becomes the outermost ring.
  * @param modifier The modifier to be applied to the indicator.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param config The configuration for the circular progress indicator's appearance and behavior,
  *   defined by a [CircularProgressConfig].
  * @param onRingClick A lambda function invoked when a ring is clicked, providing the corresponding
@@ -88,12 +91,17 @@ import com.himanshoe.charty.common.accessibility.generateCircularProgressDescrip
 fun CircularProgressIndicator(
     rings: () -> List<CircularRingData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     config: CircularProgressConfig = CircularProgressConfig(),
     onRingClick: ((ring: CircularRingData, index: Int) -> Unit)? = null,
     centerContent: (@Composable BoxScope.() -> Unit)? = null,
     accessibilityDescription: String? = null,
 ) {
     val ringsList = remember(rings) { rings() }
+    if (ringsList.isEmpty()) {
+        ChartEmptyState(modifier = modifier, content = emptyContent)
+        return
+    }
     val chartDescription =
         remember(ringsList, accessibilityDescription) {
             when (accessibilityDescription) {

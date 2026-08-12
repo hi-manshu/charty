@@ -3,6 +3,7 @@ package com.himanshoe.charty.export
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -17,6 +18,14 @@ private const val PNG_QUALITY = 100
 private const val MISSING_CONTEXT_REASON =
     "No Android Context available; call rememberChartExporter() in composition and use its export()."
 
+/**
+ * The application context the top-level [exportChartImage] falls back to, published by
+ * [rememberChartExporter] once a composition that uses it has succeeded.
+ *
+ * Composition can be skipped, re-run or abandoned, so this is written from a `SideEffect` rather
+ * than from the composable body. It holds the application context rather than an activity, so it
+ * outlives any screen and cannot leak one.
+ */
 private var applicationContext: Context? = null
 
 /**
@@ -47,7 +56,7 @@ actual suspend fun exportChartImage(
 @Composable
 actual fun rememberChartExporter(): ChartExporter {
     val context = LocalContext.current.applicationContext
-    applicationContext = context
+    SideEffect { applicationContext = context }
     return remember(context) {
         ChartExporter { bitmap, fileName -> writeChartPng(context = context, bitmap = bitmap, fileName = fileName) }
     }

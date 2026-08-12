@@ -29,6 +29,7 @@ import com.himanshoe.charty.calendar.internal.CalendarDrawParams
 import com.himanshoe.charty.calendar.internal.GridLayout
 import com.himanshoe.charty.calendar.internal.computeGridLayout
 import com.himanshoe.charty.calendar.internal.drawCalendarContent
+import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.generateCalendarHeatmapDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.tooltip.TooltipPosition
@@ -56,6 +57,8 @@ private const val DOW_FRI_MONDAY_START = 4
  * @param data A lambda that returns the list of [CalendarData] to display. Days with no entry
  *   or a value ≤ 0 are shown as empty cells.
  * @param modifier Modifier applied to the outermost container.
+ * @param emptyContent Optional custom placeholder shown when the data is empty; when
+ *   `null` (default) a built-in "No data" state is used.
  * @param config Chart appearance and behaviour; see [CalendarHeatmapConfig].
  * @param visibleWeeks If not `null`, only the **last** [visibleWeeks] columns of the full date
  *   range are rendered. Useful for a rolling window (e.g., 26 weeks). `null` shows all data.
@@ -84,12 +87,17 @@ private const val DOW_FRI_MONDAY_START = 4
 fun CalendarHeatmapChart(
     data: () -> List<CalendarData>,
     modifier: Modifier = Modifier,
+    emptyContent: (@Composable () -> Unit)? = null,
     config: CalendarHeatmapConfig = CalendarHeatmapConfig(),
     visibleWeeks: Int? = null,
     scrollEnabled: Boolean = true,
     onDayClick: ((CalendarData) -> Unit)? = null,
 ) {
     val dataList by remember(data) { derivedStateOf { data() } }
+    if (dataList.isEmpty()) {
+        ChartEmptyState(modifier = modifier, content = emptyContent)
+        return
+    }
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
