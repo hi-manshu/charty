@@ -2,7 +2,6 @@ package com.himanshoe.charty.line.internal.multiline
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -14,8 +13,10 @@ import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.MultilinePoint
 import com.himanshoe.charty.line.ext.createAreaBrush
-import com.himanshoe.charty.line.ext.createAreaPath
 import com.himanshoe.charty.line.ext.createLineBrush
+import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
+import com.himanshoe.charty.line.internal.path.interpolatedLinePath
+import com.himanshoe.charty.line.resolveLineInterpolation
 
 /**
  * Draw a single line series on the chart
@@ -35,10 +36,10 @@ internal fun DrawScope.drawLineSeries(
         val seriesColor = colorList[seriesIndex % colorList.size]
         if (lineConfig.showGradientFill) {
             val fillPath =
-                createAreaPath(
-                    pointPositions = pointPositions,
+                interpolatedAreaPath(
+                    points = pointPositions,
                     baselineY = chartContext.bottom,
-                    smoothCurve = lineConfig.smoothCurve,
+                    interpolation = resolveLineInterpolation(lineConfig),
                 )
             val fillBrush =
                 createAreaBrush(
@@ -81,15 +82,12 @@ private fun DrawScope.drawLineForSeries(
     lineConfig: LineChartConfig,
     animationProgress: Float,
 ) {
-    val path = Path()
-    val startX = chartContext.left
-    val startY = chartContext.bottom
-
-    if (lineConfig.smoothCurve) {
-        path.drawSmoothMultiline(pointPositions, startX, startY)
-    } else {
-        path.drawStraightMultiline(pointPositions, startX, startY)
-    }
+    val path =
+        interpolatedLinePath(
+            points = pointPositions,
+            interpolation = resolveLineInterpolation(lineConfig),
+            anchor = Offset(x = chartContext.left, y = chartContext.bottom),
+        )
 
     drawPath(
         path = path,

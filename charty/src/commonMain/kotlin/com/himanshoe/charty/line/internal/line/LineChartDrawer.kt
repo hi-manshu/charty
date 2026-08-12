@@ -2,13 +2,15 @@ package com.himanshoe.charty.line.internal.line
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.line.config.LineChartConfig
+import com.himanshoe.charty.line.config.LineInterpolation
+import com.himanshoe.charty.line.internal.path.interpolatedLinePath
+import com.himanshoe.charty.line.internal.path.stepCorner
 
 /**
  * Draw a smooth curve line through points using cubic bezier curves
@@ -23,29 +25,7 @@ internal fun DrawScope.drawSmoothLine(
         return
     }
 
-    val path = Path()
-    path.moveTo(pointPositions[0].x, pointPositions[0].y)
-
-    for (i in 0 until pointPositions.size - 1) {
-        val current = pointPositions[i]
-        val next = pointPositions[i + 1]
-
-        val controlPoint1X = current.x + (next.x - current.x) / LineChartConstants.BEZIER_CONTROL_POINT_1_DIVISOR
-        val controlPoint1Y = current.y
-        val controlPoint2X =
-            current.x + LineChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER *
-                (next.x - current.x) / LineChartConstants.BEZIER_CONTROL_POINT_2_DIVISOR
-        val controlPoint2Y = next.y
-
-        path.cubicTo(
-            x1 = controlPoint1X,
-            y1 = controlPoint1Y,
-            x2 = controlPoint2X,
-            y2 = controlPoint2Y,
-            x3 = next.x,
-            y3 = next.y,
-        )
-    }
+    val path = interpolatedLinePath(points = pointPositions, interpolation = LineInterpolation.SMOOTH)
 
     val startX = pointPositions.first().x
     val endX = pointPositions.last().x
@@ -173,7 +153,7 @@ private fun DrawScope.drawStep(
     lineConfig: LineChartConfig,
     verticalFraction: Float,
 ) {
-    val corner = Offset(x = end.x, y = start.y)
+    val corner = stepCorner(start = start, end = end)
     drawLine(brush = brush, start = start, end = corner, strokeWidth = lineConfig.lineWidth, cap = lineConfig.strokeCap)
     val verticalEnd = Offset(x = end.x, y = start.y + (end.y - start.y) * verticalFraction)
     drawLine(

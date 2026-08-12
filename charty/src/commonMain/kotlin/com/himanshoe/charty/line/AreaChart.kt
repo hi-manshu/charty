@@ -61,11 +61,11 @@ import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.createAreaBrush
-import com.himanshoe.charty.line.ext.createAreaPath
 import com.himanshoe.charty.line.ext.createLineBrush
-import com.himanshoe.charty.line.ext.createLinePath
 import com.himanshoe.charty.line.internal.area.createAreaChartModifier
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
+import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
+import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 
 private const val DEFAULT_AXIS_STEPS = 6
 private const val HIGHLIGHT_LINE_ALPHA = 0.1f
@@ -416,11 +416,12 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(param
     val endX = params.pointPositions.last().x
     val clipRight = startX + (endX - startX) * params.animationProgress
 
+    val interpolation = resolveLineInterpolation(params.config)
     val areaPath =
-        createAreaPath(
-            pointPositions = params.pointPositions,
+        interpolatedAreaPath(
+            points = params.pointPositions,
             baselineY = params.baselineY,
-            smoothCurve = params.config.smoothCurve,
+            interpolation = interpolation,
         )
     val areaBrush =
         createAreaBrush(
@@ -429,7 +430,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaChart(param
             chartTop = params.chartContext.top,
             chartBottom = params.chartContext.bottom,
         )
-    val linePath = createLinePath(pointPositions = params.pointPositions, smoothCurve = params.config.smoothCurve)
+    val linePath = interpolatedLinePath(points = params.pointPositions, interpolation = interpolation)
     val lineBrush = createLineBrush(params.color)
 
     clipRect(right = clipRight) {

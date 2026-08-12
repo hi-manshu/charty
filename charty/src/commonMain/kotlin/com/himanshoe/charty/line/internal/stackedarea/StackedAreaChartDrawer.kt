@@ -9,6 +9,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
+import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
+import com.himanshoe.charty.line.internal.path.interpolatedLinePath
+import com.himanshoe.charty.line.resolveLineInterpolation
 
 /**
  * Draw a single stacked area series
@@ -17,20 +20,15 @@ internal fun DrawScope.drawStackedAreaSeries(params: StackedAreaSeriesParams) {
     if (params.cumulativePositions.isEmpty()) {
         return
     }
+    val interpolation = resolveLineInterpolation(params.lineConfig)
+    val anchor = Offset(x = params.startX, y = params.baselineY)
     val areaPath =
-        if (params.lineConfig.smoothCurve) {
-            createSmoothAreaPath(
-                cumulativePositions = params.cumulativePositions,
-                startX = params.startX,
-                baselineY = params.baselineY,
-            )
-        } else {
-            createStraightAreaPath(
-                cumulativePositions = params.cumulativePositions,
-                startX = params.startX,
-                baselineY = params.baselineY,
-            )
-        }
+        interpolatedAreaPath(
+            points = params.cumulativePositions,
+            baselineY = params.baselineY,
+            interpolation = interpolation,
+            anchor = anchor,
+        )
 
     drawPath(
         path = areaPath,
@@ -39,19 +37,11 @@ internal fun DrawScope.drawStackedAreaSeries(params: StackedAreaSeriesParams) {
         alpha = params.animationProgress,
     )
     val linePath =
-        if (params.lineConfig.smoothCurve) {
-            createSmoothLinePath(
-                cumulativePositions = params.cumulativePositions,
-                startX = params.startX,
-                baselineY = params.baselineY,
-            )
-        } else {
-            createStraightLinePath(
-                cumulativePositions = params.cumulativePositions,
-                startX = params.startX,
-                baselineY = params.baselineY,
-            )
-        }
+        interpolatedLinePath(
+            points = params.cumulativePositions,
+            interpolation = interpolation,
+            anchor = anchor,
+        )
 
     drawPath(
         path = linePath,

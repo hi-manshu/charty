@@ -104,7 +104,7 @@ internal fun StreamingLinePlayground() {
             "BarChartConfig"
         }}(
                 visibleWindow = $windowSize,    // show only the last $windowSize points
-                animation = Animation.Fast,     // drives the slide easing
+                animation = Animation.Fast,          // drives the horizontal slide          // glides values vertically too
                 markers = listOf(PersistentMarker(dataIndex = -1)),  // pin a label to the latest value
             ),
         )
@@ -183,7 +183,12 @@ private fun StreamingChart(
                 data = { lineData },
                 modifier = Modifier.fillMaxSize(),
                 color = color,
-                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast, markers = markers),
+                lineConfig =
+                    LineChartConfig(
+                        visibleWindow = windowSize,
+                        animation = Animation.Fast,
+                        markers = markers,
+                    ),
             )
 
         StreamChartType.Area ->
@@ -191,7 +196,12 @@ private fun StreamingChart(
                 data = { lineData },
                 modifier = Modifier.fillMaxSize(),
                 color = color,
-                lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast, markers = markers),
+                lineConfig =
+                    LineChartConfig(
+                        visibleWindow = windowSize,
+                        animation = Animation.Fast,
+                        markers = markers,
+                    ),
             )
 
         StreamChartType.Bar ->
@@ -199,7 +209,11 @@ private fun StreamingChart(
                 data = { barData },
                 modifier = Modifier.fillMaxSize(),
                 color = color,
-                barConfig = BarChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+                barConfig =
+                    BarChartConfig(
+                        visibleWindow = windowSize,
+                        animation = Animation.Fast,
+                    ),
             )
 
         StreamChartType.HorizontalBar ->
@@ -207,7 +221,11 @@ private fun StreamingChart(
                 data = { barData },
                 modifier = Modifier.fillMaxSize(),
                 color = color,
-                barConfig = BarChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
+                barConfig =
+                    BarChartConfig(
+                        visibleWindow = windowSize,
+                        animation = Animation.Fast,
+                    ),
             )
 
         StreamChartType.Point ->

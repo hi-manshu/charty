@@ -34,9 +34,15 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  * @property smoothCurve When `true`, draws a cubic-bezier smooth curve instead of straight
  *   segments between data points. Kept for compatibility; prefer [interpolation]. When
  *   [interpolation] is [LineInterpolation.LINEAR] and this is `true`, the line is drawn smooth.
+ *   Honoured by all four charts: [com.himanshoe.charty.line.LineChart],
+ *   [com.himanshoe.charty.line.AreaChart], [com.himanshoe.charty.line.MultilineChart] and
+ *   [com.himanshoe.charty.line.StackedAreaChart].
  * @property interpolation How points are connected: [LineInterpolation.LINEAR] straight segments,
  *   [LineInterpolation.SMOOTH] a cubic curve, or [LineInterpolation.STEP] horizontal-then-vertical
- *   steps. Takes precedence over [smoothCurve] unless it is [LineInterpolation.LINEAR].
+ *   steps. Takes precedence over [smoothCurve] unless it is [LineInterpolation.LINEAR]. Honoured by
+ *   all four charts: [com.himanshoe.charty.line.LineChart], [com.himanshoe.charty.line.AreaChart],
+ *   [com.himanshoe.charty.line.MultilineChart] and [com.himanshoe.charty.line.StackedAreaChart].
+ *   The area-filled charts fill under the interpolated outline, so a stepped fill follows its steps.
  * @property negativeValuesDrawMode Controls how bars below zero are rendered.
  * @property animation Entry animation played when the chart first appears.
  * @property animateValueChanges When `true`, the line tweens from its previous points to the new ones

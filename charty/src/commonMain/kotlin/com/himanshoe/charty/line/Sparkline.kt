@@ -20,10 +20,11 @@ import com.himanshoe.charty.common.accessibility.toReadableString
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.line.config.LineInterpolation
 import com.himanshoe.charty.line.ext.createAreaBrush
-import com.himanshoe.charty.line.ext.createAreaPath
 import com.himanshoe.charty.line.ext.createLineBrush
-import com.himanshoe.charty.line.ext.createLinePath
+import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
+import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 
 private const val CENTER_FRACTION = 0.5f
 
@@ -137,14 +138,15 @@ private fun DrawScope.drawSparkline(
 ) {
     val points = sparklinePoints(yFractions = yFractions, width = size.width, height = size.height)
     val lineBrush = createLineBrush(color)
+    val interpolation = if (config.smoothCurve) LineInterpolation.SMOOTH else LineInterpolation.LINEAR
     clipRect(right = size.width * animationProgress) {
         if (config.showFill) {
             drawPath(
                 path =
-                    createAreaPath(
-                        pointPositions = points,
+                    interpolatedAreaPath(
+                        points = points,
                         baselineY = size.height,
-                        smoothCurve = config.smoothCurve,
+                        interpolation = interpolation,
                     ),
                 brush =
                     createAreaBrush(
@@ -157,7 +159,7 @@ private fun DrawScope.drawSparkline(
             )
         }
         drawPath(
-            path = createLinePath(pointPositions = points, smoothCurve = config.smoothCurve),
+            path = interpolatedLinePath(points = points, interpolation = interpolation),
             brush = lineBrush,
             style = Stroke(width = config.lineWidth, cap = StrokeCap.Round),
         )
