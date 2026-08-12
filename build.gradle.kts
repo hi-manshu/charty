@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.androidTest) apply false
     alias(libs.plugins.kotlinxBenchmark) apply false
     alias(libs.plugins.androidxBaselineprofile) apply false
+    alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.dokka) apply false

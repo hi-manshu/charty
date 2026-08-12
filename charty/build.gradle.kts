@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.androidxBaselineprofile)
+    alias(libs.plugins.roborazzi)
 }
 
 group = System.getenv("GROUP") ?: project.findProperty("GROUP")?.toString() ?: "com.himanshoe"
@@ -63,6 +64,12 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        getByName("androidUnitTest").dependencies {
+            implementation(libs.robolectric)
+            implementation(libs.junit4)
+            implementation(libs.roborazzi)
+            implementation(libs.roborazzi.compose)
+        }
     }
 }
 
@@ -83,6 +90,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 }
 

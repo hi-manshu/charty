@@ -39,3 +39,10 @@ jobs:
 
       - name: Library tests
         run: ./gradlew :charty:jvmTest --no-daemon
+
+      # Roborazzi renders each chart and diffs it against the committed golden PNGs.
+      # Baselines are OS-sensitive (font antialiasing); if they were recorded on a different OS,
+      # regenerate on Linux with `./gradlew :charty:recordRoborazziDebug` and commit the result.
+      - name: Snapshot verification
+        run: ./gradlew :charty:verifyRoborazziDebug --no-daemon
+
