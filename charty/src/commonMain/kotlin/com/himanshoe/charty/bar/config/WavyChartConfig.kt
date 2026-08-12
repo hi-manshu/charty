@@ -29,6 +29,9 @@ private const val DEFAULT_STROKE_WIDTH_DP = 3f
  * @property strokeWidthDp Stroke width of the wavy line in dp.
  * @property phaseOffsetPerBar Optional additional phase offset applied per bar index.
  * Use `0f` to keep all bars in sync, or a small positive value to create a cascading effect.
+ * @property animateWave Whether the wave travels along each bar. When `false` the wave is drawn at
+ *   a fixed phase and no continuous animation runs at all, which is what a caller wants when
+ *   animations are switched off; leaving one running would occupy the frame clock forever.
  * @property animateValueChanges When `true`, wave heights tween from their previous values to the
  *   new ones whenever the data changes, using the same default spec that eases the chart's value
  *   axis; when `false` (default) new data appears instantly. This is independent of the continuous
@@ -49,6 +52,7 @@ data class WavyChartConfig(
     val animationEasing: Easing = FastOutSlowInEasing,
     val strokeWidthDp: Float = DEFAULT_STROKE_WIDTH_DP,
     val phaseOffsetPerBar: Float = 0f,
+    val animateWave: Boolean = true,
     val animateValueChanges: Boolean = false,
     val markers: List<PersistentMarker> = emptyList(),
     val visibleWindow: Int? = null,

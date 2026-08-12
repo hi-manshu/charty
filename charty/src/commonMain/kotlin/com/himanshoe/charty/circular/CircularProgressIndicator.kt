@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -34,6 +35,8 @@ import com.himanshoe.charty.circular.internal.rememberAnimatedProgress
 import com.himanshoe.charty.circular.internal.ringClickHandler
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.generateCircularProgressDescription
+
+private const val FULL_ROTATION_DEGREES = 360f
 
 /**
  * A composable function that displays a circular progress indicator with multiple concentric rings.
@@ -161,17 +164,22 @@ fun CircularProgressIndicator(
     }
 }
 
+/**
+ * The ring system's rotation angle.
+ *
+ * No transition is started at all when [CircularProgressConfig.rotationEnabled] is `false`, which is
+ * the default. Starting one that animates from zero to zero would still run forever, keeping the
+ * frame clock busy for a rotation nobody asked for.
+ */
 @Composable
 private fun rememberRotationAngle(config: CircularProgressConfig): State<Float> {
+    if (!config.rotationEnabled) {
+        return rememberUpdatedState(newValue = 0f)
+    }
     val infiniteTransition = rememberInfiniteTransition(label = "rotation")
     return infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue =
-            if (config.rotationEnabled) {
-                360f
-            } else {
-                0f
-            },
+        targetValue = FULL_ROTATION_DEGREES,
         animationSpec =
             infiniteRepeatable(
                 animation = tween(durationMillis = config.rotationDurationMs, easing = LinearEasing),

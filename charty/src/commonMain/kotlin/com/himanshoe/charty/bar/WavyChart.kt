@@ -229,6 +229,9 @@ fun WavyChart(
 
 @Composable
 private fun rememberWavyBasePhase(wavyConfig: WavyChartConfig): Float {
+    if (!wavyConfig.animateWave) {
+        return 0f
+    }
     val infinite = rememberInfiniteTransition(label = "wavy-chart")
     val basePhase by infinite.animateFloat(
         initialValue = 0f,
