@@ -62,8 +62,9 @@ internal fun DrawScope.drawBars(params: BarDrawParams) {
     val textMeasurer = params.textMeasurer
     val recordBounds = params.recordBounds
     dataList.fastForEachIndexed { index, bar ->
-        val barX = chartContext.calculateBarLeftPosition(index, dataList.size, barConfig.barWidthFraction)
-        val barWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
+        val fullBarWidth = chartContext.calculateBarWidth(dataList.size, barConfig.barWidthFraction)
+        val barWidth = effectiveBarWidth(fullBarWidth = fullBarWidth, barSpacing = barConfig.barSpacing)
+        val barX = chartContext.calculateCenteredXPosition(index, dataList.size) - barWidth / 2f
         val barValueY = chartContext.convertValueToYPosition(bar.value)
         val isNegative = bar.value < 0f
         val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS

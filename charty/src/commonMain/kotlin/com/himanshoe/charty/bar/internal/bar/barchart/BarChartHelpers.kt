@@ -7,6 +7,21 @@ import com.himanshoe.charty.common.util.baselineValueRange
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
 
+private const val MIN_BAR_WIDTH = 1f
+
+/**
+ * Shrinks a bar's slot width by [barSpacing] pixels so adjacent bars are visually separated, never
+ * going below [MIN_BAR_WIDTH]. A [barSpacing] of `0` leaves the width unchanged.
+ *
+ * @param fullBarWidth The bar width from [barWidthFraction][com.himanshoe.charty.bar.config.BarChartConfig.barWidthFraction] alone.
+ * @param barSpacing The configured pixel gap to carve out of the bar's width.
+ * @return The width to actually draw the bar at, centered within its slot.
+ */
+internal fun effectiveBarWidth(
+    fullBarWidth: Float,
+    barSpacing: Float,
+): Float = (fullBarWidth - barSpacing).coerceAtLeast(MIN_BAR_WIDTH)
+
 /**
  * Computes the `(min, max)` value axis range for a bar chart, honoring [negativeValuesDrawMode].
  *
