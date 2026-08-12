@@ -22,6 +22,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarGroupChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -139,6 +140,11 @@ fun StackedBarChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
+            dataPointDescriptions =
+                buildDataPointDescriptions(
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.values.sum() },
+                ),
             yAxisConfig =
                 AxisConfig(
                     minValue = 0f,

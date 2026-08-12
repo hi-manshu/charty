@@ -17,6 +17,7 @@ import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosaic.drawMosaicBars
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -116,6 +117,11 @@ fun MosaicBarChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
+            dataPointDescriptions =
+                buildDataPointDescriptions(
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.values.sum() },
+                ),
             yAxisConfig = createMosaicAxisConfig(),
             config = scaffoldConfig,
             contentDescription =

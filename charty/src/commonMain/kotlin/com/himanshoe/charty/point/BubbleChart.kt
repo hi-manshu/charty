@@ -16,6 +16,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBubbleChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -142,6 +143,11 @@ fun BubbleChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
+            dataPointDescriptions =
+                buildDataPointDescriptions(
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.yValue },
+                ),
             yAxisConfig =
                 AxisConfig(
                     minValue = sizeInfo.minValue,

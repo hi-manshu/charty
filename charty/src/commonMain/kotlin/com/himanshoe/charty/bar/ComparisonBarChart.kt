@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
@@ -23,6 +24,7 @@ import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonTooltipIfN
 import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonChartValues
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -119,6 +121,11 @@ fun ComparisonBarChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
+            dataPointDescriptions =
+                buildDataPointDescriptions(
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.values.sum() },
+                ),
             yAxisConfig =
                 createComparisonAxisConfig(
                     minValue = minValue,

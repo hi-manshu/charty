@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.candlestick.config.CandlestickChartConfig
 import com.himanshoe.charty.candlestick.data.CandleData
 import com.himanshoe.charty.candlestick.ext.calculateMaxValue
@@ -21,6 +22,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -106,6 +108,11 @@ fun CandlestickChart(
     ChartScaffold(
         modifier = chartModifier,
         xLabels = xLabels,
+        dataPointDescriptions =
+            buildDataPointDescriptions(
+                labels = dataList.fastMap { it.label },
+                values = dataList.fastMap { it.close },
+            ),
         yAxisConfig =
             AxisConfig(
                 minValue = minValue,

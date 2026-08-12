@@ -18,6 +18,7 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallBar
 import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -120,6 +121,11 @@ fun WaterfallChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
+            dataPointDescriptions =
+                buildDataPointDescriptions(
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.value },
+                ),
             yAxisConfig =
                 AxisConfig(
                     minValue = minValue,

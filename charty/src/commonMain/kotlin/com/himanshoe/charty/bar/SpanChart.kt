@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.data.SpanData
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_BLUE
@@ -128,6 +129,11 @@ fun SpanChart(
         ChartScaffold(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
+            dataPointDescriptions =
+                dataList.fastMapIndexed { index, item ->
+                    "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
+                        "${item.startValue} to ${item.endValue}"
+                },
             yAxisConfig = createAxisConfig(minValue, maxValue),
             config = scaffoldConfig,
             orientation = ChartOrientation.HORIZONTAL,
