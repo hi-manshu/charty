@@ -411,7 +411,7 @@ fun generateCalendarHeatmapDescription(data: List<CalendarData>): String {
     }
 }
 
-private fun Float.toReadableString(): String {
+internal fun Float.toReadableString(): String {
     val long = toLong()
     return if (this == long.toFloat()) {
         long.toString()

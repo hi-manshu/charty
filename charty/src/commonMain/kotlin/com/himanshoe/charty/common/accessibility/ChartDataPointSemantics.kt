@@ -30,7 +30,7 @@ fun buildDataPointDescriptions(
             if (value == null) {
                 ""
             } else {
-                ", $value"
+                ", ${value.toReadableString()}"
             }
         "Point ${index + 1} of ${labels.size}: ${labels[index]}$valueText"
     }
