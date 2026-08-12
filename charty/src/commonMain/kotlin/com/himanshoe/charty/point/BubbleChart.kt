@@ -16,6 +16,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBubbleChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -67,6 +68,7 @@ import com.himanshoe.charty.point.data.BubbleData
  * )
  * ```
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun BubbleChart(
     data: () -> List<BubbleData>,
@@ -90,12 +92,14 @@ fun BubbleChart(
     val crosshairConfig = crosshair?.config ?: config.crosshairConfig
     val activeCrosshair = crosshair ?: config.crosshairConfig?.let { ChartCrosshair<BubbleData>(config = it) }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
+            animation = config.animation,
         )
+    val dataList = visible.data
 
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
@@ -146,13 +150,18 @@ fun BubbleChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription = chartDescription,
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels = dataList.fastMap { it.label },
+                            values = dataList.fastMap { it.yValue },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.yValue },
-                ),
             yAxisConfig =
                 AxisConfig(
                     minValue = sizeInfo.minValue,
@@ -161,7 +170,6 @@ fun BubbleChart(
                     drawAxisAtZero = isBelowAxisMode,
                 ),
             config = scaffoldConfig,
-            contentDescription = chartDescription,
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

@@ -22,6 +22,7 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -114,6 +115,7 @@ private data class AreaChartDrawParams(
  * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
  *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun AreaChart(
     data: () -> List<LineData>,
@@ -142,13 +144,15 @@ fun AreaChart(
     val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
 
-    val dataList =
+    val visible =
         rememberVisibleData(
             fullDataList = fullDataList,
             interactionConfig = interactionConfig,
             downsampleThreshold = lineConfig.downsampleThreshold,
             visibleWindow = lineConfig.visibleWindow,
+            animation = lineConfig.animation,
         ) { it.value }
+    val dataList = visible.data
 
     val (minValue, maxValue) = rememberAreaValueRange(dataList, lineConfig.negativeValuesDrawMode)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -185,12 +189,16 @@ fun AreaChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription = chartDescription,
+                    dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
             config = scaffoldConfig,
-            contentDescription = chartDescription,
-            dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
             tooltipManager.clearBounds()

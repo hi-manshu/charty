@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.ext.drawHorizontalChartAxes
 import com.himanshoe.charty.common.ext.drawVerticalChartAxes
@@ -21,6 +22,8 @@ import com.himanshoe.charty.common.ext.drawVerticalChartAxes
  * @param config The general configuration for the chart scaffold.
  * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
  * @param leftLabelRotation The rotation for the labels on the left axis.
+ * @param streamingLayout When non-null, category-axis labels are positioned by this sliding layout
+ *   (and clipped to the plot) so they move in lockstep with the streaming series.
  */
 @Composable
 internal fun DrawAxisAndLabels(
@@ -32,6 +35,7 @@ internal fun DrawAxisAndLabels(
     leftPadding: Float,
     rightPadding: Float,
     secondaryYAxisConfig: AxisConfig? = null,
+    streamingLayout: StreamingLayout? = null,
 ) {
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = config.labelTextStyle
@@ -49,6 +53,7 @@ internal fun DrawAxisAndLabels(
                     leftPadding = leftPadding,
                     rightPadding = rightPadding,
                     secondaryYAxisConfig = secondaryYAxisConfig,
+                    streamingLayout = streamingLayout,
                 )
 
             ChartOrientation.HORIZONTAL ->
@@ -59,6 +64,7 @@ internal fun DrawAxisAndLabels(
                     textMeasurer = textMeasurer,
                     labelStyle = labelStyle,
                     leftLabelRotation = leftLabelRotation,
+                    streamingLayout = streamingLayout,
                 )
         }
     }

@@ -20,6 +20,7 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generatePointChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -276,6 +277,7 @@ private fun DrawScope.drawTooltipHighlight(
  * )
  * ```
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun PointChart(
     data: () -> List<PointData>,
@@ -297,13 +299,15 @@ fun PointChart(
     val effectiveCrosshairConfig = crosshair?.config ?: pointConfig.crosshairConfig
     val activeCrosshair = crosshair ?: pointConfig.crosshairConfig?.let { ChartCrosshair<PointData>(config = it) }
 
-    val dataList =
+    val visible =
         rememberVisibleData(
             fullDataList = fullDataList,
             interactionConfig = interactionConfig,
             downsampleThreshold = pointConfig.downsampleThreshold,
             visibleWindow = pointConfig.visibleWindow,
+            animation = pointConfig.animation,
         ) { it.value }
+    val dataList = visible.data
 
     val (minValue, maxValue) =
         remember(dataList, pointConfig.negativeValuesDrawMode) {
@@ -353,6 +357,12 @@ fun PointChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription = chartDescription,
+                    dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =
@@ -363,8 +373,6 @@ fun PointChart(
                     drawAxisAtZero = isBelowAxisMode,
                 ),
             config = scaffoldConfig,
-            contentDescription = chartDescription,
-            dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

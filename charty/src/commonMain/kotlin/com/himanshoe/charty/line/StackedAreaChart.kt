@@ -27,6 +27,7 @@ import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartLegend
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
 import com.himanshoe.charty.common.animation.rememberChartAnimationState
@@ -120,6 +121,7 @@ private fun calculateStackedCumulativeValues(dataList: List<LineGroup>): List<Fl
  * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
  *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun StackedAreaChart(
     data: () -> List<LineGroup>,
@@ -149,13 +151,15 @@ fun StackedAreaChart(
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineGroup>(config = it) }
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
-    val dataList =
+    val visible =
         rememberVisibleData(
             fullDataList = fullDataList,
             interactionConfig = interactionConfig,
             downsampleThreshold = lineConfig.downsampleThreshold,
             visibleWindow = lineConfig.visibleWindow,
+            animation = lineConfig.animation,
         ) { it.values.sum() }
+    val dataList = visible.data
 
     val (maxValue, colorList) =
         remember(dataList, colors) {
@@ -212,11 +216,15 @@ fun StackedAreaChart(
 
         Box(modifier = Modifier.weight(1f)) {
             ChartScaffold(
+                accessibility =
+                    ChartAccessibility(
+                        contentDescription = chartDescription,
+                    ),
+                streamingLayout = visible.streaming,
                 modifier = chartModifier,
                 xLabels = dataList.getLabels(),
                 yAxisConfig = AxisConfig(minValue = 0f, maxValue = maxValue, steps = 6, drawAxisAtZero = false),
                 config = scaffoldConfig,
-                contentDescription = chartDescription,
             ) { chartContext ->
                 updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
                 areaSegmentBounds.clear()

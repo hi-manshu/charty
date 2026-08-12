@@ -2,11 +2,13 @@ package com.himanshoe.charty.common.ext
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
+import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -99,6 +101,7 @@ private fun DrawScope.drawRotatedText(
  * @param labelStyle The [TextStyle] for the labels.
  * @param leftLabelRotation The rotation for the labels on the left axis.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 internal fun DrawScope.drawVerticalChartAxes(
     xLabels: List<String>,
     yAxisConfig: AxisConfig,
@@ -109,6 +112,7 @@ internal fun DrawScope.drawVerticalChartAxes(
     leftPadding: Float,
     rightPadding: Float,
     secondaryYAxisConfig: AxisConfig? = null,
+    streamingLayout: StreamingLayout? = null,
 ) {
     val bounds =
         calculateVerticalChartBounds(
@@ -174,17 +178,26 @@ internal fun DrawScope.drawVerticalChartAxes(
 
     if (config.showLabels && xLabels.isNotEmpty()) {
         val labelWidth = bounds.width / xLabels.size
-        xLabels.fastForEachIndexed { index, label ->
-            val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
-            val centerX = bounds.left + labelWidth * (index + POSITION_OFFSET)
-            drawText(
-                textLayoutResult = textLayout,
-                topLeft =
-                    Offset(
-                        centerX - textLayout.size.width / CENTER_DIVISOR,
-                        bounds.bottom + LABEL_OFFSET,
-                    ),
-            )
+        val drawXLabels: DrawScope.() -> Unit = {
+            xLabels.fastForEachIndexed { index, label ->
+                val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
+                val centerX =
+                    streamingLayout?.let { bounds.left + bounds.width * it.centerFraction(index) }
+                        ?: (bounds.left + labelWidth * (index + POSITION_OFFSET))
+                drawText(
+                    textLayoutResult = textLayout,
+                    topLeft =
+                        Offset(
+                            centerX - textLayout.size.width / CENTER_DIVISOR,
+                            bounds.bottom + LABEL_OFFSET,
+                        ),
+                )
+            }
+        }
+        if (streamingLayout == null) {
+            drawXLabels()
+        } else {
+            clipRect(left = bounds.left, top = ZERO_VALUE, right = bounds.right, bottom = size.height) { drawXLabels() }
         }
     }
 
@@ -295,6 +308,7 @@ internal fun DrawScope.drawHorizontalChartAxes(
     textMeasurer: TextMeasurer,
     labelStyle: TextStyle,
     leftLabelRotation: LabelRotation,
+    streamingLayout: StreamingLayout? = null,
 ) {
     val bounds = calculateHorizontalChartBounds(size = size, showLabels = config.showLabels)
     val baselineX = calculateVerticalAxisPosition(yAxisConfig = yAxisConfig, chartBounds = bounds)
@@ -346,27 +360,36 @@ internal fun DrawScope.drawHorizontalChartAxes(
 
     if (config.showLabels && xLabels.isNotEmpty()) {
         val barHeight = bounds.height / xLabels.size
-        xLabels.fastForEachIndexed { index, label ->
-            val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
-            val centerY = bounds.top + barHeight * (index + POSITION_OFFSET)
-            val labelX = bounds.left - textLayout.size.width - LABEL_OFFSET
-            val labelY = centerY - textLayout.size.height / CENTER_DIVISOR
-            val topLeft = Offset(labelX, labelY)
+        val drawYLabels: DrawScope.() -> Unit = {
+            xLabels.fastForEachIndexed { index, label ->
+                val textLayout = textMeasurer.measure(AnnotatedString(label), labelStyle)
+                val centerY =
+                    streamingLayout?.let { bounds.top + bounds.height * it.centerFraction(index) }
+                        ?: (bounds.top + barHeight * (index + POSITION_OFFSET))
+                val labelX = bounds.left - textLayout.size.width - LABEL_OFFSET
+                val labelY = centerY - textLayout.size.height / CENTER_DIVISOR
+                val topLeft = Offset(labelX, labelY)
 
-            if (leftLabelRotation.degrees != ZERO_VALUE) {
-                val pivot = Offset(bounds.left - LABEL_OFFSET, centerY)
-                drawRotatedText(
-                    textLayout = textLayout,
-                    topLeft = topLeft,
-                    rotation = leftLabelRotation.degrees,
-                    pivot = pivot,
-                )
-            } else {
-                drawText(
-                    textLayoutResult = textLayout,
-                    topLeft = topLeft,
-                )
+                if (leftLabelRotation.degrees != ZERO_VALUE) {
+                    val pivot = Offset(bounds.left - LABEL_OFFSET, centerY)
+                    drawRotatedText(
+                        textLayout = textLayout,
+                        topLeft = topLeft,
+                        rotation = leftLabelRotation.degrees,
+                        pivot = pivot,
+                    )
+                } else {
+                    drawText(
+                        textLayoutResult = textLayout,
+                        topLeft = topLeft,
+                    )
+                }
             }
+        }
+        if (streamingLayout == null) {
+            drawYLabels()
+        } else {
+            clipRect(left = ZERO_VALUE, top = bounds.top, right = size.width, bottom = bounds.bottom) { drawYLabels() }
         }
     }
 }

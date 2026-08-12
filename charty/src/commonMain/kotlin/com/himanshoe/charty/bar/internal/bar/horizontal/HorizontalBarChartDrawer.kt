@@ -26,8 +26,8 @@ internal fun DrawScope.drawHorizontalBars(params: HorizontalBarDrawParams) {
     }
 
     params.dataList.fastForEachIndexed { index, bar ->
-        val barHeight = params.chartContext.height / params.dataList.size
-        val barY = params.chartContext.top + (barHeight * index)
+        val barHeight = params.chartContext.calculateSlotHeight(params.dataList.size)
+        val barY = params.chartContext.calculateSlotTopPosition(index, params.dataList.size)
         val barThickness = barHeight * params.barConfig.barWidthFraction
         val centeredBarY = barY + (barHeight - barThickness) / 2
 

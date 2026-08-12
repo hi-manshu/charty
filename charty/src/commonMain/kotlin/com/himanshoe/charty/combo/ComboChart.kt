@@ -31,6 +31,7 @@ import com.himanshoe.charty.combo.internal.toSecondaryAxisConfig
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateComboChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -100,6 +101,7 @@ private data class ComboDrawParams(
  * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
  *   guide line that snaps to the nearest point, with a built-in or custom label drawn over it.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun ComboChart(
     data: () -> List<ComboChartData>,
@@ -121,12 +123,14 @@ fun ComboChart(
     val effectiveComboConfig = crosshair?.let { comboConfig.copy(crosshairConfig = it.config) } ?: comboConfig
     val activeCrosshair = crosshair ?: comboConfig.crosshairConfig?.let { ChartCrosshair<ComboChartData>(config = it) }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = comboConfig.visibleWindow,
+            animation = comboConfig.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) =
         remember(dataList, comboConfig.negativeValuesDrawMode, comboConfig.secondaryAxisForLine) {
@@ -183,6 +187,16 @@ fun ComboChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription = chartDescription,
+                    dataPointDescriptions =
+                        dataList.fastMapIndexed { index, item ->
+                            "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
+                                "bar ${item.barValue}, line ${item.lineValue}"
+                        },
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =
@@ -193,12 +207,6 @@ fun ComboChart(
                     drawAxisAtZero = isBelowAxisMode,
                 ),
             config = scaffoldConfig,
-            contentDescription = chartDescription,
-            dataPointDescriptions =
-                dataList.fastMapIndexed { index, item ->
-                    "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
-                        "bar ${item.barValue}, line ${item.lineValue}"
-                },
             secondaryYAxisConfig = secondaryLineRange.toSecondaryAxisConfig(),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)

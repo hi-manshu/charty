@@ -23,6 +23,7 @@ import com.himanshoe.charty.bar.internal.bar.bubblebar.rememberValueRange
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -81,12 +82,14 @@ fun BubbleBarChart(
         return
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = bubbleConfig.visibleWindow,
+            animation = bubbleConfig.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) =
         rememberValueRange(
@@ -126,19 +129,25 @@ fun BubbleBarChart(
         )
 
     ChartScaffold(
+        accessibility =
+            ChartAccessibility(
+                contentDescription =
+                    interactionConfig.accessibilityDescription
+                        ?: "Bubble bar chart, ${fullDataList.size} data points.",
+                dataPointDescriptions =
+                    buildDataPointDescriptions(
+                        labels =
+                            dataList.fastMap {
+                                it.label
+                            },
+                        values = dataList.fastMap { it.value },
+                    ),
+            ),
+        streamingLayout = visible.streaming,
         modifier = chartModifier,
         xLabels = dataList.getLabels(),
-        dataPointDescriptions =
-            buildDataPointDescriptions(
-                labels = dataList.fastMap { it.label },
-                values = dataList.fastMap { it.value },
-            ),
         yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
         config = scaffoldConfig,
-        leftLabelRotation = scaffoldConfig.leftLabelRotation,
-        contentDescription =
-            interactionConfig.accessibilityDescription
-                ?: "Bubble bar chart, ${fullDataList.size} data points.",
     ) { chartContext ->
         updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

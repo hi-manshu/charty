@@ -22,6 +22,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -77,12 +78,14 @@ fun CandlestickChart(
         return
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = candlestickConfig.visibleWindow,
+            animation = candlestickConfig.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) =
         remember(dataList) {
@@ -111,13 +114,20 @@ fun CandlestickChart(
         )
 
     ChartScaffold(
+        accessibility =
+            ChartAccessibility(
+                contentDescription =
+                    interactionConfig.accessibilityDescription
+                        ?: generateCandlestickChartDescription(fullDataList),
+                dataPointDescriptions =
+                    buildDataPointDescriptions(
+                        labels = dataList.fastMap { it.label },
+                        values = dataList.fastMap { it.close },
+                    ),
+            ),
+        streamingLayout = visible.streaming,
         modifier = chartModifier,
         xLabels = xLabels,
-        dataPointDescriptions =
-            buildDataPointDescriptions(
-                labels = dataList.fastMap { it.label },
-                values = dataList.fastMap { it.close },
-            ),
         yAxisConfig =
             AxisConfig(
                 minValue = minValue,
@@ -126,9 +136,6 @@ fun CandlestickChart(
                 drawAxisAtZero = false,
             ),
         config = scaffoldConfig,
-        contentDescription =
-            interactionConfig.accessibilityDescription
-                ?: generateCandlestickChartDescription(fullDataList),
     ) { chartContext ->
         updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

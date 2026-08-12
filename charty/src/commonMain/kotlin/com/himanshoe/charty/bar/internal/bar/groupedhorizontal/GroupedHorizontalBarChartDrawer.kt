@@ -48,7 +48,7 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
 
     val isBelowAxisMode = params.config.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val totalGroups = params.dataList.size
-    val rowHeight = params.chartContext.height / totalGroups
+    val rowHeight = params.chartContext.calculateSlotHeight(totalGroups)
 
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
         val numBars = barGroup.values.size
@@ -59,7 +59,7 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
         val usableRowHeight = rowHeight * params.config.barWidthFraction
         val totalSpacing = params.config.barSpacing * (numBars - 1).coerceAtLeast(0)
         val singleBarHeight = ((usableRowHeight - totalSpacing) / numBars).coerceAtLeast(1f)
-        val rowTop = params.chartContext.top + rowHeight * groupIndex
+        val rowTop = params.chartContext.calculateSlotTopPosition(groupIndex, totalGroups)
         val usableStart = rowTop + (rowHeight - usableRowHeight) / 2f
 
         barGroup.values.fastForEachIndexed { barIndex, value ->

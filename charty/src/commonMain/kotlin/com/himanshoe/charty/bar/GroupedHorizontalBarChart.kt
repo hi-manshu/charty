@@ -26,6 +26,7 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -79,12 +80,14 @@ fun GroupedHorizontalBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
+            animation = config.animation,
         )
+    val dataList = visible.data
 
     val state =
         rememberGroupedHorizontalState(
@@ -126,13 +129,23 @@ fun GroupedHorizontalBarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: "Grouped horizontal bar chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels =
+                                dataList.fastMap {
+                                    it.label
+                                },
+                            values = dataList.fastMap { it.values.sum() },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.values.sum() },
-                ),
             yAxisConfig =
                 createGroupedHorizontalAxisConfig(
                     minValue = state.minValue,
@@ -142,9 +155,6 @@ fun GroupedHorizontalBarChart(
                 ),
             config = scaffoldConfig,
             orientation = ChartOrientation.HORIZONTAL,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Grouped horizontal bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

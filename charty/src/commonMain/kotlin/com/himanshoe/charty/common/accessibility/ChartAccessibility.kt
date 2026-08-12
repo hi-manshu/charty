@@ -1,5 +1,6 @@
 package com.himanshoe.charty.common.accessibility
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.util.fastFlatMap
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
@@ -14,6 +15,23 @@ import com.himanshoe.charty.pie.data.PieData
 import com.himanshoe.charty.point.data.BubbleData
 import com.himanshoe.charty.point.data.PointData
 import com.himanshoe.charty.radar.data.RadarDataSet
+
+/**
+ * The screen-reader descriptions a chart hands to [com.himanshoe.charty.common.ChartScaffold]: the
+ * whole-chart summary plus optional per-point descriptions for point-by-point traversal.
+ *
+ * @property contentDescription The whole-chart summary attached to the chart's root and read by
+ *   screen readers. Generate one with helpers such as [generateLineChartDescription]. `null` (the
+ *   default) attaches no summary.
+ * @property dataPointDescriptions Per-point descriptions (one per data point) that let assistive tech
+ *   traverse the chart point by point; build them with [buildDataPointDescriptions]. Empty (the
+ *   default) exposes only [contentDescription].
+ */
+@Immutable
+data class ChartAccessibility(
+    val contentDescription: String? = null,
+    val dataPointDescriptions: List<String> = emptyList(),
+)
 
 /**
  * Generates a human-readable accessibility description for a line or area chart.

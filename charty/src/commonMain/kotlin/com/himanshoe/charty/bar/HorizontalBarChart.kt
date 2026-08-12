@@ -23,6 +23,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -82,12 +83,14 @@ fun HorizontalBarChart(
         return
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = barConfig.visibleWindow,
+            animation = barConfig.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) =
         rememberHorizontalValueRange(
@@ -140,13 +143,18 @@ fun HorizontalBarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription = chartDescription,
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels = dataList.fastMap { it.label },
+                            values = dataList.fastMap { it.value },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.value },
-                ),
             yAxisConfig =
                 createHorizontalAxisConfig(
                     minValue = minValue,
@@ -155,7 +163,6 @@ fun HorizontalBarChart(
                 ),
             config = scaffoldConfig,
             orientation = ChartOrientation.HORIZONTAL,
-            contentDescription = chartDescription,
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

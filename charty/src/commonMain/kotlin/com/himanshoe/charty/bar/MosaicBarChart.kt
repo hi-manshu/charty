@@ -17,6 +17,7 @@ import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosaic.drawMosaicBars
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -82,12 +83,14 @@ fun MosaicBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
+            animation = config.animation,
         )
+    val dataList = visible.data
 
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, MosaicBarSegment>()
@@ -120,18 +123,25 @@ fun MosaicBarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: "Mosaic bar chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels =
+                                dataList.fastMap {
+                                    it.label
+                                },
+                            values = dataList.fastMap { it.values.sum() },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.values.sum() },
-                ),
             yAxisConfig = createMosaicAxisConfig(),
             config = scaffoldConfig,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Mosaic bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

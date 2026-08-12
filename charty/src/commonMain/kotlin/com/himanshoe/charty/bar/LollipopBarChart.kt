@@ -21,6 +21,7 @@ import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopValueRange
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -85,12 +86,14 @@ fun LollipopBarChart(
         return
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
+            animation = config.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) = rememberLollipopValueRange(dataList)
     val animationProgress = rememberLollipopAnimation(config.animation)
@@ -123,18 +126,25 @@ fun LollipopBarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: "Lollipop chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels =
+                                dataList.fastMap {
+                                    it.label
+                                },
+                            values = dataList.fastMap { it.value },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.value },
-                ),
             yAxisConfig = createAxisConfig(minValue, maxValue),
             config = scaffoldConfig,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Lollipop chart, ${fullDataList.size} data points.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

@@ -25,6 +25,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -93,12 +94,14 @@ fun SpanChart(
         return
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = barConfig.visibleWindow,
+            animation = barConfig.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) = rememberSpanValueRange(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(barConfig.animation)
@@ -132,19 +135,22 @@ fun SpanChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription ?: "Span chart, ${fullDataList.size} spans.",
+                    dataPointDescriptions =
+                        dataList.fastMapIndexed { index, item ->
+                            "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
+                                "${item.startValue} to ${item.endValue}"
+                        },
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                dataList.fastMapIndexed { index, item ->
-                    "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
-                        "${item.startValue} to ${item.endValue}"
-                },
             yAxisConfig = createAxisConfig(minValue, maxValue),
             config = scaffoldConfig,
             orientation = ChartOrientation.HORIZONTAL,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Span chart, ${fullDataList.size} spans.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

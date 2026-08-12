@@ -24,6 +24,7 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -83,12 +84,14 @@ fun StackedHorizontalBarChart(
         "Stacked horizontal bar chart does not support negative values"
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
+            animation = config.animation,
         )
+    val dataList = visible.data
 
     val (maxTotal, colorList) = rememberStackedMaxTotal(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(config.animation)
@@ -121,19 +124,26 @@ fun StackedHorizontalBarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: "Stacked horizontal bar chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels =
+                                dataList.fastMap {
+                                    it.label
+                                },
+                            values = dataList.fastMap { it.values.sum() },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.values.sum() },
-                ),
             yAxisConfig = createStackedHorizontalAxisConfig(maxTotal),
             config = scaffoldConfig,
             orientation = ChartOrientation.HORIZONTAL,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Stacked horizontal bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

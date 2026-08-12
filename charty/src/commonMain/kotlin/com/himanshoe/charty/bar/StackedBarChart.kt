@@ -22,6 +22,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarGroupChartDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -100,12 +101,14 @@ fun StackedBarChart(
         "Stacked bar chart does not support negative values"
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = stackedConfig.visibleWindow,
+            animation = stackedConfig.animation,
         )
+    val dataList = visible.data
 
     val (maxTotal, colorList) = rememberStackedMaxTotal(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(stackedConfig.animation)
@@ -143,13 +146,18 @@ fun StackedBarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription = chartDescription,
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels = dataList.fastMap { it.label },
+                            values = dataList.fastMap { it.values.sum() },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.values.sum() },
-                ),
             yAxisConfig =
                 AxisConfig(
                     minValue = 0f,
@@ -157,7 +165,6 @@ fun StackedBarChart(
                     steps = 6,
                 ),
             config = scaffoldConfig,
-            contentDescription = chartDescription,
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

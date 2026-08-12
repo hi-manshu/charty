@@ -18,6 +18,9 @@ private const val ZERO_RANGE = 0f
  * @property bottom The ending y-coordinate of the drawing area.
  * @property minValue The minimum value in the dataset, corresponding to the bottom of the chart.
  * @property maxValue The maximum value in the dataset, corresponding to the top of the chart.
+ * @property streaming When non-null, the chart is in rolling-window streaming mode and category
+ *   positions are placed by this sliding [StreamingLayout] instead of by evenly dividing the plot
+ *   among all items; `null` (the default) is the ordinary static layout.
  */
 data class ChartContext(
     val left: Float,
@@ -26,6 +29,7 @@ data class ChartContext(
     val bottom: Float,
     val minValue: Float,
     val maxValue: Float,
+    val streaming: StreamingLayout? = null,
 ) {
     /** The total width of the drawing area, derived from [right] – [left]. */
     val width: Float get() = right - left
@@ -77,9 +81,10 @@ data class ChartContext(
         totalBars: Int,
         barWidthFraction: Float = DEFAULT_BAR_WIDTH_FRACTION,
     ): Float {
-        val sectionWidth = width / totalBars
+        val sectionWidth = streaming?.let { width * it.slotFraction } ?: (width / totalBars)
         val barWidth = sectionWidth * barWidthFraction
-        return left + (sectionWidth * index) + (sectionWidth - barWidth) / CENTER_DIVISOR
+        val slotLeft = streaming?.let { left + width * it.startFraction(index) } ?: (left + sectionWidth * index)
+        return slotLeft + (sectionWidth - barWidth) / CENTER_DIVISOR
     }
 
     /**
@@ -92,7 +97,7 @@ data class ChartContext(
     fun calculateBarWidth(
         totalBars: Int,
         widthFraction: Float = DEFAULT_BAR_WIDTH_FRACTION,
-    ): Float = (width / totalBars) * widthFraction
+    ): Float = (streaming?.let { width * it.slotFraction } ?: (width / totalBars)) * widthFraction
 
     /**
      * Calculates the centered x-coordinate for an item at a given index.
@@ -105,7 +110,33 @@ data class ChartContext(
     fun calculateCenteredXPosition(
         index: Int,
         totalItems: Int,
-    ): Float = left + (width * (index + CENTER_OFFSET) / totalItems)
+    ): Float =
+        streaming?.let { left + width * it.centerFraction(index) }
+            ?: (left + (width * (index + CENTER_OFFSET) / totalItems))
+
+    /**
+     * Height of one category row for a horizontal chart. Mirrors [calculateBarWidth] on the vertical
+     * (category) axis, honouring a rolling [streaming] window when one is active.
+     *
+     * @param totalItems The total number of category rows.
+     * @return The height of a single row in pixels.
+     */
+    fun calculateSlotHeight(totalItems: Int): Float =
+        streaming?.let { height * it.slotFraction } ?: (height / totalItems)
+
+    /**
+     * Top y-coordinate of the category row at [index] for a horizontal chart. Mirrors
+     * [calculateBarLeftPosition]'s slot origin on the vertical axis, honouring a rolling [streaming]
+     * window when one is active.
+     *
+     * @param index The index of the row.
+     * @param totalItems The total number of category rows.
+     * @return The y-coordinate of the row's top edge in pixels.
+     */
+    fun calculateSlotTopPosition(
+        index: Int,
+        totalItems: Int,
+    ): Float = streaming?.let { top + height * it.startFraction(index) } ?: (top + (height / totalItems) * index)
 
     /**
      * Converts a [ChartyColor] into a vertical gradient [Brush].

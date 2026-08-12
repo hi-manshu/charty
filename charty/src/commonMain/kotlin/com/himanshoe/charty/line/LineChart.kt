@@ -21,6 +21,7 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
@@ -94,6 +95,7 @@ import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
  * )
  * ```
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun LineChart(
     data: () -> List<LineData>,
@@ -115,13 +117,15 @@ fun LineChart(
     val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
 
-    val dataList =
+    val visible =
         rememberVisibleData(
             fullDataList = fullDataList,
             interactionConfig = interactionConfig,
             downsampleThreshold = lineConfig.downsampleThreshold,
             visibleWindow = lineConfig.visibleWindow,
+            animation = lineConfig.animation,
         ) { it.value }
+    val dataList = visible.data
 
     val (minValue, maxValue) =
         rememberLineValueRange(
@@ -176,12 +180,12 @@ fun LineChart(
 
     Box(modifier = modifier.then(interactionModifier).then(zoomModifier)) {
         ChartScaffold(
+            accessibility = lineChartAccessibility(chartDescription = chartDescription, dataList = dataList),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig = lineAxisConfig(minValue = minValue, maxValue = maxValue, drawAxisAtZero = isBelowAxisMode),
             config = scaffoldConfig,
-            contentDescription = chartDescription,
-            dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
+            streamingLayout = visible.streaming,
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
@@ -259,6 +263,15 @@ fun LineChart(
         )
     }
 }
+
+private fun lineChartAccessibility(
+    chartDescription: String?,
+    dataList: List<LineData>,
+): ChartAccessibility =
+    ChartAccessibility(
+        contentDescription = chartDescription,
+        dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
+    )
 
 @Composable
 private fun BoxScope.LineChartOverlays(

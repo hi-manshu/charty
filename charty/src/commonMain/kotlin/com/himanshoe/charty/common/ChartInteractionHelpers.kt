@@ -10,6 +10,7 @@ import androidx.compose.ui.util.fastForEach
 import com.himanshoe.charty.common.annotation.drawChartAnnotation
 import com.himanshoe.charty.common.brush.BrushSelectionState
 import com.himanshoe.charty.common.brush.drawBrushSelection
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.downsample.lttbDownsample
 import com.himanshoe.charty.common.draw.drawScrollEdgeFades
@@ -18,24 +19,42 @@ import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.viewport.ViewPortState
 
 /**
- * Computes the windowed/visible slice of [fullDataList]. An interactive [viewPortState] (zoom/pan)
- * takes precedence; otherwise the rolling [visibleWindow] "show last N" tail is applied. When both
- * are null, returns [fullDataList] as-is.
+ * Resolves the windowed/visible slice of [fullDataList] and, when the rolling [visibleWindow] is
+ * active, the [StreamingLayout] that slides it. Precedence: an interactive [viewPortState] (zoom/pan)
+ * wins over [visibleWindow]; with a viewport set the chart draws statically. When [visibleWindow] is
+ * set and no viewport is configured the chart streams — the window slides on append (see
+ * [rememberVisibleWindowSlice]) using [animation]. When both are null, returns [fullDataList] as-is.
+ * Every hook path runs on every composition, so switching modes never changes the hook order.
  */
 @Composable
 internal fun <T> rememberWindowedData(
     fullDataList: List<T>,
     viewPortState: ViewPortState?,
-    visibleWindow: Int? = null,
-): List<T> =
-    remember(fullDataList, viewPortState?.startFraction, viewPortState?.endFraction, visibleWindow) {
-        if (viewPortState == null) {
-            tailWindow(fullDataList, visibleWindow)
-        } else {
-            val range = viewPortState.visibleIndices(fullDataList.size)
-            fullDataList.subList(range.first, range.last + 1)
+    visibleWindow: Int?,
+    animation: Animation,
+): VisibleChartData<T> {
+    val streamingActive = visibleWindow != null && viewPortState == null && fullDataList.size > 1
+    val (streamData, streamLayout) =
+        rememberVisibleWindowSlice(
+            fullDataList = fullDataList,
+            windowSize = visibleWindow ?: 1,
+            animation = if (streamingActive) animation else Animation.Disabled,
+        )
+    val staticWindow =
+        remember(fullDataList, viewPortState?.startFraction, viewPortState?.endFraction, visibleWindow) {
+            if (viewPortState == null) {
+                tailWindow(fullDataList, visibleWindow)
+            } else {
+                val range = viewPortState.visibleIndices(fullDataList.size)
+                fullDataList.subList(range.first, range.last + 1)
+            }
         }
+    return if (streamingActive) {
+        VisibleChartData(data = streamData, streaming = streamLayout)
+    } else {
+        VisibleChartData(data = staticWindow, streaming = null)
     }
+}
 
 /**
  * Remembers an LTTB-downsampled view of [dataList] when it exceeds [threshold] points, so charts stay
@@ -75,14 +94,19 @@ internal fun <T> tailWindow(
     }
 
 /**
- * Remembers the points a chart should actually draw: the viewport window of [fullDataList], then the
- * [visibleWindow] rolling tail, then an LTTB downsample to [downsampleThreshold]. This single entry
- * point keeps hit-testing and drawing on the exact same list.
+ * The single windowing entry point for value-series charts: the viewport/rolling/static window of
+ * [fullDataList] (via [rememberWindowedData]) with an LTTB downsample to [downsampleThreshold] layered
+ * on top when the chart is not streaming. Returns the points to draw plus the optional
+ * [StreamingLayout] that slides them, so hit-testing and drawing stay on the exact same list.
+ *
+ * Downsampling is skipped while streaming: the rolling window is already small, and the layout indexes
+ * the window slice directly, so thinning it would break the position mapping.
  *
  * @param fullDataList The complete series.
  * @param interactionConfig Supplies the viewport (zoom/pan) state, which takes precedence over [visibleWindow].
- * @param downsampleThreshold Maximum points to render; `null` disables downsampling.
+ * @param downsampleThreshold Maximum points to render in the non-streaming path; `null` disables downsampling.
  * @param visibleWindow Rolling "show last N" window; `null` shows everything. Ignored when a viewport is set.
+ * @param animation Drives the streaming slide's duration/easing; a disabled animation snaps (instant advance).
  * @param value Extracts the y-value used to preserve the line's shape when downsampling.
  */
 @Composable
@@ -90,11 +114,20 @@ internal fun <T> rememberVisibleData(
     fullDataList: List<T>,
     interactionConfig: ChartInteractionConfig,
     downsampleThreshold: Int?,
-    visibleWindow: Int? = null,
+    visibleWindow: Int?,
+    animation: Animation,
     value: (T) -> Float,
-): List<T> {
-    val windowed = rememberWindowedData(fullDataList, interactionConfig.viewPortState, visibleWindow)
-    return rememberDownsampledData(windowed, downsampleThreshold, value)
+): VisibleChartData<T> {
+    val windowed =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = visibleWindow,
+            animation = animation,
+        )
+    val downsampled = rememberDownsampledData(dataList = windowed.data, threshold = downsampleThreshold, value = value)
+    val data = if (windowed.streaming != null) windowed.data else downsampled
+    return VisibleChartData(data = data, streaming = windowed.streaming)
 }
 
 /**

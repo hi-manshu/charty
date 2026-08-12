@@ -24,6 +24,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
@@ -105,12 +106,14 @@ fun BarChart(
         return
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = barConfig.visibleWindow,
+            animation = barConfig.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) =
         rememberBarValueRange(
@@ -160,6 +163,12 @@ fun BarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription = chartDescription,
+                    dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =
@@ -169,9 +178,6 @@ fun BarChart(
                     isBelowAxisMode = isBelowAxisMode,
                 ),
             config = scaffoldConfig,
-            leftLabelRotation = scaffoldConfig.leftLabelRotation,
-            contentDescription = chartDescription,
-            dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

@@ -27,9 +27,11 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
+import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
@@ -112,12 +114,14 @@ fun WavyChart(
     }
     val crosshairConfig = crosshair?.config
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = wavyConfig.visibleWindow,
+            animation = Animation.Default,
         )
+    val dataList = visible.data
 
     val textMeasurer = rememberTextMeasurer()
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
@@ -165,13 +169,22 @@ fun WavyChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription ?: "Wavy chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels =
+                                dataList.fastMap {
+                                    it.label
+                                },
+                            values = dataList.fastMap { it.value },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.value },
-                ),
             yAxisConfig =
                 AxisConfig(
                     minValue = minValue,
@@ -180,9 +193,6 @@ fun WavyChart(
                     drawAxisAtZero = minValue < 0f,
                 ),
             config = scaffoldConfig,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Wavy chart, ${fullDataList.size} data points.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

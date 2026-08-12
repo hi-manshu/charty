@@ -18,6 +18,7 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallBar
 import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -81,12 +82,14 @@ fun WaterfallChart(
         return
     }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
+            animation = config.animation,
         )
+    val dataList = visible.data
 
     val cumulativeValues = rememberCumulativeValues(dataList)
     val (minValue, maxValue) =
@@ -124,13 +127,23 @@ fun WaterfallChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: "Waterfall chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels =
+                                dataList.fastMap {
+                                    it.label
+                                },
+                            values = dataList.fastMap { it.value },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.value },
-                ),
             yAxisConfig =
                 AxisConfig(
                     minValue = minValue,
@@ -139,9 +152,6 @@ fun WaterfallChart(
                     drawAxisAtZero = true,
                 ),
             config = scaffoldConfig,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Waterfall chart, ${fullDataList.size} data points.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

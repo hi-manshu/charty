@@ -24,6 +24,7 @@ import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonTooltipIfN
 import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonChartValues
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -84,12 +85,14 @@ fun ComparisonBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each comparison group must have at least one value" }
 
-    val dataList =
+    val visible =
         rememberWindowedData(
             fullDataList = fullDataList,
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = comparisonConfig.visibleWindow,
+            animation = comparisonConfig.animation,
         )
+    val dataList = visible.data
 
     val (minValue, maxValue) = rememberComparisonChartValues(dataList)
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -124,13 +127,23 @@ fun ComparisonBarChart(
 
     Box(modifier = chartModifier) {
         ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: "Comparison bar chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels =
+                                dataList.fastMap {
+                                    it.label
+                                },
+                            values = dataList.fastMap { it.values.sum() },
+                        ),
+                ),
+            streamingLayout = visible.streaming,
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
-            dataPointDescriptions =
-                buildDataPointDescriptions(
-                    labels = dataList.fastMap { it.label },
-                    values = dataList.fastMap { it.values.sum() },
-                ),
             yAxisConfig =
                 createComparisonAxisConfig(
                     minValue = minValue,
@@ -138,9 +151,6 @@ fun ComparisonBarChart(
                     isBelowAxisMode = isBelowAxisMode,
                 ),
             config = scaffoldConfig,
-            contentDescription =
-                interactionConfig.accessibilityDescription
-                    ?: "Comparison bar chart, ${fullDataList.size} data points.",
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 

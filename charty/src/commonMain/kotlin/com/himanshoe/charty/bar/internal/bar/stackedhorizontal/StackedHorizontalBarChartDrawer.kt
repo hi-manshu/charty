@@ -43,14 +43,13 @@ internal fun DrawScope.drawStackedHorizontalBars(params: StackedHorizontalBarDra
     }
 
     val totalGroups = params.dataList.size
-    val rowHeight = params.chartContext.height / totalGroups
+    val rowHeight = params.chartContext.calculateSlotHeight(totalGroups)
     val barThickness = rowHeight * params.config.barWidthFraction
     val availableWidth = params.chartContext.width
 
     params.dataList.fastForEachIndexed { groupIndex, barGroup ->
         val centeredBarY =
-            params.chartContext.top +
-                (rowHeight * groupIndex) +
+            params.chartContext.calculateSlotTopPosition(groupIndex, totalGroups) +
                 (rowHeight - barThickness) / 2f
 
         val effectiveWidth = availableWidth * params.animationProgress

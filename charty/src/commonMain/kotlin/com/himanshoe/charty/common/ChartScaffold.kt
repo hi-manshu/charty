@@ -7,13 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
+import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.ChartDataPointSemantics
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.DrawAxisAndLabels
-import com.himanshoe.charty.common.axis.LabelRotation
 import com.himanshoe.charty.common.axis.measureAxisGutter
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
@@ -33,17 +34,15 @@ private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
  * @param yAxisConfig The configuration for the y-axis, including min and max values.
  * @param config The general configuration for the chart scaffold, such as whether to show labels.
  * @param orientation The orientation of the chart, either [ChartOrientation.VERTICAL] or [ChartOrientation.HORIZONTAL].
- * @param leftLabelRotation The rotation for the labels on the left axis.
- * @param contentDescription An accessibility description read by screen readers. When provided,
- *   it is attached to the chart's root composable via [Modifier.semantics]. Generate one
- *   automatically with helpers such as `generateLineChartDescription`.
- * @param dataPointDescriptions Optional per-point descriptions (one per data point). When non-empty,
- *   an invisible, focusable semantics node is placed over each point so screen readers can traverse
- *   the chart point by point. Build them with `buildDataPointDescriptions`. Empty (the default)
- *   exposes only the whole-chart [contentDescription].
+ * @param accessibility Screen-reader description(s) for the chart: the whole-chart summary plus
+ *   optional per-point descriptions for point-by-point traversal (see [ChartAccessibility]).
  * @param secondaryYAxisConfig Optional second value axis rendered on the right edge with its own
  *   scale, for dual-axis charts. When non-null, the right gutter widens and a right axis is drawn;
  *   plot a series against it with [ChartContext.convertValueToYPosition] and this config's range.
+ * @param streamingLayout When non-null, the chart is in rolling-window streaming mode: category
+ *   positions (both the plotted series and the x-axis labels) are driven by this sliding layout and
+ *   the plot is clipped to its bounds so points slide in and out at the edges. `null` (the default)
+ *   draws statically.
  * @param content A lambda function that provides a [DrawScope] and [ChartContext] for drawing the chart content.
  */
 @Composable
@@ -53,15 +52,15 @@ fun ChartScaffold(
     yAxisConfig: AxisConfig = AxisConfig(),
     config: ChartScaffoldConfig = ChartScaffoldConfig(),
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
-    leftLabelRotation: LabelRotation = LabelRotation.Straight,
-    contentDescription: String? = null,
-    dataPointDescriptions: List<String> = emptyList(),
+    accessibility: ChartAccessibility = ChartAccessibility(),
     secondaryYAxisConfig: AxisConfig? = null,
+    streamingLayout: StreamingLayout? = null,
     content: DrawScope.(ChartContext) -> Unit,
 ) {
+    val description = accessibility.contentDescription
     val accessibilityModifier =
-        if (contentDescription != null) {
-            Modifier.semantics { this.contentDescription = contentDescription }
+        if (description != null) {
+            Modifier.semantics { this.contentDescription = description }
         } else {
             Modifier
         }
@@ -103,10 +102,11 @@ fun ChartScaffold(
             yAxisConfig = yAxisConfig,
             config = config,
             orientation = orientation,
-            leftLabelRotation = leftLabelRotation,
+            leftLabelRotation = config.leftLabelRotation,
             leftPadding = leftPadding,
             rightPadding = rightPadding,
             secondaryYAxisConfig = secondaryYAxisConfig,
+            streamingLayout = streamingLayout,
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -125,15 +125,38 @@ fun ChartScaffold(
                     bottom = size.height - bottomPadding,
                     minValue = yAxisConfig.minValue,
                     maxValue = yAxisConfig.maxValue,
+                    streaming = streamingLayout,
                 )
 
-            content(chartContext)
+            if (streamingLayout == null) {
+                content(chartContext)
+            } else {
+                clipToPlot(chartContext = chartContext, orientation = orientation) { content(chartContext) }
+            }
         }
 
         ChartDataPointSemantics(
-            descriptions = dataPointDescriptions,
+            descriptions = accessibility.dataPointDescriptions,
             orientation = orientation,
             modifier = Modifier.matchParentSize(),
         )
+    }
+}
+
+/**
+ * Clips [block] to the plot along the category axis so a streaming window's outgoing and incoming
+ * items are hidden past the edges: horizontally for [ChartOrientation.VERTICAL] charts (which slide
+ * left) and vertically for [ChartOrientation.HORIZONTAL] ones (which slide up). The perpendicular
+ * axis is left unclipped so point markers and labels near the bounds are never cut.
+ */
+private fun DrawScope.clipToPlot(
+    chartContext: ChartContext,
+    orientation: ChartOrientation,
+    block: DrawScope.() -> Unit,
+) {
+    if (orientation == ChartOrientation.HORIZONTAL) {
+        clipRect(left = 0f, top = chartContext.top, right = size.width, bottom = chartContext.bottom) { block() }
+    } else {
+        clipRect(left = chartContext.left, top = 0f, right = chartContext.right, bottom = size.height) { block() }
     }
 }
