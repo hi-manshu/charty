@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,7 @@ import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -76,7 +78,7 @@ fun BubbleBarChart(
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -91,10 +93,17 @@ fun BubbleBarChart(
         )
     val dataList = visible.data
 
-    val (minValue, maxValue) =
+    val (rawMinValue, rawMaxValue) =
         rememberValueRange(
             dataList = dataList,
             negativeValuesDrawMode = bubbleConfig.negativeValuesDrawMode,
+        )
+    val (minValue, maxValue) =
+        rememberAnimatedRange(
+            minValue = rawMinValue,
+            maxValue = rawMaxValue,
+            animation = bubbleConfig.animation,
+            active = visible.streaming != null,
         )
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 

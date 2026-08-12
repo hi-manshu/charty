@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -19,6 +21,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBubbleChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -82,7 +85,7 @@ fun BubbleChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<BubbleData>? = null,
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -106,6 +109,13 @@ fun BubbleChart(
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<BubbleData>(crosshairConfig != null)
     val sizeInfo = remember(dataList) { calculateBubbleSizeInfo(dataList) }
+    val (minValue, maxValue) =
+        rememberAnimatedRange(
+            minValue = sizeInfo.minValue,
+            maxValue = sizeInfo.maxValue,
+            animation = config.animation,
+            active = visible.streaming != null,
+        )
     val textMeasurer = rememberTextMeasurer()
 
     val isBelowAxisMode = config.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
@@ -164,8 +174,8 @@ fun BubbleChart(
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =
                 AxisConfig(
-                    minValue = sizeInfo.minValue,
-                    maxValue = sizeInfo.maxValue,
+                    minValue = minValue,
+                    maxValue = maxValue,
                     steps = 6,
                     drawAxisAtZero = isBelowAxisMode,
                 ),

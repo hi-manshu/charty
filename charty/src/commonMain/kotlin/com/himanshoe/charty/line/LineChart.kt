@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -21,9 +23,11 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -109,7 +113,7 @@ fun LineChart(
     crosshair: ChartCrosshair<LineData>? = null,
     tooltip: ChartTooltip<LineData> = ChartTooltip.canvas(),
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -128,10 +132,7 @@ fun LineChart(
     val dataList = visible.data
 
     val (minValue, maxValue) =
-        rememberLineValueRange(
-            dataList = dataList,
-            negativeValuesDrawMode = lineConfig.negativeValuesDrawMode,
-        )
+        rememberLineDisplayRange(dataList = dataList, lineConfig = lineConfig, streaming = visible.streaming)
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(lineConfig.animation)
     val displayList =
@@ -429,6 +430,29 @@ private fun rememberLineValueRange(
         val values = dataList.getValues()
         calculateMinValue(values) to calculateMaxValue(values)
     }
+
+/**
+ * The min/max the chart lays out with: the raw range of [dataList], eased through
+ * [rememberAnimatedRange] while a rolling window is sliding so rescales glide instead of jumping.
+ */
+@Composable
+private fun rememberLineDisplayRange(
+    dataList: List<LineData>,
+    lineConfig: LineChartConfig,
+    streaming: StreamingLayout?,
+): Pair<Float, Float> {
+    val (rawMinValue, rawMaxValue) =
+        rememberLineValueRange(
+            dataList = dataList,
+            negativeValuesDrawMode = lineConfig.negativeValuesDrawMode,
+        )
+    return rememberAnimatedRange(
+        minValue = rawMinValue,
+        maxValue = rawMaxValue,
+        animation = lineConfig.animation,
+        active = streaming != null,
+    )
+}
 
 /**
  * Returns [dataList] with each point's value tweened toward its target whenever the data changes, so

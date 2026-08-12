@@ -5,6 +5,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -100,7 +102,7 @@ fun RadarChart(
     accessibilityDescription: String? = null,
     onAxisClick: ((axis: RadarAxisData, index: Int) -> Unit)? = null,
 ) {
-    val dataSets = remember(data) { data() }
+    val dataSets by remember(data) { derivedStateOf { data() } }
     if (dataSets.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return

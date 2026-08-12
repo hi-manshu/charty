@@ -3,6 +3,8 @@ package com.himanshoe.charty.bar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -23,9 +25,11 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -77,7 +81,7 @@ fun HorizontalBarChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -93,10 +97,7 @@ fun HorizontalBarChart(
     val dataList = visible.data
 
     val (minValue, maxValue) =
-        rememberHorizontalValueRange(
-            dataList = dataList,
-            negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
-        )
+        rememberHorizontalDisplayRange(dataList = dataList, barConfig = barConfig, streaming = visible.streaming)
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val drawAxisAtZero = minValue < 0f && maxValue > 0f && isBelowAxisMode
 
@@ -222,4 +223,27 @@ fun HorizontalBarChart(
             modifier = Modifier.matchParentSize(),
         )
     }
+}
+
+/**
+ * The min/max the chart lays out with: the raw range of [dataList], eased through
+ * [rememberAnimatedRange] while a rolling window is sliding so rescales glide instead of jumping.
+ */
+@Composable
+private fun rememberHorizontalDisplayRange(
+    dataList: List<BarData>,
+    barConfig: BarChartConfig,
+    streaming: StreamingLayout?,
+): Pair<Float, Float> {
+    val (rawMinValue, rawMaxValue) =
+        rememberHorizontalValueRange(
+            dataList = dataList,
+            negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
+        )
+    return rememberAnimatedRange(
+        minValue = rawMinValue,
+        maxValue = rawMaxValue,
+        animation = barConfig.animation,
+        active = streaming != null,
+    )
 }

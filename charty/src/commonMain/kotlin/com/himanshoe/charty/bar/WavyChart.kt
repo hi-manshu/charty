@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
@@ -107,7 +109,7 @@ fun WavyChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<BarData>? = null,
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -135,7 +137,7 @@ fun WavyChart(
         dataSize = dataList.size,
     )
 
-    val (minValue, maxValue) =
+    val (rawMinValue, rawMaxValue) =
         remember(dataList) {
             val values = dataList.fastMap { it.value }
             val rawMin = values.minOrNull() ?: 0f
@@ -144,6 +146,13 @@ fun WavyChart(
             val maxVal = max(rawMax, rawMin.coerceAtLeast(0f))
             minVal to maxVal
         }
+    val (minValue, maxValue) =
+        rememberAnimatedRange(
+            minValue = rawMinValue,
+            maxValue = rawMaxValue,
+            animation = Animation.Default,
+            active = visible.streaming != null,
+        )
 
     val basePhase = rememberWavyBasePhase(wavyConfig)
     val strokeWidthPx = wavyConfig.strokeWidthDp.dp.value

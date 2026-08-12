@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -107,7 +108,7 @@ fun CalendarHeatmapChart(
     scrollEnabled: Boolean = true,
     onDayClick: ((CalendarData) -> Unit)? = null,
 ) {
-    val dataList = remember(data) { data() }
+    val dataList by remember(data) { derivedStateOf { data() } }
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
     val scrollState = rememberScrollState()

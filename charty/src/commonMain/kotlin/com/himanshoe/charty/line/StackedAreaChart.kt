@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimationState
 import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -142,7 +144,7 @@ fun StackedAreaChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<LineGroup>? = null,
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -161,10 +163,17 @@ fun StackedAreaChart(
         ) { it.values.sum() }
     val dataList = visible.data
 
-    val (maxValue, colorList) =
+    val (rawMaxValue, colorList) =
         remember(dataList, colors) {
             calculateMaxValue(calculateStackedCumulativeValues(dataList)) to colors.value
         }
+    val (_, maxValue) =
+        rememberAnimatedRange(
+            minValue = 0f,
+            maxValue = rawMaxValue,
+            animation = lineConfig.animation,
+            active = visible.streaming != null,
+        )
 
     val animationProgress = rememberChartAnimationState(lineConfig.animation)
     var tooltipState by remember { mutableStateOf<TooltipState?>(null) }

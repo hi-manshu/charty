@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateComboChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -115,7 +117,7 @@ fun ComboChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<ComboChartData>? = null,
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -132,7 +134,7 @@ fun ComboChart(
         )
     val dataList = visible.data
 
-    val (minValue, maxValue) =
+    val (rawMinValue, rawMaxValue) =
         remember(dataList, comboConfig.negativeValuesDrawMode, comboConfig.secondaryAxisForLine) {
             comboPrimaryRange(
                 dataList = dataList,
@@ -140,10 +142,26 @@ fun ComboChart(
                 secondaryAxisForLine = comboConfig.secondaryAxisForLine,
             )
         }
+    val (minValue, maxValue) =
+        rememberAnimatedRange(
+            minValue = rawMinValue,
+            maxValue = rawMaxValue,
+            animation = comboConfig.animation,
+            active = visible.streaming != null,
+        )
 
-    val secondaryLineRange =
+    val rawSecondaryLineRange =
         remember(dataList, comboConfig.secondaryAxisForLine) {
             comboLineRange(dataList = dataList, secondaryAxisForLine = comboConfig.secondaryAxisForLine)
+        }
+    val secondaryLineRange =
+        rawSecondaryLineRange?.let { (rawLineMin, rawLineMax) ->
+            rememberAnimatedRange(
+                minValue = rawLineMin,
+                maxValue = rawLineMax,
+                animation = comboConfig.animation,
+                active = visible.streaming != null,
+            )
         }
 
     val isBelowAxisMode = comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS

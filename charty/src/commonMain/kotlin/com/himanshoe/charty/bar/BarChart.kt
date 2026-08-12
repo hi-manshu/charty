@@ -3,6 +3,8 @@ package com.himanshoe.charty.bar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -27,6 +29,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -100,7 +103,7 @@ fun BarChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -115,10 +118,17 @@ fun BarChart(
         )
     val dataList = visible.data
 
-    val (minValue, maxValue) =
+    val (rawMinValue, rawMaxValue) =
         rememberBarValueRange(
             dataList = dataList,
             negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
+        )
+    val (minValue, maxValue) =
+        rememberAnimatedRange(
+            minValue = rawMinValue,
+            maxValue = rawMaxValue,
+            animation = barConfig.animation,
+            active = visible.streaming != null,
         )
     val isBelowAxisMode = barConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimation(barConfig.animation)

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -165,7 +166,7 @@ fun PieChart(
     centerContent: @Composable (() -> Unit)? = null,
     accessibilityDescription: String? = null,
 ) {
-    val dataList = remember(data) { data() }
+    val dataList by remember(data) { derivedStateOf { data() } }
     if (dataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return

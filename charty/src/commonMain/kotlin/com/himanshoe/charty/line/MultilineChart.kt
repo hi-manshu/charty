@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +29,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimationState
 import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -118,7 +120,7 @@ fun MultilineChart(
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<MultilinePoint>? = null,
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -136,11 +138,18 @@ fun MultilineChart(
         ) { it.values.sum() }
     val dataList = visible.data
 
-    val (minValue, maxValue, colorList) =
+    val (rawMinValue, rawMaxValue, colorList) =
         remember(dataList, colors, lineConfig.negativeValuesDrawMode) {
             val allValues = dataList.getAllValues()
             Triple(calculateMinValue(allValues), calculateMaxValue(allValues), colors.value)
         }
+    val (minValue, maxValue) =
+        rememberAnimatedRange(
+            minValue = rawMinValue,
+            maxValue = rawMaxValue,
+            animation = lineConfig.animation,
+            active = visible.streaming != null,
+        )
 
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
     val animationProgress = rememberChartAnimationState(lineConfig.animation)

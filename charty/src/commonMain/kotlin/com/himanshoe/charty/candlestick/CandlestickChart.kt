@@ -1,6 +1,8 @@
 package com.himanshoe.charty.candlestick
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -25,6 +27,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
+import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -72,7 +75,7 @@ fun CandlestickChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
 ) {
-    val fullDataList = remember(data) { data() }
+    val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
@@ -87,10 +90,17 @@ fun CandlestickChart(
         )
     val dataList = visible.data
 
-    val (minValue, maxValue) =
+    val (rawMinValue, rawMaxValue) =
         remember(dataList) {
             calculateMinValue(dataList) to calculateMaxValue(dataList)
         }
+    val (minValue, maxValue) =
+        rememberAnimatedRange(
+            minValue = rawMinValue,
+            maxValue = rawMaxValue,
+            animation = candlestickConfig.animation,
+            active = visible.streaming != null,
+        )
     val xLabels =
         remember(dataList) {
             calculateOptimizedLabels(dataList.getLabels())
