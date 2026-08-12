@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -211,7 +212,7 @@ private fun PlaygroundHome(onOpen: (PlaygroundFamily) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item(span = { GridItemSpanFull() }) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Column {
                 Text(text = "Playground", fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
                 Text(
@@ -227,10 +228,6 @@ private fun PlaygroundHome(onOpen: (PlaygroundFamily) -> Unit) {
         }
     }
 }
-
-private fun GridItemSpanFull() =
-    androidx.compose.foundation.lazy.grid
-        .GridItemSpan(currentLineSpan = Int.MAX_VALUE)
 
 @Composable
 private fun FamilyCard(
