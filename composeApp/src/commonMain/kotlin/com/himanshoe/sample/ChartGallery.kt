@@ -76,6 +76,8 @@ import com.himanshoe.charty.candlestick.CandlestickChart
 import com.himanshoe.charty.candlestick.data.CandleData
 import com.himanshoe.charty.circular.CircularProgressIndicator
 import com.himanshoe.charty.circular.data.CircularRingData
+import com.himanshoe.charty.circular.rings.ActivityRingsChart
+import com.himanshoe.charty.circular.rings.data.RingData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.combo.ComboChart
@@ -91,9 +93,17 @@ import com.himanshoe.charty.common.theme.ChartyTheme
 import com.himanshoe.charty.common.theme.ChartyThemeProvider
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.PillTooltip
+import com.himanshoe.charty.gauge.AngularGaugeChart
+import com.himanshoe.charty.gauge.config.AngularGaugeConfig
+import com.himanshoe.charty.gauge.data.GaugeBand
+import com.himanshoe.charty.heatmap.MatrixHeatmapChart
+import com.himanshoe.charty.heatmap.config.MatrixHeatmapConfig
+import com.himanshoe.charty.heatmap.data.HeatmapCell
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
+import com.himanshoe.charty.line.Sparkline
+import com.himanshoe.charty.line.SparklineConfig
 import com.himanshoe.charty.line.StackedAreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.config.LineInterpolation
@@ -531,7 +541,117 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             LineGroup(label = "Fri", values = listOf(55f, 65f, 45f)),
         )
 
+    val heatmapCells =
+        listOf("Mon", "Tue", "Wed", "Thu", "Fri").flatMapIndexed { rowIndex: Int, day: String ->
+            listOf("8h", "10h", "12h", "14h", "16h").mapIndexed { columnIndex, hour ->
+                HeatmapCell(
+                    rowLabel = day,
+                    columnLabel = hour,
+                    value = ((rowIndex * 7 + columnIndex * 11) % 13).toFloat() + columnIndex,
+                )
+            }
+        }
+
+    val sparkValues = listOf(12f, 18f, 9f, 22f, 17f, 26f, 21f, 30f, 24f, 33f)
+
     return listOf(
+        ChartDemo(
+            title = "Angular Gauge",
+            description = "Needle dial with plot bands",
+            category = "Gauge",
+            accent = red,
+            variants =
+                listOf(
+                    ChartVariant("Default") { AngularGaugeChart(value = { 68f }, modifier = chartFill) },
+                    ChartVariant("Plot bands") {
+                        AngularGaugeChart(
+                            value = { 68f },
+                            color = warmGradient,
+                            config =
+                                AngularGaugeConfig(
+                                    plotBands =
+                                        listOf(
+                                            GaugeBand(fromValue = 0f, toValue = 40f, color = ChartyColor.Solid(green)),
+                                            GaugeBand(
+                                                fromValue = 40f,
+                                                toValue = 75f,
+                                                color = ChartyColor.Solid(orange),
+                                            ),
+                                            GaugeBand(fromValue = 75f, toValue = 100f, color = ChartyColor.Solid(red)),
+                                        ),
+                                ),
+                            modifier = chartFill,
+                        )
+                    },
+                ),
+        ),
+        ChartDemo(
+            title = "Activity Rings",
+            description = "Concentric progress toward goals",
+            category = "Gauge",
+            accent = green,
+            variants =
+                listOf(
+                    ChartVariant("Default") {
+                        ActivityRingsChart(
+                            data = {
+                                listOf(
+                                    RingData(label = "Move", value = 420f, target = 500f),
+                                    RingData(label = "Exercise", value = 25f, target = 30f),
+                                    RingData(label = "Stand", value = 9f, target = 12f),
+                                )
+                            },
+                            modifier = chartFill,
+                        )
+                    },
+                    ChartVariant("Goal exceeded (clamped)") {
+                        ActivityRingsChart(
+                            data = {
+                                listOf(
+                                    RingData(label = "Move", value = 780f, target = 500f),
+                                    RingData(label = "Exercise", value = 12f, target = 30f),
+                                )
+                            },
+                            modifier = chartFill,
+                        )
+                    },
+                ),
+        ),
+        ChartDemo(
+            title = "Matrix Heatmap",
+            description = "Value grid with a colour scale",
+            category = "Specialised",
+            accent = purple,
+            variants =
+                listOf(
+                    ChartVariant("Default") { MatrixHeatmapChart(data = { heatmapCells }, modifier = chartFill) },
+                    ChartVariant("With values") {
+                        MatrixHeatmapChart(
+                            data = { heatmapCells },
+                            config = MatrixHeatmapConfig(showValues = true),
+                            modifier = chartFill,
+                        )
+                    },
+                ),
+        ),
+        ChartDemo(
+            title = "Sparkline",
+            description = "Inline mini line for cards and rows",
+            category = "Line",
+            accent = blue,
+            variants =
+                listOf(
+                    ChartVariant("Default") { Sparkline(data = { sparkValues }, modifier = chartFill) },
+                    ChartVariant("No fill, smooth") {
+                        Sparkline(
+                            data = { sparkValues },
+                            color = coolGradient,
+                            config = SparklineConfig(showFill = false, smoothCurve = true),
+                            modifier = chartFill,
+                        )
+                    },
+                ),
+        ),
         ChartDemo(
             "Bar Chart",
             "Compare values across categories",

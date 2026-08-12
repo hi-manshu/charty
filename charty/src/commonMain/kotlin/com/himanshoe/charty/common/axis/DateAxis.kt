@@ -17,6 +17,7 @@ private const val MONTH_SHIFT_HIGH = 9
 private const val FEBRUARY = 2
 private const val LEAP_DIV_4 = 4
 private const val LEAP_DIV_100 = 100
+private const val ERA_YEAR_NEG_ADJUST = 399
 
 /** Default three-letter English month abbreviations, index 0 = January. */
 val DEFAULT_MONTH_ABBREVIATIONS: List<String> =
@@ -56,6 +57,41 @@ internal fun epochDayToDate(epochDay: Long): Triple<Int, Int, Int> {
     val month = (if (mp < MONTH_PIVOT) mp + MONTH_SHIFT_LOW else mp - MONTH_SHIFT_HIGH).toInt()
     val calendarYear = (if (month <= FEBRUARY) year + 1 else year).toInt()
     return Triple(calendarYear, month, day)
+}
+
+/**
+ * Converts a `(year, month, day)` civil date to its epoch day (days since 1970-01-01, negative
+ * before), using Howard Hinnant's days-from-civil algorithm — the exact inverse of
+ * [epochDayToDate]. Month is 1–12, day is 1–31.
+ */
+internal fun dateToEpochDay(
+    year: Int,
+    month: Int,
+    day: Int,
+): Long {
+    val shiftedYear =
+        if (month <= FEBRUARY) {
+            year - 1
+        } else {
+            year
+        }
+    val eraBase =
+        if (shiftedYear >= 0) {
+            shiftedYear
+        } else {
+            shiftedYear - ERA_YEAR_NEG_ADJUST
+        }
+    val era = eraBase / YEARS_PER_ERA
+    val yearOfEra = shiftedYear - era * YEARS_PER_ERA
+    val mp =
+        if (month > FEBRUARY) {
+            month - MONTH_SHIFT_LOW
+        } else {
+            month + MONTH_SHIFT_HIGH
+        }
+    val dayOfYear = (MP_DIVISOR * mp + MP_OFFSET) / MP_FACTOR + day - 1
+    val dayOfEra = yearOfEra * DAYS_PER_YEAR + yearOfEra / LEAP_DIV_4 - yearOfEra / LEAP_DIV_100 + dayOfYear
+    return era.toLong() * ERA_DAYS + dayOfEra - DAYS_SHIFT
 }
 
 /**
@@ -99,7 +135,8 @@ fun dateAxisFormatter(format: (year: Int, month: Int, day: Int) -> String): (Flo
         format(year, month, day)
     }
 
-private fun pad2(value: Int): String =
+/** Zero-pads [value] to two digits, e.g. `7` becomes `"07"`. */
+internal fun pad2(value: Int): String =
     if (value < MONTH_PIVOT) {
         "0$value"
     } else {

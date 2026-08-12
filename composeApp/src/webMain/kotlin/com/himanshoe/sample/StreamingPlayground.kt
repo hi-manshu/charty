@@ -44,7 +44,9 @@ private const val VALUE_MAX = 95f
 
 private fun nextValue(): Float = VALUE_MIN + Random.nextFloat() * (VALUE_MAX - VALUE_MIN)
 
-internal enum class StreamChartType(val label: String) {
+internal enum class StreamChartType(
+    val label: String,
+) {
     Line("Line"),
     Area("Area"),
     Bar("Bar"),
@@ -92,7 +94,13 @@ internal fun StreamingLinePlayground() {
         $chartName(
             data = { streamData },              // append points over time
             color = ChartyColor.Solid(color),
-            config = ${if (chartType == StreamChartType.Line || chartType == StreamChartType.Area) "LineChartConfig" else if (chartType == StreamChartType.Point) "PointChartConfig" else "BarChartConfig"}(
+            config = ${if (chartType == StreamChartType.Line || chartType == StreamChartType.Area) {
+            "LineChartConfig"
+        } else if (chartType == StreamChartType.Point) {
+            "PointChartConfig"
+        } else {
+            "BarChartConfig"
+        }}(
                 visibleWindow = $windowSize,    // show only the last $windowSize points
                 animation = Animation.Fast,     // drives the slide easing
             ),
@@ -106,7 +114,7 @@ internal fun StreamingLinePlayground() {
                 chartType = chartType,
                 values = values,
                 windowSize = windowSize,
-                color = color,
+                color = ChartyColor.Solid(color),
             )
         },
         controls = {
@@ -152,9 +160,8 @@ private fun StreamingChart(
     chartType: StreamChartType,
     values: List<Float>,
     windowSize: Int,
-    color: androidx.compose.ui.graphics.Color,
+    color: ChartyColor,
 ) {
-    val chartyColor = ChartyColor.Solid(color)
     val lineData = values.mapIndexed { i, v -> LineData(label = (i + 1).toString(), value = v) }
     val barData = values.mapIndexed { i, v -> BarData(label = (i + 1).toString(), value = v) }
     val pointData = values.mapIndexed { i, v -> PointData(label = (i + 1).toString(), value = v) }
@@ -163,7 +170,7 @@ private fun StreamingChart(
             LineChart(
                 data = { lineData },
                 modifier = Modifier.fillMaxSize(),
-                color = chartyColor,
+                color = color,
                 lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
             )
 
@@ -171,7 +178,7 @@ private fun StreamingChart(
             AreaChart(
                 data = { lineData },
                 modifier = Modifier.fillMaxSize(),
-                color = chartyColor,
+                color = color,
                 lineConfig = LineChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
             )
 
@@ -179,7 +186,7 @@ private fun StreamingChart(
             BarChart(
                 data = { barData },
                 modifier = Modifier.fillMaxSize(),
-                color = chartyColor,
+                color = color,
                 barConfig = BarChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
             )
 
@@ -187,7 +194,7 @@ private fun StreamingChart(
             HorizontalBarChart(
                 data = { barData },
                 modifier = Modifier.fillMaxSize(),
-                color = chartyColor,
+                color = color,
                 barConfig = BarChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
             )
 
@@ -195,7 +202,7 @@ private fun StreamingChart(
             PointChart(
                 data = { pointData },
                 modifier = Modifier.fillMaxSize(),
-                color = chartyColor,
+                color = color,
                 pointConfig = PointChartConfig(visibleWindow = windowSize, animation = Animation.Fast),
             )
     }

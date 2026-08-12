@@ -31,6 +31,7 @@ private const val EDGE_MARGIN_SLOTS = 1
  *   `visibleWindow`, clamped to the data size while the window is still filling).
  */
 @Immutable
+@ConsistentCopyVisibility
 data class StreamingLayout internal constructor(
     val from: Int,
     val scroll: Float,
