@@ -59,6 +59,7 @@ internal enum class PlaygroundFamily(
     val blurb: String,
     val accent: Color,
 ) {
+    Streaming("Streaming (live)", "Rolling window — slides on new data", Color(0xFF00ACC1)),
     Line("Line", "Trend over an index", Color(0xFF2962FF)),
     Area("Area", "Filled line", Color(0xFF00BFA5)),
     Bar("Bar", "Categorical values", Color(0xFFFF6D00)),
@@ -269,6 +270,7 @@ private fun FamilyCard(
 @Composable
 private fun PlaygroundContent(family: PlaygroundFamily) {
     when (family) {
+        PlaygroundFamily.Streaming -> StreamingLinePlayground()
         PlaygroundFamily.Line -> LinePlayground()
         PlaygroundFamily.Area -> AreaPlayground()
         PlaygroundFamily.Bar -> BarPlayground()
