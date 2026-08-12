@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web-playground",
+      "runtimeExecutable": "./gradlew",
+      "runtimeArgs": ["-q", ":composeApp:jsBrowserDevelopmentRun", "--continuous"],
+      "port": 8080
+    }
+  ]
+}
