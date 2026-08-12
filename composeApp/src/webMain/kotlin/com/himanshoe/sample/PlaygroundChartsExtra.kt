@@ -5,6 +5,7 @@
     "UndocumentedPublicFunction",
     "MaxLineLength",
     "CyclomaticComplexMethod",
+    "ktlint:standard:max-line-length",
 )
 
 package com.himanshoe.sample

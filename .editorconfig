@@ -12,6 +12,11 @@ trim_trailing_whitespace = true
 
 [*.{kt,kts}]
 # Ktlint rules
+# @Composable functions are intentionally PascalCase — exempt them from function-naming.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+# The codebase keeps KDoc license/section headers and descriptive file names by choice.
+ktlint_standard_no-consecutive-comments = disabled
+ktlint_standard_filename = disabled
 ij_kotlin_imports_layout = *
 ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true

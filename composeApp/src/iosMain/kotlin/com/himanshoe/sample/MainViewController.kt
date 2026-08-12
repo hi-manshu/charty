@@ -5,6 +5,7 @@
     "MatchingDeclarationName",
     "PreviewPublic",
     "ModifierMissing",
+    "ktlint:standard:function-naming",
 )
 
 package com.himanshoe.sample

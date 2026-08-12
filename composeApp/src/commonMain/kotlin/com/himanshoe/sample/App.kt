@@ -5,6 +5,7 @@
     "UndocumentedPublicFunction",
     "WildcardImport",
     "MaxLineLength",
+    "ktlint:standard:max-line-length",
 )
 
 package com.himanshoe.sample
