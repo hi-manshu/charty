@@ -126,7 +126,12 @@ fun MultilineChart(
     val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<MultilinePoint>(config = it) }
 
     val dataList =
-        rememberVisibleData(fullDataList, interactionConfig, lineConfig.downsampleThreshold) { it.values.sum() }
+        rememberVisibleData(
+            fullDataList = fullDataList,
+            interactionConfig = interactionConfig,
+            downsampleThreshold = lineConfig.downsampleThreshold,
+            visibleWindow = lineConfig.visibleWindow,
+        ) { it.values.sum() }
 
     val (minValue, maxValue, colorList) =
         remember(dataList, colors, lineConfig.negativeValuesDrawMode) {

@@ -90,7 +90,12 @@ fun BubbleChart(
     val crosshairConfig = crosshair?.config ?: config.crosshairConfig
     val activeCrosshair = crosshair ?: config.crosshairConfig?.let { ChartCrosshair<BubbleData>(config = it) }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = config.visibleWindow,
+        )
 
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 
@@ -19,6 +20,8 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
+ *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
 @Stable
 data class BubbleBarChartConfig(
@@ -33,8 +36,10 @@ data class BubbleBarChartConfig(
     val tooltipFormatter: (BarData) -> String = { barData ->
         "${barData.label}: ${barData.value}"
     },
+    val visibleWindow: Int? = null,
 ) {
     init {
+        requireValidVisibleWindow(visibleWindow)
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
         require(bubbleRadius > 0) { "Bubble radius must be positive" }
         require(bubbleSpacing >= 0) { "Bubble spacing must be non-negative" }

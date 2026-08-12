@@ -93,7 +93,12 @@ fun SpanChart(
         return
     }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = barConfig.visibleWindow,
+        )
 
     val (minValue, maxValue) = rememberSpanValueRange(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(barConfig.animation)

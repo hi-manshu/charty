@@ -18,17 +18,19 @@ import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.viewport.ViewPortState
 
 /**
- * Computes the windowed/visible slice of [fullDataList] for the current viewport.
- * When [viewPortState] is null, returns [fullDataList] as-is.
+ * Computes the windowed/visible slice of [fullDataList]. An interactive [viewPortState] (zoom/pan)
+ * takes precedence; otherwise the rolling [visibleWindow] "show last N" tail is applied. When both
+ * are null, returns [fullDataList] as-is.
  */
 @Composable
 internal fun <T> rememberWindowedData(
     fullDataList: List<T>,
     viewPortState: ViewPortState?,
+    visibleWindow: Int? = null,
 ): List<T> =
-    remember(fullDataList, viewPortState?.startFraction, viewPortState?.endFraction) {
+    remember(fullDataList, viewPortState?.startFraction, viewPortState?.endFraction, visibleWindow) {
         if (viewPortState == null) {
-            fullDataList
+            tailWindow(fullDataList, visibleWindow)
         } else {
             val range = viewPortState.visibleIndices(fullDataList.size)
             fullDataList.subList(range.first, range.last + 1)
@@ -91,11 +93,8 @@ internal fun <T> rememberVisibleData(
     visibleWindow: Int? = null,
     value: (T) -> Float,
 ): List<T> {
-    val windowed = rememberWindowedData(fullDataList, interactionConfig.viewPortState)
-    // An interactive viewport (zoom/pan) takes precedence over the fixed rolling window.
-    val effectiveWindow = if (interactionConfig.viewPortState == null) visibleWindow else null
-    val tail = remember(windowed, effectiveWindow) { tailWindow(windowed, effectiveWindow) }
-    return rememberDownsampledData(tail, downsampleThreshold, value)
+    val windowed = rememberWindowedData(fullDataList, interactionConfig.viewPortState, visibleWindow)
+    return rememberDownsampledData(windowed, downsampleThreshold, value)
 }
 
 /**

@@ -8,6 +8,7 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
@@ -35,6 +36,8 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  * @property crosshairConfig When non-null, enables a draggable crosshair snapping to line points.
  *   Enabling this replaces tap-to-tooltip interaction.
+ * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
+ *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
 @Stable
 data class ComboChartConfig(
@@ -57,8 +60,10 @@ data class ComboChartConfig(
         "${data.label}: Bar=${data.barValue}, Line=${data.lineValue}"
     },
     val crosshairConfig: ChartCrosshairConfig? = null,
+    val visibleWindow: Int? = null,
 ) {
     init {
+        requireValidVisibleWindow(visibleWindow)
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
         require(lineWidth > 0) { "Line width must be greater than 0" }
         require(pointRadius > 0) { "Point radius must be greater than 0" }

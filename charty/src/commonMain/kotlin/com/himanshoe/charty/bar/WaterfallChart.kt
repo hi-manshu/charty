@@ -81,7 +81,12 @@ fun WaterfallChart(
         return
     }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = config.visibleWindow,
+        )
 
     val cumulativeValues = rememberCumulativeValues(dataList)
     val (minValue, maxValue) =

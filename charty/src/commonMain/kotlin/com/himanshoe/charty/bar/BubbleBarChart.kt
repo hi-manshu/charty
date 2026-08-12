@@ -81,7 +81,12 @@ fun BubbleBarChart(
         return
     }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = bubbleConfig.visibleWindow,
+        )
 
     val (minValue, maxValue) =
         rememberValueRange(

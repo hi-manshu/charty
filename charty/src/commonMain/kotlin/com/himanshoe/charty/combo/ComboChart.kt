@@ -121,7 +121,12 @@ fun ComboChart(
     val effectiveComboConfig = crosshair?.let { comboConfig.copy(crosshairConfig = it.config) } ?: comboConfig
     val activeCrosshair = crosshair ?: comboConfig.crosshairConfig?.let { ChartCrosshair<ComboChartData>(config = it) }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = comboConfig.visibleWindow,
+        )
 
     val (minValue, maxValue) =
         remember(dataList, comboConfig.negativeValuesDrawMode, comboConfig.secondaryAxisForLine) {

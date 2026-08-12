@@ -77,7 +77,12 @@ fun CandlestickChart(
         return
     }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = candlestickConfig.visibleWindow,
+        )
 
     val (minValue, maxValue) =
         remember(dataList) {

@@ -10,6 +10,7 @@ import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 
@@ -41,6 +42,8 @@ data class StackedBarSegment(
  * @property showDataLabels Whether to show the stacked total above each bar
  * @property dataLabelFormatter Formats the total value for the data label text
  * @property dataLabelStyle Text style for data labels
+ * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
+ *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
 @Stable
 data class StackedBarChartConfig(
@@ -69,8 +72,10 @@ data class StackedBarChartConfig(
             fontWeight = FontWeight.SemiBold,
             color = Color.DarkGray,
         ),
+    val visibleWindow: Int? = null,
 ) {
     init {
+        requireValidVisibleWindow(visibleWindow)
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
         require(barSpacing >= 0) { "Bar spacing must be non-negative" }
     }

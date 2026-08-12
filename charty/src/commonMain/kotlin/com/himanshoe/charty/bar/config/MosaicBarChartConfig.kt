@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 
@@ -31,6 +32,8 @@ data class MosaicBarSegment(
  * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
+ *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
 @Stable
 data class MosaicBarChartConfig(
@@ -41,8 +44,10 @@ data class MosaicBarChartConfig(
     val tooltipFormatter: (MosaicBarSegment) -> String = { segment ->
         "${segment.barGroup.label} [${segment.segmentIndex}]: ${segment.segmentPercentage.toInt()}%"
     },
+    val visibleWindow: Int? = null,
 ) {
     init {
+        requireValidVisibleWindow(visibleWindow)
         require(barWidthFraction in 0f..1f) { "Bar width fraction must be between 0 and 1" }
     }
 }

@@ -85,7 +85,12 @@ fun LollipopBarChart(
         return
     }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = config.visibleWindow,
+        )
 
     val (minValue, maxValue) = rememberLollipopValueRange(dataList)
     val animationProgress = rememberLollipopAnimation(config.animation)

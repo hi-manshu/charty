@@ -5,6 +5,7 @@ import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 
@@ -14,6 +15,8 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @property barGroup The bar group that contains this bar
  * @property barIndex The index of the clicked bar within the group
  * @property barValue The value of the clicked bar
+ * @property visibleWindow Rolling "show last N" window; `null` (default) shows every group and
+ *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
 @Stable
 data class ComparisonBarSegment(
@@ -44,4 +47,9 @@ data class ComparisonBarChartConfig(
     val tooltipFormatter: (ComparisonBarSegment) -> String = { segment ->
         "${segment.barGroup.label} [${segment.barIndex}]: ${segment.barValue}"
     },
-)
+    val visibleWindow: Int? = null,
+) {
+    init {
+        requireValidVisibleWindow(visibleWindow)
+    }
+}

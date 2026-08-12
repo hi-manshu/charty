@@ -8,6 +8,7 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
@@ -44,6 +45,8 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  * @property downsampleThreshold When set, the visible points are reduced to at most this many with
  *   the shape-preserving LTTB algorithm before drawing, keeping large series (tens of thousands of
  *   points) at interactive frame rates. `null` (the default) draws every point. Must be `>= 3`.
+ * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
+ *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
 @Stable
 data class PointChartConfig(
@@ -65,8 +68,10 @@ data class PointChartConfig(
     val selectionColumnColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_SELECTION_COLUMN_ARGB)),
     val selectionColumnWidth: Float? = null,
     val downsampleThreshold: Int? = null,
+    val visibleWindow: Int? = null,
 ) {
     init {
+        requireValidVisibleWindow(visibleWindow)
         require(pointRadius > 0) { "Point radius must be greater than 0" }
         require(pointAlpha in 0f..1f) { "Point alpha must be between 0 and 1" }
         require(downsampleThreshold == null || downsampleThreshold >= MIN_DOWNSAMPLE_THRESHOLD) {

@@ -77,7 +77,12 @@ fun NormalizedHorizontalBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = config.visibleWindow,
+        )
 
     val colorList = rememberNormalizedHorizontalColors(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(config.animation)

@@ -112,7 +112,12 @@ fun WavyChart(
     }
     val crosshairConfig = crosshair?.config
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = wavyConfig.visibleWindow,
+        )
 
     val textMeasurer = rememberTextMeasurer()
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }

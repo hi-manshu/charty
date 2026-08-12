@@ -82,7 +82,12 @@ fun MosaicBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each bar group must have at least one value" }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = config.visibleWindow,
+        )
 
     val animationProgress = rememberChartAnimation(config.animation)
     val tooltipManager = rememberTooltipManager<Rect, MosaicBarSegment>()

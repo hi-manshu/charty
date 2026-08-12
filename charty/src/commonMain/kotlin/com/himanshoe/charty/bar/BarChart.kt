@@ -105,7 +105,12 @@ fun BarChart(
         return
     }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = barConfig.visibleWindow,
+        )
 
     val (minValue, maxValue) =
         rememberBarValueRange(

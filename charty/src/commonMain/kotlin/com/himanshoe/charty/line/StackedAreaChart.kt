@@ -150,7 +150,12 @@ fun StackedAreaChart(
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
     val dataList =
-        rememberVisibleData(fullDataList, interactionConfig, lineConfig.downsampleThreshold) { it.values.sum() }
+        rememberVisibleData(
+            fullDataList = fullDataList,
+            interactionConfig = interactionConfig,
+            downsampleThreshold = lineConfig.downsampleThreshold,
+            visibleWindow = lineConfig.visibleWindow,
+        ) { it.values.sum() }
 
     val (maxValue, colorList) =
         remember(dataList, colors) {

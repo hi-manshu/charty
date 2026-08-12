@@ -84,7 +84,12 @@ fun ComparisonBarChart(
     }
     require(fullDataList.fastAll { it.values.isNotEmpty() }) { "Each comparison group must have at least one value" }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = comparisonConfig.visibleWindow,
+        )
 
     val (minValue, maxValue) = rememberComparisonChartValues(dataList)
     val isBelowAxisMode = comparisonConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS

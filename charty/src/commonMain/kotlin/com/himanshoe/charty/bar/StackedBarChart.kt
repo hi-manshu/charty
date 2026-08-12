@@ -100,7 +100,12 @@ fun StackedBarChart(
         "Stacked bar chart does not support negative values"
     }
 
-    val dataList = rememberWindowedData(fullDataList = fullDataList, viewPortState = interactionConfig.viewPortState)
+    val dataList =
+        rememberWindowedData(
+            fullDataList = fullDataList,
+            viewPortState = interactionConfig.viewPortState,
+            visibleWindow = stackedConfig.visibleWindow,
+        )
 
     val (maxTotal, colorList) = rememberStackedMaxTotal(dataList = dataList, colors = colors)
     val animationProgress = rememberChartAnimation(stackedConfig.animation)

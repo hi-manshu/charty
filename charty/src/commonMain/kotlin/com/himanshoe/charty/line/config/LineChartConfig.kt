@@ -11,6 +11,7 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
@@ -18,7 +19,6 @@ import com.himanshoe.charty.line.data.LineData
 
 private const val DEFAULT_SELECTION_COLUMN_ARGB = 0x142962FF
 private const val MIN_DOWNSAMPLE_THRESHOLD = 3
-private const val MIN_VISIBLE_WINDOW = 2
 
 /**
  * Configuration for [com.himanshoe.charty.line.LineChart],
@@ -115,9 +115,7 @@ data class LineChartConfig(
     val visibleWindow: Int? = null,
 ) {
     init {
-        require(visibleWindow == null || visibleWindow >= MIN_VISIBLE_WINDOW) {
-            "visibleWindow must be null or >= $MIN_VISIBLE_WINDOW"
-        }
+        requireValidVisibleWindow(visibleWindow)
         require(lineWidth > 0) { "Line width must be greater than 0" }
         require(pointRadius > 0) { "Point radius must be greater than 0" }
         require(pointAlpha in 0f..1f) { "Point alpha must be between 0 and 1" }

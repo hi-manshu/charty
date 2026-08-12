@@ -297,7 +297,13 @@ fun PointChart(
     val effectiveCrosshairConfig = crosshair?.config ?: pointConfig.crosshairConfig
     val activeCrosshair = crosshair ?: pointConfig.crosshairConfig?.let { ChartCrosshair<PointData>(config = it) }
 
-    val dataList = rememberVisibleData(fullDataList, interactionConfig, pointConfig.downsampleThreshold) { it.value }
+    val dataList =
+        rememberVisibleData(
+            fullDataList = fullDataList,
+            interactionConfig = interactionConfig,
+            downsampleThreshold = pointConfig.downsampleThreshold,
+            visibleWindow = pointConfig.visibleWindow,
+        ) { it.value }
 
     val (minValue, maxValue) =
         remember(dataList, pointConfig.negativeValuesDrawMode) {
