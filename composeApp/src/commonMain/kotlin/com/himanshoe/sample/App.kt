@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import kotlin.math.sin
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -137,6 +136,7 @@ import com.himanshoe.charty.radar.config.RadarGridStyle
 import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
+import kotlin.math.sin
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -3842,7 +3842,9 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                     ).padding(horizontal = 10.dp, vertical = 6.dp),
                                         ) {
                                             Text(
-                                                text = "${data.lineGroup.label}: ${data.lineGroup.values.joinToString(" / ") { it.toInt().toString() }}",
+                                                text = "${data.lineGroup.label}: ${data.lineGroup.values.joinToString(
+                                                    " / ",
+                                                ) { it.toInt().toString() }}",
                                                 color = Color.White,
                                                 fontSize = 12.sp,
                                             )
