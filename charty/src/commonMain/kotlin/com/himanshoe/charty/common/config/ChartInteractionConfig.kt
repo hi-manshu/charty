@@ -1,8 +1,10 @@
 package com.himanshoe.charty.common.config
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import com.himanshoe.charty.common.annotation.ChartAnnotation
 import com.himanshoe.charty.common.brush.BrushSelectionState
+import com.himanshoe.charty.common.streaming.StreamingState
 import com.himanshoe.charty.common.viewport.ViewPortState
 
 /**
@@ -24,6 +26,16 @@ import com.himanshoe.charty.common.viewport.ViewPortState
  * @property edgeFade When non-null and [viewPortState] is set, draws a scrim at the leading/trailing
  *   edges while data is scrolled off-screen, hinting there is more to pan to (see
  *   [ScrollEdgeFadeConfig]).
+ * @property streamingState Enables scrollback on a chart with a rolling `visibleWindow`: the reader
+ *   can drag back through history while new data accumulates, and jump back to the newest point.
+ *   `null` (the default) keeps the window pinned to the newest data.
+ * @property jumpToLatest Your "jump to latest" control, rendered over the bottom centre of the plot
+ *   while the window is detached and hidden again as soon as it follows the newest data. It receives
+ *   the same [StreamingState] you passed as [streamingState], so it can label itself with
+ *   [StreamingState.pendingCount] and call [StreamingState.jumpToLatest] when tapped. Use
+ *   [com.himanshoe.charty.common.streaming.ChartJumpToLatestPill] for a ready-made one, or write your
+ *   own composable. Requires both [streamingState] and a rolling `visibleWindow`; `null` (the default)
+ *   shows no control.
  */
 @Stable
 class ChartInteractionConfig(
@@ -35,4 +47,6 @@ class ChartInteractionConfig(
     val dragTooltipEnabled: Boolean = false,
     val autoScrollToLatest: Boolean = false,
     val edgeFade: ScrollEdgeFadeConfig? = null,
+    val streamingState: StreamingState? = null,
+    val jumpToLatest: (@Composable (StreamingState) -> Unit)? = null,
 )

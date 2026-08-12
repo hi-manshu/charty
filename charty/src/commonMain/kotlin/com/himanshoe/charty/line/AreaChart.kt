@@ -48,6 +48,8 @@ import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberVisibleData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -204,14 +206,16 @@ fun AreaChart(
             ),
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
                     contentDescription = chartDescription,
                     dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
                 ),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),

@@ -25,6 +25,7 @@ import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -41,6 +42,8 @@ import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -114,6 +117,7 @@ fun StackedBarChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = stackedConfig.visibleWindow,
             animation = stackedConfig.animation,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -164,7 +168,9 @@ fun StackedBarChart(
             dataList = dataList,
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
@@ -175,7 +181,7 @@ fun StackedBarChart(
                             values = dataList.fastMap { it.values.sum() },
                         ),
                 ),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =

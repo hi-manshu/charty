@@ -40,6 +40,8 @@ import com.himanshoe.charty.common.gesture.createRectangularTooltipState
 import com.himanshoe.charty.common.gesture.rectangularChartScrubHandler
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -94,6 +96,7 @@ fun HorizontalBarChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = barConfig.visibleWindow,
             animation = barConfig.animation,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -149,7 +152,9 @@ fun HorizontalBarChart(
             dataList = dataList,
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.HORIZONTAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
@@ -160,7 +165,7 @@ fun HorizontalBarChart(
                             values = dataList.fastMap { it.value },
                         ),
                 ),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =

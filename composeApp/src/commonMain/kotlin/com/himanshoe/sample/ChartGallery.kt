@@ -101,10 +101,10 @@ import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.MultilineChart
 import com.himanshoe.charty.line.Sparkline
-import com.himanshoe.charty.line.SparklineConfig
 import com.himanshoe.charty.line.StackedAreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.config.LineInterpolation
+import com.himanshoe.charty.line.config.SparklineConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.pie.PieChart

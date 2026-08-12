@@ -38,6 +38,8 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -89,6 +91,7 @@ fun GroupedHorizontalBarChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
             animation = config.animation,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -144,7 +147,9 @@ fun GroupedHorizontalBarChart(
             dataList = dataList,
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.HORIZONTAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 barAccessibility(
@@ -153,7 +158,7 @@ fun GroupedHorizontalBarChart(
                     values = dataList.fastMap { it.values.sum() },
                     fallbackDescription = "Grouped horizontal bar chart, ${fullDataList.size} data points.",
                 ),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =

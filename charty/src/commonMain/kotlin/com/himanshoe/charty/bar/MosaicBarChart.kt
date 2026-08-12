@@ -20,6 +20,7 @@ import com.himanshoe.charty.bar.internal.bar.mosaic.drawMosaicBars
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
 import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.common.ChartEmptyState
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -32,6 +33,8 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -95,6 +98,7 @@ fun MosaicBarChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
             animation = config.animation,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -133,7 +137,9 @@ fun MosaicBarChart(
             dataList = dataList,
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 ChartAccessibility(
@@ -149,7 +155,7 @@ fun MosaicBarChart(
                             values = dataList.fastMap { it.values.sum() },
                         ),
                 ),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig = createMosaicAxisConfig(),

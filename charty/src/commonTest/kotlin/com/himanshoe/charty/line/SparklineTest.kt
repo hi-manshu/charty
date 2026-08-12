@@ -2,6 +2,7 @@ package com.himanshoe.charty.line
 
 import androidx.compose.ui.geometry.Offset
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.line.config.SparklineConfig
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.line.Sparkline
-import com.himanshoe.charty.line.SparklineConfig
+import com.himanshoe.charty.line.config.SparklineConfig
 import kotlin.random.Random
 
 private const val WALK_POINTS = 40

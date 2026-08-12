@@ -55,6 +55,8 @@ import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -135,6 +137,7 @@ fun ComboChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = comboConfig.visibleWindow,
             animation = comboConfig.animation,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -216,10 +219,12 @@ fun ComboChart(
             dataList = dataList,
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility = comboChartAccessibility(chartDescription = chartDescription, dataList = dataList),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =

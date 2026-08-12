@@ -18,6 +18,7 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -42,6 +43,8 @@ import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -101,12 +104,7 @@ fun BubbleChart(
     val activeCrosshair = crosshair ?: config.crosshairConfig?.let { ChartCrosshair<BubbleData>(config = it) }
 
     val visible =
-        rememberWindowedData(
-            fullDataList = fullDataList,
-            viewPortState = interactionConfig.viewPortState,
-            visibleWindow = config.visibleWindow,
-            animation = config.animation,
-        )
+        rememberBubbleVisibleData(fullDataList = fullDataList, config = config, interactionConfig = interactionConfig)
     val dataList = visible.data
 
     val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
@@ -172,10 +170,12 @@ fun BubbleChart(
             dataList = dataList,
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility = bubbleChartAccessibility(chartDescription = chartDescription, dataList = dataList),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =
@@ -399,3 +399,20 @@ private fun DrawScope.drawAllBubbles(
         }
     }
 }
+
+/**
+ * The bubbles the chart should draw: the viewport or rolling window of [fullDataList], together with
+ * the [com.himanshoe.charty.common.StreamingLayout] that slides them while streaming.
+ */
+@Composable
+private fun rememberBubbleVisibleData(
+    fullDataList: List<BubbleData>,
+    config: PointChartConfig,
+    interactionConfig: ChartInteractionConfig,
+) = rememberWindowedData(
+    fullDataList = fullDataList,
+    viewPortState = interactionConfig.viewPortState,
+    visibleWindow = config.visibleWindow,
+    animation = config.animation,
+    streamingState = interactionConfig.streamingState,
+)

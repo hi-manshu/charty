@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import com.himanshoe.charty.common.animation.isAnimated
 import com.himanshoe.charty.common.animation.toFloatSpec
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.streaming.StreamingState
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -64,6 +65,9 @@ data class StreamingLayout internal constructor(
  * @param fullDataList The complete, append-accumulating series (the source of truth).
  * @param windowSize The configured rolling window size; clamped to at least 1 and to the data size.
  * @param animation Supplies the slide's duration/easing and whether it animates at all.
+ * @param streamingState When supplied, the reader can scroll back through history: the window
+ *   follows new data only while [StreamingState.isFollowing], and otherwise holds its position while
+ *   arrivals accumulate. `null` (the default) always follows the newest point.
  * @return The window slice to draw and its [StreamingLayout].
  */
 @Composable
@@ -71,23 +75,36 @@ internal fun <T> rememberVisibleWindowSlice(
     fullDataList: List<T>,
     windowSize: Int,
     animation: Animation,
+    streamingState: StreamingState? = null,
 ): Pair<List<T>, StreamingLayout> {
     val size = fullDataList.size
     val clampedWindow = windowSize.coerceIn(1, maxOf(1, size))
     val target = (size - clampedWindow).coerceAtLeast(0).toFloat()
-    val scrollAnimatable = remember { Animatable(target) }
+    val fallbackAnimatable = remember { Animatable(target) }
+    val previousSize = remember { PreviousDataSize(size) }
 
-    LaunchedEffect(target, animation) {
-        if (animation.isAnimated) {
-            scrollAnimatable.animateTo(targetValue = target, animationSpec = animation.toFloatSpec())
+    LaunchedEffect(target, animation, streamingState, size) {
+        if (streamingState == null) {
+            if (animation.isAnimated) {
+                fallbackAnimatable.animateTo(targetValue = target, animationSpec = animation.toFloatSpec())
+            } else {
+                fallbackAnimatable.snapTo(target)
+            }
         } else {
-            scrollAnimatable.snapTo(target)
+            val appended = (size - previousSize.value).coerceAtLeast(0)
+            previousSize.value = size
+            streamingState.onDataChanged(newMaxScroll = target, appended = appended, animation = animation)
         }
     }
 
-    val scroll = scrollAnimatable.value
+    val scroll = streamingState?.currentScroll ?: fallbackAnimatable.value
     val from = (floor(scroll).toInt() - EDGE_MARGIN_SLOTS).coerceAtLeast(0)
     val to = (ceil(scroll).toInt() + clampedWindow + EDGE_MARGIN_SLOTS).coerceIn(from, size)
     val windowData = remember(fullDataList, from, to) { fullDataList.subList(from, to) }
     return windowData to StreamingLayout(from = from, scroll = scroll, windowSize = clampedWindow)
 }
+
+/** Mutable holder for the previously observed data size, used to count arrivals between changes. */
+private class PreviousDataSize(
+    var value: Int,
+)

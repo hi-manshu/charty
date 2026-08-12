@@ -47,6 +47,8 @@ import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -125,6 +127,7 @@ fun WavyChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = wavyConfig.visibleWindow,
             animation = Animation.Default,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -188,8 +191,7 @@ fun WavyChart(
             interactionConfig = interactionConfig,
             dataList = dataList,
         )
-
-    Box(modifier = chartModifier) {
+    Box(modifier = chartModifier.then(interactionConfig.streamingPan(visible.streaming))) {
         ChartScaffold(
             accessibility =
                 barAccessibility(
@@ -198,7 +200,7 @@ fun WavyChart(
                     values = dataList.fastMap { it.value },
                     fallbackDescription = "Wavy chart, ${fullDataList.size} data points.",
                 ),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =

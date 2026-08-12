@@ -15,7 +15,9 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.downsample.lttbDownsample
 import com.himanshoe.charty.common.draw.drawScrollEdgeFades
 import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
+import com.himanshoe.charty.common.gesture.chartStreamingPan
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
+import com.himanshoe.charty.common.streaming.StreamingState
 import com.himanshoe.charty.common.viewport.ViewPortState
 
 /**
@@ -32,6 +34,7 @@ internal fun <T> rememberWindowedData(
     viewPortState: ViewPortState?,
     visibleWindow: Int?,
     animation: Animation,
+    streamingState: StreamingState? = null,
 ): VisibleChartData<T> {
     val streamingActive = visibleWindow != null && viewPortState == null && fullDataList.size > 1
     val (streamData, streamLayout) =
@@ -39,6 +42,7 @@ internal fun <T> rememberWindowedData(
             fullDataList = fullDataList,
             windowSize = visibleWindow ?: 1,
             animation = if (streamingActive) animation else Animation.Disabled,
+            streamingState = if (streamingActive) streamingState else null,
         )
     val staticWindow =
         remember(fullDataList, viewPortState?.startFraction, viewPortState?.endFraction, visibleWindow) {
@@ -124,6 +128,7 @@ internal fun <T> rememberVisibleData(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = visibleWindow,
             animation = animation,
+            streamingState = interactionConfig.streamingState,
         )
     val downsampled = rememberDownsampledData(dataList = windowed.data, threshold = downsampleThreshold, value = value)
     val data = if (windowed.streaming != null) windowed.data else downsampled
@@ -190,6 +195,32 @@ internal fun <T> buildInteractionModifier(
             Modifier
         }
     return base.then(brushModifier).then(zoomModifier)
+}
+
+/**
+ * The scrollback drag modifier for a streaming chart, or an empty [Modifier] when the chart is not
+ * streaming with scrollback enabled — which is every chart without both a rolling `visibleWindow` and a
+ * [ChartInteractionConfig.streamingState], so no existing chart gains a gesture it did not have before.
+ *
+ * Chain it last so it sees pointer events before the tap handlers underneath it: it only consumes them
+ * once the drag passes touch slop, leaving taps to the tooltip.
+ *
+ * @param streaming The active streaming layout, which reports the visible window size.
+ * @param orientation The chart's orientation, deciding the axis the drag is measured along.
+ */
+internal fun ChartInteractionConfig.streamingPan(
+    streaming: StreamingLayout?,
+    orientation: ChartOrientation = ChartOrientation.VERTICAL,
+): Modifier {
+    val state = streamingState
+    if (streaming == null || state == null) {
+        return Modifier
+    }
+    return Modifier.chartStreamingPan(
+        state = state,
+        orientation = orientation,
+        windowSize = streaming.windowSize,
+    )
 }
 
 /** Updates the chart-context bounds in the viewport and brush-selection state holders. */

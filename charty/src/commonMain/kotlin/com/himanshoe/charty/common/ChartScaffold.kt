@@ -3,14 +3,17 @@ package com.himanshoe.charty.common
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.ChartDataPointSemantics
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -24,6 +27,7 @@ private const val RIGHT_PADDING = 20f
 private const val TOP_PADDING = 20f
 private const val BOTTOM_PADDING_WITH_LABELS = 50f
 private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
+private val STREAMING_OVERLAY_PADDING = 12.dp
 
 /**
  * A composable that provides a basic structure for creating charts.
@@ -39,9 +43,10 @@ private const val BOTTOM_PADDING_WITHOUT_LABELS = 20f
  * @param secondaryYAxisConfig Optional second value axis rendered on the right edge with its own
  *   scale, for dual-axis charts. When non-null, the right gutter widens and a right axis is drawn;
  *   plot a series against it with [ChartContext.convertValueToYPosition] and this config's range.
- * @param streamingLayout When non-null, the chart is in rolling-window streaming mode: category
- *   positions (both the plotted series and the x-axis labels) are driven by this sliding layout and
- *   the plot is clipped to its bounds so points slide in and out at the edges. `null` (the default)
+ * @param streaming When non-null, the chart is in rolling-window streaming mode: category positions
+ *   (both the plotted series and the x-axis labels) are driven by [ChartStreamingRender.layout] and
+ *   the plot is clipped to its bounds so points slide in and out at the edges, while
+ *   [ChartStreamingRender.overlay] floats over the bottom centre of the plot. `null` (the default)
  *   draws statically.
  * @param content A lambda function that provides a [DrawScope] and [ChartContext] for drawing the chart content.
  */
@@ -54,9 +59,10 @@ fun ChartScaffold(
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
     accessibility: ChartAccessibility = ChartAccessibility(),
     secondaryYAxisConfig: AxisConfig? = null,
-    streamingLayout: StreamingLayout? = null,
+    streaming: ChartStreamingRender? = null,
     content: DrawScope.(ChartContext) -> Unit,
 ) {
+    val streamingLayout = streaming?.layout
     val description = accessibility.contentDescription
     val accessibilityModifier =
         if (description != null) {
@@ -140,6 +146,17 @@ fun ChartScaffold(
             orientation = orientation,
             modifier = Modifier.matchParentSize(),
         )
+
+        streaming?.overlay?.let { overlay ->
+            Box(
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = STREAMING_OVERLAY_PADDING),
+            ) {
+                overlay()
+            }
+        }
     }
 }
 

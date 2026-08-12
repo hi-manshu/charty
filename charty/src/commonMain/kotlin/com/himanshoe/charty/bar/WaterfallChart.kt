@@ -23,6 +23,7 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.createWaterfallClickModif
 import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallBar
 import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
 import com.himanshoe.charty.common.ChartEmptyState
+import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberChartAnimation
@@ -33,6 +34,8 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -93,6 +96,7 @@ fun WaterfallChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = config.visibleWindow,
             animation = config.animation,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -143,7 +147,9 @@ fun WaterfallChart(
             dataList = dataList,
         )
 
-    Box(modifier = chartModifier) {
+    val pan = interactionConfig.streamingPan(streaming = visible.streaming, orientation = ChartOrientation.VERTICAL)
+
+    Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
                 barAccessibility(
@@ -152,7 +158,7 @@ fun WaterfallChart(
                     values = dataList.fastMap { it.value },
                     fallbackDescription = "Waterfall chart, ${fullDataList.size} data points.",
                 ),
-            streamingLayout = visible.streaming,
+            streaming = interactionConfig.streamingRender(visible.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
             yAxisConfig =

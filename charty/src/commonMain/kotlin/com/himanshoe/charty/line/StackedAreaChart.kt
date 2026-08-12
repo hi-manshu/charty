@@ -48,6 +48,7 @@ import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberChartDescription
 import com.himanshoe.charty.common.rememberVisibleData
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -232,7 +233,7 @@ fun StackedAreaChart(
                     ChartAccessibility(
                         contentDescription = chartDescription,
                     ),
-                streamingLayout = visible.streaming,
+                streaming = interactionConfig.streamingRender(visible.streaming),
                 modifier = chartModifier,
                 xLabels = dataList.getLabels(),
                 yAxisConfig = AxisConfig(minValue = 0f, maxValue = maxValue, steps = 6, drawAxisAtZero = false),

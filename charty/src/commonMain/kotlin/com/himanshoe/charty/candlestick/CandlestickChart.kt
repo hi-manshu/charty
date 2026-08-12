@@ -41,6 +41,7 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData
+import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.syncInteractionDataSizes
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.updateInteractionBounds
@@ -95,6 +96,7 @@ fun CandlestickChart(
             viewPortState = interactionConfig.viewPortState,
             visibleWindow = candlestickConfig.visibleWindow,
             animation = candlestickConfig.animation,
+            streamingState = interactionConfig.streamingState,
         )
     val dataList = visible.data
 
@@ -149,7 +151,7 @@ fun CandlestickChart(
                         values = dataList.fastMap { it.close },
                     ),
             ),
-        streamingLayout = visible.streaming,
+        streaming = interactionConfig.streamingRender(visible.streaming),
         modifier = chartModifier,
         xLabels = xLabels,
         yAxisConfig =

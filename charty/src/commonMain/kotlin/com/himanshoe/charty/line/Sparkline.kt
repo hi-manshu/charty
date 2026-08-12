@@ -2,7 +2,6 @@ package com.himanshoe.charty.line
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -18,47 +17,15 @@ import androidx.compose.ui.semantics.semantics
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.accessibility.toReadableString
 import com.himanshoe.charty.common.animation.rememberChartAnimation
-import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.line.config.LineInterpolation
+import com.himanshoe.charty.line.config.SparklineConfig
 import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createLineBrush
 import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
 import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 
 private const val CENTER_FRACTION = 0.5f
-
-/**
- * Configuration for [Sparkline] appearance and behaviour.
- *
- * @property lineWidth Stroke width of the sparkline in pixels.
- * @property showFill Whether to draw a soft gradient fill between the line and the bottom edge.
- * @property fillAlpha Opacity of the fill in the range `[0, 1]`. Only used when [showFill] is `true`.
- * @property showLastPointDot Whether to emphasise the most recent value with a dot at the end of the line.
- * @property lastPointDotRadius Radius of the last-point dot in pixels. Only used when
- *   [showLastPointDot] is `true`. The dot's centre is kept one radius inside the draw area so the
- *   dot is never half-clipped by the edge the line ends on.
- * @property smoothCurve When `true`, connects values with a cubic-bezier curve instead of straight
- *   segments.
- * @property animation Entry animation revealing the path from left to right. [Animation.Disabled]
- *   by default so the sparkline renders instantly inline.
- */
-@Stable
-data class SparklineConfig(
-    val lineWidth: Float = 1.5f,
-    val showFill: Boolean = true,
-    val fillAlpha: Float = 0.15f,
-    val showLastPointDot: Boolean = true,
-    val lastPointDotRadius: Float = 3f,
-    val smoothCurve: Boolean = false,
-    val animation: Animation = Animation.Disabled,
-) {
-    init {
-        require(lineWidth > 0f) { "lineWidth must be greater than 0" }
-        require(fillAlpha in 0f..1f) { "fillAlpha must be between 0 and 1" }
-        require(lastPointDotRadius > 0f) { "lastPointDotRadius must be greater than 0" }
-    }
-}
 
 /**
  * A minimal inline chart of a single value series: no axes, labels, padding, or interaction — just
