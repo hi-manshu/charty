@@ -8,6 +8,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextMeasurer
@@ -19,7 +20,9 @@ import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
+import com.himanshoe.charty3d.internal.SceneFit
 import com.himanshoe.charty3d.internal.bar3DFaces
+import com.himanshoe.charty3d.internal.bar3DFit
 import com.himanshoe.charty3d.internal.drawBar3DCategoryLabels
 import com.himanshoe.charty3d.internal.drawBar3DFloor
 import com.himanshoe.charty3d.internal.drawBar3DLabels
@@ -108,13 +111,21 @@ fun Bar3DChart(
                     },
                 ),
     ) {
-        val faces =
-            bar3DFaces(
+        val fit =
+            bar3DFit(
                 size = size,
                 dataList = dataList,
                 maxValue = maxValue,
                 config = barConfig,
                 progress = progress.value,
+            )
+        val faces =
+            bar3DFaces(
+                dataList = dataList,
+                maxValue = maxValue,
+                config = barConfig,
+                progress = progress.value,
+                fit = fit,
             )
         drawnFaces.clear()
         drawnFaces.addAll(faces)
@@ -126,6 +137,7 @@ fun Bar3DChart(
             color = color,
             config = barConfig,
             progress = progress.value,
+            fit = fit,
             textMeasurer = textMeasurer,
         )
     }
@@ -139,25 +151,29 @@ private fun DrawScope.drawBar3DScene(
     color: ChartyColor,
     config: Bar3DChartConfig,
     progress: Float,
+    fit: SceneFit,
     textMeasurer: TextMeasurer,
 ) {
+    config.plotBackground?.let { background ->
+        drawRect(brush = Brush.verticalGradient(background.value), size = size)
+    }
     if (config.showFloor) {
-        drawBar3DFloor(size = size, config = config)
+        drawBar3DFloor(config = config, fit = fit)
     }
     faces.sortedFarToNear().fastForEach { face ->
         val base = face.payload.color ?: color
         drawPath(path = face.toPath(), color = shadeForSide(color = base.value.first(), side = face.side))
     }
     if (config.showCategoryLabels) {
-        drawBar3DCategoryLabels(size = size, dataList = dataList, config = config, textMeasurer = textMeasurer)
+        drawBar3DCategoryLabels(dataList = dataList, config = config, fit = fit, textMeasurer = textMeasurer)
     }
     if (config.showValueLabels) {
         drawBar3DLabels(
-            size = size,
             dataList = dataList,
             maxValue = maxValue,
             config = config,
             progress = progress,
+            fit = fit,
             textMeasurer = textMeasurer,
         )
     }

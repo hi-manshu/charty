@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
@@ -56,6 +57,7 @@ internal fun Bar3DPlayground() {
     var yaw by remember { mutableStateOf(14) }
     var perspective by remember { mutableStateOf(0) }
     var depthFraction by remember { mutableStateOf(45) }
+    var background by remember { mutableStateOf(false) }
     var widthFraction by remember { mutableStateOf(62) }
     var showValueLabels by remember { mutableStateOf(false) }
     var showFloor by remember { mutableStateOf(true) }
@@ -91,7 +93,11 @@ internal fun Bar3DPlayground() {
                 barWidthFraction = ${fc(widthFraction / 100f)},
                 barDepthFraction = ${fc(depthFraction / 100f)},
                 showValueLabels = $showValueLabels,
-                showFloor = $showFloor,
+                showFloor = $showFloor,${codeArg(
+            include = background,
+            text = "plotBackground = ChartyColor.Gradient(listOf(tint, Color.Transparent)),",
+            indent = 16,
+        )}
             ),
             onBarClick = { bar -> /* ${clicked?.label ?: "tap a bar"} */ },
         )
@@ -113,6 +119,14 @@ internal fun Bar3DPlayground() {
                         animation = animation,
                         showValueLabels = showValueLabels,
                         showFloor = showFloor,
+                        plotBackground =
+                            if (background) {
+                                ChartyColor.Gradient(
+                                    listOf(playgroundPalette[4].copy(alpha = 0.10f), Color.Transparent),
+                                )
+                            } else {
+                                null
+                            },
                     ),
                 onBarClick = { clicked = it },
             )
@@ -127,8 +141,8 @@ internal fun Bar3DPlayground() {
                 onSelect = { preset = it },
             )
             if (preset == ProjectionPreset.Custom) {
-                IntSliderRow(label = "Pitch (°)", value = pitch, valueRange = -45..60, onValueChange = { pitch = it })
-                IntSliderRow(label = "Yaw (°)", value = yaw, valueRange = -60..60, onValueChange = { yaw = it })
+                IntSliderRow(label = "Pitch (°)", value = pitch, valueRange = -30..45, onValueChange = { pitch = it })
+                IntSliderRow(label = "Yaw (°)", value = yaw, valueRange = -40..40, onValueChange = { yaw = it })
                 IntSliderRow(
                     label = "Perspective (%)",
                     value = perspective,
@@ -161,6 +175,7 @@ internal fun Bar3DPlayground() {
             )
             SwitchRow(label = "Value labels", checked = showValueLabels, onCheckedChange = { showValueLabels = it })
             SwitchRow(label = "Floor plane", checked = showFloor, onCheckedChange = { showFloor = it })
+            SwitchRow(label = "Plot background", checked = background, onCheckedChange = { background = it })
             ControlSection(title = "Data")
             PlaygroundActionRow(primaryLabel = "Shuffle data", onPrimary = { tick++ })
             ControlSection(title = "Last click")

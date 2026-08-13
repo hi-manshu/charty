@@ -8,6 +8,7 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
 import com.himanshoe.charty3d.bar.config.toBar3DLabel
 import com.himanshoe.charty3d.internal.bar3DFaces
+import com.himanshoe.charty3d.internal.bar3DFit
 import com.himanshoe.charty3d.projection.FaceSide
 import com.himanshoe.charty3d.projection.ProjectedFace
 import com.himanshoe.charty3d.projection.Projection3D
@@ -35,11 +36,17 @@ private val bars =
 private fun facesFor(
     config: Bar3DChartConfig = Bar3DChartConfig(animation = Animation.Disabled),
     progress: Float = 1f,
-) = bar3DFaces(size = canvas, dataList = bars, maxValue = 100f, config = config, progress = progress)
+) = bar3DFaces(
+    dataList = bars,
+    maxValue = 100f,
+    config = config,
+    progress = progress,
+    fit = bar3DFit(size = canvas, dataList = bars, maxValue = 100f, config = config, progress = progress),
+)
 
 class Bar3DGeometryTest {
     @Test
-    fun everyBarContributesItsThreeVisibleFaces() {
+    fun aTiltedBarShowsExactlyItsThreeFacingSides() {
         assertEquals(bars.size * 3, facesFor().size)
     }
 
@@ -50,6 +57,50 @@ class Bar3DGeometryTest {
     }
 
     @Test
+    fun aHeadOnBarShowsOnlyItsFrontBecauseTheOthersAreEdgeOn() {
+        val headOn = Bar3DChartConfig(projection = Projection3D(pitch = 0f, yaw = 0f, perspective = 0f))
+        val faces = facesFor(config = headOn)
+        assertEquals(bars.size, faces.size)
+        assertTrue(faces.all { face -> face.side == FaceSide.FRONT })
+    }
+
+    @Test
+    fun swingingTheYawTheOtherWayStillShowsThreeFaces() {
+        val leftward = Bar3DChartConfig(projection = Projection3D(pitch = 18f, yaw = -14f, perspective = 0f))
+        assertEquals(bars.size * 3, facesFor(config = leftward).size)
+    }
+
+    @Test
+    fun aNegativeYawShowsTheOppositeFlankToAPositiveOne() {
+        fun flankCentreX(yaw: Float): Float {
+            val config = Bar3DChartConfig(projection = Projection3D(pitch = 18f, yaw = yaw, perspective = 0f))
+            val faces = facesFor(config = config).filter { face -> face.payload.label == "b" }
+            val side = faces.first { face -> face.side == FaceSide.SIDE }
+            val bar = faces.first { face -> face.side == FaceSide.FRONT }
+            return side.points
+                .map { it.x }
+                .average()
+                .toFloat() -
+                bar.points
+                    .map { it.x }
+                    .average()
+                    .toFloat()
+        }
+        assertTrue(
+            flankCentreX(yaw = 20f) * flankCentreX(yaw = -20f) < 0f,
+            "the visible flank must swap sides with the yaw, not stay pinned to one",
+        )
+    }
+
+    @Test
+    fun tippingThePitchBelowTheHorizonShowsTheUndersideNotTheTop() {
+        val fromBelow = Bar3DChartConfig(projection = Projection3D(pitch = -25f, yaw = 14f, perspective = 0f))
+        val faces = facesFor(config = fromBelow)
+        assertEquals(bars.size * 3, faces.size)
+        assertTrue(faces.any { face -> face.side == FaceSide.TOP })
+    }
+
+    @Test
     fun everyFaceCarriesItsOwnBarSoATapCanResolveBackToData() {
         val payloads = facesFor().map { face -> face.payload.label }.toSet()
         assertEquals(setOf("a", "b", "c"), payloads)
@@ -57,18 +108,22 @@ class Bar3DGeometryTest {
 
     @Test
     fun emptyDataBuildsNoFaces() {
+        val config = Bar3DChartConfig()
         val faces =
-            bar3DFaces(size = canvas, dataList = emptyList(), maxValue = 1f, config = Bar3DChartConfig(), progress = 1f)
+            bar3DFaces(
+                dataList = emptyList(),
+                maxValue = 1f,
+                config = config,
+                progress = 1f,
+                fit = bar3DFit(size = canvas, dataList = emptyList(), maxValue = 1f, config = config, progress = 1f),
+            )
         assertTrue(faces.isEmpty())
     }
 
     @Test
-    fun zeroProgressCollapsesEveryBarOntoTheFloor() {
+    fun zeroProgressLeavesNoStandingBarToDraw() {
         val flat = Projection3D(pitch = 0f, yaw = 0f, perspective = 0f)
-        val faces = facesFor(config = Bar3DChartConfig(projection = flat), progress = 0f)
-        val front = faces.first { face -> face.side == FaceSide.FRONT }
-        val heights = front.points.map { point -> point.y }
-        assertEquals(heights.min(), heights.max(), TOLERANCE)
+        assertTrue(facesFor(config = Bar3DChartConfig(projection = flat), progress = 0f).isEmpty())
     }
 
     @Test
@@ -86,9 +141,10 @@ class Bar3DGeometryTest {
     }
 
     @Test
-    fun flatBarsStillBuildFacesWhenDepthIsZero() {
+    fun zeroDepthBarsShowOnlyTheirFrontFace() {
         val faces = facesFor(config = Bar3DChartConfig(barDepthFraction = 0f))
-        assertEquals(bars.size * 3, faces.size)
+        assertEquals(bars.size, faces.size)
+        assertTrue(faces.all { face -> face.side == FaceSide.FRONT })
     }
 
     @Test
@@ -171,5 +227,43 @@ class Bar3DLabelTest {
     @Test
     fun fractionsKeepTheirDecimals() {
         assertEquals("20.5", 20.5f.toBar3DLabel())
+    }
+}
+
+class SceneFitTest {
+    private fun fitFor(config: Bar3DChartConfig) =
+        bar3DFit(size = canvas, dataList = bars, maxValue = 100f, config = config, progress = 1f)
+
+    @Test
+    fun everyFaceLandsInsideTheCanvasAtAnExtremeAngle() {
+        val extreme =
+            Bar3DChartConfig(projection = Projection3D(pitch = 55f, yaw = -50f, depth = 0.9f, perspective = 0.7f))
+        val faces =
+            bar3DFaces(
+                dataList = bars,
+                maxValue = 100f,
+                config = extreme,
+                progress = 1f,
+                fit = fitFor(extreme),
+            )
+        val points = faces.flatMap { face -> face.points }
+        assertTrue(points.all { point -> point.x >= -1f && point.x <= canvas.width + 1f }, "scene ran off horizontally")
+        assertTrue(points.all { point -> point.y >= -1f && point.y <= canvas.height + 1f }, "scene ran off vertically")
+    }
+
+    @Test
+    fun theSceneFillsTheCanvasRatherThanHuddlingInACorner() {
+        val faces =
+            bar3DFaces(
+                dataList = bars,
+                maxValue = 100f,
+                config = Bar3DChartConfig(),
+                progress = 1f,
+                fit = fitFor(Bar3DChartConfig()),
+            )
+        val points = faces.flatMap { face -> face.points }
+        val spanX = points.maxOf { it.x } - points.minOf { it.x }
+        val spanY = points.maxOf { it.y } - points.minOf { it.y }
+        assertTrue(spanX > canvas.width * 0.5f || spanY > canvas.height * 0.5f, "the scene was fitted far too small")
     }
 }

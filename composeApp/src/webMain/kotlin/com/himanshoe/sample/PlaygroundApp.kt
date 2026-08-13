@@ -177,9 +177,9 @@ private fun WebTopBar(
         TopBarPill(
             text =
                 if (animate) {
-                    "◐ Animation: on"
+                    "Animation: on"
                 } else {
-                    "◐ Animation: off"
+                    "Animation: off"
                 },
             highlighted = animate,
             onClick = onToggleAnimate,
@@ -188,9 +188,9 @@ private fun WebTopBar(
         TopBarPill(
             text =
                 if (dark) {
-                    "☀︎ Light"
+                    "Light"
                 } else {
-                    "☾ Dark"
+                    "Dark"
                 },
             highlighted = false,
             onClick = onToggleDark,

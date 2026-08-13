@@ -138,6 +138,9 @@ import com.himanshoe.charty.radar.config.RadarChartConfig
 import com.himanshoe.charty.radar.config.RadarLabelConfig
 import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
+import com.himanshoe.charty3d.bar.Bar3DChart
+import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
+import com.himanshoe.charty3d.projection.Projection3D
 
 /** A single configuration of a chart — one "iteration" shown on the chart's detail screen. */
 private data class ChartVariant(
@@ -2046,6 +2049,45 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                     FunnelChart(
                         data = { funnelStages },
                         funnelConfig = FunnelChartConfig(orientation = FunnelOrientation.HORIZONTAL),
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "3D Bar",
+            "Projected solids — from the charty-3d artifact",
+            "Specialized",
+            purple,
+            listOf(
+                ChartVariant("Default (parallel projection)") {
+                    Bar3DChart(data = { bars }, modifier = chartFill)
+                },
+                ChartVariant("Isometric") {
+                    Bar3DChart(
+                        data = { bars },
+                        barConfig = Bar3DChartConfig(projection = Projection3D.Isometric),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Dramatic (perspective distorts comparison)") {
+                    Bar3DChart(
+                        data = { bars },
+                        barConfig = Bar3DChartConfig(projection = Projection3D.Dramatic),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Value labels, no floor") {
+                    Bar3DChart(
+                        data = { bars },
+                        barConfig = Bar3DChartConfig(showValueLabels = true, showFloor = false),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Flat bars (zero depth)") {
+                    Bar3DChart(
+                        data = { bars },
+                        barConfig = Bar3DChartConfig(barDepthFraction = 0f),
                         modifier = chartFill,
                     )
                 },

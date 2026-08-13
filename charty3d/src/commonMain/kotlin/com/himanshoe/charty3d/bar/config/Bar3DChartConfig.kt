@@ -3,6 +3,7 @@ package com.himanshoe.charty3d.bar.config
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty3d.projection.Projection3D
 
@@ -27,6 +28,8 @@ private const val LABEL_SP = 11f
  * @property categoryLabelStyle Text style for the category labels.
  * @property showFloor Whether a shaded floor plane is drawn under the bars, which gives the eye a
  *   ground to read the depth against.
+ * @property plotBackground Fill painted behind the whole scene; `null` leaves the chart transparent
+ *   so whatever it sits on shows through.
  */
 @Stable
 data class Bar3DChartConfig(
@@ -40,6 +43,7 @@ data class Bar3DChartConfig(
     val showCategoryLabels: Boolean = true,
     val categoryLabelStyle: TextStyle = TextStyle(fontSize = LABEL_SP.sp),
     val showFloor: Boolean = true,
+    val plotBackground: ChartyColor? = null,
 ) {
     init {
         require(barWidthFraction in 0f..1f) { "barWidthFraction must be between 0 and 1, got: $barWidthFraction" }
