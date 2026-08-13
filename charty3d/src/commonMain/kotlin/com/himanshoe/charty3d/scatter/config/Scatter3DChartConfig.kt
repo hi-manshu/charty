@@ -28,6 +28,13 @@ private const val LABEL_SP = 10f
  * @property boxStrokeWidth Stroke width of the wireframe box, in pixels.
  * @property showDropLines Whether a line drops from each point to the floor of the box, which fixes
  *   its depth for the eye far better than its size alone.
+ * @property sphereShading Whether each point is shaded as a lit sphere rather than filled flat. A
+ *   flat disc reads as a hole punched in the page; the same highlight and falloff the solid charts
+ *   use on their faces is what makes it read as a ball sitting in the box.
+ * @property showFloorShadows Whether each point casts a shadow on the floor of the box. The shadow
+ *   is squashed by the viewing pitch, the way a real one would be, and it does more to place a point
+ *   in space than either the drop line or the size does.
+ * @property floorShadowAlpha Opacity of those shadows at their darkest.
  * @property dropLineAlpha Opacity of the drop lines.
  * @property animation How points fade and rise in. See [Animation].
  * @property showLabels Whether each point's label is drawn beside it.
@@ -46,6 +53,9 @@ data class Scatter3DChartConfig(
     val boxStrokeWidth: Float = 1f,
     val showDropLines: Boolean = true,
     val dropLineAlpha: Float = 0.25f,
+    val sphereShading: Boolean = true,
+    val showFloorShadows: Boolean = true,
+    val floorShadowAlpha: Float = 0.18f,
     val animation: Animation = Animation.Default,
     val showLabels: Boolean = false,
     val labelStyle: TextStyle = TextStyle(fontSize = LABEL_SP.sp),
@@ -57,5 +67,6 @@ data class Scatter3DChartConfig(
         require(farScale > 0f) { "farScale must be positive, got: $farScale" }
         require(boxStrokeWidth >= 0f) { "boxStrokeWidth must be non-negative, got: $boxStrokeWidth" }
         require(dropLineAlpha in 0f..1f) { "dropLineAlpha must be between 0 and 1, got: $dropLineAlpha" }
+        require(floorShadowAlpha in 0f..1f) { "floorShadowAlpha must be between 0 and 1, got: $floorShadowAlpha" }
     }
 }

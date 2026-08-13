@@ -5,11 +5,14 @@ import androidx.compose.ui.geometry.Size
 import com.himanshoe.charty3d.projection.Point3D
 import com.himanshoe.charty3d.scatter.config.Scatter3DChartConfig
 import com.himanshoe.charty3d.scatter.data.Scatter3DPoint
+import kotlin.math.abs
+import kotlin.math.sin
 
 private const val SCENE_EXTENT = 100f
 private const val EDGE_PADDING = 20f
 private const val HALF = 2f
 private const val MIN_SPAN = 0.0001f
+private const val DEGREES_TO_RADIANS = 0.017453292f
 
 /** The measured range of a scatter along one axis, and how to map a value onto the scene. */
 internal data class AxisRange(
@@ -190,3 +193,13 @@ internal fun List<ProjectedPoint>.hitTestPoints(position: Offset): Scatter3DPoin
             val dy = position.y - point.position.y
             dx * dx + dy * dy <= point.radius * point.radius
         }?.data
+
+/**
+ * How much a circle lying on the box's floor is squashed vertically once projected.
+ *
+ * A horizontal plane seen at pitch θ compresses by `sin θ`, so a point's round shadow becomes an
+ * ellipse of that aspect. Deriving it rather than picking a constant is what keeps the shadow
+ * agreeing with the box it falls inside as the angle changes.
+ */
+internal fun scatter3DFloorSquash(config: Scatter3DChartConfig): Float =
+    abs(sin(config.projection.pitch * DEGREES_TO_RADIANS))

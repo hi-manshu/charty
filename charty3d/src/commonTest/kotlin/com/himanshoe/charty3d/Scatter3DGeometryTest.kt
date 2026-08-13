@@ -213,3 +213,49 @@ class Scatter3DConfigTest {
         assertTrue(config.showDropLines)
     }
 }
+
+class Scatter3DShadowTest {
+    @Test
+    fun aSteeperPitchSquashesTheShadowLess() {
+        fun squashAt(pitch: Float) =
+            com.himanshoe.charty3d.internal.scatter3DFloorSquash(
+                Scatter3DChartConfig(projection = Projection3D(pitch = pitch, yaw = 20f, perspective = 0f)),
+            )
+        assertTrue(
+            squashAt(pitch = 45f) > squashAt(pitch = 10f),
+            "looking down more steeply must round the shadow out, not flatten it further",
+        )
+    }
+
+    @Test
+    fun aHeadOnViewFlattensTheShadowToNothing() {
+        val flat =
+            com.himanshoe.charty3d.internal.scatter3DFloorSquash(
+                Scatter3DChartConfig(projection = Projection3D(pitch = 0f, yaw = 0f, perspective = 0f)),
+            )
+        assertEquals(0f, flat, SCATTER_TOLERANCE)
+    }
+
+    @Test
+    fun theSquashIsNeverNegativeWhicheverWayThePitchGoes() {
+        listOf(-40f, -10f, 10f, 40f).forEach { pitch ->
+            val squash =
+                com.himanshoe.charty3d.internal.scatter3DFloorSquash(
+                    Scatter3DChartConfig(projection = Projection3D(pitch = pitch, yaw = 0f, perspective = 0f)),
+                )
+            assertTrue(squash >= 0f, "a shadow cannot have negative height")
+        }
+    }
+
+    @Test
+    fun anOutOfRangeShadowAlphaIsRejected() {
+        assertFailsWith<IllegalArgumentException> { Scatter3DChartConfig(floorShadowAlpha = 1.4f) }
+    }
+
+    @Test
+    fun shadingAndShadowsAreOnByDefaultBecauseFlatDiscsDoNotReadAsBalls() {
+        val config = Scatter3DChartConfig()
+        assertTrue(config.sphereShading)
+        assertTrue(config.showFloorShadows)
+    }
+}

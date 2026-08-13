@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -27,13 +28,20 @@ import com.himanshoe.charty3d.internal.SceneFit
 import com.himanshoe.charty3d.internal.hitTestPoints
 import com.himanshoe.charty3d.internal.scatter3DBoxEdges
 import com.himanshoe.charty3d.internal.scatter3DFit
+import com.himanshoe.charty3d.internal.scatter3DFloorSquash
 import com.himanshoe.charty3d.internal.scatter3DPoints
 import com.himanshoe.charty3d.internal.scatter3DRanges
+import com.himanshoe.charty3d.projection.FaceSide
+import com.himanshoe.charty3d.projection.shadeForSide
 import com.himanshoe.charty3d.scatter.config.Scatter3DChartConfig
 import com.himanshoe.charty3d.scatter.data.Scatter3DPoint
 
 private const val LABEL_GAP = 6f
 private const val BOX_ALPHA = 0.35f
+private const val HIGHLIGHT_OFFSET = 0.35f
+private const val HIGHLIGHT_SPREAD = 1.15f
+private const val SHADOW_SPREAD_AT_HEIGHT = 0.8f
+private const val SHADOW_FADE_AT_HEIGHT = 0.65f
 
 /**
  * A scatter plot of three variables, projected onto the canvas from a configurable viewing angle.
@@ -124,7 +132,14 @@ fun Scatter3DChart(
         if (scatterConfig.showBox) {
             drawScatter3DBox(config = scatterConfig, fit = fit)
         }
-        points.sortedByDescending { point -> point.depth }.fastForEach { point ->
+        val farToNear = points.sortedByDescending { point -> point.depth }
+        if (scatterConfig.showFloorShadows) {
+            val squash = scatter3DFloorSquash(scatterConfig)
+            farToNear.fastForEach { point ->
+                drawScatter3DShadow(point = point, config = scatterConfig, squash = squash)
+            }
+        }
+        farToNear.fastForEach { point ->
             val fill = (point.data.color ?: color).value.first()
             if (scatterConfig.showDropLines) {
                 drawLine(
@@ -134,7 +149,7 @@ fun Scatter3DChart(
                     strokeWidth = scatterConfig.boxStrokeWidth,
                 )
             }
-            drawCircle(color = fill, radius = point.radius, center = point.position)
+            drawScatter3DPoint(point = point, fill = fill, shaded = scatterConfig.sphereShading)
             if (scatterConfig.showLabels && point.data.label.isNotEmpty()) {
                 drawScatter3DLabel(point = point, config = scatterConfig, textMeasurer = textMeasurer)
             }
@@ -172,5 +187,69 @@ private fun DrawScope.drawScatter3DLabel(
                 x = point.position.x - layout.size.width / 2f,
                 y = point.position.y - point.radius - layout.size.height - LABEL_GAP,
             ),
+    )
+}
+
+/**
+ * Draws one observation, shaded as a lit sphere unless [shaded] is off.
+ *
+ * The highlight sits up and to the left of centre and the fill falls away to a darker rim, which is
+ * the same light the solid charts shade their faces by — a chart mixing two lighting directions
+ * reads as two charts.
+ */
+private fun DrawScope.drawScatter3DPoint(
+    point: ProjectedPoint,
+    fill: Color,
+    shaded: Boolean,
+) {
+    if (!shaded) {
+        drawCircle(color = fill, radius = point.radius, center = point.position)
+        return
+    }
+    drawCircle(
+        brush =
+            Brush.radialGradient(
+                colors =
+                    listOf(
+                        shadeForSide(color = fill, side = FaceSide.TOP),
+                        fill,
+                        shadeForSide(color = fill, side = FaceSide.SIDE),
+                    ),
+                center =
+                    Offset(
+                        x = point.position.x - point.radius * HIGHLIGHT_OFFSET,
+                        y = point.position.y - point.radius * HIGHLIGHT_OFFSET,
+                    ),
+                radius = point.radius * HIGHLIGHT_SPREAD,
+            ),
+        radius = point.radius,
+        center = point.position,
+    )
+}
+
+/**
+ * Draws the shadow an observation casts on the floor of the box: an ellipse at its foot, squashed by
+ * the viewing pitch, fading as the point rises away from the floor.
+ *
+ * The fade is what makes the shadow informative rather than decorative — a point resting on the
+ * floor has a tight dark shadow, one high above it a faint diffuse one, which is the cue the eye
+ * already knows how to read.
+ */
+private fun DrawScope.drawScatter3DShadow(
+    point: ProjectedPoint,
+    config: Scatter3DChartConfig,
+    squash: Float,
+) {
+    val height = (point.floor.y - point.position.y).coerceAtLeast(0f)
+    val lift = (height / size.height).coerceIn(0f, 1f)
+    val spread = point.radius * (1f + lift * SHADOW_SPREAD_AT_HEIGHT)
+    val alpha = config.floorShadowAlpha * (1f - lift * SHADOW_FADE_AT_HEIGHT)
+    if (alpha <= 0f) {
+        return
+    }
+    drawOval(
+        color = Color.Black.copy(alpha = alpha),
+        topLeft = Offset(x = point.floor.x - spread, y = point.floor.y - spread * squash),
+        size = Size(width = spread * 2f, height = spread * 2f * squash),
     )
 }
