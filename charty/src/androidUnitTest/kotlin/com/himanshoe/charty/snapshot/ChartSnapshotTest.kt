@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.config.BarChartConfig
@@ -30,6 +31,14 @@ import org.robolectric.annotation.GraphicsMode
  * Golden-image snapshot tests: render each chart with a fixed dataset (animation disabled so the
  * capture is deterministic) and compare against a committed PNG. Regenerate baselines with
  * `./gradlew :charty:recordRoborazziDebug`; verify in CI with `:charty:verifyRoborazziDebug`.
+ *
+ * Comparison allows a small fraction of pixels to differ. Baselines are recorded on whichever
+ * machine a contributor happens to use, and the platforms do not anti-alias identically — a curve or
+ * a glyph edge lands on slightly different subpixels on Linux than on macOS. Demanding an exact match
+ * makes the suite fail for everyone whose OS differs from whoever recorded last, which teaches people
+ * to re-record on red rather than to read the diff. The threshold is well below what any real change
+ * to a chart moves: a shifted axis, a wrong colour, or a missing series is orders of magnitude more
+ * pixels than edge noise.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -81,7 +90,13 @@ class ChartSnapshotTest {
         name: String,
         content: @Composable () -> Unit,
     ) {
-        captureRoboImage(filePath = "src/androidUnitTest/snapshots/$name.png") {
+        captureRoboImage(
+            filePath = "src/androidUnitTest/snapshots/$name.png",
+            roborazziOptions =
+                RoborazziOptions(
+                    compareOptions = RoborazziOptions.CompareOptions(changeThreshold = ANTIALIASING_TOLERANCE),
+                ),
+        ) {
             Box(modifier = Modifier.size(width = 360.dp, height = 220.dp).background(Color.White)) {
                 content()
             }
@@ -90,3 +105,4 @@ class ChartSnapshotTest {
 }
 
 private const val SNAPSHOT_SDK = 34
+private const val ANTIALIASING_TOLERANCE = 0.01f

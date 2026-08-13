@@ -41,8 +41,10 @@ jobs:
         run: ./gradlew :charty:jvmTest --no-daemon
 
       # Roborazzi renders each chart and diffs it against the committed golden PNGs.
-      # Baselines are OS-sensitive (font antialiasing); if they were recorded on a different OS,
-      # regenerate on Linux with `./gradlew :charty:recordRoborazziDebug` and commit the result.
+      # Only the snapshot suite is verified. The DocImageGenerator classes in the same source set
+      # write the PNGs the documentation embeds; they are asset generators that never assert, and
+      # holding their output to a pixel-exact baseline would fail this job every time someone
+      # regenerated the docs on a different OS from whoever recorded last.
       - name: Snapshot verification
-        run: ./gradlew :charty:verifyRoborazziDebug --no-daemon
+        run: ./gradlew :charty:verifyRoborazziDebug --no-daemon --tests "com.himanshoe.charty.snapshot.*"
 
