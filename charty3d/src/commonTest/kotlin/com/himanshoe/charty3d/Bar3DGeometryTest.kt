@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
+import com.himanshoe.charty3d.bar.config.Bar3DLabelPlacement
 import com.himanshoe.charty3d.bar.config.toBar3DLabel
 import com.himanshoe.charty3d.internal.bar3DFaces
 import com.himanshoe.charty3d.internal.bar3DFit
@@ -267,3 +268,84 @@ class SceneFitTest {
         assertTrue(spanX > canvas.width * 0.5f || spanY > canvas.height * 0.5f, "the scene was fitted far too small")
     }
 }
+
+class LabelPlacementTest {
+    @Test
+    fun placementDefaultsToAutoSoAChartIsReadableWithoutBeingTold() {
+        assertEquals(Bar3DLabelPlacement.AUTO, Bar3DChartConfig().categoryLabelPlacement)
+    }
+
+    @Test
+    fun autoReservesFootroomLikeFloorDoesBecauseItMayStillUseTheFloor() {
+        fun scaleFor(placement: Bar3DLabelPlacement): Float {
+            val config = Bar3DChartConfig(categoryLabelPlacement = placement, showCategoryLabels = true)
+            return bar3DFit(
+                size = Size(width = 2000f, height = 200f),
+                dataList = bars,
+                maxValue = 100f,
+                config = config,
+                progress = 1f,
+            ).scale
+        }
+        assertEquals(scaleFor(Bar3DLabelPlacement.FLOOR), scaleFor(Bar3DLabelPlacement.AUTO), TOLERANCE)
+        assertTrue(
+            scaleFor(Bar3DLabelPlacement.TOP_FACE) > scaleFor(Bar3DLabelPlacement.FLOOR),
+            "pinning labels to the top face frees the room the floor labels needed",
+        )
+    }
+
+    @Test
+    fun theThreePlacementsAreDistinct() {
+        assertEquals(3, Bar3DLabelPlacement.entries.size)
+    }
+}
+
+class PerspectiveShapeTest {
+    private val presets =
+        listOf(
+            "Default" to Projection3D.Default,
+            "Isometric" to Projection3D.Isometric,
+            "Subtle" to Projection3D.Subtle,
+            "Dramatic" to Projection3D.Dramatic,
+        )
+
+    @Test
+    fun noPresetCollapsesABarIntoASpike() {
+        presets.forEach { (name, projection) ->
+            val config = Bar3DChartConfig(projection = projection)
+            val fit = bar3DFit(size = canvas, dataList = bars, maxValue = 100f, config = config, progress = 1f)
+            val faces = bar3DFaces(dataList = bars, maxValue = 100f, config = config, progress = 1f, fit = fit)
+            faces.forEach { face ->
+                val widths = face.points.map { point -> point.x }
+                val heights = face.points.map { point -> point.y }
+                val spanX = widths.max() - widths.min()
+                val spanY = heights.max() - heights.min()
+                assertTrue(
+                    spanX <= canvas.width * SPIKE_LIMIT && spanY <= canvas.height * SPIKE_LIMIT,
+                    "$name produced a face spanning ${spanX}x$spanY on a ${canvas.width}x${canvas.height} " +
+                        "canvas; that is the runaway perspective divide",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun everyPresetKeepsItsBarsOnTheCanvas() {
+        presets.forEach { (name, projection) ->
+            val config = Bar3DChartConfig(projection = projection)
+            val fit = bar3DFit(size = canvas, dataList = bars, maxValue = 100f, config = config, progress = 1f)
+            val points =
+                bar3DFaces(dataList = bars, maxValue = 100f, config = config, progress = 1f, fit = fit)
+                    .flatMap { face -> face.points }
+            assertTrue(
+                points.all { point ->
+                    point.x >= -1f && point.x <= canvas.width + 1f && point.y >= -1f && point.y <= canvas.height + 1f
+                },
+                "$name drew outside the canvas",
+            )
+        }
+    }
+}
+
+/** A single face may not span more than this much of the canvas; beyond it, the projection ran away. */
+private const val SPIKE_LIMIT = 1.05f

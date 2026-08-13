@@ -6,7 +6,20 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 private const val DEGREES_TO_RADIANS = 0.017453292f
-private const val MIN_PERSPECTIVE_DENOMINATOR = 0.0001f
+
+/**
+ * The scene extent a [Projection3D.depth] of `1f` stands for. Depth is given as a fraction so a
+ * projection reads the same whatever size the chart lays its scene out at; this is what turns that
+ * fraction back into the distance the perspective divide needs.
+ */
+private const val PERSPECTIVE_REFERENCE_EXTENT = 140f
+
+/**
+ * The closest the perspective divide is allowed to get to zero. A point at or behind the eye has no
+ * honest projection, and letting the divide run away turns one corner of a solid into a spike that
+ * shoots off the canvas. Clamping stretches such a point instead, which is wrong but bounded.
+ */
+private const val MIN_PERSPECTIVE_DENOMINATOR = 0.25f
 
 /**
  * A point in the chart's own three-dimensional space, before any rotation or projection.
@@ -29,8 +42,9 @@ data class Point3D(
  *   scene upward, which is the view that reads as "looking down at" the chart.
  * @property yaw Rotation about the vertical axis, in degrees; positive swings the right-hand side of
  *   the scene toward the viewer.
- * @property depth How far back the scene extends, in the same units as the plot's width, deciding
- *   how much room a chart has to separate its layers.
+ * @property depth How far back the scene extends, as a fraction of the plot's own extent. It is the
+ *   reference distance the perspective divide measures against, so a smaller depth makes the same
+ *   [perspective] converge harder. It has no effect at all when [perspective] is `0f`.
  * @property perspective Strength of the perspective foreshortening, from `0f` for a purely
  *   isometric projection — every equal length stays equal, which keeps bars comparable — up to `1f`
  *   for a strongly convergent one, which looks more photographic but distorts value comparison.
@@ -85,11 +99,12 @@ data class Projection3D(
         if (perspective == 0f) {
             return Offset(x = origin.x + view.x, y = origin.y + view.y)
         }
-        val denominator = (1f + perspective * view.z / depthOrOne()).coerceAtLeast(MIN_PERSPECTIVE_DENOMINATOR)
+        val reference = depthOrOne() * PERSPECTIVE_REFERENCE_EXTENT
+        val denominator = (1f + perspective * view.z / reference).coerceAtLeast(MIN_PERSPECTIVE_DENOMINATOR)
         return Offset(x = origin.x + view.x / denominator, y = origin.y + view.y / denominator)
     }
 
-    /** The depth used as the perspective reference, guarding a zero-depth scene against dividing by zero. */
+    /** The depth fraction, guarding a zero-depth scene against dividing by zero. */
     private fun depthOrOne(): Float =
         if (depth <= 0f) {
             1f

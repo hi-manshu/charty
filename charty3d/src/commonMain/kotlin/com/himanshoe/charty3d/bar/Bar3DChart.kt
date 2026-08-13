@@ -165,7 +165,15 @@ private fun DrawScope.drawBar3DScene(
         drawPath(path = face.toPath(), color = shadeForSide(color = base.value.first(), side = face.side))
     }
     if (config.showCategoryLabels) {
-        drawBar3DCategoryLabels(dataList = dataList, config = config, fit = fit, textMeasurer = textMeasurer)
+        drawBar3DCategoryLabels(
+            dataList = dataList,
+            maxValue = maxValue,
+            config = config,
+            progress = progress,
+            fit = fit,
+            faces = faces,
+            textMeasurer = textMeasurer,
+        )
     }
     if (config.showValueLabels) {
         drawBar3DLabels(

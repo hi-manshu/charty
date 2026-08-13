@@ -12,6 +12,9 @@ import kotlin.test.assertTrue
 private const val TOLERANCE = 0.001f
 private val origin = Offset(x = 100f, y = 200f)
 
+/** Far beyond any sane projection of a scene this size; anything past it is a runaway divide. */
+private const val RUNAWAY_LIMIT = 1000f
+
 class ProjectionTest {
     @Test
     fun headOnProjectionLeavesAPointWhereItStarted() {
@@ -79,6 +82,33 @@ class ProjectionTest {
     @Test
     fun perspectiveOutsideZeroToOneIsRejected() {
         assertFailsWith<IllegalArgumentException> { Projection3D(perspective = 1.5f) }
+    }
+
+    @Test
+    fun everyPresetKeepsASceneSizedPointNearTheOrigin() {
+        val presets =
+            listOf(
+                Projection3D.Default,
+                Projection3D.Isometric,
+                Projection3D.Subtle,
+                Projection3D.Dramatic,
+            )
+        presets.forEach { projection ->
+            val far = projection.project(point = Point3D(x = 100f, y = -62f, z = 45f), origin = origin)
+            assertTrue(
+                abs(far.x - origin.x) < RUNAWAY_LIMIT && abs(far.y - origin.y) < RUNAWAY_LIMIT,
+                "a scene-sized point must not fly off under $projection; that is the spike a bad " +
+                    "perspective divide produces",
+            )
+        }
+    }
+
+    @Test
+    fun aPointBehindTheEyeIsStretchedRatherThanSentToInfinity() {
+        val convergent = Projection3D(pitch = 30f, yaw = 30f, depth = 0.1f, perspective = 1f)
+        val behind = convergent.project(point = Point3D(x = 40f, y = -40f, z = 4000f), origin = origin)
+        assertTrue(behind.x.isFinite() && behind.y.isFinite())
+        assertTrue(abs(behind.x - origin.x) < RUNAWAY_LIMIT && abs(behind.y - origin.y) < RUNAWAY_LIMIT)
     }
 
     @Test

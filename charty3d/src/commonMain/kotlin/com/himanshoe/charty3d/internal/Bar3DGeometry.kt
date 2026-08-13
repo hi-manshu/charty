@@ -5,12 +5,15 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
+import com.himanshoe.charty3d.bar.config.Bar3DLabelPlacement
 import com.himanshoe.charty3d.projection.Point3D
 import com.himanshoe.charty3d.projection.ProjectedFace
+import kotlin.math.atan2
 
 private const val SCENE_WIDTH = 100f
 private const val SCENE_HEIGHT = 62f
@@ -21,6 +24,7 @@ private const val EDGE_PADDING = 16f
 private const val LABEL_HEADROOM = 26f
 private const val HALF = 2f
 private const val MIN_SPAN = 0.0001f
+private const val RADIANS_TO_DEGREES = 57.29578f
 
 /**
  * The scale and offset that fit a projected scene inside the canvas.
@@ -106,7 +110,12 @@ internal fun bar3DFit(
     val spanY = (maxY - minY).coerceAtLeast(MIN_SPAN)
 
     val headroom = if (config.showValueLabels) LABEL_HEADROOM else 0f
-    val footroom = if (config.showCategoryLabels) LABEL_HEADROOM else 0f
+    val footroom =
+        if (config.showCategoryLabels && config.categoryLabelPlacement != Bar3DLabelPlacement.TOP_FACE) {
+            LABEL_HEADROOM
+        } else {
+            0f
+        }
     val availableWidth = (size.width - EDGE_PADDING * HALF).coerceAtLeast(MIN_SPAN)
     val availableHeight = (size.height - EDGE_PADDING * HALF - headroom - footroom).coerceAtLeast(MIN_SPAN)
     val scale = minOf(availableWidth / spanX, availableHeight / spanY)
@@ -188,21 +197,55 @@ internal fun DrawScope.drawBar3DLabels(
                 ),
             )
         val layout = textMeasurer.measure(text = config.valueFormatter(bar.value), style = config.valueLabelStyle)
-        drawText(
-            textLayoutResult = layout,
-            topLeft = Offset(x = anchor.x - layout.size.width / HALF, y = anchor.y - layout.size.height - LABEL_GAP),
-        )
+        val angle = sceneTextAngle(config = config, y = -height, z = depth / HALF, fit = fit)
+        rotate(degrees = angle, pivot = anchor) {
+            drawText(
+                textLayoutResult = layout,
+                topLeft =
+                    Offset(x = anchor.x - layout.size.width / HALF, y = anchor.y - layout.size.height - LABEL_GAP),
+            )
+        }
     }
 }
 
-/** Prints each bar's category label on the floor beneath it. */
-internal fun DrawScope.drawBar3DCategoryLabels(
+/**
+ * The screen angle, in degrees, that the scene's own x axis runs at when projected at [y] and [z].
+ *
+ * Text drawn at this angle lies in the plane of the scene rather than across it, so a label reads as
+ * part of the figure instead of pasted over it. It is measured from the projection rather than
+ * assumed, so it stays correct as the viewing angle changes.
+ */
+private fun sceneTextAngle(
+    config: Bar3DChartConfig,
+    y: Float,
+    z: Float,
+    fit: SceneFit,
+): Float {
+    val start = fit.apply(config.projection.project(point = Point3D(x = 0f, y = y, z = z), origin = Offset.Zero))
+    val end = fit.apply(config.projection.project(point = Point3D(x = SCENE_WIDTH, y = y, z = z), origin = Offset.Zero))
+    return atan2(y = end.y - start.y, x = end.x - start.x) * RADIANS_TO_DEGREES
+}
+
+/**
+ * Whether floor labels would actually land on top of the bars at the angle in use.
+ *
+ * This asks the question directly rather than through a proxy: place each label where the floor
+ * would put it, and see whether it falls across a bar at all — including its own, which at a steep
+ * yaw leans over its own footing. A gentle tilt leaves the labels in the clear and they stay on the
+ * floor where they read best; tilt far enough that a bar covers the ground it stands on, and they
+ * move onto the top faces.
+ */
+private fun floorLabelsCollide(
     dataList: List<BarData>,
     config: Bar3DChartConfig,
     fit: SceneFit,
-    textMeasurer: TextMeasurer,
-) {
-    dataList.forEachIndexed { index, bar ->
+    faces: List<ProjectedFace<BarData>>,
+    labelSize: Size,
+): Boolean {
+    if (dataList.size < 2) {
+        return false
+    }
+    return dataList.indices.any { index ->
         val (left, width, depth) = barSlot(index = index, count = dataList.size, config = config)
         val anchor =
             fit.apply(
@@ -211,10 +254,96 @@ internal fun DrawScope.drawBar3DCategoryLabels(
                     origin = Offset.Zero,
                 ),
             )
-        val layout = textMeasurer.measure(text = bar.label, style = config.categoryLabelStyle)
-        drawText(
-            textLayoutResult = layout,
-            topLeft = Offset(x = anchor.x - layout.size.width / HALF, y = anchor.y + CATEGORY_LABEL_GAP),
-        )
+        val probes =
+            listOf(
+                Offset(x = anchor.x, y = anchor.y + CATEGORY_LABEL_GAP + labelSize.height / HALF),
+                Offset(x = anchor.x - labelSize.width / HALF, y = anchor.y + CATEGORY_LABEL_GAP),
+                Offset(x = anchor.x + labelSize.width / HALF, y = anchor.y + CATEGORY_LABEL_GAP),
+            )
+        faces.any { face -> probes.any(face::contains) }
     }
 }
+
+/**
+ * Prints each bar's category label, on the floor beneath it or centred on its top face, rotated into
+ * the plane it sits in.
+ *
+ * The top-face anchor is the average of that face's four **projected** corners rather than the
+ * projection of its centre, so the label stays visually centred under a perspective view, where the
+ * far edge of the face is narrower than the near one.
+ */
+internal fun DrawScope.drawBar3DCategoryLabels(
+    dataList: List<BarData>,
+    maxValue: Float,
+    config: Bar3DChartConfig,
+    progress: Float,
+    fit: SceneFit,
+    faces: List<ProjectedFace<BarData>>,
+    textMeasurer: TextMeasurer,
+) {
+    if (dataList.isEmpty()) {
+        return
+    }
+    val sample = textMeasurer.measure(text = dataList.first().label, style = config.categoryLabelStyle)
+    val onTop =
+        when (config.categoryLabelPlacement) {
+            Bar3DLabelPlacement.FLOOR -> false
+            Bar3DLabelPlacement.TOP_FACE -> true
+            Bar3DLabelPlacement.AUTO ->
+                floorLabelsCollide(
+                    dataList = dataList,
+                    config = config,
+                    fit = fit,
+                    faces = faces,
+                    labelSize = Size(width = sample.size.width.toFloat(), height = sample.size.height.toFloat()),
+                )
+        }
+
+    dataList.forEachIndexed { index, bar ->
+        val (left, width, depth) = barSlot(index = index, count = dataList.size, config = config)
+        val top = -barHeight(value = bar.value, maxValue = maxValue, progress = progress)
+        val layout = textMeasurer.measure(text = bar.label, style = config.categoryLabelStyle)
+
+        val anchor =
+            if (onTop) {
+                listOf(
+                    Point3D(x = left, y = top, z = 0f),
+                    Point3D(x = left + width, y = top, z = 0f),
+                    Point3D(x = left + width, y = top, z = depth),
+                    Point3D(x = left, y = top, z = depth),
+                ).map { point -> fit.apply(config.projection.project(point = point, origin = Offset.Zero)) }
+                    .centroid()
+            } else {
+                fit.apply(
+                    config.projection.project(
+                        point = Point3D(x = left + width / HALF, y = 0f, z = depth / HALF),
+                        origin = Offset.Zero,
+                    ),
+                )
+            }
+
+        val topLeft =
+            if (onTop) {
+                Offset(x = anchor.x - layout.size.width / HALF, y = anchor.y - layout.size.height / HALF)
+            } else {
+                Offset(x = anchor.x - layout.size.width / HALF, y = anchor.y + CATEGORY_LABEL_GAP)
+            }
+        val angle =
+            sceneTextAngle(
+                config = config,
+                y = if (onTop) top else 0f,
+                z = depth / HALF,
+                fit = fit,
+            )
+        rotate(degrees = angle, pivot = anchor) {
+            drawText(textLayoutResult = layout, topLeft = topLeft)
+        }
+    }
+}
+
+/** The average of a list of points, used to centre a label on a projected face. */
+private fun List<Offset>.centroid(): Offset =
+    Offset(
+        x = sumOf { point -> point.x.toDouble() }.toFloat() / size,
+        y = sumOf { point -> point.y.toDouble() }.toFloat() / size,
+    )

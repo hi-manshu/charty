@@ -12,6 +12,31 @@ private const val DEFAULT_BAR_DEPTH_FRACTION = 0.45f
 private const val LABEL_SP = 11f
 
 /**
+ * Where a bar's category label is drawn.
+ *
+ * The choice is really about the viewing angle. Head-on or gently tilted, a label under the bar
+ * reads exactly like a flat bar chart's axis and belongs there. Swing the yaw far enough — an
+ * isometric view especially — and the floor beneath one bar is behind the next one along, so foot
+ * labels start colliding with the bars they are meant to name.
+ *
+ * [AUTO] measures that rather than guessing at it, which is why it is the default.
+ */
+enum class Bar3DLabelPlacement {
+    /**
+     * Let the chart decide, by measuring whether floor labels would actually collide at the angle in
+     * use. This is the default, so a caller who simply wants a readable chart gets one at every
+     * angle without having to know the rule.
+     */
+    AUTO,
+
+    /** Always on the floor beneath the bar, where a flat chart's axis label would sit. */
+    FLOOR,
+
+    /** Always centred on the bar's top face, which stays clear however far the scene is rotated. */
+    TOP_FACE,
+}
+
+/**
  * How a [com.himanshoe.charty3d.bar.Bar3DChart] draws its bars.
  *
  * @property projection The viewing angle the scene is flattened by. See [Projection3D] for the
@@ -24,7 +49,10 @@ private const val LABEL_SP = 11f
  * @property showValueLabels Whether each bar's value is printed above it.
  * @property valueFormatter Converts a bar's value into its printed label.
  * @property valueLabelStyle Text style for the value labels.
- * @property showCategoryLabels Whether each bar's label is printed on the floor beneath it.
+ * @property showCategoryLabels Whether each bar's label is printed at all.
+ * @property categoryLabelPlacement Where those labels sit — see [Bar3DLabelPlacement]. Defaults to
+ *   [Bar3DLabelPlacement.AUTO], which keeps them on the floor until the angle would make them
+ *   collide with the bars and moves them onto the top faces when it would.
  * @property categoryLabelStyle Text style for the category labels.
  * @property showFloor Whether a shaded floor plane is drawn under the bars, which gives the eye a
  *   ground to read the depth against.
@@ -41,6 +69,7 @@ data class Bar3DChartConfig(
     val valueFormatter: (Float) -> String = { value -> value.toBar3DLabel() },
     val valueLabelStyle: TextStyle = TextStyle(fontSize = LABEL_SP.sp),
     val showCategoryLabels: Boolean = true,
+    val categoryLabelPlacement: Bar3DLabelPlacement = Bar3DLabelPlacement.AUTO,
     val categoryLabelStyle: TextStyle = TextStyle(fontSize = LABEL_SP.sp),
     val showFloor: Boolean = true,
     val plotBackground: ChartyColor? = null,

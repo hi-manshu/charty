@@ -25,6 +25,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty3d.bar.Bar3DChart
 import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
+import com.himanshoe.charty3d.bar.config.Bar3DLabelPlacement
 import com.himanshoe.charty3d.projection.Projection3D
 import kotlin.random.Random
 
@@ -58,6 +59,7 @@ internal fun Bar3DPlayground() {
     var perspective by remember { mutableStateOf(0) }
     var depthFraction by remember { mutableStateOf(45) }
     var background by remember { mutableStateOf(false) }
+    var labelPlacement by remember { mutableStateOf(Bar3DLabelPlacement.AUTO) }
     var widthFraction by remember { mutableStateOf(62) }
     var showValueLabels by remember { mutableStateOf(false) }
     var showFloor by remember { mutableStateOf(true) }
@@ -93,6 +95,7 @@ internal fun Bar3DPlayground() {
                 barWidthFraction = ${fc(widthFraction / 100f)},
                 barDepthFraction = ${fc(depthFraction / 100f)},
                 showValueLabels = $showValueLabels,
+                categoryLabelPlacement = Bar3DLabelPlacement.${labelPlacement.name},
                 showFloor = $showFloor,${codeArg(
             include = background,
             text = "plotBackground = ChartyColor.Gradient(listOf(tint, Color.Transparent)),",
@@ -118,6 +121,7 @@ internal fun Bar3DPlayground() {
                         barDepthFraction = depthFraction / 100f,
                         animation = animation,
                         showValueLabels = showValueLabels,
+                        categoryLabelPlacement = labelPlacement,
                         showFloor = showFloor,
                         plotBackground =
                             if (background) {
@@ -174,6 +178,13 @@ internal fun Bar3DPlayground() {
                 onValueChange = { depthFraction = it },
             )
             SwitchRow(label = "Value labels", checked = showValueLabels, onCheckedChange = { showValueLabels = it })
+            ChoiceRow(
+                label = "Category labels",
+                options = Bar3DLabelPlacement.entries.toList(),
+                selected = labelPlacement,
+                labelOf = { placement -> placement.name.lowercase().replace('_', ' ') },
+                onSelect = { labelPlacement = it },
+            )
             SwitchRow(label = "Floor plane", checked = showFloor, onCheckedChange = { showFloor = it })
             SwitchRow(label = "Plot background", checked = background, onCheckedChange = { background = it })
             ControlSection(title = "Data")
