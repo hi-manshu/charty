@@ -89,6 +89,7 @@ internal enum class PlaygroundFamily(
     Funnel("Funnel", "Stage-by-stage drop-off", Color(0xFFAD1457)),
     Bar3D("3D bar", "Projected solids, opt-in module", Color(0xFF4527A0)),
     Pie3D("3D pie", "Tilted disc with walls", Color(0xFF283593)),
+    Scatter3D("3D scatter", "Depth is a real variable here", Color(0xFF1565C0)),
 }
 
 /**
@@ -316,5 +317,6 @@ private fun PlaygroundContent(family: PlaygroundFamily) {
         PlaygroundFamily.Funnel -> FunnelPlayground()
         PlaygroundFamily.Bar3D -> Bar3DPlayground()
         PlaygroundFamily.Pie3D -> Pie3DPlayground()
+        PlaygroundFamily.Scatter3D -> Scatter3DPlayground()
     }
 }
