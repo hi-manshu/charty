@@ -41,6 +41,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.CornerRadius
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlinx.coroutines.delay
 
 private val codeBackground = Color(0xFF1E1E2E)
 private val codeForeground = Color(0xFFE4E6F1)
@@ -115,6 +117,8 @@ internal fun randomValues(
  * Two-pane playground layout: the live chart and a scrollable controls panel. Side-by-side on wide
  * viewports (desktop/web), stacked on narrow ones (mobile).
  */
+private const val COPY_FEEDBACK_MILLIS = 1400L
+
 @Composable
 internal fun PlaygroundScaffold(
     chart: @Composable () -> Unit,
@@ -239,6 +243,7 @@ private fun ControlPanel(
             }
             controls()
             if (cartesian) {
+                InteractionControls(state = shared)
                 AxisAndGridControls(state = shared)
                 TooltipStyleControls(state = shared)
             }
@@ -268,17 +273,36 @@ private fun CodePanel(
                 fontWeight = FontWeight.Bold,
                 color = codeLabel,
             )
+            var copied by remember { mutableStateOf(false) }
+            LaunchedEffect(copied) {
+                if (copied) {
+                    delay(COPY_FEEDBACK_MILLIS)
+                    copied = false
+                }
+            }
             Text(
-                text = "Copy",
+                text =
+                    if (copied) {
+                        "Copied"
+                    } else {
+                        "Copy"
+                    },
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = codeForeground,
                 modifier =
                     Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF3B3B54))
-                        .clickable { clipboard.setText(AnnotatedString(code)) }
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                        .background(
+                            if (copied) {
+                                Color(0xFF3A6B4A)
+                            } else {
+                                Color(0xFF3B3B54)
+                            },
+                        ).clickable {
+                            clipboard.setText(AnnotatedString(code))
+                            copied = true
+                        }.padding(horizontal = 10.dp, vertical = 4.dp),
             )
         }
         Box(
@@ -612,6 +636,7 @@ internal fun ReferenceLineControls(
     onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>,
 ) {
+    val shared = LocalPlaygroundShared.current
     SwitchRow(label = "Reference line", checked = enabled, onCheckedChange = onEnabledChange)
     if (enabled) {
         SliderRow(
@@ -620,6 +645,16 @@ internal fun ReferenceLineControls(
             valueRange = valueRange,
             onValueChange = onValueChange,
             decimals = 0,
+        )
+        SwitchRow(
+            label = "Dashed",
+            checked = shared.referenceDashed,
+            onCheckedChange = { shared.referenceDashed = it },
+        )
+        SwitchRow(
+            label = "Label below the line",
+            checked = shared.referenceLabelBelow,
+            onCheckedChange = { shared.referenceLabelBelow = it },
         )
     }
 }
@@ -650,6 +685,14 @@ internal fun ReferenceBandControls(
             valueRange = valueRange,
             onValueChange = onHighChange,
             decimals = 0,
+        )
+    }
+    val sharedBand = LocalPlaygroundShared.current
+    if (enabled) {
+        SwitchRow(
+            label = "Band border",
+            checked = sharedBand.bandBordered,
+            onCheckedChange = { sharedBand.bandBordered = it },
         )
     }
 }

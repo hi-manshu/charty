@@ -120,6 +120,7 @@ internal fun BarFamilyPlayground() {
                         modifier = chartModifier,
                         config = WaterfallChartConfig(animation = animation),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onBarClick = { clicked = "${it.label} ${it.value.toInt()}" },
                     )
 
@@ -142,6 +143,7 @@ internal fun BarFamilyPlayground() {
                                     },
                             ),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onBarClick = { clicked = "${it.label} ${it.value.toInt()}" },
                     )
 
@@ -152,6 +154,7 @@ internal fun BarFamilyPlayground() {
                         color = accent,
                         bubbleConfig = BubbleBarChartConfig(animation = animation),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onBarClick = { clicked = "${it.label} ${it.value.toInt()}" },
                     )
 
@@ -166,6 +169,7 @@ internal fun BarFamilyPlayground() {
                                 barWidthFraction = widthFraction / 100f,
                             ),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onSpanClick = { clicked = "${it.label} ${it.startValue.toInt()}–${it.endValue.toInt()}" },
                     )
 
@@ -175,6 +179,7 @@ internal fun BarFamilyPlayground() {
                         modifier = chartModifier,
                         comparisonConfig = ComparisonBarChartConfig(animation = animation),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onBarClick = { clicked = "${it.barGroup.label}[${it.barIndex}]" },
                     )
 
@@ -184,6 +189,7 @@ internal fun BarFamilyPlayground() {
                         modifier = chartModifier,
                         config = MosaicBarChartConfig(animation = animation),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onSegmentClick = { clicked = "${it.barGroup.label}[${it.segmentIndex}]" },
                     )
 
@@ -193,6 +199,7 @@ internal fun BarFamilyPlayground() {
                         modifier = chartModifier,
                         config = StackedHorizontalBarChartConfig(animation = animation),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onSegmentClick = { clicked = "${it.barGroup.label}[${it.segmentIndex}]" },
                     )
 
@@ -202,6 +209,7 @@ internal fun BarFamilyPlayground() {
                         modifier = chartModifier,
                         config = NormalizedHorizontalBarChartConfig(animation = animation),
                         scaffoldConfig = playgroundScaffoldConfig(),
+                        interactionConfig = playgroundInteractionConfig(),
                         onSegmentClick = { clicked = "${it.barGroup.label}[${it.segmentIndex}]" },
                     )
             }

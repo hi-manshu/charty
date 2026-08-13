@@ -11,6 +11,8 @@
 
 package com.himanshoe.sample
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -20,8 +22,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.annotation.ChartAnnotation
 import com.himanshoe.charty.common.axis.LabelRotation
+import com.himanshoe.charty.common.brush.BrushSelectionState
+import com.himanshoe.charty.common.brush.rememberBrushSelectionState
+import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.ScrollEdgeFadeConfig
 import com.himanshoe.charty.common.theme.ChartyTheme
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 
@@ -47,6 +54,18 @@ internal class PlaygroundSharedState {
     var tooltipArrow by mutableStateOf(true)
     var tooltipBorder by mutableStateOf(false)
     var tooltipElevation by mutableIntStateOf(4)
+
+    var brushSelection by mutableStateOf(false)
+    var annotate by mutableStateOf(false)
+    var dragTooltip by mutableStateOf(false)
+    var autoScrollToLatest by mutableStateOf(false)
+    var edgeFade by mutableStateOf(false)
+    var describeForScreenReaders by mutableStateOf(false)
+    var lastRange by mutableStateOf<String?>(null)
+
+    var referenceDashed by mutableStateOf(false)
+    var referenceLabelBelow by mutableStateOf(false)
+    var bandBordered by mutableStateOf(false)
 
     var themed by mutableStateOf(false)
     var themePrimary by mutableStateOf(playgroundPalette[0])
@@ -103,6 +122,56 @@ internal class PlaygroundSharedState {
             )
         }
 
+    /**
+     * The interaction settings the controls currently describe, given the brush state the chart owns.
+     *
+     * Everything here is a capability a chart already has and that nothing in the playground used to
+     * reach: dragging to select a range, pinning a note to a point, scrubbing a tooltip, following a
+     * live feed, fading the scroll edges. A feature no one can find is not shipped.
+     *
+     * @param brushState The chart's own brush selection state, needed because brush selection is
+     *   hoisted rather than owned by the config.
+     * @param pointCount How many points the chart is drawing, so a demo annotation lands on one.
+     */
+    fun interactionConfig(
+        brushState: BrushSelectionState,
+        pointCount: Int,
+    ): ChartInteractionConfig =
+        ChartInteractionConfig(
+            brushSelectionState =
+                if (brushSelection) {
+                    brushState
+                } else {
+                    null
+                },
+            onRangeSelect =
+                if (brushSelection) {
+                    { start, end -> lastRange = "points $start to $end" }
+                } else {
+                    null
+                },
+            annotations =
+                if (annotate) {
+                    listOf(ChartAnnotation(xIndex = (pointCount / 2).coerceAtLeast(0), label = "Note"))
+                } else {
+                    emptyList()
+                },
+            accessibilityDescription =
+                if (describeForScreenReaders) {
+                    "A demonstration chart with $pointCount points"
+                } else {
+                    null
+                },
+            dragTooltipEnabled = dragTooltip,
+            autoScrollToLatest = autoScrollToLatest,
+            edgeFade =
+                if (edgeFade) {
+                    ScrollEdgeFadeConfig()
+                } else {
+                    null
+                },
+        )
+
     /** Restores every shared control to the value a chart would have without the playground. */
     fun reset() {
         showAxis = true
@@ -118,6 +187,16 @@ internal class PlaygroundSharedState {
         tooltipArrow = true
         tooltipBorder = false
         tooltipElevation = 4
+        referenceDashed = false
+        referenceLabelBelow = false
+        bandBordered = false
+        brushSelection = false
+        annotate = false
+        dragTooltip = false
+        autoScrollToLatest = false
+        edgeFade = false
+        describeForScreenReaders = false
+        lastRange = null
         themed = false
         themePrimary = playgroundPalette[0]
     }
@@ -197,4 +276,66 @@ internal fun ThemeControls(state: PlaygroundSharedState) {
     if (state.themed) {
         ColorRow(label = "Primary", selected = state.themePrimary, onSelect = { state.themePrimary = it })
     }
+}
+
+/**
+ * Controls for the parts of [ChartInteractionConfig] the playground never reached.
+ *
+ * These are all capabilities the charts already had. Brush selection, annotations, drag-to-scrub and
+ * the scroll-edge fade were reachable only by reading the source, which is the same as not shipping
+ * them.
+ */
+@Composable
+internal fun InteractionControls(state: PlaygroundSharedState) {
+    ControlSection(title = "Interaction")
+    SwitchRow(
+        label = "Drag to select a range",
+        checked = state.brushSelection,
+        onCheckedChange = { state.brushSelection = it },
+    )
+    if (state.brushSelection && state.lastRange != null) {
+        Text(
+            text = "Selected ${state.lastRange}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    SwitchRow(
+        label = "Annotate the middle point",
+        checked = state.annotate,
+        onCheckedChange = { state.annotate = it },
+    )
+    SwitchRow(
+        label = "Drag to scrub the tooltip",
+        checked = state.dragTooltip,
+        onCheckedChange = { state.dragTooltip = it },
+    )
+    SwitchRow(
+        label = "Fade the scroll edges",
+        checked = state.edgeFade,
+        onCheckedChange = { state.edgeFade = it },
+    )
+    SwitchRow(
+        label = "Follow the newest point",
+        checked = state.autoScrollToLatest,
+        onCheckedChange = { state.autoScrollToLatest = it },
+    )
+    SwitchRow(
+        label = "Screen-reader description",
+        checked = state.describeForScreenReaders,
+        onCheckedChange = { state.describeForScreenReaders = it },
+    )
+}
+
+/**
+ * The interaction config a chart playground should hand to its chart, so the shared interaction
+ * controls reach it.
+ *
+ * @param pointCount How many points the chart draws, so a demo annotation lands on a real one.
+ *   Left at zero the annotation pins to the first point, which every non-empty chart has.
+ */
+@Composable
+internal fun playgroundInteractionConfig(pointCount: Int = 0): ChartInteractionConfig {
+    val brushState = rememberBrushSelectionState()
+    return LocalPlaygroundShared.current.interactionConfig(brushState = brushState, pointCount = pointCount)
 }

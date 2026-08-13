@@ -33,6 +33,8 @@ import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
+import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
@@ -111,26 +113,76 @@ internal fun demoMarkers(
         emptyList()
     }
 
+/**
+ * The reference line the playground draws, styled by the shared reference controls.
+ *
+ * Every screen builds its line through here, so widening this one function is what put the stroke
+ * style and the label position within reach of all twelve of them at once.
+ */
+@Composable
 internal fun demoReferenceLine(
     enabled: Boolean,
     value: Float,
-): ReferenceLineConfig? =
-    if (enabled) {
-        ReferenceLineConfig(value = value, label = "Target")
+): ReferenceLineConfig? {
+    val shared = LocalPlaygroundShared.current
+    return if (enabled) {
+        ReferenceLineConfig(
+            value = value,
+            label = "Target",
+            strokeStyle =
+                if (shared.referenceDashed) {
+                    ReferenceLineStrokeStyle.DASHED
+                } else {
+                    ReferenceLineStrokeStyle.SOLID
+                },
+            labelPosition =
+                if (shared.referenceLabelBelow) {
+                    ReferenceLineLabelPosition.BELOW
+                } else {
+                    ReferenceLineLabelPosition.ABOVE
+                },
+        )
     } else {
         null
     }
+}
 
+/** The reference band the playground draws, styled by the shared reference controls. */
+@Composable
 internal fun demoReferenceBand(
     enabled: Boolean,
     low: Float,
     high: Float,
-): ReferenceBandConfig? =
-    if (enabled) {
-        ReferenceBandConfig(lowValue = low, highValue = high, label = "Healthy")
+): ReferenceBandConfig? {
+    val shared = LocalPlaygroundShared.current
+    return if (enabled) {
+        ReferenceBandConfig(
+            lowValue = low,
+            highValue = high,
+            label = "Healthy",
+            borderColor =
+                if (shared.bandBordered) {
+                    ChartyColor.Solid(playgroundPalette[1])
+                } else {
+                    null
+                },
+            borderWidth =
+                if (shared.bandBordered) {
+                    2f
+                } else {
+                    0f
+                },
+            borderStyle =
+                if (shared.referenceDashed) {
+                    ReferenceLineStrokeStyle.DASHED
+                } else {
+                    ReferenceLineStrokeStyle.SOLID
+                },
+        )
     } else {
         null
     }
+}
 
 internal fun demoCrosshair(
     enabled: Boolean,
@@ -268,6 +320,7 @@ internal fun LinePlayground() {
             LineChart(
                 modifier = Modifier.fillMaxSize(),
                 scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -531,6 +584,7 @@ internal fun AreaPlayground() {
             AreaChart(
                 modifier = Modifier.fillMaxSize(),
                 scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -724,6 +778,7 @@ internal fun BarPlayground() {
             BarChart(
                 modifier = Modifier.fillMaxSize(),
                 scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -953,6 +1008,7 @@ internal fun PointPlayground() {
             PointChart(
                 modifier = Modifier.fillMaxSize(),
                 scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -1127,6 +1183,7 @@ internal fun BubblePlayground() {
             BubbleChart(
                 modifier = Modifier.fillMaxSize(),
                 scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(),
                 data = { data },
                 color = ChartyColor.Solid(state.color),
                 config =
@@ -1465,6 +1522,7 @@ internal fun ComboPlayground() {
             ComboChart(
                 modifier = Modifier.fillMaxSize(),
                 scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(),
                 data = { data },
                 barColor = ChartyColor.Solid(state.barColor),
                 lineColor = ChartyColor.Solid(state.lineColor),

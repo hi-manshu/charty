@@ -98,6 +98,7 @@ internal fun DivergingPlayground() {
                 data = { rows },
                 modifier = Modifier.fillMaxSize(),
                 scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(),
                 leftColor = leftColor,
                 rightColor = rightColor,
                 leftSeriesName = "Male",

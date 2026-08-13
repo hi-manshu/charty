@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
@@ -235,8 +236,22 @@ private fun TopBarPill(
 
 @Composable
 private fun PlaygroundHome(onOpen: (PlaygroundFamily) -> Unit) {
+    var query by remember { mutableStateOf("") }
+    val trimmed = query.trim()
+    val matches =
+        remember(trimmed) {
+            if (trimmed.isEmpty()) {
+                PlaygroundFamily.entries.toList()
+            } else {
+                PlaygroundFamily.entries.filter { family ->
+                    family.title.contains(trimmed, ignoreCase = true) ||
+                        family.blurb.contains(trimmed, ignoreCase = true)
+                }
+            }
+        }
+
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 200.dp),
+        columns = GridCells.Adaptive(minSize = 210.dp),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(20.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -250,10 +265,44 @@ private fun PlaygroundHome(onOpen: (PlaygroundFamily) -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    label = { Text(text = "Search ${PlaygroundFamily.entries.size} charts") },
+                    trailingIcon = {
+                        if (trimmed.isNotEmpty()) {
+                            Text(
+                                text = "Clear",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier =
+                                    Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable { query = "" }
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(6.dp))
             }
         }
-        items(PlaygroundFamily.entries.toList()) { family ->
+        if (matches.isEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    text = "Nothing matches \"$trimmed\".",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 24.dp),
+                )
+            }
+        }
+        items(matches) { family ->
             FamilyCard(family = family, onClick = { onOpen(family) })
         }
     }
