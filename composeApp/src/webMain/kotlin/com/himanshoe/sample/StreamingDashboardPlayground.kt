@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,7 +80,7 @@ private fun nextReading(): Reading {
  */
 @Composable
 internal fun StreamingDashboardPlayground() {
-    var windowSize by remember { mutableStateOf(10) }
+    var windowSize by remember { mutableIntStateOf(10) }
     var auto by remember { mutableStateOf(true) }
     var labelNewest by remember { mutableStateOf(true) }
     var crosshairEnabled by remember { mutableStateOf(true) }

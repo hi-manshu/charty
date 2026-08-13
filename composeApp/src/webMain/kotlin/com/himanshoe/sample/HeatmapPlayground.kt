@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -68,9 +69,9 @@ internal fun HeatmapPlayground() {
     var scaleOption by remember { mutableStateOf(HeatmapScaleOption.Blues) }
     var solidHue by remember { mutableStateOf(playgroundPalette[0]) }
     var showValues by remember { mutableStateOf(false) }
-    var spacing by remember { mutableStateOf(2) }
-    var cornerRadius by remember { mutableStateOf(4) }
-    var tick by remember { mutableStateOf(0) }
+    var spacing by remember { mutableIntStateOf(2) }
+    var cornerRadius by remember { mutableIntStateOf(4) }
+    var tick by remember { mutableIntStateOf(0) }
     var clicked by remember { mutableStateOf<HeatmapCell?>(null) }
     var showTooltip by remember { mutableStateOf(true) }
 

@@ -6,6 +6,8 @@
     "MaxLineLength",
     "ktlint:standard:max-line-length",
     "ktlint:standard:function-naming",
+    "TooManyFunctions",
+    "CyclomaticComplexMethod",
 )
 
 package com.himanshoe.sample
@@ -27,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -125,7 +128,7 @@ private class StreamOptions(
  */
 @Composable
 internal fun StreamingLinePlayground() {
-    var windowSize by remember { mutableStateOf(8) }
+    var windowSize by remember { mutableIntStateOf(8) }
     var auto by remember { mutableStateOf(true) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
     var chartType by remember { mutableStateOf(StreamChartType.Line) }

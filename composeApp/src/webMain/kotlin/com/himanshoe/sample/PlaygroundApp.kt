@@ -5,6 +5,8 @@
     "UndocumentedPublicFunction",
     "MaxLineLength",
     "CyclomaticComplexMethod",
+    "CompositionLocalAllowlist",
+    "ModifierMissing",
 )
 
 package com.himanshoe.sample

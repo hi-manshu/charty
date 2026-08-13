@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -94,8 +95,8 @@ private fun demoSchedule(withProgress: Boolean): List<GanttRow> =
 internal fun GanttPlayground() {
     var withProgress by remember { mutableStateOf(true) }
     var showSegmentLabels by remember { mutableStateOf(true) }
-    var barHeight by remember { mutableStateOf(60) }
-    var incompleteAlpha by remember { mutableStateOf(35) }
+    var barHeight by remember { mutableIntStateOf(60) }
+    var incompleteAlpha by remember { mutableIntStateOf(35) }
     var cornerRadius by remember { mutableStateOf<CornerRadius>(CornerRadius.Small) }
     var showTooltip by remember { mutableStateOf(true) }
     var clicked by remember { mutableStateOf<GanttSelection?>(null) }

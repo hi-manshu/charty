@@ -13,6 +13,8 @@ package com.himanshoe.sample
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,13 +36,13 @@ private val bandDangerColor = Color(0xFFE53935)
  */
 @Composable
 internal fun GaugePlayground() {
-    var value by remember { mutableStateOf(62) }
-    var minValue by remember { mutableStateOf(0) }
-    var maxValue by remember { mutableStateOf(100) }
-    var tickCount by remember { mutableStateOf(5) }
-    var startAngle by remember { mutableStateOf(135f) }
-    var sweepAngle by remember { mutableStateOf(270f) }
-    var trackWidthFraction by remember { mutableStateOf(0.12f) }
+    var value by remember { mutableIntStateOf(62) }
+    var minValue by remember { mutableIntStateOf(0) }
+    var maxValue by remember { mutableIntStateOf(100) }
+    var tickCount by remember { mutableIntStateOf(5) }
+    var startAngle by remember { mutableFloatStateOf(135f) }
+    var sweepAngle by remember { mutableFloatStateOf(270f) }
+    var trackWidthFraction by remember { mutableFloatStateOf(0.12f) }
     var showBands by remember { mutableStateOf(true) }
     var showValueLabel by remember { mutableStateOf(true) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }

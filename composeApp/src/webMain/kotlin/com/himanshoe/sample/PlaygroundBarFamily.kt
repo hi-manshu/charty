@@ -6,6 +6,7 @@
     "MaxLineLength",
     "ktlint:standard:max-line-length",
     "ktlint:standard:function-naming",
+    "CyclomaticComplexMethod",
 )
 
 package com.himanshoe.sample
@@ -15,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,45 +43,6 @@ import com.himanshoe.charty.bar.data.SpanData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
 import kotlin.random.Random
-
-/** The bar-family charts that share this one screen, each with its own shape of data. */
-internal enum class BarFamilyVariant(
-    val label: String,
-    val blurb: String,
-) {
-    Waterfall(
-        label = "Waterfall",
-        blurb = "Running total built from signed steps. Each bar floats between the totals either side of it.",
-    ),
-    Lollipop(
-        label = "Lollipop",
-        blurb = "A bar reduced to a stem and a head — less ink for the same reading.",
-    ),
-    BubbleBar(
-        label = "Bubble bar",
-        blurb = "A bar drawn as a stack of bubbles; the count carries the value.",
-    ),
-    Span(
-        label = "Span",
-        blurb = "One start-to-end range per row: confidence intervals, highs and lows, durations.",
-    ),
-    Comparison(
-        label = "Comparison",
-        blurb = "Two or more bars per category, side by side against one baseline.",
-    ),
-    Mosaic(
-        label = "Mosaic",
-        blurb = "Column width carries the group total while its segments carry the split.",
-    ),
-    StackedHorizontal(
-        label = "Stacked horizontal",
-        blurb = "Segments accumulating rightwards, one row per group.",
-    ),
-    NormalizedHorizontal(
-        label = "Normalized horizontal",
-        blurb = "The same rows stretched to equal length, so the split is comparable across groups.",
-    ),
-}
 
 private fun familyBars(tick: Int): List<BarData> {
     val random = Random(seed = tick * 13 + 3)
@@ -121,9 +84,13 @@ private fun familySpans(tick: Int): List<SpanData> {
 @Composable
 internal fun BarFamilyPlayground() {
     var variant by remember { mutableStateOf(BarFamilyVariant.Waterfall) }
-    var tick by remember { mutableStateOf(0) }
+    var tick by remember { mutableIntStateOf(0) }
     var clicked by remember { mutableStateOf<String?>(null) }
-    var widthFraction by remember { mutableStateOf(60) }
+    var widthFraction by remember { mutableIntStateOf(60) }
+    var stemThickness by remember { mutableIntStateOf(6) }
+    var circleRadius by remember { mutableIntStateOf(14) }
+    var circleStroke by remember { mutableIntStateOf(0) }
+    var tintHead by remember { mutableStateOf(false) }
 
     val bars = remember(tick) { familyBars(tick) }
     val steps = remember(tick) { familySteps(tick) }
@@ -161,7 +128,19 @@ internal fun BarFamilyPlayground() {
                         data = { bars },
                         modifier = chartModifier,
                         colors = accent,
-                        config = LollipopBarChartConfig(animation = animation),
+                        config =
+                            LollipopBarChartConfig(
+                                animation = animation,
+                                stemThickness = stemThickness.toFloat(),
+                                circleRadius = circleRadius.toFloat(),
+                                circleStrokeWidth = circleStroke.toFloat(),
+                                circleColor =
+                                    if (tintHead) {
+                                        ChartyColor.Solid(playgroundPalette[1])
+                                    } else {
+                                        null
+                                    },
+                            ),
                         scaffoldConfig = playgroundScaffoldConfig(),
                         onBarClick = { clicked = "${it.label} ${it.value.toInt()}" },
                     )
@@ -244,6 +223,32 @@ internal fun BarFamilyPlayground() {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (variant == BarFamilyVariant.Lollipop) {
+                ControlSection(title = "Stem and head")
+                IntSliderRow(
+                    label = "Stem thickness",
+                    value = stemThickness,
+                    valueRange = 1..16,
+                    onValueChange = { stemThickness = it },
+                )
+                IntSliderRow(
+                    label = "Head radius",
+                    value = circleRadius,
+                    valueRange = 4..30,
+                    onValueChange = { circleRadius = it },
+                )
+                IntSliderRow(
+                    label = "Head outline",
+                    value = circleStroke,
+                    valueRange = 0..8,
+                    onValueChange = { circleStroke = it },
+                )
+                SwitchRow(
+                    label = "Tint the head separately",
+                    checked = tintHead,
+                    onCheckedChange = { tintHead = it },
+                )
+            }
             if (variant == BarFamilyVariant.Span) {
                 ControlSection(title = "Spans")
                 IntSliderRow(

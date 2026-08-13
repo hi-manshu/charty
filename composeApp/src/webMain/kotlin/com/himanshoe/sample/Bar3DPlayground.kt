@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,17 +29,6 @@ import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
 import com.himanshoe.charty3d.bar.config.Bar3DLabelPlacement
 import com.himanshoe.charty3d.projection.Projection3D
 import kotlin.random.Random
-
-internal enum class ProjectionPreset(
-    val label: String,
-    val projection: Projection3D,
-) {
-    Default(label = "Default", projection = Projection3D.Default),
-    Isometric(label = "Isometric", projection = Projection3D.Isometric),
-    Subtle(label = "Subtle", projection = Projection3D.Subtle),
-    Dramatic(label = "Dramatic", projection = Projection3D.Dramatic),
-    Custom(label = "Custom", projection = Projection3D.Default),
-}
 
 private fun demoBars(tick: Int): List<BarData> {
     val random = Random(seed = tick * 41 + 11)
@@ -54,16 +44,16 @@ private fun demoBars(tick: Int): List<BarData> {
 @Composable
 internal fun Bar3DPlayground() {
     var preset by remember { mutableStateOf(ProjectionPreset.Default) }
-    var pitch by remember { mutableStateOf(18) }
-    var yaw by remember { mutableStateOf(14) }
-    var perspective by remember { mutableStateOf(0) }
-    var depthFraction by remember { mutableStateOf(45) }
+    var pitch by remember { mutableIntStateOf(18) }
+    var yaw by remember { mutableIntStateOf(14) }
+    var perspective by remember { mutableIntStateOf(0) }
+    var depthFraction by remember { mutableIntStateOf(45) }
     var background by remember { mutableStateOf(false) }
     var labelPlacement by remember { mutableStateOf(Bar3DLabelPlacement.AUTO) }
-    var widthFraction by remember { mutableStateOf(62) }
+    var widthFraction by remember { mutableIntStateOf(62) }
     var showValueLabels by remember { mutableStateOf(false) }
     var showFloor by remember { mutableStateOf(true) }
-    var tick by remember { mutableStateOf(0) }
+    var tick by remember { mutableIntStateOf(0) }
     var clicked by remember { mutableStateOf<BarData?>(null) }
 
     val bars = remember(tick) { demoBars(tick) }

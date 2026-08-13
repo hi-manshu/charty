@@ -20,6 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,14 +56,14 @@ private fun randomWalk(seed: Int): List<Float> {
 @Composable
 internal fun SparklinePlayground() {
     var showFill by remember { mutableStateOf(true) }
-    var fillAlpha by remember { mutableStateOf(0.15f) }
+    var fillAlpha by remember { mutableFloatStateOf(0.15f) }
     var showDot by remember { mutableStateOf(true) }
-    var dotRadius by remember { mutableStateOf(3f) }
+    var dotRadius by remember { mutableFloatStateOf(3f) }
     var smooth by remember { mutableStateOf(false) }
     var animate by remember { mutableStateOf(false) }
-    var lineWidth by remember { mutableStateOf(1.5f) }
+    var lineWidth by remember { mutableFloatStateOf(1.5f) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
-    var tick by remember { mutableStateOf(0) }
+    var tick by remember { mutableIntStateOf(0) }
 
     val animateEntry = animate || LocalPlaygroundAnimate.current
     val walks = remember(tick) { sparklineSeriesNames.indices.map { randomWalk(seed = tick * 31 + it) } }

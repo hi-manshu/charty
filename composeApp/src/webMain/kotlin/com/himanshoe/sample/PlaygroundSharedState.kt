@@ -6,12 +6,14 @@
     "MaxLineLength",
     "ktlint:standard:max-line-length",
     "ktlint:standard:function-naming",
+    "CompositionLocalAllowlist",
 )
 
 package com.himanshoe.sample
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -36,15 +38,15 @@ internal class PlaygroundSharedState {
     var showLabels by mutableStateOf(true)
     var axisColor by mutableStateOf(Color.Black)
     var gridColor by mutableStateOf(Color.LightGray)
-    var axisThickness by mutableStateOf(2)
-    var gridThickness by mutableStateOf(1)
+    var axisThickness by mutableIntStateOf(2)
+    var gridThickness by mutableIntStateOf(1)
     var rotateLabels by mutableStateOf(false)
 
     var tooltipBackground by mutableStateOf(Color(0xFF2D2D2D))
-    var tooltipCorner by mutableStateOf(8)
+    var tooltipCorner by mutableIntStateOf(8)
     var tooltipArrow by mutableStateOf(true)
     var tooltipBorder by mutableStateOf(false)
-    var tooltipElevation by mutableStateOf(4)
+    var tooltipElevation by mutableIntStateOf(4)
 
     var themed by mutableStateOf(false)
     var themePrimary by mutableStateOf(playgroundPalette[0])

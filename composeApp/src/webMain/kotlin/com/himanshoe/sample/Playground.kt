@@ -5,6 +5,8 @@
     "UndocumentedPublicFunction",
     "MaxLineLength",
     "CyclomaticComplexMethod",
+    "TooManyFunctions",
+    "MultipleEmitters",
 )
 
 package com.himanshoe.sample
@@ -129,14 +131,14 @@ internal fun PlaygroundScaffold(
                     modifier = Modifier.weight(1f).fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    ChartStage(modifier = Modifier.weight(1f).fillMaxWidth(), chart = chart)
+                    ChartStage(chart = chart, modifier = Modifier.weight(1f).fillMaxWidth())
                     CodePanel(code = code, modifier = Modifier.fillMaxWidth().height(220.dp))
                 }
                 ControlPanel(
-                    modifier = Modifier.width(360.dp).fillMaxHeight(),
                     shared = shared,
                     controls = controls,
                     cartesian = cartesian,
+                    modifier = Modifier.width(360.dp).fillMaxHeight(),
                 )
             }
         } else {
@@ -144,12 +146,12 @@ internal fun PlaygroundScaffold(
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                ChartStage(modifier = Modifier.fillMaxWidth().height(300.dp), chart = chart)
+                ChartStage(chart = chart, modifier = Modifier.fillMaxWidth().height(300.dp))
                 ControlPanel(
-                    modifier = Modifier.fillMaxWidth(),
                     shared = shared,
                     controls = controls,
                     cartesian = cartesian,
+                    modifier = Modifier.fillMaxWidth(),
                     scrolls = false,
                 )
                 CodePanel(code = code, modifier = Modifier.fillMaxWidth().height(240.dp))
@@ -161,8 +163,8 @@ internal fun PlaygroundScaffold(
 /** The surface the live chart sits on, so it reads as a artefact rather than loose ink on the page. */
 @Composable
 private fun ChartStage(
-    modifier: Modifier,
     chart: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier,
@@ -187,10 +189,10 @@ private fun ChartStage(
  */
 @Composable
 private fun ControlPanel(
-    modifier: Modifier,
     shared: PlaygroundSharedState,
     controls: @Composable ColumnScope.() -> Unit,
     cartesian: Boolean,
+    modifier: Modifier = Modifier,
     scrolls: Boolean = true,
 ) {
     Surface(

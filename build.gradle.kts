@@ -33,7 +33,8 @@ subprojects {
             "src/iosMain/kotlin",
             "src/jsMain/kotlin",
             "src/wasmJsMain/kotlin",
-            "src/jvmMain/kotlin"
+            "src/jvmMain/kotlin",
+            "src/webMain/kotlin"
         )
         ignoreFailures = false
     }

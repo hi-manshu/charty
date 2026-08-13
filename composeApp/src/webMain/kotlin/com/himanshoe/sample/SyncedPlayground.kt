@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,8 +61,8 @@ private fun relatedSeries(
  */
 @Composable
 internal fun SyncedPlayground() {
-    var pointCount by remember { mutableStateOf(12) }
-    var seed by remember { mutableStateOf(1) }
+    var pointCount by remember { mutableIntStateOf(12) }
+    var seed by remember { mutableIntStateOf(1) }
     var topColor by remember { mutableStateOf(playgroundPalette[0]) }
     var bottomColor by remember { mutableStateOf(playgroundPalette[2]) }
     var pinOnRelease by remember { mutableStateOf(false) }

@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,10 +48,10 @@ private fun demoStages(tick: Int): List<FunnelStage> {
 @Composable
 internal fun FunnelPlayground() {
     var vertical by remember { mutableStateOf(true) }
-    var stageGap by remember { mutableStateOf(4) }
+    var stageGap by remember { mutableIntStateOf(4) }
     var showStageLabels by remember { mutableStateOf(true) }
     var showConversionLabels by remember { mutableStateOf(true) }
-    var tick by remember { mutableStateOf(0) }
+    var tick by remember { mutableIntStateOf(0) }
     var clicked by remember { mutableStateOf<FunnelStage?>(null) }
 
     val stages = remember(tick) { demoStages(tick) }

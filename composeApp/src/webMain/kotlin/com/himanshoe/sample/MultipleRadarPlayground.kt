@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,9 +49,13 @@ private fun radarSets(
  */
 @Composable
 internal fun MultipleRadarPlayground() {
-    var setCount by remember { mutableStateOf(2) }
+    var setCount by remember { mutableIntStateOf(2) }
     var showLegend by remember { mutableStateOf(true) }
-    var tick by remember { mutableStateOf(0) }
+    var lineWidth by remember { mutableIntStateOf(2) }
+    var pointRadius by remember { mutableIntStateOf(4) }
+    var innerCircle by remember { mutableStateOf(true) }
+    var stagger by remember { mutableStateOf(true) }
+    var tick by remember { mutableIntStateOf(0) }
     var clicked by remember { mutableStateOf<String?>(null) }
 
     val dataSets = remember(tick, setCount) { radarSets(tick = tick, count = setCount) }
@@ -72,7 +77,14 @@ internal fun MultipleRadarPlayground() {
             MultipleRadarChart(
                 dataSets = { dataSets },
                 modifier = Modifier.fillMaxSize(),
-                config = MultipleRadarChartConfig(showLegend = showLegend),
+                config =
+                    MultipleRadarChartConfig(
+                        showLegend = showLegend,
+                        datasetLineWidth = lineWidth.toFloat(),
+                        datasetPointRadius = pointRadius.toFloat(),
+                        showPointInnerCircle = innerCircle,
+                        staggerAnimation = stagger,
+                    ),
                 onDataSetClick = { set, index -> clicked = "${set.label} (#$index)" },
             )
         },
@@ -90,6 +102,16 @@ internal fun MultipleRadarPlayground() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             SwitchRow(label = "Legend", checked = showLegend, onCheckedChange = { showLegend = it })
+            ControlSection(title = "Outline")
+            IntSliderRow(label = "Line width", value = lineWidth, valueRange = 1..8, onValueChange = { lineWidth = it })
+            IntSliderRow(
+                label = "Point radius",
+                value = pointRadius,
+                valueRange = 0..12,
+                onValueChange = { pointRadius = it },
+            )
+            SwitchRow(label = "Inner circle on points", checked = innerCircle, onCheckedChange = { innerCircle = it })
+            SwitchRow(label = "Stagger the entry", checked = stagger, onCheckedChange = { stagger = it })
             ControlSection(title = "Data")
             PlaygroundActionRow(primaryLabel = "Shuffle data", onPrimary = { tick++ })
             ControlSection(title = "Last click")

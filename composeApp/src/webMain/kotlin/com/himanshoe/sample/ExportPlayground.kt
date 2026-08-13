@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,13 +41,13 @@ private val exportLabels = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul
  */
 @Composable
 internal fun ExportPlayground() {
-    var pointCount by remember { mutableStateOf(8) }
+    var pointCount by remember { mutableIntStateOf(8) }
     var smooth by remember { mutableStateOf(true) }
     var showPoints by remember { mutableStateOf(true) }
     var fileName by remember { mutableStateOf(ExportName.Revenue) }
     var color by remember { mutableStateOf(playgroundPalette[2]) }
     var status by remember { mutableStateOf("Not exported yet") }
-    var tick by remember { mutableStateOf(0) }
+    var tick by remember { mutableIntStateOf(0) }
 
     val controller = rememberChartCaptureController()
     val exporter = rememberChartExporter()

@@ -13,6 +13,8 @@ package com.himanshoe.sample
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,21 +47,21 @@ private fun groupsCode(data: List<BarGroup>): String =
     ) { g -> "BarGroup(\"${g.label}\", listOf(${g.values.joinToString(", ") { fc(it) }}))" }
 
 private class HorizontalBarState {
-    var bars by mutableStateOf(6)
-    var tick by mutableStateOf(0)
+    var bars by mutableIntStateOf(6)
+    var tick by mutableIntStateOf(0)
     var negatives by mutableStateOf(false)
-    var barWidthFraction by mutableStateOf(0.6f)
-    var barSpacing by mutableStateOf(0f)
+    var barWidthFraction by mutableFloatStateOf(0.6f)
+    var barSpacing by mutableFloatStateOf(0f)
     var corner by mutableStateOf<CornerRadius>(CornerRadius.Medium)
     var color by mutableStateOf(playgroundPalette[3])
     var showDataLabels by mutableStateOf(false)
     var animateValueChanges by mutableStateOf(false)
     var negativeMode by mutableStateOf(NegativeValuesDrawMode.BELOW_AXIS)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(60f)
+    var referenceValue by mutableFloatStateOf(60f)
     var markers by mutableStateOf(false)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(5)
+    var windowSize by mutableIntStateOf(5)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }
@@ -217,19 +219,19 @@ private fun HorizontalBarControls(state: HorizontalBarState) {
 }
 
 private class StackedBarState {
-    var groups by mutableStateOf(6)
-    var series by mutableStateOf(3)
-    var tick by mutableStateOf(0)
-    var barWidthFraction by mutableStateOf(0.6f)
-    var barSpacing by mutableStateOf(0f)
+    var groups by mutableIntStateOf(6)
+    var series by mutableIntStateOf(3)
+    var tick by mutableIntStateOf(0)
+    var barWidthFraction by mutableFloatStateOf(0.6f)
+    var barSpacing by mutableFloatStateOf(0f)
     var corner by mutableStateOf<CornerRadius>(CornerRadius.Medium)
     var showDataLabels by mutableStateOf(false)
     var animateValueChanges by mutableStateOf(false)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(150f)
+    var referenceValue by mutableFloatStateOf(150f)
     var markers by mutableStateOf(false)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(4)
+    var windowSize by mutableIntStateOf(4)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }
@@ -375,18 +377,18 @@ private fun StackedBarControls(state: StackedBarState) {
 }
 
 private class GroupedBarState {
-    var groups by mutableStateOf(5)
-    var series by mutableStateOf(3)
-    var tick by mutableStateOf(0)
-    var barWidthFraction by mutableStateOf(0.8f)
-    var barSpacing by mutableStateOf(4f)
+    var groups by mutableIntStateOf(5)
+    var series by mutableIntStateOf(3)
+    var tick by mutableIntStateOf(0)
+    var barWidthFraction by mutableFloatStateOf(0.8f)
+    var barSpacing by mutableFloatStateOf(4f)
     var corner by mutableStateOf<CornerRadius>(CornerRadius.Medium)
     var animateValueChanges by mutableStateOf(false)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(60f)
+    var referenceValue by mutableFloatStateOf(60f)
     var markers by mutableStateOf(false)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(4)
+    var windowSize by mutableIntStateOf(4)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }

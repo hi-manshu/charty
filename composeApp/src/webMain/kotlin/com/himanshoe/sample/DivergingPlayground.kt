@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,13 +52,13 @@ private fun demoPyramid(tick: Int): List<DivergingData> {
 @Composable
 internal fun DivergingPlayground() {
     var sharedScale by remember { mutableStateOf(true) }
-    var centerGap by remember { mutableStateOf(6) }
-    var barWidth by remember { mutableStateOf(70) }
+    var centerGap by remember { mutableIntStateOf(6) }
+    var barWidth by remember { mutableIntStateOf(70) }
     var showValueLabels by remember { mutableStateOf(false) }
     var windowed by remember { mutableStateOf(false) }
-    var windowSize by remember { mutableStateOf(5) }
+    var windowSize by remember { mutableIntStateOf(5) }
     var showTooltip by remember { mutableStateOf(true) }
-    var tick by remember { mutableStateOf(0) }
+    var tick by remember { mutableIntStateOf(0) }
     var clicked by remember { mutableStateOf<DivergingSelection?>(null) }
 
     val rows = remember(tick) { demoPyramid(tick) }

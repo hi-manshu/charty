@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,11 +44,11 @@ private fun demoSlices(tick: Int): List<PieData> {
 @Composable
 internal fun Pie3DPlayground() {
     var preset by remember { mutableStateOf(ProjectionPreset.Default) }
-    var thickness by remember { mutableStateOf(18) }
-    var hole by remember { mutableStateOf(0) }
-    var explode by remember { mutableStateOf(0) }
+    var thickness by remember { mutableIntStateOf(18) }
+    var hole by remember { mutableIntStateOf(0) }
+    var explode by remember { mutableIntStateOf(0) }
     var labelContent by remember { mutableStateOf(Pie3DLabelContent.PERCENTAGE) }
-    var tick by remember { mutableStateOf(0) }
+    var tick by remember { mutableIntStateOf(0) }
     var clicked by remember { mutableStateOf<PieData?>(null) }
 
     val pieSlices = remember(tick) { demoSlices(tick) }

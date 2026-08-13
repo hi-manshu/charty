@@ -13,6 +13,8 @@ package com.himanshoe.sample
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,17 +69,17 @@ private fun randomGroups(
 
 @Composable
 internal fun CandlestickPlayground() {
-    var candles by remember { mutableStateOf(20) }
-    var tick by remember { mutableStateOf(0) }
-    var candleWidthFraction by remember { mutableStateOf(0.7f) }
-    var wickWidthFraction by remember { mutableStateOf(0.1f) }
+    var candles by remember { mutableIntStateOf(20) }
+    var tick by remember { mutableIntStateOf(0) }
+    var candleWidthFraction by remember { mutableFloatStateOf(0.7f) }
+    var wickWidthFraction by remember { mutableFloatStateOf(0.1f) }
     var showWicks by remember { mutableStateOf(true) }
-    var minBodyHeight by remember { mutableStateOf(2f) }
+    var minBodyHeight by remember { mutableFloatStateOf(2f) }
     var corner by remember { mutableStateOf<CornerRadius>(CornerRadius.None) }
     var animateValueChanges by remember { mutableStateOf(false) }
     var markers by remember { mutableStateOf(false) }
     var window by remember { mutableStateOf(false) }
-    var windowSize by remember { mutableStateOf(10) }
+    var windowSize by remember { mutableIntStateOf(10) }
     var bullish by remember { mutableStateOf(playgroundPalette[5]) }
     var bearish by remember { mutableStateOf(playgroundPalette[1]) }
 
@@ -200,20 +202,20 @@ internal fun CandlestickPlayground() {
 
 @Composable
 internal fun RadarPlayground() {
-    var axes by remember { mutableStateOf(6) }
-    var tick by remember { mutableStateOf(0) }
-    var dataLineWidth by remember { mutableStateOf(2f) }
+    var axes by remember { mutableIntStateOf(6) }
+    var tick by remember { mutableIntStateOf(0) }
+    var dataLineWidth by remember { mutableFloatStateOf(2f) }
     var showDataPoints by remember { mutableStateOf(true) }
-    var dataPointRadius by remember { mutableStateOf(4f) }
-    var fillAlpha by remember { mutableStateOf(0.3f) }
+    var dataPointRadius by remember { mutableFloatStateOf(4f) }
+    var fillAlpha by remember { mutableFloatStateOf(0.3f) }
     var gridStyle by remember { mutableStateOf(RadarGridStyle.POLYGON) }
-    var gridLevels by remember { mutableStateOf(5) }
+    var gridLevels by remember { mutableIntStateOf(5) }
     var showGridLines by remember { mutableStateOf(true) }
     var showAxisLines by remember { mutableStateOf(true) }
     var showLabels by remember { mutableStateOf(true) }
     var showValues by remember { mutableStateOf(false) }
-    var startAngle by remember { mutableStateOf(-90f) }
-    var paddingFraction by remember { mutableStateOf(0.15f) }
+    var startAngle by remember { mutableFloatStateOf(-90f) }
+    var paddingFraction by remember { mutableFloatStateOf(0.15f) }
     var scaleToFit by remember { mutableStateOf(true) }
     var color by remember { mutableStateOf(playgroundPalette[0]) }
 
@@ -352,13 +354,13 @@ internal fun RadarPlayground() {
 
 @Composable
 internal fun CircularPlayground() {
-    var rings by remember { mutableStateOf(3) }
-    var tick by remember { mutableStateOf(0) }
-    var gapBetweenRings by remember { mutableStateOf(8f) }
-    var centerHoleRatio by remember { mutableStateOf(0f) }
+    var rings by remember { mutableIntStateOf(3) }
+    var tick by remember { mutableIntStateOf(0) }
+    var gapBetweenRings by remember { mutableFloatStateOf(8f) }
+    var centerHoleRatio by remember { mutableFloatStateOf(0f) }
     var direction by remember { mutableStateOf(RingDirection.CLOCKWISE) }
-    var startAngle by remember { mutableStateOf(-90f) }
-    var padding by remember { mutableStateOf(16f) }
+    var startAngle by remember { mutableFloatStateOf(-90f) }
+    var padding by remember { mutableFloatStateOf(16f) }
     var enableShadows by remember { mutableStateOf(false) }
     var rotationEnabled by remember { mutableStateOf(false) }
     var showCenterText by remember { mutableStateOf(false) }
@@ -470,10 +472,10 @@ internal fun CircularPlayground() {
 
 @Composable
 internal fun BlockPlayground() {
-    var blocks by remember { mutableStateOf(5) }
-    var tick by remember { mutableStateOf(0) }
-    var barHeight by remember { mutableStateOf(16f) }
-    var gap by remember { mutableStateOf(4f) }
+    var blocks by remember { mutableIntStateOf(5) }
+    var tick by remember { mutableIntStateOf(0) }
+    var barHeight by remember { mutableFloatStateOf(16f) }
+    var gap by remember { mutableFloatStateOf(4f) }
     var corner by remember { mutableStateOf<CornerRadius>(CornerRadius.Small) }
 
     val data =
@@ -528,17 +530,17 @@ internal fun BlockPlayground() {
 
 @Composable
 internal fun WavyPlayground() {
-    var bars by remember { mutableStateOf(6) }
-    var tick by remember { mutableStateOf(0) }
-    var barWidthFraction by remember { mutableStateOf(0.8f) }
-    var amplitude by remember { mutableStateOf(0.33f) }
-    var strokeWidth by remember { mutableStateOf(3f) }
-    var waveSegments by remember { mutableStateOf(40) }
-    var phaseOffset by remember { mutableStateOf(0f) }
+    var bars by remember { mutableIntStateOf(6) }
+    var tick by remember { mutableIntStateOf(0) }
+    var barWidthFraction by remember { mutableFloatStateOf(0.8f) }
+    var amplitude by remember { mutableFloatStateOf(0.33f) }
+    var strokeWidth by remember { mutableFloatStateOf(3f) }
+    var waveSegments by remember { mutableIntStateOf(40) }
+    var phaseOffset by remember { mutableFloatStateOf(0f) }
     var animateValueChanges by remember { mutableStateOf(false) }
     var markers by remember { mutableStateOf(false) }
     var window by remember { mutableStateOf(false) }
-    var windowSize by remember { mutableStateOf(4) }
+    var windowSize by remember { mutableIntStateOf(4) }
     var color by remember { mutableStateOf(playgroundPalette[6]) }
 
     val data =
@@ -646,18 +648,18 @@ internal fun WavyPlayground() {
 
 @Composable
 internal fun MultilinePlayground() {
-    var points by remember { mutableStateOf(8) }
-    var series by remember { mutableStateOf(3) }
-    var tick by remember { mutableStateOf(0) }
-    var lineWidth by remember { mutableStateOf(3f) }
+    var points by remember { mutableIntStateOf(8) }
+    var series by remember { mutableIntStateOf(3) }
+    var tick by remember { mutableIntStateOf(0) }
+    var lineWidth by remember { mutableFloatStateOf(3f) }
     var showPoints by remember { mutableStateOf(true) }
     var showGradientFill by remember { mutableStateOf(false) }
-    var gradientFillAlpha by remember { mutableStateOf(0.3f) }
-    var pointRadius by remember { mutableStateOf(6f) }
+    var gradientFillAlpha by remember { mutableFloatStateOf(0.3f) }
+    var pointRadius by remember { mutableFloatStateOf(6f) }
     var legend by remember { mutableStateOf(false) }
     var animateValueChanges by remember { mutableStateOf(false) }
     var window by remember { mutableStateOf(false) }
-    var windowSize by remember { mutableStateOf(6) }
+    var windowSize by remember { mutableIntStateOf(6) }
     var interpolation by remember { mutableStateOf(LineInterpolation.SMOOTH) }
 
     val data = remember(points, series, tick) { randomGroups(points, series, tick) }
@@ -784,16 +786,16 @@ private fun multilineLegend(
 
 @Composable
 internal fun StackedAreaPlayground() {
-    var points by remember { mutableStateOf(8) }
-    var series by remember { mutableStateOf(3) }
-    var tick by remember { mutableStateOf(0) }
-    var lineWidth by remember { mutableStateOf(2f) }
-    var fillAlpha by remember { mutableStateOf(0.7f) }
+    var points by remember { mutableIntStateOf(8) }
+    var series by remember { mutableIntStateOf(3) }
+    var tick by remember { mutableIntStateOf(0) }
+    var lineWidth by remember { mutableFloatStateOf(2f) }
+    var fillAlpha by remember { mutableFloatStateOf(0.7f) }
     var showPoints by remember { mutableStateOf(false) }
-    var pointRadius by remember { mutableStateOf(5f) }
+    var pointRadius by remember { mutableFloatStateOf(5f) }
     var animateValueChanges by remember { mutableStateOf(false) }
     var window by remember { mutableStateOf(false) }
-    var windowSize by remember { mutableStateOf(6) }
+    var windowSize by remember { mutableIntStateOf(6) }
     var interpolation by remember { mutableStateOf(LineInterpolation.SMOOTH) }
 
     val data = remember(points, series, tick) { randomGroups(points, series, tick) }
@@ -891,15 +893,15 @@ internal fun StackedAreaPlayground() {
 
 @Composable
 internal fun CalendarPlayground() {
-    var tick by remember { mutableStateOf(0) }
-    var cellSize by remember { mutableStateOf(14f) }
-    var cellSpacing by remember { mutableStateOf(2f) }
+    var tick by remember { mutableIntStateOf(0) }
+    var cellSize by remember { mutableFloatStateOf(14f) }
+    var cellSpacing by remember { mutableFloatStateOf(2f) }
     var showMonthLabels by remember { mutableStateOf(true) }
     var showDayLabels by remember { mutableStateOf(true) }
-    var cellCorner by remember { mutableStateOf(2f) }
+    var cellCorner by remember { mutableFloatStateOf(2f) }
     var weekStart by remember { mutableStateOf(WeekStartDay.SUNDAY) }
     var limitWeeks by remember { mutableStateOf(false) }
-    var visibleWeeks by remember { mutableStateOf(8) }
+    var visibleWeeks by remember { mutableIntStateOf(8) }
     var scrollEnabled by remember { mutableStateOf(true) }
 
     val data =

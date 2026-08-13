@@ -6,6 +6,7 @@
     "MaxLineLength",
     "CyclomaticComplexMethod",
     "ktlint:standard:max-line-length",
+    "TooManyFunctions",
 )
 
 package com.himanshoe.sample
@@ -13,6 +14,8 @@ package com.himanshoe.sample
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -141,35 +144,35 @@ internal fun demoCrosshair(
     }
 
 private class LineState {
-    var points by mutableStateOf(12)
-    var tick by mutableStateOf(0)
+    var points by mutableIntStateOf(12)
+    var tick by mutableIntStateOf(0)
     var negatives by mutableStateOf(false)
-    var lineWidth by mutableStateOf(3f)
-    var pointRadius by mutableStateOf(6f)
-    var pointAlpha by mutableStateOf(1f)
+    var lineWidth by mutableFloatStateOf(3f)
+    var pointRadius by mutableFloatStateOf(6f)
+    var pointAlpha by mutableFloatStateOf(1f)
     var showPoints by mutableStateOf(true)
     var interpolation by mutableStateOf(LineInterpolation.LINEAR)
     var color by mutableStateOf(playgroundPalette[0])
     var showGradientFill by mutableStateOf(false)
-    var gradientFillAlpha by mutableStateOf(0.3f)
+    var gradientFillAlpha by mutableFloatStateOf(0.3f)
     var animateValueChanges by mutableStateOf(false)
     var highlightSelectedColumn by mutableStateOf(false)
     var negativeMode by mutableStateOf(NegativeValuesDrawMode.BELOW_AXIS)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(60f)
+    var referenceValue by mutableFloatStateOf(60f)
     var referenceBand by mutableStateOf(false)
-    var bandLow by mutableStateOf(30f)
-    var bandHigh by mutableStateOf(70f)
+    var bandLow by mutableFloatStateOf(30f)
+    var bandHigh by mutableFloatStateOf(70f)
     var markers by mutableStateOf(false)
     var legend by mutableStateOf(false)
     var crosshair by mutableStateOf(false)
     var crosshairHorizontal by mutableStateOf(true)
-    var crosshairDot by mutableStateOf(8f)
+    var crosshairDot by mutableFloatStateOf(8f)
     var tooltipPosition by mutableStateOf(TooltipPosition.AUTO)
     var downsample by mutableStateOf(false)
-    var downsampleThreshold by mutableStateOf(20)
+    var downsampleThreshold by mutableIntStateOf(20)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(8)
+    var windowSize by mutableIntStateOf(8)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }
@@ -454,20 +457,20 @@ private fun LineControls(state: LineState) {
 }
 
 private class AreaState {
-    var points by mutableStateOf(10)
-    var tick by mutableStateOf(0)
-    var lineWidth by mutableStateOf(3f)
-    var fillAlpha by mutableStateOf(0.3f)
+    var points by mutableIntStateOf(10)
+    var tick by mutableIntStateOf(0)
+    var lineWidth by mutableFloatStateOf(3f)
+    var fillAlpha by mutableFloatStateOf(0.3f)
     var showPoints by mutableStateOf(false)
-    var pointRadius by mutableStateOf(6f)
+    var pointRadius by mutableFloatStateOf(6f)
     var interpolation by mutableStateOf(LineInterpolation.SMOOTH)
     var color by mutableStateOf(playgroundPalette[2])
     var animateValueChanges by mutableStateOf(false)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(60f)
+    var referenceValue by mutableFloatStateOf(60f)
     var markers by mutableStateOf(false)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(8)
+    var windowSize by mutableIntStateOf(8)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }
@@ -618,28 +621,28 @@ private fun AreaControls(state: AreaState) {
 }
 
 private class BarState {
-    var bars by mutableStateOf(8)
-    var tick by mutableStateOf(0)
+    var bars by mutableIntStateOf(8)
+    var tick by mutableIntStateOf(0)
     var negatives by mutableStateOf(false)
-    var barWidthFraction by mutableStateOf(0.6f)
-    var barSpacing by mutableStateOf(0f)
+    var barWidthFraction by mutableFloatStateOf(0.6f)
+    var barSpacing by mutableFloatStateOf(0f)
     var corner by mutableStateOf<CornerRadius>(CornerRadius.Medium)
     var color by mutableStateOf(playgroundPalette[3])
     var showDataLabels by mutableStateOf(false)
     var animateValueChanges by mutableStateOf(false)
     var negativeMode by mutableStateOf(NegativeValuesDrawMode.BELOW_AXIS)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(60f)
+    var referenceValue by mutableFloatStateOf(60f)
     var referenceBand by mutableStateOf(false)
-    var bandLow by mutableStateOf(30f)
-    var bandHigh by mutableStateOf(70f)
+    var bandLow by mutableFloatStateOf(30f)
+    var bandHigh by mutableFloatStateOf(70f)
     var markers by mutableStateOf(false)
     var crosshair by mutableStateOf(false)
     var crosshairHorizontal by mutableStateOf(true)
-    var crosshairDot by mutableStateOf(8f)
+    var crosshairDot by mutableFloatStateOf(8f)
     var tooltipPosition by mutableStateOf(TooltipPosition.AUTO)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(6)
+    var windowSize by mutableIntStateOf(6)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }
@@ -857,24 +860,24 @@ private fun BarControls(state: BarState) {
 }
 
 private class PointState {
-    var points by mutableStateOf(14)
-    var tick by mutableStateOf(0)
-    var pointRadius by mutableStateOf(8f)
-    var pointAlpha by mutableStateOf(1f)
+    var points by mutableIntStateOf(14)
+    var tick by mutableIntStateOf(0)
+    var pointRadius by mutableFloatStateOf(8f)
+    var pointAlpha by mutableFloatStateOf(1f)
     var color by mutableStateOf(playgroundPalette[4])
     var animateValueChanges by mutableStateOf(false)
     var highlightSelectedColumn by mutableStateOf(false)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(60f)
+    var referenceValue by mutableFloatStateOf(60f)
     var referenceBand by mutableStateOf(false)
-    var bandLow by mutableStateOf(30f)
-    var bandHigh by mutableStateOf(70f)
+    var bandLow by mutableFloatStateOf(30f)
+    var bandHigh by mutableFloatStateOf(70f)
     var markers by mutableStateOf(false)
     var tooltipPosition by mutableStateOf(TooltipPosition.AUTO)
     var downsample by mutableStateOf(false)
-    var downsampleThreshold by mutableStateOf(20)
+    var downsampleThreshold by mutableIntStateOf(20)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(8)
+    var windowSize by mutableIntStateOf(8)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }
@@ -1065,15 +1068,15 @@ private fun PointControls(state: PointState) {
 }
 
 private class BubbleState {
-    var points by mutableStateOf(8)
-    var tick by mutableStateOf(0)
-    var maxRadius by mutableStateOf(50f)
-    var minRadius by mutableStateOf(12f)
-    var pointAlpha by mutableStateOf(1f)
+    var points by mutableIntStateOf(8)
+    var tick by mutableIntStateOf(0)
+    var maxRadius by mutableFloatStateOf(50f)
+    var minRadius by mutableFloatStateOf(12f)
+    var pointAlpha by mutableFloatStateOf(1f)
     var color by mutableStateOf(playgroundPalette[1])
     var animateValueChanges by mutableStateOf(false)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(60f)
+    var referenceValue by mutableFloatStateOf(60f)
     var crosshair by mutableStateOf(false)
 }
 
@@ -1193,21 +1196,21 @@ internal fun BubblePlayground() {
 }
 
 private class PieState {
-    var slices by mutableStateOf(5)
-    var tick by mutableStateOf(0)
+    var slices by mutableIntStateOf(5)
+    var tick by mutableIntStateOf(0)
     var style by mutableStateOf(PieChartStyle.PIE)
-    var donutHoleRatio by mutableStateOf(0.5f)
-    var sliceSpacing by mutableStateOf(0f)
-    var startAngle by mutableStateOf(-90f)
+    var donutHoleRatio by mutableFloatStateOf(0.5f)
+    var sliceSpacing by mutableFloatStateOf(0f)
+    var startAngle by mutableFloatStateOf(-90f)
     var showLabels by mutableStateOf(true)
     var showPercentage by mutableStateOf(true)
     var showValue by mutableStateOf(false)
     var labelsOutside by mutableStateOf(false)
     var showCenterText by mutableStateOf(false)
     var interactionEnabled by mutableStateOf(true)
-    var selectedScale by mutableStateOf(1.1f)
-    var pullOut by mutableStateOf(8f)
-    var unselectedOpacity by mutableStateOf(0.6f)
+    var selectedScale by mutableFloatStateOf(1.1f)
+    var pullOut by mutableFloatStateOf(8f)
+    var unselectedOpacity by mutableFloatStateOf(0.6f)
     var forceEmpty by mutableStateOf(false)
     var customEmpty by mutableStateOf(true)
 }
@@ -1386,23 +1389,23 @@ private fun PieControls(state: PieState) {
 }
 
 private class ComboState {
-    var points by mutableStateOf(8)
-    var tick by mutableStateOf(0)
-    var barWidthFraction by mutableStateOf(0.6f)
+    var points by mutableIntStateOf(8)
+    var tick by mutableIntStateOf(0)
+    var barWidthFraction by mutableFloatStateOf(0.6f)
     var corner by mutableStateOf<CornerRadius>(CornerRadius.Medium)
-    var lineWidth by mutableStateOf(3f)
+    var lineWidth by mutableFloatStateOf(3f)
     var showPoints by mutableStateOf(true)
-    var pointRadius by mutableStateOf(6f)
+    var pointRadius by mutableFloatStateOf(6f)
     var smoothCurve by mutableStateOf(false)
     var secondaryAxis by mutableStateOf(false)
     var barColor by mutableStateOf(playgroundPalette[0])
     var lineColor by mutableStateOf(playgroundPalette[3])
     var animateValueChanges by mutableStateOf(false)
     var referenceLine by mutableStateOf(false)
-    var referenceValue by mutableStateOf(120f)
+    var referenceValue by mutableFloatStateOf(120f)
     var markers by mutableStateOf(false)
     var window by mutableStateOf(false)
-    var windowSize by mutableStateOf(6)
+    var windowSize by mutableIntStateOf(6)
 }
 
 @Composable

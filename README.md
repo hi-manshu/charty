@@ -118,6 +118,7 @@ LineChart(
 | **Point** | [Scatter (Point)](docs/charty/charts/other/PointChart.md), [Bubble](docs/charty/charts/other/BubbleChart.md) |
 | **Combo** | [Bars + line, optional secondary axis](docs/charty/charts/other/ComboChart.md) |
 | **Circular** | [Pie](docs/charty/charts/radial/PieChart.md), [Donut](docs/charty/charts/radial/PieChart.md), [Radar](docs/charty/charts/radial/RadarChart.md), [Multiple-Radar](docs/charty/charts/radial/MultipleRadarChart.md), [Circular progress](docs/charty/charts/radial/CircularProgressIndicator.md), [Angular gauge](docs/charty/charts/radial/AngularGaugeChart.md) |
+| **3D** (opt-in `charty-3d`) | [Bar3D](docs/charty/charts/3d/Bar3DChart.md), [Pie3D](docs/charty/charts/3d/Pie3DChart.md) |
 | **Specialised** | [Candlestick (OHLC)](docs/charty/charts/other/CandlestickChart.md), [Calendar heatmap](docs/charty/charts/other/CalendarHeatmapChart.md), [Matrix heatmap](docs/charty/charts/other/MatrixHeatmapChart.md), [Gantt](docs/charty/charts/other/GanttChart.md), [Funnel](docs/charty/charts/other/FunnelChart.md), [Block bar](docs/charty/charts/radial/BlockBarChart.md) |
 
 Explore every one in the **[live playground](https://hi-manshu.github.io/charty/)**.
@@ -182,7 +183,9 @@ Start here:
 | [Interactions](docs/charty/configurations/interactions.md) | Which gestures can share a chart. |
 | [Common configuration](docs/charty/configurations/common-config.md) | Axes, tooltips, markers, windows. |
 | [Colors and animations](docs/charty/customization/colors-and-animations.md) | `ChartyColor`, palettes, `Animation`. |
+| [Changelog](CHANGELOG.md) | What changed, and what to do about the breaking bits. |
 | [Theming](docs/charty/customization/theming.md) | Point charts at your design system in one place. |
+| [charty-3d](docs/charty/charts/3d/README.md) | The opt-in 3D artifact, and when not to use it. |
 
 ---
 
