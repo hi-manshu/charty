@@ -1,12 +1,25 @@
 name: Manual Publish to Maven Central
 
+# Publishes `charty` and `charty-3d` together at the version you type in. They are always released
+# as a pair and at the same version, so `charty-3d` can never resolve against a `charty` it was not
+# built against.
+#
+# A release to Maven Central cannot be taken back — a version number, once used, is spent. So this
+# runs the full quality gate first and refuses to publish a version that already has a tag, and it
+# offers a dry run that goes through every step except the two irreversible ones.
+
 on:
   workflow_dispatch:
     inputs:
       versionName:
-        description: 'Version name for this release (e.g., 2.1.0 or 2.1.0-beta01)'
+        description: 'Version to release (e.g. 3.0.0 or 3.0.0-rc02)'
         required: true
         type: string
+      dryRun:
+        description: 'Rehearse only: build, verify and publish to the runner Maven Local. Nothing reaches Maven Central, no tag, no GitHub release.'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write  # Needed to create tags and releases
@@ -27,8 +40,69 @@ jobs:
           echo "If you need to publish a release, please contact the repository owner."
           exit 1
 
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: ${{ github.actor == github.repository_owner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version
+        run: |
+          VERSION="${{ github.event.inputs.versionName }}"
+          if [ -z "$VERSION" ]; then
+            echo "❌ Version name is required"
+            exit 1
+          fi
+
+          if ! echo "$VERSION" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$' > /dev/null; then
+            echo "⚠️ Warning: version '$VERSION' does not follow X.Y.Z or X.Y.Z-qualifier"
+          fi
+
+          # A tag that already exists means this version was released before. Maven Central will not
+          # accept it a second time, and finding that out after the artifacts have been signed and
+          # uploaded is the expensive way to learn it.
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "❌ Tag v$VERSION already exists — that version has been released. Pick a new one."
+            exit 1
+          fi
+
+          echo "✅ Releasing version: $VERSION"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: ktlint
+        run: ./gradlew ktlintCheck --no-daemon -PkotlinYarnLockMismatchReport=warning
+
+      - name: detekt
+        run: ./gradlew detekt --no-daemon
+
+      - name: Tests
+        run: ./gradlew :charty:jvmTest :charty3d:jvmTest --no-daemon
+
+      - name: Snapshot verification
+        run: ./gradlew :charty:verifyRoborazziDebug --no-daemon --tests "com.himanshoe.charty.snapshot.*"
+
   publish:
     name: Publish to Maven Central
+    needs: verify
     runs-on: macos-latest
     timeout-minutes: 60
     if: ${{ github.actor == github.repository_owner }}
@@ -50,22 +124,8 @@ jobs:
         with:
           gradle-home-cache-cleanup: true
 
-      - name: Validate inputs
-        run: |
-          VERSION="${{ github.event.inputs.versionName }}"
-          if [ -z "$VERSION" ]; then
-            echo "❌ Version name is required"
-            exit 1
-          fi
-
-          # Validate version format (basic semver check)
-          if ! echo "$VERSION" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$' > /dev/null; then
-            echo "⚠️ Warning: Version '$VERSION' doesn't follow semantic versioning format (X.Y.Z or X.Y.Z-qualifier)"
-          fi
-
-          echo "✅ Publishing version: $VERSION"
-
       - name: Validate Maven Central credentials
+        if: ${{ github.event.inputs.dryRun != 'true' }}
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -100,7 +160,21 @@ jobs:
           fi
           echo "✅ Signing configuration is valid"
 
+      - name: Publish (dry run — Maven Local only)
+        if: ${{ github.event.inputs.dryRun == 'true' }}
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          VERSION_NAME: ${{ github.event.inputs.versionName }}
+        run: |
+          echo "🧪 Dry run: building and signing Charty $VERSION_NAME, publishing to this runner's Maven Local."
+          ./gradlew :charty:publishToMavenLocal :charty3d:publishToMavenLocal \
+            --no-configuration-cache \
+            --stacktrace
+
       - name: Publish to Maven Central
+        if: ${{ github.event.inputs.dryRun != 'true' }}
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -110,13 +184,13 @@ jobs:
           MAVEN_CENTRAL_VERIFICATION_TOKEN: ${{ secrets.MAVEN_CENTRAL_VERIFICATION_TOKEN }}
           VERSION_NAME: ${{ github.event.inputs.versionName }}
         run: |
-          echo "📦 Publishing Charty $VERSION_NAME to Maven Central..."
+          echo "📦 Publishing charty and charty-3d $VERSION_NAME to Maven Central..."
           ./gradlew :charty:publishAndReleaseToMavenCentral :charty3d:publishAndReleaseToMavenCentral \
             --no-configuration-cache \
             --stacktrace
 
       - name: Create Git tag
-        if: success()
+        if: ${{ success() && github.event.inputs.dryRun != 'true' }}
         run: |
           VERSION="${{ github.event.inputs.versionName }}"
           TAG="v$VERSION"
@@ -124,20 +198,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Create annotated tag
           git tag -a "$TAG" -m "Release version $VERSION"
           git push origin "$TAG"
 
           echo "✅ Created and pushed tag: $TAG"
 
       - name: Generate release notes
-        if: success()
+        if: ${{ success() && github.event.inputs.dryRun != 'true' }}
         id: release_notes
         run: |
           VERSION="${{ github.event.inputs.versionName }}"
 
-          # Get commits since last tag
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          # The tag for this release was created a step ago, so exclude it to find the one before.
+          LAST_TAG=$(git tag --sort=-creatordate | grep -v "^v$VERSION\$" | head -1)
 
           if [ -z "$LAST_TAG" ]; then
             COMMITS=$(git log --pretty=format:"- %s (%h)" -20)
@@ -145,21 +218,28 @@ jobs:
             COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)")
           fi
 
-          # Create release notes
           cat > release-notes.md << EOF
           ## Charty v$VERSION
 
-          ### 📦 Maven Coordinates
+          ### 📦 Maven coordinates
           \`\`\`kotlin
           implementation("com.himanshoe:charty:$VERSION")
+
+          // Optional, projected 3D charts. Every declaration is @ChartyExperimental — see
+          // docs/charty/charts/3d/README.md for the opt-in and for when not to use them.
+          implementation("com.himanshoe:charty-3d:$VERSION")
           \`\`\`
+
+          Both artifacts are released together at the same version.
 
           ### 📝 Changes
           $COMMITS
 
           ### 🔗 Links
-          - [Maven Central Repository](https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION)
-          - [GitHub Repository](https://github.com/hi-manshu/charty)
+          - [charty on Maven Central](https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION)
+          - [charty-3d on Maven Central](https://central.sonatype.com/artifact/com.himanshoe/charty-3d/$VERSION)
+          - [Changelog](https://github.com/hi-manshu/charty/blob/main/CHANGELOG.md)
+          - [Live playground](https://hi-manshu.github.io/charty/)
 
           ---
           Published on $(date '+%Y-%m-%d %H:%M:%S UTC')
@@ -168,7 +248,7 @@ jobs:
           cat release-notes.md
 
       - name: Create GitHub Release
-        if: success()
+        if: ${{ success() && github.event.inputs.dryRun != 'true' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.event.inputs.versionName }}
@@ -177,47 +257,60 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.event.inputs.versionName, '-alpha') || contains(github.event.inputs.versionName, '-beta') || contains(github.event.inputs.versionName, '-rc') }}
 
-      - name: Job Summary
-        if: success()
+      - name: Dry run summary
+        if: ${{ success() && github.event.inputs.dryRun == 'true' }}
         run: |
           VERSION="${{ github.event.inputs.versionName }}"
           cat >> $GITHUB_STEP_SUMMARY << EOF
-          ## ✅ Successfully Published Charty v$VERSION
+          ## 🧪 Dry run of Charty v$VERSION succeeded
+
+          The quality gate passed and both artifacts built, signed and published to this runner's
+          Maven Local. **Nothing reached Maven Central, no tag was created, and no release was cut.**
+
+          Re-run with **Dry run** unchecked to release for real.
+          EOF
+
+      - name: Job Summary
+        if: ${{ success() && github.event.inputs.dryRun != 'true' }}
+        run: |
+          VERSION="${{ github.event.inputs.versionName }}"
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## ✅ Published Charty v$VERSION
 
           ### 📦 Maven Central
-          The library has been published to Maven Central and will be available shortly at:
-          https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION
+          - https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION
+          - https://central.sonatype.com/artifact/com.himanshoe/charty-3d/$VERSION
 
-          ### 🏷️ Git Tag
-          Created and pushed tag: \`v$VERSION\`
+          ### 🏷️ Git tag
+          Created and pushed: \`v$VERSION\`
 
           ### 📱 Usage
-          Add to your project:
           \`\`\`kotlin
           implementation("com.himanshoe:charty:$VERSION")
+          implementation("com.himanshoe:charty-3d:$VERSION")
           \`\`\`
 
           ### ⏱️ Availability
-          The artifacts will be available on Maven Central within 10-30 minutes.
+          The artifacts appear on Maven Central within 10–30 minutes.
           EOF
 
       - name: Failure Summary
         if: failure()
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
-          ## ❌ Publishing Failed
+          ## ❌ Publishing failed
 
-          The publication process failed. Please check the logs above for details.
+          Check the logs above.
 
-          ### Common Issues:
-          1. **Credentials**: Verify MAVEN_CENTRAL_USERNAME and MAVEN_CENTRAL_PASSWORD secrets
-          2. **Signing**: Check SIGNING_KEY_ID, SIGNING_PASSWORD, and SIGNING_KEY secrets
-          3. **Version**: Ensure the version doesn't already exist on Maven Central
-          4. **Build**: Check if the project builds successfully locally
+          ### Common causes
+          1. **Credentials**: verify MAVEN_CENTRAL_USERNAME and MAVEN_CENTRAL_PASSWORD
+          2. **Signing**: check SIGNING_KEY_ID, SIGNING_PASSWORD and SIGNING_KEY (base64-encoded GPG key)
+          3. **Version**: the version may already exist on Maven Central
+          4. **Build**: reproduce locally with the command below
 
-          ### Troubleshooting:
-          - Run \`./gradlew :charty:publishToMavenLocal :charty3d:publishToMavenLocal\` locally to test the build
-          - Verify your credentials at https://central.sonatype.com/
-          - Check if GPG key is properly formatted (should be base64 encoded)
+          ### Reproduce locally
+          \`\`\`bash
+          ./gradlew :charty:publishToMavenLocal :charty3d:publishToMavenLocal \\
+            -PVERSION_NAME=${{ github.event.inputs.versionName }} --no-configuration-cache
+          \`\`\`
           EOF
-
