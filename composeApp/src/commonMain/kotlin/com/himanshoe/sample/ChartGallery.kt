@@ -140,23 +140,10 @@ import com.himanshoe.charty.radar.data.RadarAxisData
 import com.himanshoe.charty.radar.data.RadarDataSet
 import com.himanshoe.charty3d.bar.Bar3DChart
 import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
-import com.himanshoe.charty3d.matrix.Bar3DMatrixChart
-import com.himanshoe.charty3d.matrix.config.Bar3DMatrixConfig
 import com.himanshoe.charty3d.pie.Pie3DChart
 import com.himanshoe.charty3d.pie.config.Pie3DChartConfig
 import com.himanshoe.charty3d.pie.config.Pie3DLabelContent
 import com.himanshoe.charty3d.projection.Projection3D
-import com.himanshoe.charty3d.ribbon.Ribbon3DChart
-import com.himanshoe.charty3d.ribbon.config.Ribbon3DChartConfig
-import com.himanshoe.charty3d.scatter.Scatter3DChart
-import com.himanshoe.charty3d.scatter.config.Scatter3DChartConfig
-import com.himanshoe.charty3d.scatter.data.Scatter3DPoint
-import com.himanshoe.charty3d.surface.Surface3DChart
-import com.himanshoe.charty3d.surface.config.Surface3DChartConfig
-import com.himanshoe.charty3d.surface.config.SurfaceShading
-import com.himanshoe.charty3d.surface.data.SurfaceData
-import kotlin.math.cos
-import kotlin.math.sin
 
 /** A single configuration of a chart — one "iteration" shown on the chart's detail screen. */
 private data class ChartVariant(
@@ -578,33 +565,6 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             PieData(label = "C", value = 20f, color = ChartyColor.Solid(orange)),
             PieData(label = "D", value = 15f, color = ChartyColor.Solid(red)),
         )
-    val cloud =
-        (1..24).map { index ->
-            val base = index / 24f
-            Scatter3DPoint(
-                x = base * 100f,
-                y = base * 60f + (index * 7 % 40).toFloat(),
-                z = (index * 13 % 100).toFloat(),
-                label = "P$index",
-            )
-        }
-    val matrixCells =
-        listOf("Mon", "Tue", "Wed", "Thu").flatMap { day ->
-            listOf("06", "12", "18").map { slot ->
-                HeatmapCell(rowLabel = day, columnLabel = slot, value = 5f + (day.length * slot.toInt() % 40).toFloat())
-            }
-        }
-    val surfaceGrid =
-        SurfaceData.of(rowCount = 18, columnCount = 18) { row, column ->
-            sin(row / 3f) * cos(column / 3f)
-        }
-    val ribbonSeries =
-        listOf("EU", "US", "APAC").mapIndexed { seriesIndex, name ->
-            LineGroup(
-                label = name,
-                values = List(10) { index -> 15f + ((index * 17 + seriesIndex * 29) % 45).toFloat() },
-            )
-        }
     val pyramid =
         listOf(
             DivergingData(label = "0–17", leftValue = 42f, rightValue = 39f),
@@ -2160,84 +2120,6 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                     Pie3DChart(
                         data = { pieSlices },
                         pieConfig = Pie3DChartConfig(explodeFraction = 0.16f),
-                        modifier = chartFill,
-                    )
-                },
-            ),
-        ),
-        ChartDemo(
-            "3D Scatter",
-            "Three measured variables — the depth carries data",
-            "Specialized",
-            blue,
-            listOf(
-                ChartVariant("Default") { Scatter3DChart(data = { cloud }, modifier = chartFill) },
-                ChartVariant("No box or drop lines") {
-                    Scatter3DChart(
-                        data = { cloud },
-                        scatterConfig = Scatter3DChartConfig(showBox = false, showDropLines = false),
-                        modifier = chartFill,
-                    )
-                },
-                ChartVariant("Flat discs, no shading") {
-                    Scatter3DChart(
-                        data = { cloud },
-                        scatterConfig = Scatter3DChartConfig(sphereShading = false, showFloorShadows = false),
-                        modifier = chartFill,
-                    )
-                },
-            ),
-        ),
-        ChartDemo(
-            "3D Bar Matrix",
-            "Both floor axes are variables, height is a third",
-            "Specialized",
-            orange,
-            listOf(
-                ChartVariant("Default") { Bar3DMatrixChart(data = { matrixCells }, modifier = chartFill) },
-                ChartVariant("No axis labels") {
-                    Bar3DMatrixChart(
-                        data = { matrixCells },
-                        matrixConfig = Bar3DMatrixConfig(showAxisLabels = false),
-                        modifier = chartFill,
-                    )
-                },
-            ),
-        ),
-        ChartDemo(
-            "3D Surface",
-            "A height sampled over a grid",
-            "Specialized",
-            purple,
-            listOf(
-                ChartVariant("Height and slope") { Surface3DChart(data = { surfaceGrid }, modifier = chartFill) },
-                ChartVariant("Height only (no relief)") {
-                    Surface3DChart(
-                        data = { surfaceGrid },
-                        surfaceConfig = Surface3DChartConfig(shading = SurfaceShading.HEIGHT),
-                        modifier = chartFill,
-                    )
-                },
-                ChartVariant("No wireframe") {
-                    Surface3DChart(
-                        data = { surfaceGrid },
-                        surfaceConfig = Surface3DChartConfig(showWireframe = false),
-                        modifier = chartFill,
-                    )
-                },
-            ),
-        ),
-        ChartDemo(
-            "3D Ribbons",
-            "Series pulled onto their own planes",
-            "Specialized",
-            red,
-            listOf(
-                ChartVariant("Filled") { Ribbon3DChart(data = { ribbonSeries }, modifier = chartFill) },
-                ChartVariant("Bands only") {
-                    Ribbon3DChart(
-                        data = { ribbonSeries },
-                        ribbonConfig = Ribbon3DChartConfig(fillUnderRibbon = false),
                         modifier = chartFill,
                     )
                 },
