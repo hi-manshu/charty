@@ -137,6 +137,7 @@ internal fun CandlestickPlayground() {
         chart = {
             CandlestickChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 bullishColor = ChartyColor.Solid(bullish),
                 bearishColor = ChartyColor.Solid(bearish),
@@ -574,6 +575,7 @@ internal fun WavyPlayground() {
         chart = {
             WavyChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 color = ChartyColor.Solid(color),
                 wavyConfig =
@@ -699,6 +701,7 @@ internal fun MultilinePlayground() {
         chart = {
             MultilineChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 colors = ChartyColor.Gradient(playgroundPalette.take(series.coerceAtLeast(2))),
                 lineConfig =
@@ -825,6 +828,7 @@ internal fun StackedAreaPlayground() {
         chart = {
             StackedAreaChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 colors = ChartyColor.Gradient(playgroundPalette.take(series.coerceAtLeast(2))),
                 lineConfig =

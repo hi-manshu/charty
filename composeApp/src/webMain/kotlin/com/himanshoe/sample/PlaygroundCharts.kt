@@ -264,6 +264,7 @@ internal fun LinePlayground() {
         chart = {
             LineChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -526,6 +527,7 @@ internal fun AreaPlayground() {
         chart = {
             AreaChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -718,6 +720,7 @@ internal fun BarPlayground() {
         chart = {
             BarChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -946,6 +949,7 @@ internal fun PointPlayground() {
         chart = {
             PointChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -1119,6 +1123,7 @@ internal fun BubblePlayground() {
         chart = {
             BubbleChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 color = ChartyColor.Solid(state.color),
                 config =
@@ -1455,6 +1460,7 @@ internal fun ComboPlayground() {
         chart = {
             ComboChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 barColor = ChartyColor.Solid(state.barColor),
                 lineColor = ChartyColor.Solid(state.lineColor),

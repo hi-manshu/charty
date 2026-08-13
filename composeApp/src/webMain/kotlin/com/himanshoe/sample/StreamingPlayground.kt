@@ -392,6 +392,7 @@ private fun StreamingLine(
     LineChart(
         data = { data },
         modifier = Modifier.fillMaxSize(),
+        scaffoldConfig = playgroundScaffoldConfig(),
         color = options.color,
         lineConfig =
             LineChartConfig(
@@ -415,6 +416,7 @@ private fun StreamingArea(
     AreaChart(
         data = { data },
         modifier = Modifier.fillMaxSize(),
+        scaffoldConfig = playgroundScaffoldConfig(),
         color = options.color,
         lineConfig =
             LineChartConfig(
@@ -438,6 +440,7 @@ private fun StreamingBar(
     BarChart(
         data = { data },
         modifier = Modifier.fillMaxSize(),
+        scaffoldConfig = playgroundScaffoldConfig(),
         color = options.color,
         barConfig =
             BarChartConfig(
@@ -460,6 +463,7 @@ private fun StreamingHorizontalBar(
     HorizontalBarChart(
         data = { data },
         modifier = Modifier.fillMaxSize(),
+        scaffoldConfig = playgroundScaffoldConfig(),
         color = options.color,
         barConfig =
             BarChartConfig(
@@ -482,6 +486,7 @@ private fun StreamingPoint(
     PointChart(
         data = { data },
         modifier = Modifier.fillMaxSize(),
+        scaffoldConfig = playgroundScaffoldConfig(),
         color = options.color,
         pointConfig =
             PointChartConfig(

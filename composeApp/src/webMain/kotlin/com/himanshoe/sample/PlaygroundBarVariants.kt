@@ -125,6 +125,7 @@ internal fun HorizontalBarPlayground() {
         chart = {
             HorizontalBarChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 color = ChartyColor.Solid(state.color),
@@ -290,6 +291,7 @@ internal fun StackedBarPlayground() {
         chart = {
             StackedBarChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 colors = ChartyColor.Gradient(playgroundPalette.take(state.series.coerceAtLeast(2))),
@@ -442,6 +444,7 @@ internal fun GroupedBarPlayground() {
         chart = {
             GroupedHorizontalBarChart(
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 data = { data },
                 emptyContent = emptyPlaceholder(custom = state.customEmpty, onAction = { state.forceEmpty = false }),
                 colors = ChartyColor.Gradient(playgroundPalette.take(state.series.coerceAtLeast(2))),

@@ -130,6 +130,7 @@ internal fun GanttPlayground() {
             GanttChart(
                 data = { rows },
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 color = color,
                 ganttConfig =
                     GanttChartConfig(

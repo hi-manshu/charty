@@ -96,6 +96,7 @@ internal fun DivergingPlayground() {
             DivergingBarChart(
                 data = { rows },
                 modifier = Modifier.fillMaxSize(),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 leftColor = leftColor,
                 rightColor = rightColor,
                 leftSeriesName = "Male",

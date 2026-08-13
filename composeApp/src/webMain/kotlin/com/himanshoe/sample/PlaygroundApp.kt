@@ -98,6 +98,7 @@ fun WebApp() {
     var dark by remember { mutableStateOf(false) }
     var animate by remember { mutableStateOf(false) }
     var family by remember { mutableStateOf<PlaygroundFamily?>(null) }
+    val shared = remember { PlaygroundSharedState() }
 
     MaterialTheme(
         colorScheme =
@@ -109,11 +110,12 @@ fun WebApp() {
     ) {
         ChartyThemeProvider(
             theme =
-                if (dark) {
-                    ChartyTheme.dark()
-                } else {
-                    ChartyTheme.light()
-                },
+                shared.theme(dark = dark)
+                    ?: if (dark) {
+                        ChartyTheme.dark()
+                    } else {
+                        ChartyTheme.light()
+                    },
         ) {
             Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -126,7 +128,10 @@ fun WebApp() {
                         onToggleAnimate = { animate = !animate },
                     )
                     Box(modifier = Modifier.weight(1f).fillMaxSize()) {
-                        CompositionLocalProvider(LocalPlaygroundAnimate provides animate) {
+                        CompositionLocalProvider(
+                            LocalPlaygroundAnimate provides animate,
+                            LocalPlaygroundShared provides shared,
+                        ) {
                             if (family != null) {
                                 PlaygroundContent(family = family!!)
                             } else {

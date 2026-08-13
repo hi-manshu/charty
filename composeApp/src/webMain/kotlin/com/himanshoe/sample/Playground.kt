@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,6 +35,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -117,60 +119,113 @@ internal fun PlaygroundScaffold(
     code: String,
     controls: @Composable ColumnScope.() -> Unit,
 ) {
+    val shared = LocalPlaygroundShared.current
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val wide = maxWidth > 720.dp
+        val wide = maxWidth > 860.dp
         if (wide) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                Column(modifier = Modifier.weight(1f).fillMaxSize()) {
-                    Box(
-                        modifier = Modifier.weight(1f).fillMaxWidth().padding(16.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        chart()
-                    }
-                    CodePanel(
-                        code = code,
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .height(
-                                    190.dp,
-                                ).padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                    )
-                }
+            Row(modifier = Modifier.fillMaxSize().padding(20.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 Column(
-                    modifier =
-                        Modifier
-                            .width(340.dp)
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
-                            .verticalScroll(rememberScrollState())
-                            .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    content = controls,
+                    modifier = Modifier.weight(1f).fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    ChartStage(modifier = Modifier.weight(1f).fillMaxWidth(), chart = chart)
+                    CodePanel(code = code, modifier = Modifier.fillMaxWidth().height(220.dp))
+                }
+                ControlPanel(
+                    modifier = Modifier.width(360.dp).fillMaxHeight(),
+                    shared = shared,
+                    controls = controls,
                 )
             }
         } else {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(280.dp).padding(16.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    chart()
-                }
-                Column(
+            Column(
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                ChartStage(modifier = Modifier.fillMaxWidth().height(300.dp), chart = chart)
+                ControlPanel(modifier = Modifier.fillMaxWidth(), shared = shared, controls = controls, scrolls = false)
+                CodePanel(code = code, modifier = Modifier.fillMaxWidth().height(240.dp))
+            }
+        }
+    }
+}
+
+/** The surface the live chart sits on, so it reads as a artefact rather than loose ink on the page. */
+@Composable
+private fun ChartStage(
+    modifier: Modifier,
+    chart: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp,
+        shadowElevation = 2.dp,
+    ) {
+        Box(modifier = Modifier.fillMaxSize().padding(20.dp), contentAlignment = Alignment.Center) {
+            chart()
+        }
+    }
+}
+
+/**
+ * The right-hand panel: this chart's own controls first, then the settings every Cartesian chart
+ * shares, so the axis, tooltip, and theme knobs are in the same place whichever chart is open.
+ */
+@Composable
+private fun ControlPanel(
+    modifier: Modifier,
+    shared: PlaygroundSharedState,
+    controls: @Composable ColumnScope.() -> Unit,
+    scrolls: Boolean = true,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp,
+        shadowElevation = 2.dp,
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (scrolls) {
+                            Modifier.verticalScroll(rememberScrollState())
+                        } else {
+                            Modifier
+                        },
+                    ).padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Configuration",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = "Reset",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier =
                         Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
-                            .verticalScroll(rememberScrollState())
-                            .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    controls()
-                    CodePanel(code = code, modifier = Modifier.fillMaxWidth().height(200.dp))
-                }
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { shared.reset() }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                )
             }
+            controls()
+            AxisAndGridControls(state = shared)
+            TooltipStyleControls(state = shared)
+            ThemeControls(state = shared)
         }
     }
 }
