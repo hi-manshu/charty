@@ -105,6 +105,7 @@ fun MultilineChart(
     val styling = rememberThemedLineStyling(lineConfig = lineConfig, crosshair = crosshair)
 
     val colorList = remember(colors) { colors.value }
+    val legendColors = remember(colorList) { colorList.map { stop -> ChartyColor.Solid(stop) } }
     val chartState =
         rememberCartesianChartState(
             fullData = fullDataList,
@@ -207,7 +208,7 @@ fun MultilineChart(
         if (lineConfig.legendLabels.isNotEmpty()) {
             ChartLegend(
                 labels = lineConfig.legendLabels,
-                colors = colorList,
+                colors = legendColors,
                 textStyle = lineConfig.legendTextStyle,
             )
         }

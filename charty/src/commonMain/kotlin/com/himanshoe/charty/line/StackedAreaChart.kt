@@ -114,6 +114,7 @@ fun StackedAreaChart(
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
     val colorList = remember(colors) { colors.value }
+    val legendColors = remember(colorList) { colorList.map { stop -> ChartyColor.Solid(stop) } }
     val chartState =
         rememberCartesianChartState(
             fullData = fullDataList,
@@ -214,7 +215,7 @@ fun StackedAreaChart(
         if (lineConfig.legendLabels.isNotEmpty()) {
             ChartLegend(
                 labels = lineConfig.legendLabels,
-                colors = colorList,
+                colors = legendColors,
                 textStyle = lineConfig.legendTextStyle,
             )
         }
