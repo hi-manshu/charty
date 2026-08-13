@@ -2,6 +2,7 @@ package com.himanshoe.charty3d.projection
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
+import com.himanshoe.charty.common.annotation.ChartyExperimental
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -28,6 +29,7 @@ private const val MIN_PERSPECTIVE_DENOMINATOR = 0.25f
  * next to a 2D chart's does not require flipping signs in your head: [x] runs right, [y] runs **down**
  * (matching Compose's canvas), and [z] runs away from the viewer into the scene.
  */
+@ChartyExperimental
 @Immutable
 data class Point3D(
     val x: Float,
@@ -49,6 +51,7 @@ data class Point3D(
  *   isometric projection — every equal length stays equal, which keeps bars comparable — up to `1f`
  *   for a strongly convergent one, which looks more photographic but distorts value comparison.
  */
+@ChartyExperimental
 @Immutable
 data class Projection3D(
     val pitch: Float = DEFAULT_PITCH,

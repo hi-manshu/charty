@@ -18,6 +18,7 @@ import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.annotation.ChartyExperimental
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty3d.bar.config.Bar3DChartConfig
 import com.himanshoe.charty3d.internal.SceneFit
@@ -74,6 +75,7 @@ import com.himanshoe.charty3d.projection.sortedFarToNear
  * @param onBarClick Called with the bar under a tap, resolved nearest face first; `null` disables
  *   tapping.
  */
+@ChartyExperimental
 @Composable
 fun Bar3DChart(
     data: () -> List<BarData>,

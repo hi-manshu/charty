@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.annotation.ChartyExperimental
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty3d.projection.Projection3D
 
@@ -21,6 +22,7 @@ private const val LABEL_SP = 11f
  *
  * [AUTO] measures that rather than guessing at it, which is why it is the default.
  */
+@ChartyExperimental
 enum class Bar3DLabelPlacement {
     /**
      * Let the chart decide, by measuring whether floor labels would actually collide at the angle in
@@ -59,6 +61,7 @@ enum class Bar3DLabelPlacement {
  * @property plotBackground Fill painted behind the whole scene; `null` leaves the chart transparent
  *   so whatever it sits on shows through.
  */
+@ChartyExperimental
 @Stable
 data class Bar3DChartConfig(
     val projection: Projection3D = Projection3D.Default,

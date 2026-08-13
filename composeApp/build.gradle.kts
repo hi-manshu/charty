@@ -17,6 +17,10 @@ composeCompiler {
 }
 
 kotlin {
+    sourceSets.all {
+        languageSettings.optIn("com.himanshoe.charty.common.annotation.ChartyExperimental")
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)

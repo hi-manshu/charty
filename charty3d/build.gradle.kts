@@ -15,6 +15,10 @@ group = System.getenv("GROUP") ?: project.findProperty("GROUP")?.toString() ?: "
 version = System.getenv("VERSION_NAME") ?: project.findProperty("VERSION_NAME")?.toString() ?: "1.0.0-SNAPSHOT"
 
 kotlin {
+    sourceSets.all {
+        languageSettings.optIn("com.himanshoe.charty.common.annotation.ChartyExperimental")
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)

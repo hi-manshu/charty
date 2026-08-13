@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import com.himanshoe.charty.common.annotation.ChartyExperimental
 
 private const val TOP_FACE_LIGHTNESS = 1.18f
 private const val SIDE_FACE_LIGHTNESS = 0.82f
@@ -15,6 +16,7 @@ private const val CHANNEL_CEILING = 1f
  * amounts of light, and naming them lets a chart shade consistently instead of picking a tint per
  * call site.
  */
+@ChartyExperimental
 enum class FaceSide {
     /** Faces the viewer; drawn at the series colour unchanged. */
     FRONT,
@@ -34,6 +36,7 @@ enum class FaceSide {
  * @property depth The face's distance from the viewer, used to draw far faces before near ones.
  * @property payload The chart's own item this face belongs to, so a tap can resolve back to data.
  */
+@ChartyExperimental
 @Immutable
 data class ProjectedFace<T>(
     val points: List<Offset>,
@@ -85,6 +88,7 @@ data class ProjectedFace<T>(
  * Shades [color] for the given [side], so the three visible sides of one solid read as one object
  * lit from above rather than three flat shapes that happen to touch.
  */
+@ChartyExperimental
 fun shadeForSide(
     color: Color,
     side: FaceSide,
@@ -110,6 +114,7 @@ fun shadeForSide(
  * painted over them. Sorting here rather than at each call site is what keeps a chart's occlusion
  * correct when its viewing angle changes.
  */
+@ChartyExperimental
 fun <T> List<ProjectedFace<T>>.sortedFarToNear(): List<ProjectedFace<T>> = sortedByDescending { face -> face.depth }
 
 /**
@@ -120,6 +125,7 @@ fun <T> List<ProjectedFace<T>>.sortedFarToNear(): List<ProjectedFace<T>> = sorte
  * @param position The tapped canvas position.
  * @return The payload of the nearest face under [position], or `null` when the tap missed every face.
  */
+@ChartyExperimental
 fun <T> List<ProjectedFace<T>>.hitTest(position: Offset): T? =
     sortedBy { face -> face.depth }
         .firstOrNull { face -> face.contains(position) }
