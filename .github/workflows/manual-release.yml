@@ -111,7 +111,7 @@ jobs:
           VERSION_NAME: ${{ github.event.inputs.versionName }}
         run: |
           echo "📦 Publishing Charty $VERSION_NAME to Maven Central..."
-          ./gradlew :charty:publishAndReleaseToMavenCentral \
+          ./gradlew :charty:publishAndReleaseToMavenCentral :charty3d:publishAndReleaseToMavenCentral \
             --no-configuration-cache \
             --stacktrace
 
@@ -216,7 +216,7 @@ jobs:
           4. **Build**: Check if the project builds successfully locally
 
           ### Troubleshooting:
-          - Run \`./gradlew :charty:publishToMavenLocal\` locally to test the build
+          - Run \`./gradlew :charty:publishToMavenLocal :charty3d:publishToMavenLocal\` locally to test the build
           - Verify your credentials at https://central.sonatype.com/
           - Check if GPG key is properly formatted (should be base64 encoded)
           EOF

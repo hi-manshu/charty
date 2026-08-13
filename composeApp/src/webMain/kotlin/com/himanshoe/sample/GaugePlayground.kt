@@ -108,6 +108,7 @@ internal fun GaugePlayground() {
         """.trimIndent()
 
     PlaygroundScaffold(
+        cartesian = false,
         code = code,
         chart = {
             AngularGaugeChart(

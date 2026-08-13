@@ -268,6 +268,7 @@ internal fun RadarPlayground() {
         )
         """.trimIndent()
     PlaygroundScaffold(
+        cartesian = false,
         code = code,
         chart = {
             RadarChart(
@@ -399,6 +400,7 @@ internal fun CircularPlayground() {
         )
         """.trimIndent()
     PlaygroundScaffold(
+        cartesian = false,
         code = code,
         chart = {
             CircularProgressIndicator(
@@ -496,6 +498,7 @@ internal fun BlockPlayground() {
         )
         """.trimIndent()
     PlaygroundScaffold(
+        cartesian = false,
         code = code,
         chart = {
             BlockBarChart(

@@ -101,6 +101,7 @@ internal fun SparklinePlayground() {
         """.trimIndent()
 
     PlaygroundScaffold(
+        cartesian = false,
         code = code,
         chart = {
             key(tick) {

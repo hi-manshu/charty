@@ -87,6 +87,7 @@ internal enum class PlaygroundFamily(
     Calendar("Calendar heatmap", "Values over days", Color(0xFF039BE5)),
     Gantt("Gantt", "Many ranges per row", Color(0xFF00695C)),
     Funnel("Funnel", "Stage-by-stage drop-off", Color(0xFFAD1457)),
+    Bar3D("3D bar", "Projected solids, opt-in module", Color(0xFF4527A0)),
 }
 
 /**
@@ -312,5 +313,6 @@ private fun PlaygroundContent(family: PlaygroundFamily) {
         PlaygroundFamily.Calendar -> CalendarPlayground()
         PlaygroundFamily.Gantt -> GanttPlayground()
         PlaygroundFamily.Funnel -> FunnelPlayground()
+        PlaygroundFamily.Bar3D -> Bar3DPlayground()
     }
 }

@@ -77,6 +77,7 @@ internal fun FunnelPlayground() {
         """.trimIndent()
 
     PlaygroundScaffold(
+        cartesian = false,
         code = code,
         chart = {
             FunnelChart(

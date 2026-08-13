@@ -1263,6 +1263,7 @@ internal fun PiePlayground() {
         """.trimIndent()
 
     PlaygroundScaffold(
+        cartesian = false,
         code = code,
         chart = {
             PieChart(

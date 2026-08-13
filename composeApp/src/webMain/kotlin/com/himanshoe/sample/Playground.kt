@@ -118,6 +118,7 @@ internal fun PlaygroundScaffold(
     chart: @Composable () -> Unit,
     code: String,
     controls: @Composable ColumnScope.() -> Unit,
+    cartesian: Boolean = true,
 ) {
     val shared = LocalPlaygroundShared.current
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -135,6 +136,7 @@ internal fun PlaygroundScaffold(
                     modifier = Modifier.width(360.dp).fillMaxHeight(),
                     shared = shared,
                     controls = controls,
+                    cartesian = cartesian,
                 )
             }
         } else {
@@ -143,7 +145,13 @@ internal fun PlaygroundScaffold(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 ChartStage(modifier = Modifier.fillMaxWidth().height(300.dp), chart = chart)
-                ControlPanel(modifier = Modifier.fillMaxWidth(), shared = shared, controls = controls, scrolls = false)
+                ControlPanel(
+                    modifier = Modifier.fillMaxWidth(),
+                    shared = shared,
+                    controls = controls,
+                    cartesian = cartesian,
+                    scrolls = false,
+                )
                 CodePanel(code = code, modifier = Modifier.fillMaxWidth().height(240.dp))
             }
         }
@@ -170,14 +178,19 @@ private fun ChartStage(
 }
 
 /**
- * The right-hand panel: this chart's own controls first, then the settings every Cartesian chart
- * shares, so the axis, tooltip, and theme knobs are in the same place whichever chart is open.
+ * The right-hand panel: this chart's own controls first, then the settings the chart actually
+ * honours, so the shared knobs sit in the same place whichever chart is open.
+ *
+ * A chart that draws no [com.himanshoe.charty.common.ChartScaffold] — the radial family, and the
+ * projected 3D charts — is not [cartesian], and is spared the axis and tooltip sections it would
+ * ignore. Showing a control that does nothing is worse than showing no control at all.
  */
 @Composable
 private fun ControlPanel(
     modifier: Modifier,
     shared: PlaygroundSharedState,
     controls: @Composable ColumnScope.() -> Unit,
+    cartesian: Boolean,
     scrolls: Boolean = true,
 ) {
     Surface(
@@ -223,8 +236,10 @@ private fun ControlPanel(
                 )
             }
             controls()
-            AxisAndGridControls(state = shared)
-            TooltipStyleControls(state = shared)
+            if (cartesian) {
+                AxisAndGridControls(state = shared)
+                TooltipStyleControls(state = shared)
+            }
             ThemeControls(state = shared)
         }
     }
