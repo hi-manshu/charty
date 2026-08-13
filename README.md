@@ -16,11 +16,9 @@
 
 ## ▶️ Try it live in your browser
 
-**[Open the interactive playground →](https://hi-manshu.github.io/charty/)** — tweak the data and every config option and watch ~15 chart families re-render instantly. No install, no emulator. It's the same Compose code running in your browser via WebAssembly.
+**[Open the interactive playground →](https://hi-manshu.github.io/charty/)** — every chart in the catalog below, with its configuration exposed as controls you can turn. Change the data, the axes, the animation, the theme, and watch it re-render instantly. No install, no emulator: it is the same Compose code you would ship, running in your browser via WebAssembly.
 
-> _Deploying? Enable **Settings → Pages → Source: GitHub Actions** and the `Deploy playground` workflow publishes it on every push._
-
-The playground includes live sandboxes for streaming, synced crosshairs, PNG export, tooltips, and interpolation — each one showing the exact Kotlin that produced what you are looking at.
+It also carries live sandboxes for streaming, synced crosshairs, PNG export, tooltips, and interpolation — each showing the exact Kotlin that produced what you are looking at.
 
 ---
 
@@ -37,6 +35,7 @@ The playground includes live sandboxes for streaming, synced crosshairs, PNG exp
 - ⚡ **Scales to big data** — built-in **LTTB downsampling** keeps tens of thousands of points at interactive frame rates.
 - ♿ **Accessible** — whole-chart descriptions **and** per-data-point screen-reader traversal, so TalkBack/VoiceOver users can inspect each value.
 - 🎨 **Themeable** — light/dark-aware `ChartyTheme`, `ChartyColor` solids & gradients everywhere a colour is exposed, graceful empty/loading states.
+- 🧊 **Optional 3D** — an extruded bar and a tilted pie in a separate `charty-3d` artifact, so a project that does not want them does not carry them. [When not to use it →](docs/charty/charts/3d/README.md)
 - 📦 **Ships an Android baseline profile** in the AAR, so consuming apps get Charty's hot paths AOT-compiled at install (no first-render jank).
 
 ---
@@ -63,6 +62,12 @@ kotlin {
 dependencies {
     implementation("com.himanshoe:charty:<latest-version>")
 }
+```
+
+The 3D charts live in a second artifact, released at the same version, and are opt-in on purpose — see [charty-3d](docs/charty/charts/3d/README.md):
+
+```kotlin
+implementation("com.himanshoe:charty-3d:<latest-version>")
 ```
 
 Your first chart is three lines:
