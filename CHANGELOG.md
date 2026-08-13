@@ -3,7 +3,11 @@
 Notable changes to Charty. Versions follow [semantic versioning](https://semver.org); breaking
 changes are listed first in each release and say what to do about them.
 
-## Unreleased
+## 3.0.0-rc02
+
+Continues the 3.0 release candidate line. The breaking changes below land before 3.0.0 is stable,
+which is what a release candidate is for — a consumer on `3.0.0-rc01` will get compile errors, each
+with a one-line fix here.
 
 ### Breaking
 

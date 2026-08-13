@@ -1,5 +1,7 @@
 # Pie3DChart
 
+![Pie3DChart](../../img/pie3_d_chart.png)
+
 A pie or ring given thickness and tilted. Best when a part-to-whole figure is the headline and the
 shares are read from labels or a legend.
 

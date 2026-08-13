@@ -20,6 +20,7 @@ private const val HALF = 2f
 private const val MIN_SPAN = 0.0001f
 private const val START_ANGLE = -90f
 private const val MIN_VISIBLE_PITCH = 6f
+private const val WALL_SEGMENT_OVERLAP = 0.25f
 
 /** One slice's angular extent, in degrees, measured clockwise from twelve o'clock. */
 internal data class SliceSweep(
@@ -93,6 +94,25 @@ private fun sliceAngles(
 }
 
 /**
+ * How far a wall segment running from [from] to [to] actually reaches.
+ *
+ * Every segment but the slice's last overruns its successor by a fraction of a step. Two
+ * anti-aliased quads meeting on an exact shared edge leave a hairline of background between them, and
+ * on a wall that reads as a row of pale stripes down the side of the disc. The final segment is left
+ * alone so the slice still ends exactly where its neighbour begins.
+ */
+private fun wallEnd(
+    from: Float,
+    to: Float,
+    last: Float,
+): Float =
+    if (to == last) {
+        to
+    } else {
+        to + (to - from) * WALL_SEGMENT_OVERLAP
+    }
+
+/**
  * The pitch actually used, raised off zero so the disc is never seen exactly edge-on.
  *
  * At a pitch of zero every face of a flat disc is edge-on, the culling rule correctly discards all
@@ -116,7 +136,18 @@ internal fun pie3DProjection(config: Pie3DChartConfig) =
  *
  * The walls are what make a pie read as a solid, and they are also where the painter's algorithm
  * earns its keep — the wall of a slice at the back must be drawn before the top of a slice in front
- * of it, which sorting by depth handles without either slice knowing about the other.
+ * of it, which sorting by depth handles without either slice knowing about the other. They stay a
+ * strip of quads rather than becoming one polygon, because one polygon would carry a single depth for
+ * a band that can wrap most of the way round the disc, and that depth would sort wrongly against the
+ * neighbours. Each quad instead overruns its successor slightly: neighbours within a slice share a
+ * colour, so the overlap is invisible, whereas the hairline it closes is not.
+ *
+ * The radial cuts either side of a slice are built **only when the disc is exploded**. On a whole
+ * disc the slices tile the full circle, so every cut is an interior surface that nothing can see —
+ * and building one anyway lets it be painted over the neighbour it hides behind, which shows up as a
+ * wedge of the wrong colour lying across that neighbour's top. Back-face culling is the usual answer
+ * and is the wrong one here: an arc's winding flips as it travels round the circle, so the same test
+ * that keeps a box honest discards half a rim.
  */
 internal fun pie3DFaces(
     dataList: List<PieData>,
@@ -167,13 +198,15 @@ internal fun pie3DFaces(
             slice = sweep.data,
         )
 
+        val last = angles.last()
         angles.zipWithNext().forEach { (from, to) ->
+            val reach = wallEnd(from = from, to = to, last = last)
             add(
                 corners =
                     listOf(
                         rimPoint(degrees = from, radius = SCENE_RADIUS, y = -thickness, offset = shift),
-                        rimPoint(degrees = to, radius = SCENE_RADIUS, y = -thickness, offset = shift),
-                        rimPoint(degrees = to, radius = SCENE_RADIUS, y = 0f, offset = shift),
+                        rimPoint(degrees = reach, radius = SCENE_RADIUS, y = -thickness, offset = shift),
+                        rimPoint(degrees = reach, radius = SCENE_RADIUS, y = 0f, offset = shift),
                         rimPoint(degrees = from, radius = SCENE_RADIUS, y = 0f, offset = shift),
                     ),
                 side = FaceSide.FRONT,
@@ -183,10 +216,10 @@ internal fun pie3DFaces(
                 add(
                     corners =
                         listOf(
-                            rimPoint(degrees = to, radius = inner, y = -thickness, offset = shift),
+                            rimPoint(degrees = reach, radius = inner, y = -thickness, offset = shift),
                             rimPoint(degrees = from, radius = inner, y = -thickness, offset = shift),
                             rimPoint(degrees = from, radius = inner, y = 0f, offset = shift),
-                            rimPoint(degrees = to, radius = inner, y = 0f, offset = shift),
+                            rimPoint(degrees = reach, radius = inner, y = 0f, offset = shift),
                         ),
                     side = FaceSide.SIDE,
                     slice = sweep.data,
@@ -194,7 +227,13 @@ internal fun pie3DFaces(
             }
         }
 
-        listOf(sweep.startDegrees, sweep.startDegrees + sweep.sweepDegrees).forEach { cut ->
+        val cuts =
+            if (config.explodeFraction > 0f) {
+                listOf(sweep.startDegrees, sweep.startDegrees + sweep.sweepDegrees)
+            } else {
+                emptyList()
+            }
+        cuts.forEach { cut ->
             add(
                 corners =
                     listOf(

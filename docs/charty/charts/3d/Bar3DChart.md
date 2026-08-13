@@ -1,5 +1,7 @@
 # Bar3DChart
 
+![Bar3DChart](../../img/bar3_d_chart.png)
+
 Bars extruded into solids standing on a floor. Best when a bar chart is the headline of a dashboard
 or a slide and the exact values are read from labels rather than compared by eye.
 
