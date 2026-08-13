@@ -267,3 +267,30 @@ internal fun pie3DLabelAnchor(
         ),
     )
 }
+
+/**
+ * Orders a disc's faces for drawing: whole slices from far to near, and within each slice its walls
+ * and cuts before its top.
+ *
+ * Sorting every face by its own mean depth is not enough here. A slice's radial cut runs from its
+ * inner edge to its outer one through the full thickness, so its mean depth can come out nearer than
+ * the top it belongs to — and the cut then paints over the surface it is supposed to bound, which
+ * reads as a slice missing its top.
+ *
+ * Grouping by slice first removes the question. A disc seen from above always shows a slice's top in
+ * front of that same slice's sides, whatever their mean depths work out to, while between slices the
+ * mean depth is a sound comparison because they do not interpenetrate.
+ */
+internal fun List<ProjectedFace<PieData>>.orderedForDrawing(): List<ProjectedFace<PieData>> =
+    groupBy { face -> face.payload }
+        .entries
+        .sortedByDescending { (_, slice) -> slice.sumOf { face -> face.depth.toDouble() } / slice.size }
+        .flatMap { (_, slice) ->
+            slice.sortedBy { face ->
+                if (face.side == FaceSide.TOP) {
+                    1
+                } else {
+                    0
+                }
+            }
+        }

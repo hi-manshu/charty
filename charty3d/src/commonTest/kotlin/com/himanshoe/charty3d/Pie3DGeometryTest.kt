@@ -2,6 +2,7 @@ package com.himanshoe.charty3d
 
 import androidx.compose.ui.geometry.Size
 import com.himanshoe.charty.pie.data.PieData
+import com.himanshoe.charty3d.internal.orderedForDrawing
 import com.himanshoe.charty3d.internal.pie3DFaces
 import com.himanshoe.charty3d.internal.pie3DFit
 import com.himanshoe.charty3d.internal.pie3DProjection
@@ -200,4 +201,43 @@ private fun faceHasArea(points: List<androidx.compose.ui.geometry.Offset>): Bool
         area += current.x * next.y - next.x * current.y
     }
     return kotlin.math.abs(area) > PIE_TOLERANCE
+}
+
+class Pie3DDrawOrderTest {
+    @Test
+    fun eachSliceDrawsItsTopAfterItsOwnWallsSoNothingPaintsOverIt() {
+        val ordered = pieFaces().orderedForDrawing()
+        ordered
+            .groupBy { face -> face.payload.label }
+            .forEach { (label, slice) ->
+                val lastNonTop = slice.indexOfLast { face -> face.side != FaceSide.TOP }
+                val firstTop = slice.indexOfFirst { face -> face.side == FaceSide.TOP }
+                assertTrue(
+                    firstTop > lastNonTop,
+                    "slice $label drew a wall after its top, which is what hides the top",
+                )
+            }
+    }
+
+    @Test
+    fun slicesAreOrderedFarToNear() {
+        val ordered = pieFaces().orderedForDrawing()
+        val meanBySlice =
+            ordered
+                .groupBy { face -> face.payload.label }
+                .mapValues { (_, slice) -> slice.map { it.depth }.average() }
+        val order = ordered.map { face -> face.payload.label }.distinct()
+        order.zipWithNext().forEach { (nearer, further) ->
+            assertTrue(
+                meanBySlice.getValue(nearer) >= meanBySlice.getValue(further),
+                "slices must be painted furthest first",
+            )
+        }
+    }
+
+    @Test
+    fun everyFaceSurvivesTheOrdering() {
+        val faces = pieFaces()
+        assertEquals(faces.size, faces.orderedForDrawing().size)
+    }
 }

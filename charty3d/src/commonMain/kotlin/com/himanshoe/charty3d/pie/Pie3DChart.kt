@@ -23,6 +23,7 @@ import com.himanshoe.charty.common.annotation.ChartyExperimental
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.pie.data.PieData
 import com.himanshoe.charty3d.internal.SceneFit
+import com.himanshoe.charty3d.internal.orderedForDrawing
 import com.himanshoe.charty3d.internal.pie3DFaces
 import com.himanshoe.charty3d.internal.pie3DFit
 import com.himanshoe.charty3d.internal.pie3DLabelAnchor
@@ -32,7 +33,6 @@ import com.himanshoe.charty3d.pie.config.Pie3DLabelContent
 import com.himanshoe.charty3d.projection.ProjectedFace
 import com.himanshoe.charty3d.projection.hitTest
 import com.himanshoe.charty3d.projection.shadeForSide
-import com.himanshoe.charty3d.projection.sortedFarToNear
 import kotlin.math.roundToInt
 
 private const val PERCENT = 100f
@@ -120,7 +120,7 @@ fun Pie3DChart(
         pieConfig.plotBackground?.let { background ->
             drawRect(brush = Brush.verticalGradient(background.value), size = size)
         }
-        faces.sortedFarToNear().fastForEach { face ->
+        faces.orderedForDrawing().fastForEach { face ->
             val index = dataList.indexOf(face.payload).coerceAtLeast(0)
             val base = face.payload.color ?: palette[index % palette.size]
             drawPath(path = face.toPath(), color = shadeForSide(color = base.value.first(), side = face.side))

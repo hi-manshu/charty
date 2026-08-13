@@ -10,27 +10,63 @@ import com.himanshoe.charty.common.config.Animation
  * Linearly interpolates each element of [from] toward [to] by [fraction] (`0f` yields [from], `1f`
  * yields [to]).
  *
- * When the two lists differ in size there is no sensible per-index correspondence, so the [to] list
- * is returned unchanged — a data set that added or removed entries snaps to its new shape instead of
- * tweening. [fraction] is coerced into `0f..1f`.
+ * ## Appended values
+ * A series that grew — the streaming case, where a point arrives every tick — keeps its shared
+ * prefix and tweens each **new** element out of the last value they had in common. That is what
+ * makes a fresh point extend the line from where it left off rather than appear whole: at
+ * `fraction = 0f` the new point sits exactly on its predecessor, so the segment has no length, and
+ * it grows to its real value as the fraction runs. Anything reading the newest point — a marker
+ * pinned to it, its label, the crosshair — follows that motion instead of jumping with it.
+ *
+ * When the lists differ in any other way there is no sensible correspondence between them, so [to]
+ * is returned unchanged and the chart snaps to its new shape. [fraction] is coerced into `0f..1f`.
  *
  * @param from The starting values (typically the previously displayed data).
  * @param to The target values (the new data).
  * @param fraction How far to interpolate from [from] to [to].
- * @return A new list of interpolated values, or [to] when the sizes differ.
+ * @return A new list of interpolated values, or [to] when the lists cannot be matched up.
  */
 fun lerpValues(
     from: List<Float>,
     to: List<Float>,
     fraction: Float,
 ): List<Float> {
-    if (from.size != to.size) {
-        return to
-    }
     val clamped = fraction.coerceIn(0f, 1f)
+    val startValues = matchedStartValues(from = from, to = to) ?: return to
     return List(to.size) { index ->
-        val start = from[index]
+        val start = startValues[index]
         start + (to[index] - start) * clamped
+    }
+}
+
+/**
+ * The value each element of [to] should tween out of, or `null` when the two lists cannot be matched
+ * up at all.
+ *
+ * Same length is the ordinary case and pairs off by index. A list that grew by appending — which is
+ * what streaming does on every tick — pairs its shared prefix off with itself and starts each new
+ * element from the last value the two lists had in common, so a fresh point begins life on top of
+ * its predecessor and the segment between them grows out of nothing.
+ */
+private fun matchedStartValues(
+    from: List<Float>,
+    to: List<Float>,
+): List<Float>? {
+    val appended = from.isNotEmpty() && to.size > from.size && to.subList(0, from.size) == from
+    return when {
+        from.size == to.size -> from
+        appended -> {
+            val anchor = from.last()
+            List(to.size) { index ->
+                if (index < from.size) {
+                    to[index]
+                } else {
+                    anchor
+                }
+            }
+        }
+
+        else -> null
     }
 }
 
