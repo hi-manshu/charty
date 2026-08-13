@@ -47,8 +47,14 @@ enum class NegativeValuesDrawMode {
  * @property animateValueChanges When `true`, bar heights tween from their previous values to the new
  *   ones whenever the data changes (using [animation]); when `false` (default) new data appears
  *   instantly. Has no effect if [animation] is [Animation.Disabled].
- * @property referenceLine Optional reference line configuration (target/average line)
- * @property referenceBand Optional shaded value region drawn behind the bars (see [ReferenceBandConfig])
+ * @property referenceLine Optional reference line configuration (target/average line), drawn over the
+ *   bars. It marks a value on the value axis, so it is horizontal on
+ *   [com.himanshoe.charty.bar.BarChart] and vertical on [com.himanshoe.charty.bar.HorizontalBarChart]
+ *   and [com.himanshoe.charty.bar.SpanChart], whose values run left to right.
+ * @property referenceBand Optional shaded value region drawn behind the bars (see
+ *   [ReferenceBandConfig]). Like [referenceLine] it follows the chart's value axis, so it is a
+ *   horizontal stripe on [com.himanshoe.charty.bar.BarChart] and a vertical one on
+ *   [com.himanshoe.charty.bar.HorizontalBarChart] and [com.himanshoe.charty.bar.SpanChart].
  * @property markers Persistent markers pinned to specific bars, drawn at all times regardless of
  *   touch (see [PersistentMarker]). A marker is anchored at the top-centre of its bar in
  *   [com.himanshoe.charty.bar.BarChart], and at the centre of its bar's value end (the end away from
@@ -58,7 +64,12 @@ enum class NegativeValuesDrawMode {
  *   bar for the vertical chart, the bottom bar for the horizontal ones. Empty (the default) draws none.
  * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
- * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property tooltipFormatter Converts a data point into the string shown in its tooltip. Honoured by
+ *   [com.himanshoe.charty.bar.BarChart] and [com.himanshoe.charty.bar.HorizontalBarChart], which both
+ *   plot [BarData]. [com.himanshoe.charty.bar.SpanChart] cannot honour it and ignores it: a span is a
+ *   [com.himanshoe.charty.bar.data.SpanData] with a `startValue` and an `endValue` rather than the
+ *   single `value` this formatter receives, so there is no faithful way to hand one to a
+ *   `(BarData) -> String`. Span tooltips always read `label: startValue - endValue`.
  * @property crosshairConfig When non-null, enables a draggable [ChartCrosshairConfig] that tracks
  *   the user's finger and snaps to the nearest bar — by x on [com.himanshoe.charty.bar.BarChart]
  *   and by y on [com.himanshoe.charty.bar.HorizontalBarChart]. Usually set for you by passing a

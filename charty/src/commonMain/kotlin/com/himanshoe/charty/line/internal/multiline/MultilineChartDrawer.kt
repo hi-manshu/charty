@@ -10,7 +10,10 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.animation.isAnimated
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBand
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -18,6 +21,8 @@ import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.MultilinePoint
 import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createLineBrush
+import com.himanshoe.charty.line.internal.marker.markerAnchorPositions
+import com.himanshoe.charty.line.internal.marker.topSeriesValues
 import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
 import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 import com.himanshoe.charty.line.resolveLineInterpolation
@@ -153,9 +158,29 @@ private fun DrawScope.drawPointsForSeries(
 }
 
 /**
+ * Draws the persistent markers on top of every series, anchored on the topmost series at each x
+ * position (see [topSeriesValues]). A marker without its own label shows that anchor's value.
+ *
+ * @param p The data, geometry, and styling for this pass.
+ */
+private fun DrawScope.drawMultilineMarkers(p: MultilineDrawParams) {
+    if (p.lineConfig.markers.isEmpty()) {
+        return
+    }
+    val anchorValues = p.dataList.topSeriesValues()
+    drawPersistentMarkers(
+        chartContext = p.chartContext,
+        markers = p.lineConfig.markers,
+        pointPositions = p.chartContext.markerAnchorPositions(anchorValues),
+        valueLabelFor = { index -> formatMarkerValue(anchorValues[index]) },
+        textMeasurer = p.textMeasurer,
+    )
+}
+
+/**
  * Draws one full multiline pass: the optional reference band, the crosshair snap points, every
- * series back to front, the canvas tooltip when no crosshair is active, the interaction overlays,
- * and finally the crosshair itself.
+ * series back to front, the persistent markers, the optional reference line, the canvas tooltip when
+ * no crosshair is active, the interaction overlays, and finally the crosshair itself.
  *
  * @param p The data, geometry, styling, and interaction state for this pass.
  */
@@ -204,6 +229,15 @@ internal fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
                 p.pointBounds.takeIf { p.onPointClick != null },
         )
     }
+
+    drawMultilineMarkers(p)
+
+    drawReferenceLineIfNeeded(
+        referenceLineConfig = p.lineConfig.referenceLine,
+        chartContext = p.chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = p.textMeasurer,
+    )
 
     p.tooltipState?.let { state ->
         drawTooltip(

@@ -38,6 +38,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -1286,7 +1287,7 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                     )
                 },
                 ChartVariant("Animated value changes (tap to reshuffle)") {
-                    var tick by remember { mutableStateOf(0) }
+                    var tick by remember { mutableIntStateOf(0) }
                     val shuffling = remember(tick) { reshuffledLine(tick = tick) }
                     ReshuffleColumn(label = "Reshuffle values", onReshuffle = { tick += 1 }) { chartModifier ->
                         LineChart(
@@ -1510,13 +1511,6 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                         data = { points },
                         onPointClick = {},
                         tooltip = ChartTooltip.compose { PillTooltip() },
-                        modifier = chartFill,
-                    )
-                },
-                ChartVariant("Value labels") {
-                    PointChart(
-                        data = { points },
-                        pointConfig = PointChartConfig(showLabels = true),
                         modifier = chartFill,
                     )
                 },

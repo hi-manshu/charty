@@ -49,14 +49,27 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  * @property animateValueChanges When `true`, the line tweens from its previous points to the new ones
  *   whenever the data changes (using [animation]); when `false` (default) new data appears instantly.
  *   Has no effect if [animation] is [Animation.Disabled].
- * @property referenceLine Optional horizontal or vertical reference line drawn across the chart.
+ * @property referenceLine Optional horizontal or vertical reference line drawn across the chart,
+ *   over the series. Honoured by all four charts: [com.himanshoe.charty.line.LineChart],
+ *   [com.himanshoe.charty.line.AreaChart], [com.himanshoe.charty.line.MultilineChart] and
+ *   [com.himanshoe.charty.line.StackedAreaChart].
  * @property referenceBand Optional shaded value region drawn behind the data (see [ReferenceBandConfig]).
  * @property markers Persistent markers pinned to specific points, always drawn regardless of touch
- *   (see [PersistentMarker]). Empty (the default) draws none.
+ *   (see [PersistentMarker]). Empty (the default) draws none. A marker's `dataIndex` picks an x
+ *   position, counting back from the newest point when negative, so `dataIndex = -1` labels the
+ *   latest value. Where that x holds several values the marker anchors on the topmost one:
+ *   in [com.himanshoe.charty.line.MultilineChart] the highest series at that x, and in
+ *   [com.himanshoe.charty.line.StackedAreaChart] the top of the stack, that is the group's total.
+ *   A marker with no label of its own shows the value it is anchored on.
  * @property tooltipConfig Appearance of the tooltip bubble shown on tap. Only used when
  *   [crosshairConfig] is `null`; the crosshair has its own label config.
  * @property tooltipPosition Preferred placement of the tap tooltip relative to the tapped point.
- * @property tooltipFormatter Converts a [LineData] point into the string shown in the tooltip.
+ * @property tooltipFormatter Converts a [LineData] point into the string shown in the tooltip, and
+ *   in the crosshair label. The multi-series charts have no [LineData] of their own, so they project
+ *   onto one before calling this: [com.himanshoe.charty.line.MultilineChart] passes the group label
+ *   qualified with the one-based series number (`"Jan Line 2"`) for a tap, and `"L1"`, `"L2"`, … for
+ *   each entry of the crosshair's combined label; [com.himanshoe.charty.line.StackedAreaChart]
+ *   passes the group label with the tapped band's own value, and the group's total for the crosshair.
  * @property crosshairConfig When non-null, enables a draggable [ChartCrosshairConfig] that
  *   tracks the user's finger and snaps to the nearest data point. When set, it replaces the
  *   standard tap-to-tooltip interaction.

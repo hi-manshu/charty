@@ -108,7 +108,6 @@ The chart attaches a generated summary ("Pie chart, 3 slices. Largest slice: …
 | `sliceSpacingDegrees` | `Float` | `0f` | Gap between slices; `0f..10f` |
 | `shouldShowCenterText` | `Boolean` | `false` | Draws the total in the donut hole; `DONUT` only, ignored when `centerContent` is set |
 | `centerTextStyle` | `TextStyle` | 16 sp, bold, black | Style of that centre text |
-| `referenceLine` | `ReferenceLineConfig?` | `null` | Declared but **not implemented** — has no effect |
 
 ### `LabelConfig`
 

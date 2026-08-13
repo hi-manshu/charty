@@ -99,15 +99,11 @@ The chart attaches a generated summary ("Multiple radar chart, 2 datasets, 5 axe
 | `showLegend` | `Boolean` | `false` | Draws the data-set legend |
 | `legendPosition` | `LegendPosition` | `TOP` | `TOP`, `BOTTOM`, `LEFT`, `RIGHT`, or a corner |
 | `legendTextStyle` | `TextStyle` | 12 sp | Legend text style |
-| `allowDatasetToggle` | `Boolean` | `false` | Declared but **not implemented** — has no effect |
-| `highlightOnHover` | `Boolean` | `false` | Declared but **not implemented** — has no effect |
 | `staggerAnimation` | `Boolean` | `true` | Animates data sets in sequence |
 | `staggerDelay` | `Float` | `0.15f` | Delay between data sets; `0f..0.5f` |
 | `datasetLineWidth` | `Float?` | `null` | Overrides `radarConfig.dataLineWidth`; must be positive |
 | `datasetPointRadius` | `Float?` | `null` | Overrides `radarConfig.dataPointRadius`; non-negative |
 | `showPointInnerCircle` | `Boolean` | `true` | Draws an inner circle inside each vertex dot |
-| `blendMode` | `BlendMode` | `NORMAL` | Declared but **not implemented** — has no effect |
-| `maxDataSets` | `Int` | `0` | Declared but **not implemented** — has no effect |
 
 ## Limitations
 

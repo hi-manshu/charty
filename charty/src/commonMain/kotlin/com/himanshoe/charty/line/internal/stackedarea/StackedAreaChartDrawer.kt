@@ -10,12 +10,17 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBand
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
+import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
+import com.himanshoe.charty.line.internal.marker.markerAnchorPositions
+import com.himanshoe.charty.line.internal.marker.stackedTotalValues
 import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
 import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 import com.himanshoe.charty.line.resolveLineInterpolation
@@ -124,9 +129,30 @@ private fun addSegmentBounds(
 }
 
 /**
+ * Draws the persistent markers on top of the stack, anchored on the top of the stack at each x
+ * position (see [stackedTotalValues]). A marker without its own label shows that total.
+ *
+ * @param params The data, geometry, and styling for this pass.
+ */
+private fun DrawScope.drawStackedAreaMarkers(params: StackedAreaDrawParams) {
+    if (params.lineConfig.markers.isEmpty()) {
+        return
+    }
+    val anchorValues = params.dataList.stackedTotalValues()
+    drawPersistentMarkers(
+        chartContext = params.chartContext,
+        markers = params.lineConfig.markers,
+        pointPositions = params.chartContext.markerAnchorPositions(anchorValues),
+        valueLabelFor = { index -> formatMarkerValue(anchorValues[index]) },
+        textMeasurer = params.textMeasurer,
+    )
+}
+
+/**
  * Draws one full stacked area pass: the optional reference band, the crosshair snap points, every
- * band from the top of the stack down so lower bands overlap correctly, the canvas tooltip when no
- * crosshair is active, the interaction overlays, and finally the crosshair itself.
+ * band from the top of the stack down so lower bands overlap correctly, the persistent markers, the
+ * optional reference line, the canvas tooltip when no crosshair is active, the interaction overlays,
+ * and finally the crosshair itself.
  *
  * @param params The data, geometry, styling, and interaction state for this pass.
  */
@@ -190,6 +216,15 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
             ),
         )
     }
+
+    drawStackedAreaMarkers(params)
+
+    drawReferenceLineIfNeeded(
+        referenceLineConfig = lineConfig.referenceLine,
+        chartContext = chartContext,
+        orientation = ChartOrientation.VERTICAL,
+        textMeasurer = textMeasurer,
+    )
 
     tooltipState?.let { state ->
         drawTooltip(

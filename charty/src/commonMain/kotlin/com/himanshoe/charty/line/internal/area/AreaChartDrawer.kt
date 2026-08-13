@@ -15,6 +15,7 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
+import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
@@ -33,8 +34,9 @@ private const val HIGHLIGHT_CIRCLE_INNER_PADDING = 2f
 
 /**
  * Draws one full area-chart pass: the optional reference band, the filled area and its outline
- * (revealed left-to-right by [AreaChartDrawParams.animationProgress]), the optional points, and the
- * persistent markers. Does nothing when there are no point positions to connect.
+ * (revealed left-to-right by [AreaChartDrawParams.animationProgress]), the optional points, the
+ * persistent markers, and the optional reference line. Does nothing when there are no point
+ * positions to connect.
  *
  * @param params The geometry, styling, and animation state for this pass.
  */
@@ -97,6 +99,13 @@ internal fun DrawScope.drawAreaChart(params: AreaChartDrawParams) {
         markers = params.config.markers,
         pointPositions = params.pointPositions,
         valueLabelFor = { index -> formatMarkerValue(params.dataList[index].value) },
+        textMeasurer = params.textMeasurer,
+    )
+
+    drawReferenceLineIfNeeded(
+        referenceLineConfig = params.config.referenceLine,
+        chartContext = params.chartContext,
+        orientation = ChartOrientation.VERTICAL,
         textMeasurer = params.textMeasurer,
     )
 }

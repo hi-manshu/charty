@@ -858,7 +858,6 @@ private class PointState {
     var tick by mutableStateOf(0)
     var pointRadius by mutableStateOf(8f)
     var pointAlpha by mutableStateOf(1f)
-    var showLabels by mutableStateOf(false)
     var color by mutableStateOf(playgroundPalette[4])
     var animateValueChanges by mutableStateOf(false)
     var highlightSelectedColumn by mutableStateOf(false)
@@ -903,8 +902,7 @@ internal fun PointPlayground() {
             color = ChartyColor.Solid(Color(${colorHex(state.color)})),
             pointConfig = PointChartConfig(
                 pointRadius = ${fc(state.pointRadius)},
-                pointAlpha = ${fc(state.pointAlpha)},
-                showLabels = ${state.showLabels},${codeArg(
+                pointAlpha = ${fc(state.pointAlpha)},${codeArg(
             include = state.animateValueChanges,
             text = "animateValueChanges = true,",
             indent = 16,
@@ -955,7 +953,6 @@ internal fun PointPlayground() {
                     PointChartConfig(
                         pointRadius = state.pointRadius,
                         pointAlpha = state.pointAlpha,
-                        showLabels = state.showLabels,
                         animation = playgroundAnimation(animate = animate),
                         animateValueChanges = state.animateValueChanges,
                         referenceLine = demoReferenceLine(enabled = state.referenceLine, value = state.referenceValue),
@@ -1006,7 +1003,6 @@ private fun PointControls(state: PointState) {
         onValueChange = { state.pointAlpha = it },
         decimals = 2,
     )
-    SwitchRow(label = "Show labels", checked = state.showLabels, onCheckedChange = { state.showLabels = it })
     ControlSection(title = "Annotations")
     ReferenceLineControls(
         enabled = state.referenceLine,

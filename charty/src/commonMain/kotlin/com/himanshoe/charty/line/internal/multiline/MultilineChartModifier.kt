@@ -13,6 +13,8 @@ import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.MultilinePoint
 
+private const val CROSSHAIR_LABEL_SEPARATOR = "  "
+
 /**
  * Add tap gesture detection for multiline chart points
  */
@@ -31,12 +33,7 @@ internal fun Modifier.multilineChartClickHandler(
         onTooltipStateChange = onTooltipStateChange,
         createTooltipContent = { point, position ->
             createPointTooltipState(
-                content =
-                    point.lineGroup.label +
-                        " Line ${
-                            point.seriesIndex +
-                                MultilineChartConstants.SERIES_INDEX_OFFSET
-                        }: ${point.value}",
+                content = lineConfig.tooltipFormatter(point.toTooltipLineData()),
                 position = position,
                 pointRadius = lineConfig.pointRadius,
                 tooltipPosition = lineConfig.tooltipPosition,
@@ -92,8 +89,11 @@ internal fun buildMultilineModifier(
                 onCrosshairUpdate = crosshairManager::update,
                 labelFormatter = { point ->
                     point.lineGroup.values
-                        .mapIndexed { i, v -> "L${i + 1}: $v" }
-                        .joinToString("  ")
+                        .mapIndexed { seriesIndex, value ->
+                            lineConfig.tooltipFormatter(
+                                crosshairSeriesLineData(seriesIndex = seriesIndex, value = value),
+                            )
+                        }.joinToString(separator = CROSSHAIR_LABEL_SEPARATOR)
                 },
                 dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
             )

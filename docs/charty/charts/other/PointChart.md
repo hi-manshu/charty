@@ -123,7 +123,6 @@ Shared with `BubbleChart`.
 | --- | --- | --- | --- |
 | `pointRadius` | `Float` | `8f` | Dot radius in pixels; must be greater than `0` |
 | `pointAlpha` | `Float` | `1f` | Dot opacity, `0f..1f` |
-| `showLabels` | `Boolean` | `false` | Declared but **not implemented** — has no effect |
 | `negativeValuesDrawMode` | `NegativeValuesDrawMode` | `BELOW_AXIS` | `BELOW_AXIS` or `FROM_MIN_VALUE` |
 | `animation` | `Animation` | `Animation.Default` | Entry animation |
 | `animateValueChanges` | `Boolean` | `false` | Tween values on data change |

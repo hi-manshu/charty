@@ -15,6 +15,7 @@ import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.internal.bar.drawHorizontalBarMarkers
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
@@ -119,6 +120,29 @@ internal fun DrawScope.drawHorizontalReferenceLineIfNeeded(
             chartContext = chartContext,
             orientation = ChartOrientation.HORIZONTAL,
             config = referenceLineConfig,
+            textMeasurer = textMeasurer,
+        )
+    }
+}
+
+/**
+ * Draws the configured reference band behind the bars, or nothing when none is configured. The
+ * band spans a value range on the horizontal value axis, so it renders as a vertical stripe.
+ *
+ * @param barConfig Supplies the optional band.
+ * @param chartContext The chart's coordinate context.
+ * @param textMeasurer Measures the band's label.
+ */
+internal fun DrawScope.drawHorizontalReferenceBandIfNeeded(
+    barConfig: BarChartConfig,
+    chartContext: ChartContext,
+    textMeasurer: TextMeasurer,
+) {
+    barConfig.referenceBand?.let { band ->
+        drawReferenceBand(
+            chartContext = chartContext,
+            orientation = ChartOrientation.HORIZONTAL,
+            config = band,
             textMeasurer = textMeasurer,
         )
     }

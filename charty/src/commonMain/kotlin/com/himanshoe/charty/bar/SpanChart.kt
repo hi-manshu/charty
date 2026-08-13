@@ -22,6 +22,8 @@ import com.himanshoe.charty.bar.internal.span.SpanDrawParams
 import com.himanshoe.charty.bar.internal.span.calculateAxisOffset
 import com.himanshoe.charty.bar.internal.span.createAxisConfig
 import com.himanshoe.charty.bar.internal.span.createSpanChartModifier
+import com.himanshoe.charty.bar.internal.span.drawSpanReferenceBandIfNeeded
+import com.himanshoe.charty.bar.internal.span.drawSpanReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.span.drawSpans
 import com.himanshoe.charty.bar.internal.span.rememberSpanValueRange
 import com.himanshoe.charty.bar.internal.span.spanEndMarkerPositions
@@ -170,6 +172,12 @@ fun SpanChart(
             tooltipManager.clearBounds()
             val axisOffset = calculateAxisOffset(scaffoldConfig)
 
+            drawSpanReferenceBandIfNeeded(
+                barConfig = barConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
+
             drawSpans(
                 SpanDrawParams(
                     dataList = displayList,
@@ -184,6 +192,12 @@ fun SpanChart(
                     onSpanBoundCalculated = { tooltipManager.bounds.add(it) },
                     recordBounds = onSpanClick != null || interactionConfig.dragTooltipActive,
                 ),
+            )
+
+            drawSpanReferenceLineIfNeeded(
+                barConfig = barConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
             )
 
             if (barConfig.markers.isNotEmpty()) {

@@ -10,6 +10,7 @@ import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rectangularChartClickHandler
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.line.config.LineChartConfig
+import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
 
@@ -32,7 +33,10 @@ internal fun Modifier.stackedAreaChartClickHandler(
         onTooltipStateChange = onTooltipStateChange,
         createTooltipContent = { areaPoint, rect ->
             TooltipState(
-                content = "${areaPoint.lineGroup.label}: ${areaPoint.value}",
+                content =
+                    lineConfig.tooltipFormatter(
+                        LineData(label = areaPoint.lineGroup.label, value = areaPoint.value),
+                    ),
                 x = rect.left + rect.width / StackedAreaChartConstants.BEZIER_CONTROL_POINT_2_MULTIPLIER,
                 y = rect.top,
                 barWidth = rect.width,
@@ -83,7 +87,9 @@ internal fun buildStackedAreaModifier(
                 dataList = dataList,
                 pointBounds = crosshairBounds,
                 onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = { group -> "${group.label}: ${group.values.sum()}" },
+                labelFormatter = { group ->
+                    lineConfig.tooltipFormatter(LineData(label = group.label, value = group.values.sum()))
+                },
                 dismissOnRelease = lineConfig.crosshairConfig?.dismissOnRelease ?: true,
             )
     }

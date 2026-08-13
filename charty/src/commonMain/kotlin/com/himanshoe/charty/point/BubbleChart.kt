@@ -29,8 +29,6 @@ import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
-import com.himanshoe.charty.common.draw.drawPersistentMarkers
-import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
@@ -46,6 +44,9 @@ import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.BubbleData
+import com.himanshoe.charty.point.internal.bubble.BubbleDrawParams
+import com.himanshoe.charty.point.internal.bubble.bubbleMarkerPositions
+import com.himanshoe.charty.point.internal.bubble.drawBubbleContent
 
 private const val MIN_RADIUS_DIVISOR = 2f
 
@@ -189,27 +190,21 @@ fun BubbleChart(
                 crosshairBounds = crosshairBounds,
             )
 
-            drawAllBubbles(
-                dataList = displayList,
-                chartContext = chartContext,
-                sizeInfo = sizeInfo,
-                minBubbleRadius = minBubbleRadius,
-                config = config,
-                color = color,
-                animationProgress = animationProgress.value,
-                onBubbleClick = onBubbleClick,
-                bubbleBounds = bubbleBounds,
+            drawBubbleContent(
+                params =
+                    BubbleDrawParams(
+                        dataList = displayList,
+                        chartContext = chartContext,
+                        sizeInfo = sizeInfo,
+                        minBubbleRadius = minBubbleRadius,
+                        config = config,
+                        color = color,
+                        animationProgress = animationProgress.value,
+                        onBubbleClick = onBubbleClick,
+                        bubbleBounds = bubbleBounds,
+                        textMeasurer = textMeasurer,
+                    ),
             )
-
-            if (config.markers.isNotEmpty()) {
-                drawPersistentMarkers(
-                    chartContext = chartContext,
-                    markers = config.markers,
-                    pointPositions = bubbleMarkerPositions(chartContext = chartContext, dataList = displayList),
-                    valueLabelFor = { index -> formatMarkerValue(displayList[index].yValue) },
-                    textMeasurer = textMeasurer,
-                )
-            }
 
             drawInteractionOverlays(
                 interactionConfig = interactionConfig,
@@ -290,21 +285,6 @@ private fun rememberAnimatedBubbleData(
     }
 }
 
-/**
- * Pixel centres of every drawn bubble, ordered the same as [dataList] so a marker index of `-1` lands
- * on the rightmost bubble.
- */
-private fun bubbleMarkerPositions(
-    chartContext: ChartContext,
-    dataList: List<BubbleData>,
-): List<Offset> =
-    List(dataList.size) { index ->
-        Offset(
-            x = chartContext.calculateCenteredXPosition(index = index, totalItems = dataList.size),
-            y = chartContext.convertValueToYPosition(dataList[index].yValue),
-        )
-    }
-
 @Composable
 private fun BoxScope.BubbleChartOverlay(
     crosshairManager: CrosshairManager<BubbleData>?,
@@ -333,85 +313,5 @@ private fun DrawScope.drawBubbleCrosshair(
         crosshairConfig?.let { cfg ->
             drawLineChartCrosshair(state, cfg, chartContext, textMeasurer, color, drawLabel = drawLabel)
         }
-    }
-}
-
-private fun DrawScope.drawAllBubbles(
-    dataList: List<BubbleData>,
-    chartContext: ChartContext,
-    sizeInfo: BubbleSizeInfo,
-    minBubbleRadius: Float,
-    config: PointChartConfig,
-    color: ChartyColor,
-    animationProgress: Float,
-    onBubbleClick: ((BubbleData) -> Unit)?,
-    bubbleBounds: MutableList<BubbleBounds>,
-) {
-    dataList.fastForEachIndexed { index, bubble ->
-        val bubbleProgress = index.toFloat() / dataList.size
-        val bubbleAnimationProgress = ((animationProgress - bubbleProgress) * dataList.size).coerceIn(0f, 1f)
-
-        val bubbleX = chartContext.calculateCenteredXPosition(index, dataList.size)
-        val bubbleY = chartContext.convertValueToYPosition(bubble.yValue)
-
-        val bubbleRadius =
-            calculateBubbleRadius(
-                bubbleSize = bubble.size,
-                minSize = sizeInfo.minSize,
-                sizeRange = sizeInfo.sizeRange,
-                minBubbleRadius = minBubbleRadius,
-                maxBubbleRadius = config.pointRadius,
-            )
-
-        val bubbleColor =
-            when (color) {
-                is ChartyColor.Solid -> color.color
-                is ChartyColor.Gradient -> color.colors[index % color.colors.size]
-            }
-
-        if (bubbleAnimationProgress > 0f) {
-            val center =
-                Offset(x = bubbleX, y = bubbleCenterY(chartContext = chartContext, y = bubbleY, radius = bubbleRadius))
-            val animatedRadius = bubbleRadius * bubbleAnimationProgress
-
-            if (onBubbleClick != null) {
-                bubbleBounds.add(BubbleBounds(center = center, radius = animatedRadius, data = bubble))
-            }
-
-            drawCircle(
-                color = bubbleColor.copy(alpha = 0.3f),
-                radius = animatedRadius,
-                center = center,
-                alpha = config.pointAlpha * bubbleAnimationProgress,
-            )
-            drawCircle(
-                color = bubbleColor,
-                radius = (bubbleRadius * 0.85f) * bubbleAnimationProgress,
-                center = center,
-                alpha = config.pointAlpha * bubbleAnimationProgress,
-            )
-        }
-    }
-}
-
-/**
- * Keeps a bubble inside the plot by insetting its centre from the value position by its own radius.
- *
- * A bubble is sized by its value rather than by the axis, so a point near either end of the range
- * would otherwise spill past the axis line — most visibly at the bottom, where a large bubble on a
- * low value hangs below the plot. When the plot is shorter than the bubble, the centre falls back to
- * the middle so the overflow is at least symmetric.
- */
-private fun bubbleCenterY(
-    chartContext: ChartContext,
-    y: Float,
-    radius: Float,
-): Float {
-    val top = chartContext.top + radius
-    val bottom = chartContext.bottom - radius
-    return if (top > bottom) {
-        (chartContext.top + chartContext.bottom) / 2f
-    } else {
-        y.coerceIn(minimumValue = top, maximumValue = bottom)
     }
 }

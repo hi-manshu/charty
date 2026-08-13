@@ -21,6 +21,7 @@ import com.himanshoe.charty.bar.internal.bar.horizontal.HorizontalBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.horizontal.calculateHorizontalBaselineX
 import com.himanshoe.charty.bar.internal.bar.horizontal.createHorizontalAxisConfig
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalBars
+import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalReferenceBandIfNeeded
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.horizontal.drawHorizontalTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.horizontal.horizontalBarAccessibility
@@ -177,6 +178,12 @@ fun HorizontalBarChart(
                     maxValue = maxValue,
                     chartContext = chartContext,
                 )
+
+            drawHorizontalReferenceBandIfNeeded(
+                barConfig = barConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
 
             drawHorizontalBars(
                 HorizontalBarDrawParams(
