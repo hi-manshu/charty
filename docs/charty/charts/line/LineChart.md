@@ -176,7 +176,7 @@ Shared by `LineChart`, `AreaChart`, `MultilineChart`, and `StackedAreaChart` —
 | `referenceLine` | `ReferenceLineConfig?` | `null` | Optional horizontal guide line |
 | `referenceBand` | `ReferenceBandConfig?` | `null` | Optional shaded value band |
 | `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Canvas tooltip appearance |
 | `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
 | `tooltipFormatter` | `(LineData) -> String` | `"label: value"` | Tooltip text |
 | `crosshairConfig` | `ChartCrosshairConfig?` | `null` | Legacy crosshair switch; `crosshair` takes precedence |

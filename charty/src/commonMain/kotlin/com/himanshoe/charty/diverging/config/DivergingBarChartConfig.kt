@@ -52,6 +52,8 @@ enum class DivergingSideScaling {
  * @property valueFormatter Formats a magnitude for its value label and its tooltip.
  * @property valueLabelStyle Text style for the value labels.
  * @property tooltipConfig Appearance of the built-in canvas tooltip.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred placement of the tooltip relative to the tapped bar.
  * @property visibleWindow Rolling "show last N rows" window; `null` (default) shows every row.
  *   Must be `>= 2`.

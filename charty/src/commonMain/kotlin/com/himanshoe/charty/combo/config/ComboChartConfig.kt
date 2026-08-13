@@ -42,7 +42,9 @@ import com.himanshoe.charty.common.util.toChartLabel
  * @property secondaryAxisForLine When `true`, the line is plotted against its own secondary Y axis on
  *   the right (scaled to the line values), while the bars keep the left axis (scaled to the bar
  *   values). Useful when bar and line series have very different magnitudes.
- * @property tooltipConfig Configuration for tooltip appearance when a data point is clicked
+ * @property tooltipConfig Configuration for tooltip appearance when a data point is clicked.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  * @property crosshairConfig When non-null, enables a draggable crosshair snapping to line points.

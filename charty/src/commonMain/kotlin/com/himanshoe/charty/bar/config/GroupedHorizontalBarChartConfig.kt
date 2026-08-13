@@ -46,6 +46,8 @@ data class GroupedHorizontalBarEntry(
  *   value end of the row's longest bar. `PersistentMarker(dataIndex = -1)` is the idiomatic way to
  *   label the latest value — the bottom row. Empty (the default) draws none.
  * @property tooltipConfig Tooltip appearance configuration.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred tooltip placement ([TooltipPosition.AUTO] by default).
  * @property tooltipFormatter Lambda that formats the tooltip text for a tapped [GroupedHorizontalBarEntry].
  * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and

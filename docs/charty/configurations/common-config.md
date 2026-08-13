@@ -13,12 +13,13 @@ data class ChartScaffoldConfig(
     val showAxis: Boolean = true,
     val showGrid: Boolean = true,
     val showLabels: Boolean = true,
-    val axisColor: Color = Color.Black,
+    val axisColor: ChartyColor = ChartyColor.Solid(Color.Black),
     val leftLabelRotation: LabelRotation = LabelRotation.Straight,
-    val gridColor: Color = Color.LightGray,
+    val gridColor: ChartyColor = ChartyColor.Solid(Color.LightGray),
     val axisThickness: Float = 2f,
     val gridThickness: Float = 1f,
     val labelTextStyle: TextStyle = TextStyle(color = Color.Black, fontSize = 12.sp),
+    val labelTextColor: ChartyColor? = null,
 )
 ```
 
@@ -66,7 +67,7 @@ A reference line is a horizontal line drawn at a fixed y-value across the chart 
 data class ReferenceLineConfig(
     val isEnabled: Boolean = true,
     val value: Float,
-    val color: Color = Color.Red,
+    val color: ChartyColor = ChartyColor.Solid(Color.Red),
     val strokeWidth: Float = 2f,
     val strokeStyle: ReferenceLineStrokeStyle = ReferenceLineStrokeStyle.DASHED,
     val dashIntervals: FloatArray? = null,
@@ -140,10 +141,12 @@ When a click handler is supplied to a chart, a tooltip is automatically displaye
 ```kotlin
 data class TooltipConfig(
     val shape: Shape = RoundedCornerShape(8.dp),
-    val backgroundColor: Color = Color(0xFF2D2D2D),
-    val borderColor: Color? = null,
+    val cornerRadius: Dp = 8.dp,
+    val backgroundColor: ChartyColor = ChartyColor.Solid(Color(0xFF2D2D2D)),
+    val borderColor: ChartyColor? = null,
     val borderWidth: Dp = 1.dp,
     val textStyle: TextStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+    val textColor: ChartyColor? = null,
     val padding: TooltipPadding = TooltipPadding(),
     val elevation: Dp = 4.dp,
     val offsetY: Dp = 8.dp,

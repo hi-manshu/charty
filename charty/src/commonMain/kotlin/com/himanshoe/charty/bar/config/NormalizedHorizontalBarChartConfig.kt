@@ -42,6 +42,8 @@ data class NormalizedHorizontalBarSegment(
  *   `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value — the bottom
  *   row. Empty (the default) draws none.
  * @property tooltipConfig Tooltip appearance settings.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred tooltip placement.
  * @property tooltipFormatter Lambda that formats the tooltip text for a tapped [NormalizedHorizontalBarSegment].
  *   Defaults to showing the segment label, index, and percentage.

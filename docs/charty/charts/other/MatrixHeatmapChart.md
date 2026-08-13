@@ -95,7 +95,7 @@ MatrixHeatmapChart(
 | `valueFormatter` | `(Float) -> String` | built-in numeric format | Formats in-cell values |
 | `labelTextStyle` | `TextStyle` | 10 sp, `#57606A` | Style for row/column labels and in-cell values |
 | `tooltipFormatter` | `(HeatmapCell) -> String` | built-in | Text of the tap tooltip |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Appearance of the canvas tooltip |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Appearance of the canvas tooltip |
 | `animation` | `Animation` | `Animation.Default` | Diagonal fade-and-scale entry animation |
 
 `HeatmapCell(rowLabel: String, columnLabel: String, value: Float)`.

@@ -18,7 +18,7 @@ private const val DEGREES_IN_CIRCLE = 360f
  * @param maxValue Maximum value for this ring (default 100f for percentage)
  * @param color Primary color for the filled portion of the ring (ChartyColor.Solid or Gradient)
  * @param backgroundColor Background color for the unfilled portion of the ring
- * @param shadowColor Optional shadow color for the ring (null for no shadow)
+ * @param shadowColor Optional shadow fill for the ring, solid or gradient (null for no shadow)
  * @param shadowRadius Shadow blur radius in pixels (0f for no shadow)
  * @param metadata Optional metadata for custom handling
  *
@@ -32,7 +32,7 @@ private const val DEGREES_IN_CIRCLE = 360f
  *     maxValue = 600f,
  *     color = ChartyColor.Solid(Color(0xFFFF3B58)),
  *     backgroundColor = ChartyColor.Solid(Color(0x33FF3B58)),
- *     shadowColor = Color(0xFFFF3B58),
+ *     shadowColor = ChartyColor.Solid(Color(0xFFFF3B58)),
  *     shadowRadius = 8f
  * )
  * ```
@@ -44,7 +44,7 @@ data class CircularRingData(
     val maxValue: Float = 100f,
     val color: ChartyColor,
     val backgroundColor: ChartyColor? = null,
-    val shadowColor: Color? = null,
+    val shadowColor: ChartyColor? = null,
     val shadowRadius: Float = 0f,
     val metadata: Map<String, Any>? = null,
 ) {

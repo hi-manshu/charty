@@ -68,6 +68,16 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceLineConfig
+import com.himanshoe.charty.diverging.DivergingBarChart
+import com.himanshoe.charty.diverging.config.DivergingBarChartConfig
+import com.himanshoe.charty.diverging.data.DivergingData
+import com.himanshoe.charty.funnel.FunnelChart
+import com.himanshoe.charty.funnel.config.FunnelChartConfig
+import com.himanshoe.charty.funnel.data.FunnelStage
+import com.himanshoe.charty.gantt.GanttChart
+import com.himanshoe.charty.gantt.config.GanttChartConfig
+import com.himanshoe.charty.gantt.data.GanttRow
+import com.himanshoe.charty.gantt.data.GanttSegment
 import com.himanshoe.charty.gauge.AngularGaugeChart
 import com.himanshoe.charty.gauge.config.AngularGaugeConfig
 import com.himanshoe.charty.heatmap.MatrixHeatmapChart
@@ -206,6 +216,47 @@ class DocImageGenerator {
                 data = { mosaicGroups },
                 modifier = Modifier.fillMaxSize(),
                 config = MosaicBarChartConfig(animation = Animation.Disabled),
+            )
+        }
+
+    @Test
+    fun divergingBarChart() =
+        capture(name = "diverging_bar_chart") {
+            DivergingBarChart(
+                data = { populationPyramid },
+                modifier = Modifier.fillMaxSize(),
+                leftSeriesName = "Male",
+                rightSeriesName = "Female",
+                divergingConfig = DivergingBarChartConfig(animation = Animation.Disabled),
+            )
+        }
+
+    @Test
+    fun ganttChart() =
+        capture(name = "gantt_chart") {
+            GanttChart(
+                data = { projectSchedule },
+                modifier = Modifier.fillMaxSize(),
+                ganttConfig =
+                    GanttChartConfig(
+                        animation = Animation.Disabled,
+                        showSegmentLabels = true,
+                        valueFormatter = { value -> "Week ${value.toInt()}" },
+                    ),
+            )
+        }
+
+    @Test
+    fun funnelChart() =
+        capture(name = "funnel_chart") {
+            FunnelChart(
+                data = { signupFunnel },
+                modifier = Modifier.fillMaxSize(),
+                funnelConfig =
+                    FunnelChartConfig(
+                        animation = Animation.Disabled,
+                        showConversionLabels = true,
+                    ),
             )
         }
 
@@ -778,6 +829,39 @@ private val planVsActualGroups =
         BarGroup(label = "Feb", values = listOf(55f, 61f), colors = comparisonColors),
         BarGroup(label = "Mar", values = listOf(60f, 54f), colors = comparisonColors),
         BarGroup(label = "Apr", values = listOf(66f, 78f), colors = comparisonColors),
+    )
+
+private val populationPyramid =
+    listOf(
+        DivergingData(label = "0-17", leftValue = 42f, rightValue = 39f),
+        DivergingData(label = "18-34", leftValue = 61f, rightValue = 58f),
+        DivergingData(label = "35-54", leftValue = 55f, rightValue = 60f),
+        DivergingData(label = "55+", leftValue = 33f, rightValue = 41f),
+    )
+
+private val projectSchedule =
+    listOf(
+        GanttRow(
+            label = "Design",
+            segments =
+                listOf(
+                    GanttSegment(startValue = 0f, endValue = 5f, label = "Wireframes", progress = 1f),
+                    GanttSegment(startValue = 7f, endValue = 9f, label = "Revision", progress = 0.3f),
+                ),
+        ),
+        GanttRow(
+            label = "Build",
+            segments = listOf(GanttSegment(startValue = 4f, endValue = 12f, label = "Implementation", progress = 0.6f)),
+        ),
+        GanttRow(label = "QA", segments = listOf(GanttSegment(startValue = 11f, endValue = 16f))),
+    )
+
+private val signupFunnel =
+    listOf(
+        FunnelStage(label = "Visited", value = 10_000f),
+        FunnelStage(label = "Signed up", value = 4_200f),
+        FunnelStage(label = "Activated", value = 1_800f),
+        FunnelStage(label = "Paid", value = 640f),
     )
 
 private val temperatureSpans =

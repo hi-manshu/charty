@@ -109,7 +109,7 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Plan vers
 | `animateValueChanges` | `Boolean` | `false` | Tween bar values on data change |
 | `referenceLine` | `ReferenceLineConfig?` | `null` | Optional horizontal guide line |
 | `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Canvas tooltip appearance |
 | `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
 | `tooltipFormatter` | `(ComparisonBarSegment) -> String` | `"label [i]: value"` | Tooltip text |
 | `visibleWindow` | `Int?` | `null` | Rolling "show last N" window; `null` or `>= 2` |

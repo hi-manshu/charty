@@ -118,7 +118,7 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Quarterly
 | `animateValueChanges` | `Boolean` | `false` | Tween segment values on data change |
 | `referenceLine` | `ReferenceLineConfig?` | `null` | Optional horizontal guide line |
 | `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Canvas tooltip appearance |
 | `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
 | `tooltipFormatter` | `(StackedBarSegment) -> String` | `"label [i]: value"` | Tooltip text |
 | `showDataLabels` | `Boolean` | `false` | Draws the stack total above each bar |

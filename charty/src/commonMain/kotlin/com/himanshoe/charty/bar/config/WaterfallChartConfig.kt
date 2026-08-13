@@ -33,7 +33,9 @@ private const val DEFAULT_NEGATIVE_COLOR = 0xFFD64C66
  *   step.
  *   `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value — the rightmost
  *   bar. Empty (the default) draws none.
- * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  * @property crosshairConfig When non-null, enables a draggable [ChartCrosshairConfig] that tracks the

@@ -63,6 +63,8 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  *   A marker with no label of its own shows the value it is anchored on.
  * @property tooltipConfig Appearance of the tooltip bubble shown on tap. Only used when
  *   [crosshairConfig] is `null`; the crosshair has its own label config.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred placement of the tap tooltip relative to the tapped point.
  * @property tooltipFormatter Converts a [LineData] point into the string shown in the tooltip, and
  *   in the crosshair label. The multi-series charts have no [LineData] of their own, so they project

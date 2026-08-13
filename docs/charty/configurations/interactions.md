@@ -95,10 +95,12 @@ Tooltips are shown automatically at the tapped position whenever a click handler
 ```kotlin
 data class TooltipConfig(
     val shape: Shape = RoundedCornerShape(8.dp),
-    val backgroundColor: Color = Color(0xFF2D2D2D),
-    val borderColor: Color? = null,
+    val cornerRadius: Dp = 8.dp,
+    val backgroundColor: ChartyColor = ChartyColor.Solid(Color(0xFF2D2D2D)),
+    val borderColor: ChartyColor? = null,
     val borderWidth: Dp = 1.dp,
     val textStyle: TextStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+    val textColor: ChartyColor? = null,
     val padding: TooltipPadding = TooltipPadding(),
     val elevation: Dp = 4.dp,
     val offsetY: Dp = 8.dp,
@@ -173,12 +175,12 @@ LineChart(
 
 ```kotlin
 data class ChartCrosshair<T>(
-    val config: ChartCrosshairConfig = ChartCrosshairConfig(),
+    val config: ChartCrosshairConfig? = null,
     val label: (@Composable CrosshairScope<T>.() -> Unit)? = null,
 )
 ```
 
-`config` styles the guide line; `label` is a **Composable drawn over the line** at the snapped point. Leave it `null` for the built-in pill label.
+`config` styles the guide line — `null`, the default, takes it from the ambient [theme](../customization/theming.md). `label` is a **Composable drawn over the line** at the snapped point; leave it `null` for the built-in pill label.
 
 ```kotlin
 LineChart(

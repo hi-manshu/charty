@@ -46,7 +46,9 @@ data class StackedBarSegment(
  *   touch (see [PersistentMarker]). A marker is anchored at the top-centre of its stack, level with
  *   the stacked total, which is also its default label. `PersistentMarker(dataIndex = -1)` is the
  *   idiomatic way to label the latest value — the rightmost bar. Empty (the default) draws none.
- * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked
+ * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
  * @property showDataLabels Whether to show the stacked total above each bar

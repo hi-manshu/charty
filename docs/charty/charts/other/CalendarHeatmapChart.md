@@ -93,7 +93,7 @@ The chart attaches a generated summary to its root: "Calendar heatmap, N days wi
 | `weekStartDay` | `WeekStartDay` | `SUNDAY` | `SUNDAY` or `MONDAY` |
 | `labelTextStyle` | `TextStyle` | 10 sp, `#57606A` | Style of the month and day labels |
 | `animation` | `Animation` | `Animation.Default` | Cell entry animation |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Canvas tooltip appearance |
 | `tooltipFormatter` | `(CalendarData) -> String` | `"<value> on <Mon> <day>, <year>"` | Tooltip text |
 
 ## Limitations

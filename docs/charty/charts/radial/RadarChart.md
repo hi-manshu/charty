@@ -117,7 +117,7 @@ The chart attaches a generated summary ("Radar chart, 1 dataset, 5 axes each. St
 | --- | --- | --- |
 | `showCenterIcon` | `Boolean` | `false` |
 | `centerIconSize` | `Float` | `40f` (must be positive) |
-| `centerBackgroundColor` | `Color` | `Color.Transparent` |
+| `centerBackgroundColor` | `ChartyColor` | `ChartyColor.Solid(Color.Transparent)` |
 | `centerBackgroundRadius` | `Float` | `0f` (non-negative) |
 
 ## Limitations

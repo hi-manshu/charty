@@ -39,7 +39,9 @@ private const val MIN_DOWNSAMPLE_THRESHOLD = 3
  *   (see [PersistentMarker]). A marker is anchored on its point's centre.
  *   `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value — the rightmost
  *   point. Empty (the default) draws none.
- * @property tooltipConfig Configuration for tooltip appearance when a point is clicked
+ * @property tooltipConfig Configuration for tooltip appearance when a point is clicked.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Function to format tooltip content from PointData
  * @property crosshairConfig When non-null, enables a draggable crosshair that tracks the user's finger

@@ -125,7 +125,7 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Orders wi
 | `referenceBand` | `ReferenceBandConfig?` | `null` | Optional shaded value band |
 | `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels on the line |
 | `secondaryAxisForLine` | `Boolean` | `false` | Scales the line against its own axis |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Canvas tooltip appearance |
 | `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
 | `tooltipFormatter` | `(ComboChartData) -> String` | `"label: Bar=…, Line=…"` | Tooltip text |
 | `crosshairConfig` | `ChartCrosshairConfig?` | `null` | Legacy crosshair switch; `crosshair` takes precedence |

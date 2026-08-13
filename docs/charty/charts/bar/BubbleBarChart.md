@@ -85,7 +85,7 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Daily act
 | `animateValueChanges` | `Boolean` | `false` | Tween values on data change |
 | `referenceLine` | `ReferenceLineConfig?` | `null` | Optional horizontal guide line |
 | `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Canvas tooltip appearance |
 | `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
 | `tooltipFormatter` | `(BarData) -> String` | `"label: value"` | Tooltip text |
 | `visibleWindow` | `Int?` | `null` | Rolling "show last N" window; `null` or `>= 2` |

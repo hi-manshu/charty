@@ -44,6 +44,8 @@ private const val DEFAULT_LABEL_FONT_SIZE_SP = 10
  *   `row · column: value`.
  * @property tooltipConfig Appearance of the built-in canvas tooltip: shape, colors, padding, and
  *   arrow. Ignored when the chart's `tooltip` is a Compose overlay or [ChartTooltip.none].
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property animation Entry animation; cells fade and scale in along a diagonal sweep. See [Animation].
  *
  * Example usage:

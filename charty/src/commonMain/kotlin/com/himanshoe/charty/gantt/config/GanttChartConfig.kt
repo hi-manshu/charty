@@ -31,6 +31,8 @@ private const val DEFAULT_SEGMENT_LABEL_SP = 10
  *   it to render the units the values actually carry — dates, durations, distances.
  * @property axisSteps Number of divisions on the value axis.
  * @property tooltipConfig Appearance of the built-in canvas tooltip.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred placement of the tooltip relative to the tapped segment.
  * @property visibleWindow Rolling "show last N rows" window; `null` (default) shows every row.
  *   Must be `>= 2`.

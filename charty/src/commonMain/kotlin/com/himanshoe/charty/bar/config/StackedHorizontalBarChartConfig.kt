@@ -43,6 +43,8 @@ data class StackedHorizontalBarSegment(
  *   with the stacked total, which is also its default label. `PersistentMarker(dataIndex = -1)` is
  *   the idiomatic way to label the latest value — the bottom row. Empty (the default) draws none.
  * @property tooltipConfig Configuration for tooltip appearance when a segment is clicked.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred position for tooltips ([TooltipPosition.ABOVE], [TooltipPosition.BELOW], or [TooltipPosition.AUTO]).
  * @property tooltipFormatter Lambda that formats the tooltip label for a clicked [StackedHorizontalBarSegment].
  * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and

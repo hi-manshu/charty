@@ -62,7 +62,9 @@ enum class NegativeValuesDrawMode {
  *   [com.himanshoe.charty.bar.SpanChart], where a span is marked at its end value.
  *   `PersistentMarker(dataIndex = -1)` is the idiomatic way to label the latest value: the rightmost
  *   bar for the vertical chart, the bottom bar for the horizontal ones. Empty (the default) draws none.
- * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
+ * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip. Honoured by
  *   [com.himanshoe.charty.bar.BarChart] and [com.himanshoe.charty.bar.HorizontalBarChart], which both

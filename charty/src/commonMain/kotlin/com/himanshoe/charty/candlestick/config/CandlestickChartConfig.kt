@@ -31,6 +31,8 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
  * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
  *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  * @property tooltipConfig Appearance of the built-in canvas tooltip shown when a candle is tapped.
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipPosition Preferred position for the tooltip (ABOVE, BELOW, or AUTO).
  * @property tooltipFormatter Converts a tapped candle into the string shown in its tooltip. The
  *   default renders all four prices — `Mon  O 100 H 110 L 95 C 105` — because a candle encodes an

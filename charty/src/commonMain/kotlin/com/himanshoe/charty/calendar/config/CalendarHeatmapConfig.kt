@@ -73,6 +73,8 @@ enum class WeekStartDay {
  *   `fontSize` here automatically expands the label padding so the grid never overlaps text.
  * @property animation Entrance animation for the chart; see [Animation].
  * @property tooltipConfig Appearance of the tap-to-show tooltip; see [TooltipConfig].
+ *   `null`, the default, takes it from the ambient
+ *   [ChartyTheme][com.himanshoe.charty.common.theme.ChartyTheme].
  * @property tooltipFormatter Converts a tapped [CalendarData] entry into the tooltip string.
  *
  * Example usage:

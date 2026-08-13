@@ -3,6 +3,7 @@ package com.himanshoe.charty.circular.internal
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.himanshoe.charty.circular.config.CircularProgressConfig
@@ -102,12 +103,14 @@ private fun DrawScope.drawRingShadow(
     actualSweepAngle: Float,
     strokeWidth: Float,
 ) {
+    val shadow = ring.shadowColor ?: return
     for (i in CircularProgressConstants.SHADOW_LAYERS downTo 1) {
         val shadowAlpha = (CircularProgressConstants.SHADOW_BASE_ALPHA / i)
         val shadowExpand = (ring.shadowRadius * i) / CircularProgressConstants.SHADOW_LAYERS.toFloat()
 
         drawArc(
-            color = ring.shadowColor!!.copy(alpha = shadowAlpha),
+            brush = Brush.linearGradient(shadow.value),
+            alpha = shadowAlpha,
             startAngle = config.startAngleDegrees + rotationAngle,
             sweepAngle = actualSweepAngle,
             useCenter = false,

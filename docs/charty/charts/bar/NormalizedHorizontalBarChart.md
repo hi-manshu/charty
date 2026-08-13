@@ -103,7 +103,7 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Market sh
 | `animation` | `Animation` | `Animation.Default` | Entry animation |
 | `animateValueChanges` | `Boolean` | `false` | Tween segment values on data change |
 | `markers` | `List<PersistentMarker>` | `emptyList()` | Persistent pinned labels |
-| `tooltipConfig` | `TooltipConfig` | `TooltipConfig()` | Canvas tooltip appearance |
+| `tooltipConfig` | `TooltipConfig?` | `null` (the theme's) | Canvas tooltip appearance |
 | `tooltipPosition` | `TooltipPosition` | `AUTO` | `ABOVE`, `BELOW`, or `AUTO` |
 | `tooltipFormatter` | `(NormalizedHorizontalBarSegment) -> String` | `"label [i]: n%"` | Tooltip text |
 | `visibleWindow` | `Int?` | `null` | Rolling "show last N" window; `null` or `>= 2` |
