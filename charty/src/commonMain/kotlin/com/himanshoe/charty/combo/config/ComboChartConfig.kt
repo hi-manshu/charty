@@ -13,6 +13,7 @@ import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.common.util.toChartLabel
 
 /**
  * Configuration for Combo Chart appearance and behavior
@@ -69,7 +70,7 @@ data class ComboChartConfig(
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (ComboChartData) -> String = { data ->
-        "${data.label}: Bar=${data.barValue}, Line=${data.lineValue}"
+        "${data.label}: Bar=${data.barValue.toChartLabel()}, Line=${data.lineValue.toChartLabel()}"
     },
     val crosshairConfig: ChartCrosshairConfig? = null,
     val visibleWindow: Int? = null,

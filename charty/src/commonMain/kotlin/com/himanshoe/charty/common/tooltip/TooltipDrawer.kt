@@ -6,14 +6,14 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.unit.dp
+import com.himanshoe.charty.color.toBrush
+import com.himanshoe.charty.color.withChartyColor
 
 private const val CENTER_DIVISOR = 2f
 private const val ARROW_MULTIPLIER = 2f
 private const val HORIZONTAL_PADDING_MULTIPLIER = 2f
 private const val VERTICAL_PADDING_MULTIPLIER = 2f
 private const val SHADOW_OFFSET = 1f
-private const val CORNER_RADIUS_DP = 8f
 private const val SHADOW_ALPHA = 0.3f
 private const val MIN_ARROW_MARGIN = 8f
 private const val ELEVATION_THRESHOLD = 0f
@@ -26,6 +26,7 @@ private data class TooltipDimensions(
     val offsetY: Float,
     val minEdgeDistance: Float,
     val arrowSize: Float,
+    val cornerRadius: Float,
 )
 
 private fun calculateTooltipX(
@@ -151,14 +152,14 @@ private fun DrawScope.drawTooltipShadow(
                     bottom = tooltipOffset.y + dimensions.height + SHADOW_OFFSET,
                     cornerRadius =
                         androidx.compose.ui.geometry
-                            .CornerRadius(CORNER_RADIUS_DP.dp.toPx()),
+                            .CornerRadius(dimensions.cornerRadius),
                 ),
             )
         }
-    drawPath(shadowPath, config.backgroundColor.copy(alpha = SHADOW_ALPHA))
+    drawPath(path = shadowPath, brush = config.backgroundColor.toBrush(), alpha = SHADOW_ALPHA)
 }
 
-private fun DrawScope.createTooltipBackgroundPath(
+private fun createTooltipBackgroundPath(
     tooltipOffset: Offset,
     dimensions: TooltipDimensions,
 ): Path =
@@ -171,7 +172,7 @@ private fun DrawScope.createTooltipBackgroundPath(
                 bottom = tooltipOffset.y + dimensions.height,
                 cornerRadius =
                     androidx.compose.ui.geometry
-                        .CornerRadius(CORNER_RADIUS_DP.dp.toPx()),
+                        .CornerRadius(dimensions.cornerRadius),
             ),
         )
     }
@@ -207,7 +208,7 @@ private fun DrawScope.drawArrowWithBorder(
             }
             close()
         }
-    drawPath(arrowPath, config.backgroundColor)
+    drawPath(path = arrowPath, brush = config.backgroundColor.toBrush())
 
     config.borderColor?.let { borderColor ->
         val arrowBorderPath =
@@ -224,7 +225,11 @@ private fun DrawScope.drawArrowWithBorder(
                     lineTo(arrowBaseRight, tooltipOffset.y)
                 }
             }
-        drawPath(arrowBorderPath, borderColor, style = Stroke(config.borderWidth.toPx()))
+        drawPath(
+            path = arrowBorderPath,
+            brush = borderColor.toBrush(),
+            style = Stroke(width = config.borderWidth.toPx()),
+        )
     }
 }
 
@@ -236,7 +241,11 @@ internal fun DrawScope.drawTooltip(
     chartTop: Float,
     chartBottom: Float,
 ) {
-    val textLayoutResult = textMeasurer.measure(tooltipState.content, config.textStyle)
+    val textLayoutResult =
+        textMeasurer.measure(
+            text = tooltipState.content,
+            style = config.textStyle.withChartyColor(config.textColor),
+        )
     val horizontalPadding = config.padding.horizontal.toPx()
     val verticalPadding = config.padding.vertical.toPx()
 
@@ -254,6 +263,7 @@ internal fun DrawScope.drawTooltip(
                 } else {
                     ELEVATION_THRESHOLD
                 },
+            cornerRadius = config.cornerRadius.toPx(),
         )
 
     val (tooltipOffset, finalPosition) =
@@ -270,7 +280,7 @@ internal fun DrawScope.drawTooltip(
     }
 
     val tooltipPath = createTooltipBackgroundPath(tooltipOffset = tooltipOffset, dimensions = dimensions)
-    drawPath(tooltipPath, config.backgroundColor)
+    drawPath(path = tooltipPath, brush = config.backgroundColor.toBrush())
 
     if (config.showArrow) {
         drawArrowWithBorder(
@@ -283,7 +293,11 @@ internal fun DrawScope.drawTooltip(
     }
 
     config.borderColor?.let { borderColor ->
-        drawPath(tooltipPath, borderColor, style = Stroke(config.borderWidth.toPx()))
+        drawPath(
+            path = tooltipPath,
+            brush = borderColor.toBrush(),
+            style = Stroke(width = config.borderWidth.toPx()),
+        )
     }
 
     drawText(

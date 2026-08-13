@@ -32,7 +32,8 @@ private const val BUBBLE_CENTER_DIVISOR = 2f
  * @property config The bubble styling, markers, reference band, and reference line to honour.
  * @property color The bubbles' colour, or the gradient they cycle through by index.
  * @property animationProgress The reveal progress, from `0f` (nothing drawn) to `1f` (fully drawn).
- * @property onBubbleClick Invoked when a bubble is tapped; `null` skips collecting [bubbleBounds].
+ * @property recordBubbleBounds Whether the pass collects [bubbleBounds]; `false` skips the
+ *   bookkeeping when nothing hit-tests them.
  * @property bubbleBounds Collects every drawn circle paired with its data, for tap hit-testing.
  * @property textMeasurer Measurer used for the reference band, marker, and reference line labels.
  */
@@ -44,8 +45,8 @@ internal data class BubbleDrawParams(
     val config: PointChartConfig,
     val color: ChartyColor,
     val animationProgress: Float,
-    val onBubbleClick: ((BubbleData) -> Unit)?,
-    val bubbleBounds: MutableList<BubbleBounds>,
+    val recordBubbleBounds: Boolean,
+    val bubbleBounds: MutableList<Pair<BubbleBounds, BubbleData>>,
     val textMeasurer: TextMeasurer,
 )
 
@@ -135,8 +136,8 @@ private fun DrawScope.drawAllBubbles(params: BubbleDrawParams) {
                 )
             val animatedRadius = bubbleRadius * bubbleAnimationProgress
 
-            if (params.onBubbleClick != null) {
-                params.bubbleBounds.add(BubbleBounds(center = center, radius = animatedRadius, data = bubble))
+            if (params.recordBubbleBounds) {
+                params.bubbleBounds.add(BubbleBounds(center = center, radius = animatedRadius) to bubble)
             }
 
             drawCircle(

@@ -16,6 +16,32 @@ import com.himanshoe.charty.line.data.MultilinePoint
 private const val CROSSHAIR_LABEL_SEPARATOR = "  "
 
 /**
+ * The stand-in click callback used when the chart is tapped for a tooltip but the caller passed no
+ * click callback of its own. It is a single shared instance so the tap handler's `pointerInput` key
+ * stays stable across recompositions.
+ */
+private val TooltipOnlyTap: (MultilinePoint) -> Unit = {}
+
+/**
+ * Resolves what a tap should do: call [onPointClick] when the caller wants clicks, fall back to a
+ * shared no-op when only the tooltip needs the gesture, or `null` when no tap handler belongs on the
+ * chart at all.
+ *
+ * @param onPointClick The caller's click callback, or `null` when it ignores clicks.
+ * @param tapEnabled Whether anything — a click callback or a tooltip — answers to a tap.
+ * @return The callback the tap handler is installed with, or `null` to install none.
+ */
+internal fun resolveMultilineTapHandler(
+    onPointClick: ((MultilinePoint) -> Unit)?,
+    tapEnabled: Boolean,
+): ((MultilinePoint) -> Unit)? =
+    if (tapEnabled) {
+        onPointClick ?: TooltipOnlyTap
+    } else {
+        null
+    }
+
+/**
  * Add tap gesture detection for multiline chart points
  */
 internal fun Modifier.multilineChartClickHandler(
@@ -54,7 +80,8 @@ internal fun Modifier.multilineChartClickHandler(
  * @param lineConfig Supplies the crosshair's dismiss behaviour and the tap radius.
  * @param pointBounds The per-point bounds the tap handler tests.
  * @param crosshairBounds The first-series bounds the crosshair snaps to.
- * @param onPointClick Invoked when a point is tapped, or `null` when taps are ignored.
+ * @param onPointTap Invoked when a point is tapped, or `null` to install no tap handler; see
+ *   [resolveMultilineTapHandler].
  * @param onTooltipStateChange Receives the tooltip raised by a tap, and the point it belongs to.
  * @param interactionConfig Supplies the brush-selection and viewport state holders.
  * @return The chained [Modifier] to apply to the chart.
@@ -66,18 +93,18 @@ internal fun buildMultilineModifier(
     lineConfig: LineChartConfig,
     pointBounds: MutableList<Pair<Offset, MultilinePoint>>,
     crosshairBounds: MutableList<Pair<Offset, MultilinePoint>>,
-    onPointClick: ((MultilinePoint) -> Unit)?,
+    onPointTap: ((MultilinePoint) -> Unit)?,
     onTooltipStateChange: (TooltipState?, MultilinePoint?) -> Unit,
     interactionConfig: ChartInteractionConfig,
 ): Modifier {
     var mod: Modifier = Modifier
-    if (onPointClick != null) {
+    if (onPointTap != null) {
         mod =
             mod.multilineChartClickHandler(
                 dataList = dataList,
                 lineConfig = lineConfig,
                 pointBounds = pointBounds,
-                onPointClick = onPointClick,
+                onPointClick = onPointTap,
                 onTooltipStateChange = onTooltipStateChange,
             )
     }

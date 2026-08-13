@@ -13,18 +13,22 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.WaterfallChartConfig
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.drawVerticalBarMarkers
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
+import com.himanshoe.charty.bar.internal.bar.seriesCrosshairHandler
+import com.himanshoe.charty.bar.internal.bar.seriesStreamingPan
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateCumulativeValues
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallBarParams
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallBarTopValues
 import com.himanshoe.charty.bar.internal.bar.waterfall.calculateWaterfallRange
 import com.himanshoe.charty.bar.internal.bar.waterfall.createWaterfallClickModifier
 import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallBar
+import com.himanshoe.charty.bar.internal.bar.waterfall.drawWaterfallCrosshair
 import com.himanshoe.charty.bar.internal.bar.waterfall.rememberCumulativeValues
+import com.himanshoe.charty.bar.internal.bar.waterfall.rememberWaterfallCrosshair
 import com.himanshoe.charty.common.ChartEmptyState
-import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -32,8 +36,8 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
-import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -70,6 +74,14 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
  *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   vertical guide line that snaps by x to the nearest step and rests on the top edge of its floating
+ *   bar — the same anchor the chart's persistent markers use, which is the higher of the running
+ *   totals either side of the step. Its label reads that step's own delta through
+ *   [WaterfallChartConfig.tooltipFormatter], matching both the tap tooltip and the [BarData] handed to
+ *   [onBarClick]; use a marker to label a running total instead. It is a drag gesture that leaves taps
+ *   alone, so tapping a bar still raises its tooltip; streaming scrollback
+ *   ([ChartInteractionConfig.streamingState]) does not survive it, because the crosshair owns the drag.
  */
 @Composable
 fun WaterfallChart(
@@ -81,6 +93,7 @@ fun WaterfallChart(
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
+    crosshair: ChartCrosshair<BarData>? = null,
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -113,6 +126,8 @@ fun WaterfallChart(
     val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
+    val crosshairScope =
+        rememberWaterfallCrosshair(config = config, crosshair = crosshair, interactionConfig = interactionConfig)
 
     val clickModifier =
         createWaterfallClickModifier(
@@ -122,7 +137,7 @@ fun WaterfallChart(
             onBarClick = onBarClick,
             onTooltipUpdate = tooltipManager::updateTooltip,
             enableScrub = interactionConfig.dragTooltipActive,
-        )
+        ).seriesCrosshairHandler(crosshair = crosshairScope, dataList = dataList)
 
     val chartModifier =
         buildInteractionModifier(
@@ -131,7 +146,7 @@ fun WaterfallChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.seriesStreamingPan(streaming = chartState.streaming, crosshair = crosshairScope)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -212,6 +227,15 @@ fun WaterfallChart(
                 totalItems = dataList.size,
                 textMeasurer = textMeasurer,
             )
+
+            drawWaterfallCrosshair(
+                crosshair = crosshairScope,
+                dataList = dataList,
+                cumulativeValues = cumulativeValues,
+                chartContext = chartContext,
+                config = config,
+                textMeasurer = textMeasurer,
+            )
         }
 
         ChartTooltipHost(
@@ -220,5 +244,6 @@ fun WaterfallChart(
             anchor = tooltipManager.tooltipState,
             modifier = Modifier.matchParentSize(),
         )
+        SeriesCrosshairHost(crosshair = crosshairScope)
     }
 }

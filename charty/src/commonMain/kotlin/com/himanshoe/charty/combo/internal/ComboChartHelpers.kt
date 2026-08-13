@@ -11,6 +11,7 @@ import com.himanshoe.charty.combo.ext.getAllValues
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.util.toChartLabel
 
 private const val COMBO_SECONDARY_AXIS_STEPS = 6
 
@@ -164,6 +165,6 @@ internal fun comboChartAccessibility(
         dataPointDescriptions =
             dataList.fastMapIndexed { index, item ->
                 "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
-                    "bar ${item.barValue}, line ${item.lineValue}"
+                    "bar ${item.barValue.toChartLabel()}, line ${item.lineValue.toChartLabel()}"
             },
     )

@@ -16,17 +16,21 @@ import com.himanshoe.charty.bar.config.ComparisonBarSegment
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.ext.getLabels
+import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
 import com.himanshoe.charty.bar.internal.bar.comparison.ComparisonBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.comparison.calculateComparisonBaselineY
 import com.himanshoe.charty.bar.internal.bar.comparison.createComparisonAxisConfig
 import com.himanshoe.charty.bar.internal.bar.comparison.createComparisonChartModifier
 import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonBars
+import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonCrosshair
 import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonChartValues
+import com.himanshoe.charty.bar.internal.bar.comparison.rememberComparisonCrosshair
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarGroups
+import com.himanshoe.charty.bar.internal.bar.seriesCrosshairHandler
+import com.himanshoe.charty.bar.internal.bar.seriesStreamingPan
 import com.himanshoe.charty.common.ChartEmptyState
-import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -35,8 +39,8 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
-import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -70,7 +74,16 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
  *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   vertical guide line that snaps by x per **group** rather than per bar, because one guide line
+ *   cannot sit on several bars at once and the x axis is labelled by group. It rests on the top of the
+ *   group's tallest bar — the same anchor the chart's persistent markers use — and reports that bar as
+ *   a [ComparisonBarSegment], so its label reads the tallest bar's value through
+ *   [ComparisonBarChartConfig.tooltipFormatter]. It is a drag gesture that leaves taps alone, so
+ *   tapping a bar still raises its own tooltip; streaming scrollback
+ *   ([ChartInteractionConfig.streamingState]) does not survive it, because the crosshair owns the drag.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun ComparisonBarChart(
     data: () -> List<BarGroup>,
@@ -81,6 +94,7 @@ fun ComparisonBarChart(
     onBarClick: ((ComparisonBarSegment) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<ComparisonBarSegment> = ChartTooltip.canvas(),
+    crosshair: ChartCrosshair<ComparisonBarSegment>? = null,
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -111,6 +125,12 @@ fun ComparisonBarChart(
     val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, ComparisonBarSegment>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
+    val crosshairScope =
+        rememberComparisonCrosshair(
+            config = comparisonConfig,
+            crosshair = crosshair,
+            interactionConfig = interactionConfig,
+        )
 
     val clickModifier =
         createComparisonChartModifier(
@@ -121,7 +141,7 @@ fun ComparisonBarChart(
             barBounds = tooltipManager.bounds,
             onTooltipUpdate = tooltipManager::updateTooltip,
             enableScrub = interactionConfig.dragTooltipActive,
-        )
+        ).seriesCrosshairHandler(crosshair = crosshairScope, dataList = dataList)
 
     val chartModifier =
         buildInteractionModifier(
@@ -130,7 +150,7 @@ fun ComparisonBarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.seriesStreamingPan(streaming = chartState.streaming, crosshair = crosshairScope)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -203,6 +223,14 @@ fun ComparisonBarChart(
                 totalItems = dataList.size,
                 textMeasurer = textMeasurer,
             )
+
+            drawComparisonCrosshair(
+                crosshair = crosshairScope,
+                dataList = dataList,
+                displayList = displayList,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+            )
         }
 
         ChartTooltipHost(
@@ -211,5 +239,6 @@ fun ComparisonBarChart(
             anchor = tooltipManager.tooltipState,
             modifier = Modifier.matchParentSize(),
         )
+        SeriesCrosshairHost(crosshair = crosshairScope)
     }
 }

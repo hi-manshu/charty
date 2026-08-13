@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar.internal.bar.wavy
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.data.BarData
@@ -68,4 +69,88 @@ internal fun populateWavyCrosshairBounds(
     dataList.fastForEachIndexed { index, barData ->
         crosshairBounds.add(positions[index] to barData)
     }
+}
+
+/**
+ * The y pixel every wave is measured from: the zero line when the data reaches below zero, otherwise
+ * the bottom of the plotting area.
+ *
+ * @param chartContext The pixel bounds and value range of the plotting area.
+ * @param minValue The lowest value on the axis.
+ * @return The baseline y, in canvas pixels.
+ */
+internal fun wavyBaselineY(
+    chartContext: ChartContext,
+    minValue: Float,
+): Float =
+    if (minValue < 0f) {
+        chartContext.convertValueToYPosition(0f)
+    } else {
+        chartContext.bottom
+    }
+
+/**
+ * The tap hit area of every wave: the wave is a thin stroked sine curve that is all but impossible
+ * to hit directly, so a tap is resolved against the whole column the wave occupies — its full slot
+ * width horizontally, and the span between its value and the baseline vertically, grown by the
+ * stroke so a flat wave still has a target.
+ *
+ * @param chartContext The pixel bounds and value range of the plotting area.
+ * @param values The bar values, in the order they are drawn.
+ * @param minValue The lowest value on the axis, which decides where the baseline sits.
+ * @param strokeWidthPx The wave stroke width, in pixels.
+ * @return One rect per value, at the same indices.
+ */
+internal fun wavyBarHitRects(
+    chartContext: ChartContext,
+    values: List<Float>,
+    minValue: Float,
+    strokeWidthPx: Float,
+): List<Rect> {
+    val baselineY = wavyBaselineY(chartContext = chartContext, minValue = minValue)
+    val barSpacing = chartContext.width / (values.size * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
+    val halfStroke = strokeWidthPx / WAVY_CHART_PHASE_TARGET_MULTIPLIER
+    return List(values.size) { index ->
+        val centerX = chartContext.left + barSpacing * (1 + index * 2)
+        val valueY = chartContext.convertValueToYPosition(values[index])
+        Rect(
+            left = centerX - barSpacing,
+            top = minOf(valueY, baselineY) - halfStroke,
+            right = centerX + barSpacing,
+            bottom = maxOf(valueY, baselineY) + halfStroke,
+        )
+    }
+}
+
+/**
+ * Refills [barBounds] with the current frame's wave hit areas so a tap resolves against where the
+ * waves actually are. Clears the bounds and stops there when [enabled] is `false`.
+ *
+ * @param chartContext The pixel bounds and value range of the plotting area.
+ * @param dataList The bars currently drawn.
+ * @param enabled Whether anything hit-tests the bounds this frame.
+ * @param minValue The lowest value on the axis, which decides where the baseline sits.
+ * @param strokeWidthPx The wave stroke width, in pixels.
+ * @param barBounds The bounds list to refill, owned by the chart across frames.
+ */
+internal fun populateWavyBarBounds(
+    chartContext: ChartContext,
+    dataList: List<BarData>,
+    enabled: Boolean,
+    minValue: Float,
+    strokeWidthPx: Float,
+    barBounds: MutableList<Pair<Rect, BarData>>,
+) {
+    barBounds.clear()
+    if (!enabled || dataList.isEmpty()) {
+        return
+    }
+    val rects =
+        wavyBarHitRects(
+            chartContext = chartContext,
+            values = dataList.fastMap { it.value },
+            minValue = minValue,
+            strokeWidthPx = strokeWidthPx,
+        )
+    dataList.fastForEachIndexed { index, barData -> barBounds.add(rects[index] to barData) }
 }

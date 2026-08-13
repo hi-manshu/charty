@@ -1,10 +1,14 @@
 package com.himanshoe.charty.candlestick.config
 
 import androidx.compose.runtime.Stable
+import com.himanshoe.charty.candlestick.data.CandleData
+import com.himanshoe.charty.candlestick.internal.formatCandleTooltip
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.common.tooltip.TooltipPosition
 
 /**
  * Configuration for Candlestick Chart appearance and behavior
@@ -26,6 +30,11 @@ import com.himanshoe.charty.common.config.requireValidVisibleWindow
  *   way to label the latest value — the rightmost candle. Empty (the default) draws none.
  * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
  *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
+ * @property tooltipConfig Appearance of the built-in canvas tooltip shown when a candle is tapped.
+ * @property tooltipPosition Preferred position for the tooltip (ABOVE, BELOW, or AUTO).
+ * @property tooltipFormatter Converts a tapped candle into the string shown in its tooltip. The
+ *   default renders all four prices — `Mon  O 100 H 110 L 95 C 105` — because a candle encodes an
+ *   OHLC record rather than one value; [CandleData.volume] is left out of it.
  */
 @Stable
 data class CandlestickChartConfig(
@@ -38,6 +47,9 @@ data class CandlestickChartConfig(
     val animateValueChanges: Boolean = false,
     val markers: List<PersistentMarker> = emptyList(),
     val visibleWindow: Int? = null,
+    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
+    val tooltipFormatter: (CandleData) -> String = { candle -> formatCandleTooltip(candle) },
 ) {
     init {
         requireValidVisibleWindow(visibleWindow)

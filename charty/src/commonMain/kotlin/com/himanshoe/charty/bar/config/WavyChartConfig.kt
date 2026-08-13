@@ -3,8 +3,12 @@ package com.himanshoe.charty.bar.config
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.runtime.Stable
+import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
+import com.himanshoe.charty.common.tooltip.TooltipConfig
+import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.common.util.toChartLabel
 
 private const val DEFAULT_BAR_WIDTH_FRACTION = 0.8f
 private const val DEFAULT_WAVE_AMPLITUDE_FRACTION = 1f / 3f
@@ -42,6 +46,9 @@ private const val DEFAULT_STROKE_WIDTH_DP = 3f
  *   wave. Empty (the default) draws none.
  * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
  *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
+ * @property tooltipConfig Appearance of the built-in canvas tooltip shown when a wave is tapped.
+ * @property tooltipPosition Preferred position for the tooltip (ABOVE, BELOW, or AUTO).
+ * @property tooltipFormatter Converts a tapped wave into the string shown in its tooltip.
  */
 @Stable
 data class WavyChartConfig(
@@ -56,6 +63,11 @@ data class WavyChartConfig(
     val animateValueChanges: Boolean = false,
     val markers: List<PersistentMarker> = emptyList(),
     val visibleWindow: Int? = null,
+    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
+    val tooltipFormatter: (BarData) -> String = { barData ->
+        "${barData.label}: ${barData.value.toChartLabel()}"
+    },
 ) {
     init {
         requireValidVisibleWindow(visibleWindow)

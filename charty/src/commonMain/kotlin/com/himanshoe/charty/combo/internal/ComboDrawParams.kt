@@ -26,12 +26,15 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  *   line shares the primary axis.
  * @property isBelowAxisMode Whether negative bars are drawn below a zero axis rather than clamped.
  * @property animationProgress The reveal progress, from `0f` (nothing drawn) to `1f` (fully drawn).
- * @property onDataClick Invoked when a point is tapped; `null` skips collecting [dataBounds].
+ * @property recordDataBounds Whether the pass collects [dataBounds]; `false` skips the bookkeeping
+ *   when nothing hit-tests them.
  * @property dataBounds Collects each drawn bar and point rect with its data, for tap hit-testing.
  * @property crosshairBounds Collects the line points the crosshair snaps to, or `null` when off.
  * @property crosshairManager The crosshair state holder, or `null` when the crosshair is off.
  * @property crosshairState The crosshair's resolved position, or `null` when it is not showing.
  * @property tooltipState The active tooltip, or `null` when none is showing.
+ * @property drawTooltipBubble Whether the active tooltip is drawn as the built-in canvas bubble; a
+ *   Compose-overlay tooltip is hosted above the canvas instead.
  * @property textMeasurer Measurer used for the reference band, markers, tooltip, and crosshair.
  * @property interactionConfig Supplies the annotation, brush-selection, and edge-fade overlays.
  * @property drawCrosshairLabel Whether the crosshair label is drawn on the canvas rather than as a
@@ -47,12 +50,13 @@ internal data class ComboDrawParams(
     val lineRange: Pair<Float, Float>?,
     val isBelowAxisMode: Boolean,
     val animationProgress: Float,
-    val onDataClick: ((ComboChartData) -> Unit)?,
+    val recordDataBounds: Boolean,
     val dataBounds: MutableList<Pair<Rect, ComboChartData>>,
     val crosshairBounds: MutableList<Pair<Offset, ComboChartData>>?,
     val crosshairManager: CrosshairManager<ComboChartData>?,
     val crosshairState: CrosshairState?,
     val tooltipState: TooltipState?,
+    val drawTooltipBubble: Boolean,
     val textMeasurer: TextMeasurer,
     val interactionConfig: ChartInteractionConfig,
     val drawCrosshairLabel: Boolean,

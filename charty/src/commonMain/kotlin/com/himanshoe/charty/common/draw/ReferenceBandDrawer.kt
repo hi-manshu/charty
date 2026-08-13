@@ -2,21 +2,14 @@ package com.himanshoe.charty.common.draw
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
-import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.toBrush
+import com.himanshoe.charty.color.withChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.config.ReferenceBandConfig
-import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle
-
-private const val BAND_LABEL_PADDING = 4f
-private val BAND_DASH_INTERVALS = floatArrayOf(10f, 10f)
-private val BAND_DASH_EFFECT by lazy { PathEffect.dashPathEffect(BAND_DASH_INTERVALS) }
 
 /**
  * Clamps a `[lowValue, highValue]` band (given in either order) to the visible `[minValue, maxValue]`
@@ -100,22 +93,22 @@ private fun DrawScope.drawVerticalReferenceBand(
     val yHigh = chartContext.convertValueToYPosition(high)
     val yLow = chartContext.convertValueToYPosition(low)
     drawRect(
-        brush = config.fill.toBandBrush(),
+        brush = config.fill.toBrush(),
         topLeft = Offset(x = chartContext.left, y = yHigh),
         size = Size(width = chartContext.width, height = yLow - yHigh),
         alpha = config.fillAlpha,
     )
     config.borderColor?.let { borderColor ->
-        val effect = config.borderStyle.toBandPathEffect()
+        val effect = config.borderPathEffect
         drawLine(
-            color = borderColor,
+            brush = borderColor.toBrush(),
             start = Offset(x = chartContext.left, y = yHigh),
             end = Offset(x = chartContext.right, y = yHigh),
             strokeWidth = config.borderWidth,
             pathEffect = effect,
         )
         drawLine(
-            color = borderColor,
+            brush = borderColor.toBrush(),
             start = Offset(x = chartContext.left, y = yLow),
             end = Offset(x = chartContext.right, y = yLow),
             strokeWidth = config.borderWidth,
@@ -123,10 +116,14 @@ private fun DrawScope.drawVerticalReferenceBand(
         )
     }
     config.label?.let { label ->
-        val layout = textMeasurer.measure(text = label, style = config.labelTextStyle)
+        val layout =
+            textMeasurer.measure(
+                text = label,
+                style = config.labelTextStyle.withChartyColor(config.labelTextColor),
+            )
         drawText(
             textLayoutResult = layout,
-            topLeft = Offset(x = chartContext.left + BAND_LABEL_PADDING, y = yHigh + BAND_LABEL_PADDING),
+            topLeft = Offset(x = chartContext.left + config.labelPadding, y = yHigh + config.labelPadding),
         )
     }
 }
@@ -142,22 +139,22 @@ private fun DrawScope.drawHorizontalReferenceBand(
     val xLow = chartContext.left + ((low - chartContext.minValue) / range) * chartContext.width
     val xHigh = chartContext.left + ((high - chartContext.minValue) / range) * chartContext.width
     drawRect(
-        brush = config.fill.toBandBrush(),
+        brush = config.fill.toBrush(),
         topLeft = Offset(x = xLow, y = chartContext.top),
         size = Size(width = xHigh - xLow, height = chartContext.height),
         alpha = config.fillAlpha,
     )
     config.borderColor?.let { borderColor ->
-        val effect = config.borderStyle.toBandPathEffect()
+        val effect = config.borderPathEffect
         drawLine(
-            color = borderColor,
+            brush = borderColor.toBrush(),
             start = Offset(x = xLow, y = chartContext.top),
             end = Offset(x = xLow, y = chartContext.bottom),
             strokeWidth = config.borderWidth,
             pathEffect = effect,
         )
         drawLine(
-            color = borderColor,
+            brush = borderColor.toBrush(),
             start = Offset(x = xHigh, y = chartContext.top),
             end = Offset(x = xHigh, y = chartContext.bottom),
             strokeWidth = config.borderWidth,
@@ -165,22 +162,14 @@ private fun DrawScope.drawHorizontalReferenceBand(
         )
     }
     config.label?.let { label ->
-        val layout = textMeasurer.measure(text = label, style = config.labelTextStyle)
+        val layout =
+            textMeasurer.measure(
+                text = label,
+                style = config.labelTextStyle.withChartyColor(config.labelTextColor),
+            )
         drawText(
             textLayoutResult = layout,
-            topLeft = Offset(x = xHigh + BAND_LABEL_PADDING, y = chartContext.top + BAND_LABEL_PADDING),
+            topLeft = Offset(x = xHigh + config.labelPadding, y = chartContext.top + config.labelPadding),
         )
     }
 }
-
-private fun ChartyColor.toBandBrush(): Brush =
-    when (this) {
-        is ChartyColor.Solid -> SolidColor(color)
-        is ChartyColor.Gradient -> Brush.verticalGradient(colors)
-    }
-
-private fun ReferenceLineStrokeStyle.toBandPathEffect(): PathEffect? =
-    when (this) {
-        ReferenceLineStrokeStyle.SOLID -> null
-        ReferenceLineStrokeStyle.DASHED -> BAND_DASH_EFFECT
-    }

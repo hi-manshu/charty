@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.rememberTextMeasurer
+import com.himanshoe.charty.color.withChartyColor
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -38,7 +39,7 @@ internal fun DrawAxisAndLabels(
     streamingLayout: StreamingLayout? = null,
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val labelStyle = config.labelTextStyle
+    val labelStyle = config.labelTextStyle.withChartyColor(config.labelTextColor)
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         when (orientation) {

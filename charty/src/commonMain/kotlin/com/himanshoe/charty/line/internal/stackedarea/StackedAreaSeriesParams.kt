@@ -3,7 +3,6 @@ package com.himanshoe.charty.line.internal.stackedarea
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
@@ -22,5 +21,5 @@ internal data class StackedAreaSeriesParams(
     val fillAlpha: Float,
     val animationProgress: Float,
     val dataList: List<LineGroup>,
-    val onSegmentBoundsCalculated: ((Triple<Rect, Path, StackedAreaPoint>) -> Unit)?,
+    val onSegmentBoundsCalculated: ((Pair<Rect, StackedAreaPoint>) -> Unit)?,
 )

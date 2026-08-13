@@ -1,11 +1,11 @@
 package com.himanshoe.charty.bar
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -39,7 +39,11 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
@@ -68,7 +72,13 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param onBarClick A lambda function invoked when a bar is clicked.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltip How a tapped column is presented: the built-in canvas bubble (the default), a custom
+ *   Compose overlay via [ChartTooltip.compose], or [ChartTooltip.none] to disable it. A tap resolves
+ *   to the whole column — the bubbles in a column all encode one [BarData] — and its text comes from
+ *   [BubbleBarChartConfig.tooltipFormatter], reading `label: value` by default. The tooltip is shown
+ *   alongside [onBarClick], never instead of it.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun BubbleBarChart(
     data: () -> List<BarData>,
@@ -79,6 +89,7 @@ fun BubbleBarChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -112,90 +123,99 @@ fun BubbleBarChart(
     val isBelowAxisMode = bubbleConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
 
     val animationProgress = chartState.animationProgress
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val barBounds = remember { mutableListOf<Pair<Rect, BarData>>() }
+    val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
+    val tapEnabled = onBarClick != null || tooltip !is NoneTooltip
     val textMeasurer = rememberTextMeasurer()
 
     val clickModifier =
         createBubbleChartModifier(
-            modifier = modifier,
+            modifier = Modifier,
             onBarClick = onBarClick,
             dataList = dataList,
             bubbleConfig = bubbleConfig,
-            barBounds = barBounds,
-            onTooltipUpdate = { state, _ -> tooltipState = state },
+            barBounds = tooltipManager.bounds,
+            onTooltipUpdate = tooltipManager::updateTooltip,
             enableScrub = interactionConfig.dragTooltipActive,
+            tapEnabled = tapEnabled,
         )
 
     val chartModifier =
         buildInteractionModifier(
-            base = clickModifier,
+            base = modifier.then(clickModifier),
             interactionConfig = interactionConfig,
             dataList = dataList,
         )
 
-    ChartScaffold(
-        accessibility =
-            ChartAccessibility(
-                contentDescription =
-                    interactionConfig.accessibilityDescription
-                        ?: "Bubble bar chart, ${fullDataList.size} data points.",
-                dataPointDescriptions =
-                    buildDataPointDescriptions(
-                        labels =
-                            dataList.fastMap {
-                                it.label
-                            },
-                        values = dataList.fastMap { it.value },
-                    ),
-            ),
-        streaming = interactionConfig.streamingRender(chartState.streaming),
-        modifier = chartModifier,
-        xLabels = dataList.getLabels(),
-        yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
-        config = scaffoldConfig,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: "Bubble bar chart, ${fullDataList.size} data points.",
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels = dataList.fastMap { it.label },
+                            values = dataList.fastMap { it.value },
+                        ),
+                ),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
+            modifier = Modifier.fillMaxSize(),
+            xLabels = dataList.getLabels(),
+            yAxisConfig = createAxisConfig(minValue, maxValue, isBelowAxisMode),
+            config = scaffoldConfig,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
-        barBounds.clear()
-        val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
+            tooltipManager.clearBounds()
+            val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
 
-        val drawParams =
-            BubbleBarDrawParams(
-                dataList = displayList,
+            val drawParams =
+                BubbleBarDrawParams(
+                    dataList = displayList,
+                    chartContext = chartContext,
+                    bubbleConfig = bubbleConfig,
+                    baselineY = baselineY,
+                    animationProgress = animationProgress.value,
+                    color = color,
+                    onBarClick = onBarClick,
+                    barBounds = tooltipManager.bounds,
+                    textMeasurer = textMeasurer,
+                    recordBounds = tapEnabled || interactionConfig.dragTooltipActive,
+                )
+
+            drawBubbleBars(drawParams)
+            if (bubbleConfig.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = bubbleConfig.markers,
+                    pointPositions =
+                        verticalBarMarkerPositions(
+                            chartContext = chartContext,
+                            values = displayList.fastMap { it.value },
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
+                    textMeasurer = textMeasurer,
+                )
+            }
+            drawReferenceLineIfNeeded(drawParams)
+            if (tooltip.isCanvas()) {
+                drawTooltipIfNeeded(drawParams, tooltipManager.tooltipState)
+            }
+
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
                 chartContext = chartContext,
-                bubbleConfig = bubbleConfig,
-                baselineY = baselineY,
-                animationProgress = animationProgress.value,
-                color = color,
-                onBarClick = onBarClick,
-                barBounds = barBounds,
-                textMeasurer = textMeasurer,
-                recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
-            )
-
-        drawBubbleBars(drawParams)
-        if (bubbleConfig.markers.isNotEmpty()) {
-            drawPersistentMarkers(
-                chartContext = chartContext,
-                markers = bubbleConfig.markers,
-                pointPositions =
-                    verticalBarMarkerPositions(
-                        chartContext = chartContext,
-                        values = displayList.fastMap { it.value },
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].value) },
+                totalItems = dataList.size,
                 textMeasurer = textMeasurer,
             )
         }
-        drawReferenceLineIfNeeded(drawParams)
-        drawTooltipIfNeeded(drawParams, tooltipState)
 
-        drawInteractionOverlays(
-            interactionConfig = interactionConfig,
-            chartContext = chartContext,
-            totalItems = dataList.size,
-            textMeasurer = textMeasurer,
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
         )
     }
 }

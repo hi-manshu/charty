@@ -14,6 +14,11 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
+import com.himanshoe.charty.common.gesture.CrosshairState
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -47,12 +52,7 @@ internal fun DrawScope.drawWavyBars(
     val waveCtx =
         WaveDrawContext(
             barSpacing = barSpacing,
-            baselineY =
-                if (minValue < 0f) {
-                    chartContext.convertValueToYPosition(0f)
-                } else {
-                    chartContext.bottom
-                },
+            baselineY = wavyBaselineY(chartContext = chartContext, minValue = minValue),
             waveAmplitude = barWidth * wavyConfig.waveAmplitudeFractionOfBarWidth,
             segments = wavyConfig.waveSegments.coerceAtLeast(MIN_WAVE_SEGMENTS),
             basePhase = basePhase,
@@ -141,4 +141,53 @@ internal fun DrawScope.drawSingleWave(
         brush = brush,
         style = Stroke(width = strokeWidthPx),
     )
+}
+
+/**
+ * Draws the wavy chart's own overlays for this pass: the built-in canvas tooltip for the tapped
+ * wave, then the crosshair line snapped to the dragged one. Each is skipped when it is not showing —
+ * a Compose-overlay tooltip is hosted above the canvas instead of drawn here — and they are drawn
+ * independently, so a chart configured with both shows both.
+ *
+ * @param tooltipState The active tooltip anchor, or `null` when nothing is selected.
+ * @param drawTooltipBubble Whether the tooltip is the built-in canvas bubble.
+ * @param crosshairState The crosshair's resolved position, or `null` when it is not showing.
+ * @param crosshairConfig The crosshair styling, or `null` when the crosshair is off.
+ * @param wavyConfig Supplies the tooltip styling.
+ * @param chartContext The pixel bounds and value range of the plotting area.
+ * @param color The chart colour, which tints the crosshair's snap dot.
+ * @param textMeasurer Measurer used for the tooltip text.
+ */
+internal fun DrawScope.drawWavyOverlays(
+    tooltipState: TooltipState?,
+    drawTooltipBubble: Boolean,
+    crosshairState: CrosshairState?,
+    crosshairConfig: ChartCrosshairConfig?,
+    wavyConfig: WavyChartConfig,
+    chartContext: ChartContext,
+    color: ChartyColor,
+    textMeasurer: TextMeasurer,
+) {
+    tooltipState?.takeIf { drawTooltipBubble }?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = wavyConfig.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
+    }
+    crosshairState?.let { state ->
+        crosshairConfig?.let { config ->
+            drawLineChartCrosshair(
+                state = state,
+                config = config,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+                chartColor = color,
+                drawLabel = false,
+            )
+        }
+    }
 }

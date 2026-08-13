@@ -8,6 +8,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEachIndexed
+import com.himanshoe.charty.color.toBrush
 import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.LabelRotation
@@ -127,7 +128,7 @@ internal fun DrawScope.drawVerticalChartAxes(
 
     if (config.showAxis) {
         drawLine(
-            color = config.axisColor,
+            brush = config.axisColor.toBrush(),
             start = Offset(bounds.left, bounds.top),
             end = Offset(bounds.left, bounds.bottom),
             strokeWidth = config.axisThickness,
@@ -135,7 +136,7 @@ internal fun DrawScope.drawVerticalChartAxes(
 
         val xAxisY = calculateHorizontalAxisPosition(yAxisConfig = yAxisConfig, chartBounds = bounds)
         drawLine(
-            color = config.axisColor,
+            brush = config.axisColor.toBrush(),
             start = Offset(bounds.left, xAxisY),
             end = Offset(bounds.right, xAxisY),
             strokeWidth = config.axisThickness,
@@ -149,7 +150,7 @@ internal fun DrawScope.drawVerticalChartAxes(
 
         if (config.showGrid && i > 0 && i < steps) {
             drawLine(
-                color = config.gridColor,
+                brush = config.gridColor.toBrush(),
                 start = Offset(bounds.left, y),
                 end = Offset(bounds.right, y),
                 strokeWidth = config.gridThickness,
@@ -227,7 +228,7 @@ private fun DrawScope.drawSecondaryVerticalAxis(
 
     if (config.showAxis) {
         drawLine(
-            color = config.axisColor,
+            brush = config.axisColor.toBrush(),
             start = Offset(bounds.right, bounds.top),
             end = Offset(bounds.right, bounds.bottom),
             strokeWidth = config.axisThickness,
@@ -317,14 +318,14 @@ internal fun DrawScope.drawHorizontalChartAxes(
 
     if (config.showAxis) {
         drawLine(
-            color = config.axisColor,
+            brush = config.axisColor.toBrush(),
             start = Offset(bounds.left, bounds.top),
             end = Offset(bounds.left, bounds.bottom),
             strokeWidth = config.axisThickness,
         )
 
         drawLine(
-            color = config.axisColor,
+            brush = config.axisColor.toBrush(),
             start = Offset(baselineX, bounds.top),
             end = Offset(baselineX, bounds.bottom),
             strokeWidth = config.axisThickness,
@@ -338,7 +339,7 @@ internal fun DrawScope.drawHorizontalChartAxes(
 
         if (config.showGrid && i > 0 && i < steps) {
             drawLine(
-                color = config.gridColor,
+                brush = config.gridColor.toBrush(),
                 start = Offset(x, bounds.top),
                 end = Offset(x, bounds.bottom),
                 strokeWidth = config.gridThickness,

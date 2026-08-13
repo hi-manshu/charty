@@ -6,14 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
@@ -30,7 +27,10 @@ import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -74,6 +74,13 @@ import com.himanshoe.charty.line.internal.stackedarea.drawStackedAreaContent
  *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
  *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
  *   does not, because the crosshair owns the drag.
+ * @param tooltip How a tapped band segment is presented: the built-in canvas bubble (the default), a
+ *   custom Compose overlay via [ChartTooltip.compose], or [ChartTooltip.none] to disable it. A tap
+ *   resolves to the single [StackedAreaPoint] whose band it landed in, so it names one series rather
+ *   than the whole stack. Its text comes from [LineChartConfig.tooltipFormatter], which takes a
+ *   [com.himanshoe.charty.line.data.LineData]: the segment is projected onto one carrying its group
+ *   label and its own (not cumulative) value, reading `Jan: 10` by default. The tooltip is shown
+ *   alongside [onAreaClick], never instead of it.
  */
 @Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
@@ -95,6 +102,7 @@ fun StackedAreaChart(
     onAreaClick: ((StackedAreaPoint) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<LineGroup>? = null,
+    tooltip: ChartTooltip<StackedAreaPoint> = ChartTooltip.canvas(),
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -125,8 +133,8 @@ fun StackedAreaChart(
     val dataList = chartState.data
     val maxValue = chartState.maxValue
 
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val areaSegmentBounds = remember { mutableListOf<Triple<Rect, Path, StackedAreaPoint>>() }
+    val tooltipManager = rememberTooltipManager<Rect, StackedAreaPoint>(dataKey = dataList)
+    val tapEnabled = onAreaClick != null || tooltip !is NoneTooltip
     val crosshairBounds = remember { mutableListOf<Pair<Offset, LineGroup>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<LineGroup>(
@@ -142,9 +150,10 @@ fun StackedAreaChart(
             lineConfig = effectiveLineConfig,
             dataList = dataList,
             crosshairBounds = crosshairBounds,
-            areaSegmentBounds = areaSegmentBounds,
+            areaSegmentBounds = tooltipManager.bounds,
             onAreaClick = onAreaClick,
-            onTooltipStateChange = { state, _ -> tooltipState = state },
+            onTooltipStateChange = tooltipManager::updateTooltip,
+            tapEnabled = tapEnabled,
         )
 
     Column(modifier = modifier) {
@@ -168,7 +177,7 @@ fun StackedAreaChart(
                 config = scaffoldConfig,
             ) { chartContext ->
                 updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
-                areaSegmentBounds.clear()
+                tooltipManager.clearBounds()
                 drawStackedAreaContent(
                     StackedAreaDrawParams(
                         dataList = dataList,
@@ -177,13 +186,14 @@ fun StackedAreaChart(
                         lineConfig = effectiveLineConfig,
                         fillAlpha = fillAlpha,
                         animationProgress = chartState.animationProgress.value,
-                        onAreaClick = onAreaClick,
-                        areaSegmentBounds = areaSegmentBounds,
+                        recordSegmentBounds = tapEnabled,
+                        areaSegmentBounds = tooltipManager.bounds,
                         crosshairBounds =
                             crosshairBounds.takeIf { crosshairManager != null },
                         crosshairManager = crosshairManager,
                         crosshairState = animatedCrosshairState?.resolve(),
-                        tooltipState = tooltipState,
+                        tooltipState = tooltipManager.tooltipState,
+                        drawTooltipBubble = tooltip.isCanvas(),
                         textMeasurer = textMeasurer,
                         interactionConfig = interactionConfig,
                         drawCrosshairLabel = false,
@@ -195,6 +205,9 @@ fun StackedAreaChart(
                 crosshairManager = crosshairManager,
                 animatedCrosshairState = animatedCrosshairState?.resolve(),
                 crosshair = activeCrosshair,
+                tooltip = tooltip,
+                tooltipItem = tooltipManager.selectedItem,
+                tooltipAnchor = tooltipManager.tooltipState,
             )
         }
         if (lineConfig.legendLabels.isNotEmpty()) {

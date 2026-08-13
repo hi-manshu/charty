@@ -5,7 +5,9 @@ import androidx.compose.ui.util.fastFlatMap
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup
+import com.himanshoe.charty.line.data.StackedAreaPoint
 
 /**
  * The upper edge of the band for [seriesIndex]: the running total through that series, plotted at
@@ -74,3 +76,15 @@ internal fun calculateStackedCumulativeValues(dataList: List<LineGroup>): List<F
         }
         cumulative
     }
+
+/**
+ * Projects a tapped band segment onto the [LineData] shape that
+ * [com.himanshoe.charty.line.config.LineChartConfig.tooltipFormatter] accepts: the group's x-axis
+ * label paired with the segment's own value. The segment's own value is used rather than its
+ * running total, because the band's thickness is what the reader tapped; the cumulative value stays
+ * available on the [StackedAreaPoint] handed to the chart's click callback.
+ *
+ * @receiver The tapped segment, carrying its group, its series, and its value.
+ * @return The formatter's input for this segment.
+ */
+internal fun StackedAreaPoint.toTooltipLineData(): LineData = LineData(label = lineGroup.label, value = value)

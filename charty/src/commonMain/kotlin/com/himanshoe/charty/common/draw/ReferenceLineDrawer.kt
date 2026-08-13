@@ -6,6 +6,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
+import com.himanshoe.charty.color.toBrush
+import com.himanshoe.charty.color.withChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.axis.formatAxisLabel
@@ -98,7 +100,7 @@ private fun DrawScope.drawHorizontalReferenceLine(
     val pathEffect = referenceLinePathEffect(config)
 
     drawLine(
-        color = config.color,
+        brush = config.color.toBrush(),
         start = start,
         end = end,
         strokeWidth = config.strokeWidth,
@@ -115,7 +117,7 @@ private fun DrawScope.drawHorizontalReferenceLine(
     val textLayoutResult: TextLayoutResult =
         textMeasurer.measure(
             text = labelText,
-            style = config.labelTextStyle,
+            style = config.labelTextStyle.withChartyColor(config.labelTextColor),
         )
 
     val textWidth = textLayoutResult.size.width.toFloat()
@@ -180,7 +182,7 @@ private fun DrawScope.drawVerticalLineWithLabel(
     pathEffect: PathEffect?,
 ) {
     drawLine(
-        color = config.color,
+        brush = config.color.toBrush(),
         start = Offset(x, chartContext.top),
         end = Offset(x, chartContext.bottom),
         strokeWidth = config.strokeWidth,
@@ -194,7 +196,11 @@ private fun DrawScope.drawVerticalLineWithLabel(
             else -> null
         } ?: return
 
-    val textLayoutResult = textMeasurer.measure(labelText, config.labelTextStyle)
+    val textLayoutResult =
+        textMeasurer.measure(
+            text = labelText,
+            style = config.labelTextStyle.withChartyColor(config.labelTextColor),
+        )
     val textWidth = textLayoutResult.size.width.toFloat()
     val textHeight = textLayoutResult.size.height.toFloat()
 

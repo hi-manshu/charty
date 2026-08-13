@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMap
@@ -22,7 +23,10 @@ import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
 import com.himanshoe.charty.bar.internal.bar.wavy.WAVY_CHART_PHASE_TARGET_MULTIPLIER
 import com.himanshoe.charty.bar.internal.bar.wavy.WavyChartOverlays
+import com.himanshoe.charty.bar.internal.bar.wavy.buildWavyGestureModifier
 import com.himanshoe.charty.bar.internal.bar.wavy.drawWavyBars
+import com.himanshoe.charty.bar.internal.bar.wavy.drawWavyOverlays
+import com.himanshoe.charty.bar.internal.bar.wavy.populateWavyBarBounds
 import com.himanshoe.charty.bar.internal.bar.wavy.populateWavyCrosshairBounds
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
@@ -34,14 +38,16 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
-import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
-import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -77,6 +83,12 @@ import kotlin.math.min
  *   a drag gesture that leaves taps alone, so tap-to-tooltip keeps working alongside it; streaming
  *   scrollback ([ChartInteractionConfig.streamingState]) does not, because the crosshair owns the
  *   drag.
+ * @param tooltip How a tapped wave is presented: the built-in canvas bubble (the default), a custom
+ *   Compose overlay via [ChartTooltip.compose], or [ChartTooltip.none] to disable it. A wave is a
+ *   thin stroked sine curve, so a tap resolves against the whole column it occupies — its full slot
+ *   width, spanning value to baseline — rather than the curve itself. Its text comes from
+ *   [WavyChartConfig.tooltipFormatter], reading `label: value` by default, and the same formatter
+ *   labels the crosshair.
  */
 @Composable
 fun WavyChart(
@@ -88,6 +100,7 @@ fun WavyChart(
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<BarData>? = null,
+    tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -123,6 +136,8 @@ fun WavyChart(
     val maxValue = chartState.maxValue
 
     val textMeasurer = rememberTextMeasurer()
+    val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
+    val tapEnabled = tooltip !is NoneTooltip
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<BarData>(
@@ -135,17 +150,16 @@ fun WavyChart(
     val strokeWidthPx = wavyConfig.strokeWidthDp.dp.value
 
     val gestureBase =
-        if (crosshairManager != null) {
-            Modifier.chartCrosshairHandler(
-                dataList = dataList,
-                pointBounds = crosshairBounds,
-                onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = { bar -> "${bar.label}: ${bar.value}" },
-                dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
-            )
-        } else {
-            Modifier
-        }
+        buildWavyGestureModifier(
+            dataList = dataList,
+            wavyConfig = wavyConfig,
+            barBounds = tooltipManager.bounds,
+            crosshairBounds = crosshairBounds,
+            crosshairManager = crosshairManager,
+            dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
+            onTooltipUpdate = tooltipManager::updateTooltip,
+            tapEnabled = tapEnabled,
+        )
     val chartModifier =
         buildInteractionModifier(
             base = modifier.then(gestureBase),
@@ -187,6 +201,15 @@ fun WavyChart(
                 crosshairBounds = crosshairBounds,
             )
 
+            populateWavyBarBounds(
+                chartContext = chartContext,
+                dataList = dataList,
+                enabled = tapEnabled,
+                minValue = minValue,
+                strokeWidthPx = strokeWidthPx,
+                barBounds = tooltipManager.bounds,
+            )
+
             drawWavyBars(
                 dataList = displayList,
                 chartContext = chartContext,
@@ -205,24 +228,25 @@ fun WavyChart(
                 textMeasurer = textMeasurer,
             )
 
-            animatedCrosshairState?.resolve()?.let { state ->
-                crosshairConfig?.let { cfg ->
-                    drawLineChartCrosshair(
-                        state = state,
-                        config = cfg,
-                        chartContext = chartContext,
-                        textMeasurer = textMeasurer,
-                        chartColor = color,
-                        drawLabel = false,
-                    )
-                }
-            }
+            drawWavyOverlays(
+                tooltipState = tooltipManager.tooltipState,
+                drawTooltipBubble = tooltip.isCanvas(),
+                crosshairState = animatedCrosshairState?.resolve(),
+                crosshairConfig = crosshairConfig,
+                wavyConfig = wavyConfig,
+                chartContext = chartContext,
+                color = color,
+                textMeasurer = textMeasurer,
+            )
         }
 
         WavyChartOverlays(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             crosshair = crosshair,
+            tooltip = tooltip,
+            tooltipItem = tooltipManager.selectedItem,
+            tooltipAnchor = tooltipManager.tooltipState,
         )
     }
 }

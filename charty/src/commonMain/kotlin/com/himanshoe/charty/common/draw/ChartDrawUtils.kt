@@ -5,6 +5,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
+import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.toBrush
+import com.himanshoe.charty.color.toHorizontalBrush
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.config.ReferenceBandConfig
@@ -98,8 +101,9 @@ fun DrawScope.drawTooltipIfNeeded(
  * @param center The center position of the point.
  * @param pointRadius The base radius of the point.
  * @param colorBrush The [Brush] used for the inner circle.
- * @param outerRadiusAddition The additional radius for the outer white circle.
+ * @param outerRadiusAddition The additional radius for the outer halo circle.
  * @param innerRadiusAddition The additional radius for the inner colored circle.
+ * @param haloColor The color or gradient of the outer halo that separates the point from the data.
  */
 fun DrawScope.drawHighlightedPoint(
     center: Offset,
@@ -107,9 +111,10 @@ fun DrawScope.drawHighlightedPoint(
     colorBrush: Brush,
     outerRadiusAddition: Float = 3f,
     innerRadiusAddition: Float = 2f,
+    haloColor: ChartyColor = ChartyColor.Solid(Color.White),
 ) {
     drawCircle(
-        color = Color.White,
+        brush = haloColor.toBrush(),
         radius = pointRadius + outerRadiusAddition,
         center = center,
     )
@@ -125,19 +130,20 @@ fun DrawScope.drawHighlightedPoint(
  *
  * @param x The x-coordinate of the line
  * @param chartContext The chart context with dimensions
- * @param color The color of the line (default black with 0.1 alpha)
+ * @param color The color or gradient of the line (default black)
  * @param strokeWidth The width of the line (default 1.5f)
- * @param alpha The alpha of the line color (default 0.1f)
+ * @param alpha The opacity applied to the line color (default 0.1f)
  */
 fun DrawScope.drawVerticalGuideline(
     x: Float,
     chartContext: ChartContext,
-    color: Color = Color.Black,
+    color: ChartyColor = ChartyColor.Solid(Color.Black),
     strokeWidth: Float = 1.5f,
     alpha: Float = 0.1f,
 ) {
     drawLine(
-        color = color.copy(alpha = alpha),
+        brush = color.toBrush(),
+        alpha = alpha,
         start = Offset(x, chartContext.top),
         end = Offset(x, chartContext.bottom),
         strokeWidth = strokeWidth,
@@ -149,19 +155,20 @@ fun DrawScope.drawVerticalGuideline(
  *
  * @param y The y-coordinate of the line
  * @param chartContext The chart context with dimensions
- * @param color The color of the line (default black with 0.1 alpha)
+ * @param color The color or gradient of the line (default black)
  * @param strokeWidth The width of the line (default 1.5f)
- * @param alpha The alpha of the line color (default 0.1f)
+ * @param alpha The opacity applied to the line color (default 0.1f)
  */
 fun DrawScope.drawHorizontalGuideline(
     y: Float,
     chartContext: ChartContext,
-    color: Color = Color.Black,
+    color: ChartyColor = ChartyColor.Solid(Color.Black),
     strokeWidth: Float = 1.5f,
     alpha: Float = 0.1f,
 ) {
     drawLine(
-        color = color.copy(alpha = alpha),
+        brush = color.toHorizontalBrush(),
+        alpha = alpha,
         start = Offset(chartContext.left, y),
         end = Offset(chartContext.right, y),
         strokeWidth = strokeWidth,
@@ -174,14 +181,14 @@ fun DrawScope.drawHorizontalGuideline(
  * @param center The center position of the circle
  * @param radius The radius of the circle
  * @param fillBrush The brush for filling the circle
- * @param outlineColor The color of the outline
+ * @param outlineColor The color or gradient of the outline
  * @param outlineWidth The width of the outline (default 2f)
  */
 fun DrawScope.drawCircleWithOutline(
     center: Offset,
     radius: Float,
     fillBrush: Brush,
-    outlineColor: Color,
+    outlineColor: ChartyColor,
     outlineWidth: Float = 2f,
 ) {
     drawCircle(
@@ -190,7 +197,7 @@ fun DrawScope.drawCircleWithOutline(
         center = center,
     )
     drawCircle(
-        color = outlineColor,
+        brush = outlineColor.toBrush(),
         radius = radius,
         center = center,
         style =

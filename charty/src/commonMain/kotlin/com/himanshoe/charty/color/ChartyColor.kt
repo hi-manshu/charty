@@ -1,6 +1,8 @@
 package com.himanshoe.charty.color
 
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 
 /**
  * A sealed class representing the color configuration for charts.
@@ -25,6 +27,12 @@ sealed class ChartyColor {
          * they paint; a computed getter would allocate a two-element list per read.
          */
         override val value: List<Color> = listOf(color, color)
+
+        /**
+         * The [SolidColor] brush for this color, held for the same reason as [value]: drawers ask for
+         * it inside their draw loops, and a fresh brush per call would allocate on every frame.
+         */
+        internal val brush: Brush = SolidColor(color)
     }
 
     /**

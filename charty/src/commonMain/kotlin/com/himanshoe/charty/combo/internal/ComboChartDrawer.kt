@@ -151,7 +151,7 @@ internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
         animationProgress = p.animationProgress,
         isBelowAxisMode = p.isBelowAxisMode,
         dataBounds =
-            p.dataBounds.takeIf { p.onDataClick != null },
+            p.dataBounds.takeIf { p.recordDataBounds },
     )
     val pointPositions = p.chartContext.calculateLinePointPositions(dataList = p.dataList, lineRange = p.lineRange)
     p.crosshairBounds?.let { bounds ->
@@ -167,7 +167,7 @@ internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
         animationProgress = p.animationProgress,
         dataList = p.dataList,
         dataBounds =
-            p.dataBounds.takeIf { p.onDataClick != null },
+            p.dataBounds.takeIf { p.recordDataBounds },
     )
     drawPersistentMarkers(
         chartContext = p.chartContext,
@@ -184,7 +184,7 @@ internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
             textMeasurer = p.textMeasurer,
         )
     }
-    p.tooltipState?.let { state ->
+    p.tooltipState?.takeIf { p.drawTooltipBubble }?.let { state ->
         drawTooltip(
             tooltipState = state,
             config = p.comboConfig.tooltipConfig,

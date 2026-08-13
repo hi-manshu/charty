@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 
@@ -31,6 +32,10 @@ private val LEGEND_VERTICAL_PADDING = 4.dp
  * @param colors Colors matching each label by index (wrapped with modulo if shorter than labels).
  * @param modifier Modifier applied to the wrapping Row.
  * @param textStyle Text style for the labels; defaults to unspecified (inherits theme).
+ * @param dotSize Diameter of the color swatch shown before each label.
+ * @param itemSpacing Gap between one legend entry and the next.
+ * @param dotTextGap Gap between a swatch and its label.
+ * @param contentPadding Vertical padding around the legend row.
  */
 @Composable
 fun ChartLegend(
@@ -38,6 +43,10 @@ fun ChartLegend(
     colors: List<Color>,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = TextStyle.Default,
+    dotSize: Dp = LEGEND_DOT_SIZE,
+    itemSpacing: Dp = LEGEND_ITEM_SPACING,
+    dotTextGap: Dp = LEGEND_DOT_TEXT_GAP,
+    contentPadding: Dp = LEGEND_VERTICAL_PADDING,
 ) {
     if (labels.isEmpty() || colors.isEmpty()) {
         return
@@ -48,21 +57,21 @@ fun ChartLegend(
             modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(vertical = LEGEND_VERTICAL_PADDING),
+                .padding(vertical = contentPadding),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         labels.fastForEachIndexed { index, label ->
             if (index > 0) {
-                Spacer(modifier = Modifier.width(LEGEND_ITEM_SPACING))
+                Spacer(modifier = Modifier.width(itemSpacing))
             }
             val dotColor = colors[index % colors.size]
             Surface(
-                modifier = Modifier.size(LEGEND_DOT_SIZE),
+                modifier = Modifier.size(dotSize),
                 shape = CircleShape,
                 color = dotColor,
             ) {}
-            Spacer(modifier = Modifier.width(LEGEND_DOT_TEXT_GAP))
+            Spacer(modifier = Modifier.width(dotTextGap))
             Text(
                 text = label,
                 style =

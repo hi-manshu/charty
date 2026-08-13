@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -45,7 +43,11 @@ import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
 /**
@@ -74,6 +76,12 @@ import com.himanshoe.charty.common.updateInteractionBounds
  *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
  *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
  *   does not, because the crosshair owns the drag.
+ * @param tooltip How a tapped x position is presented: the built-in canvas bubble (the default), a
+ *   custom Compose overlay via [ChartTooltip.compose], or [ChartTooltip.none] to disable it. A tap
+ *   resolves to the whole [ComboChartData] at that x — the bar rect and the line point share one hit
+ *   area, so tapping either shows one tooltip describing both series — and its text comes from
+ *   [ComboChartConfig.tooltipFormatter], reading `label: Bar=…, Line=…` by default. The tooltip is
+ *   shown alongside [onDataClick], never instead of it.
  */
 @Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
@@ -88,6 +96,7 @@ fun ComboChart(
     onDataClick: ((ComboChartData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<ComboChartData>? = null,
+    tooltip: ChartTooltip<ComboChartData> = ChartTooltip.canvas(),
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -140,8 +149,8 @@ fun ComboChart(
         }
 
     val isBelowAxisMode = comboConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val dataBounds = remember { mutableListOf<Pair<Rect, ComboChartData>>() }
+    val tooltipManager = rememberTooltipManager<Rect, ComboChartData>(dataKey = dataList)
+    val tapEnabled = onDataClick != null || tooltip !is NoneTooltip
     val crosshairBounds = remember { mutableListOf<Pair<Offset, ComboChartData>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<ComboChartData>(
@@ -157,9 +166,10 @@ fun ComboChart(
             comboConfig = effectiveComboConfig,
             dataList = dataList,
             crosshairBounds = crosshairBounds,
-            dataBounds = dataBounds,
+            dataBounds = tooltipManager.bounds,
             onDataClick = onDataClick,
-            onTooltipStateChange = { state, _ -> tooltipState = state },
+            onTooltipStateChange = tooltipManager::updateTooltip,
+            tapEnabled = tapEnabled,
         )
 
     val chartModifier =
@@ -188,7 +198,7 @@ fun ComboChart(
             secondaryYAxisConfig = secondaryLineRange.toSecondaryAxisConfig(),
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
-            dataBounds.clear()
+            tooltipManager.clearBounds()
             drawComboContent(
                 ComboDrawParams(
                     dataList = displayList,
@@ -200,19 +210,27 @@ fun ComboChart(
                     lineRange = secondaryLineRange,
                     isBelowAxisMode = isBelowAxisMode,
                     animationProgress = chartState.animationProgress.value,
-                    onDataClick = onDataClick,
-                    dataBounds = dataBounds,
+                    recordDataBounds = tapEnabled,
+                    dataBounds = tooltipManager.bounds,
                     crosshairBounds =
                         crosshairBounds.takeIf { crosshairManager != null },
                     crosshairManager = crosshairManager,
                     crosshairState = animatedCrosshairState?.resolve(),
-                    tooltipState = tooltipState,
+                    tooltipState = tooltipManager.tooltipState,
+                    drawTooltipBubble = tooltip.isCanvas(),
                     textMeasurer = textMeasurer,
                     interactionConfig = interactionConfig,
                     drawCrosshairLabel = false,
                 ),
             )
         }
+
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
 
         ComboChartOverlays(
             crosshairManager = crosshairManager,

@@ -21,6 +21,7 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.DrawAxisAndLabels
 import com.himanshoe.charty.common.axis.measureAxisGutter
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 
 private const val HORIZONTAL_LEFT_PADDING_WITH_LABELS = 100f
 private const val LEFT_PADDING_WITHOUT_LABELS = 20f
@@ -56,7 +57,7 @@ fun ChartScaffold(
     modifier: Modifier = Modifier,
     xLabels: List<String> = emptyList(),
     yAxisConfig: AxisConfig = AxisConfig(),
-    config: ChartScaffoldConfig = ChartScaffoldConfig(),
+    config: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
     accessibility: ChartAccessibility = ChartAccessibility(),
     secondaryYAxisConfig: AxisConfig? = null,

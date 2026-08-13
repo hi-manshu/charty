@@ -23,10 +23,13 @@ import com.himanshoe.charty.line.data.MultilinePoint
  * @property animationProgress The reveal progress, from `0f` (nothing drawn) to `1f` (fully drawn).
  * @property pointBounds Collects every drawn point paired with its position, for tap hit-testing.
  * @property crosshairBounds Collects the first series' points, which the crosshair snaps to.
- * @property onPointClick Invoked when a point is tapped; `null` skips filling [pointBounds].
+ * @property recordPointBounds Whether the pass fills [pointBounds]; `false` skips the bookkeeping
+ *   when nothing hit-tests them.
  * @property crosshairManager The crosshair state holder, or `null` when the crosshair is off.
  * @property crosshairState The crosshair's resolved position, or `null` when it is not showing.
  * @property tooltipState The active tooltip, or `null` when none is showing.
+ * @property drawTooltipBubble Whether the active tooltip is drawn as the built-in canvas bubble; a
+ *   Compose-overlay tooltip is hosted above the canvas instead.
  * @property textMeasurer Measurer used for the reference band, tooltip, and crosshair labels.
  * @property interactionConfig Supplies the annotation, brush-selection, and edge-fade overlays.
  * @property drawCrosshairLabel Whether the crosshair label is drawn on the canvas rather than as a
@@ -40,10 +43,11 @@ internal data class MultilineDrawParams(
     val animationProgress: Float,
     val pointBounds: MutableList<Pair<Offset, MultilinePoint>>,
     val crosshairBounds: MutableList<Pair<Offset, MultilinePoint>>,
-    val onPointClick: ((MultilinePoint) -> Unit)?,
+    val recordPointBounds: Boolean,
     val crosshairManager: CrosshairManager<MultilinePoint>?,
     val crosshairState: CrosshairState?,
     val tooltipState: TooltipState?,
+    val drawTooltipBubble: Boolean,
     val textMeasurer: TextMeasurer,
     val interactionConfig: ChartInteractionConfig,
     val drawCrosshairLabel: Boolean,

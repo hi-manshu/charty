@@ -8,6 +8,7 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
+import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.util.toChartLabel
@@ -35,6 +36,9 @@ private const val DEFAULT_NEGATIVE_COLOR = 0xFFD64C66
  * @property tooltipConfig Configuration for tooltip appearance when a bar is clicked
  * @property tooltipPosition Preferred position for tooltips (ABOVE, BELOW, or AUTO)
  * @property tooltipFormatter Converts a data point into the string shown in its tooltip.
+ * @property crosshairConfig When non-null, enables a draggable [ChartCrosshairConfig] that tracks the
+ *   user's finger and snaps by x to the nearest step, resting on the top edge of its floating bar.
+ *   Usually set for you by passing a `crosshair` to the chart rather than configured here directly.
  * @property visibleWindow Rolling "show last N" window; `null` (default) shows every point and
  *   changes nothing. As data is appended the window advances to the latest. Must be `>= 2`.
  */
@@ -52,6 +56,7 @@ data class WaterfallChartConfig(
     val tooltipFormatter: (BarData) -> String = { barData ->
         "${barData.label}: ${barData.value.toChartLabel()}"
     },
+    val crosshairConfig: ChartCrosshairConfig? = null,
     val visibleWindow: Int? = null,
 ) {
     init {

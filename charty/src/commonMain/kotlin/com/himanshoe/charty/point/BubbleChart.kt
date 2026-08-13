@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
@@ -40,6 +41,13 @@ import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.point.config.PointChartConfig
@@ -70,6 +78,14 @@ private const val MIN_RADIUS_DIVISOR = 2f
  *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
  *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
  *   does not, because the crosshair owns the drag.
+ * @param tooltip How a tapped bubble is presented: the built-in canvas bubble (the default), a custom
+ *   Compose overlay via [ChartTooltip.compose], or [ChartTooltip.none] to disable it. Bubbles vary in
+ *   radius, so a tap resolves against the drawn circle itself rather than a uniform column — a tap
+ *   just outside a small bubble hits nothing and dismisses the tooltip. Its text comes from
+ *   [PointChartConfig.tooltipFormatter], which takes a [com.himanshoe.charty.point.data.PointData]:
+ *   the bubble is projected onto one with the size it encodes folded into the label, reading
+ *   `Product A (size 100): 50` by default. The tooltip is shown alongside [onBubbleClick], never
+ *   instead of it, and the same text labels the crosshair.
  *
  * Example usage:
  * ```kotlin
@@ -97,6 +113,7 @@ fun BubbleChart(
     onBubbleClick: ((BubbleData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<BubbleData>? = null,
+    tooltip: ChartTooltip<BubbleData> = ChartTooltip.canvas(),
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -132,7 +149,8 @@ fun BubbleChart(
     val minValue = chartState.minValue
     val maxValue = chartState.maxValue
 
-    val bubbleBounds = remember { mutableListOf<BubbleBounds>() }
+    val tooltipManager = rememberTooltipManager<BubbleBounds, BubbleData>(dataKey = dataList)
+    val tapEnabled = onBubbleClick != null || tooltip !is NoneTooltip
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<BubbleData>(
@@ -150,11 +168,14 @@ fun BubbleChart(
     val gestureBase =
         buildBubbleGestureModifier(
             dataList = dataList,
-            bubbleBounds = bubbleBounds,
+            bubbleBounds = tooltipManager.bounds,
             crosshairBounds = crosshairBounds,
             onBubbleClick = onBubbleClick,
             crosshairManager = crosshairManager,
             dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
+            config = config,
+            onTooltipUpdate = tooltipManager::updateTooltip,
+            tapEnabled = tapEnabled,
         )
     val chartModifier =
         buildInteractionModifier(
@@ -182,7 +203,7 @@ fun BubbleChart(
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
-            bubbleBounds.clear()
+            tooltipManager.clearBounds()
             populateBubbleCrosshairBounds(
                 chartContext = chartContext,
                 dataList = dataList,
@@ -200,10 +221,18 @@ fun BubbleChart(
                         config = config,
                         color = color,
                         animationProgress = animationProgress.value,
-                        onBubbleClick = onBubbleClick,
-                        bubbleBounds = bubbleBounds,
+                        recordBubbleBounds = tapEnabled,
+                        bubbleBounds = tooltipManager.bounds,
                         textMeasurer = textMeasurer,
                     ),
+            )
+
+            drawBubbleTooltip(
+                tooltipState = tooltipManager.tooltipState,
+                config = config,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+                drawBubble = tooltip.isCanvas(),
             )
 
             drawInteractionOverlays(
@@ -222,6 +251,13 @@ fun BubbleChart(
                 drawLabel = false,
             )
         }
+
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
+        )
 
         BubbleChartOverlay(
             crosshairManager = crosshairManager,
@@ -301,11 +337,37 @@ private fun BoxScope.BubbleChartOverlay(
     }
 }
 
+/**
+ * Draws the built-in canvas tooltip for the selected bubble. Draws nothing when nothing is selected
+ * or when [drawBubble] is `false`, which is the case for a Compose-overlay or disabled tooltip.
+ */
+private fun DrawScope.drawBubbleTooltip(
+    tooltipState: TooltipState?,
+    config: PointChartConfig,
+    chartContext: ChartContext,
+    textMeasurer: TextMeasurer,
+    drawBubble: Boolean,
+) {
+    if (!drawBubble) {
+        return
+    }
+    tooltipState?.let { state ->
+        drawTooltip(
+            tooltipState = state,
+            config = config.tooltipConfig,
+            textMeasurer = textMeasurer,
+            chartWidth = chartContext.right,
+            chartTop = chartContext.top,
+            chartBottom = chartContext.bottom,
+        )
+    }
+}
+
 private fun DrawScope.drawBubbleCrosshair(
     crosshairState: CrosshairState?,
     crosshairConfig: ChartCrosshairConfig?,
     chartContext: ChartContext,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    textMeasurer: TextMeasurer,
     color: ChartyColor,
     drawLabel: Boolean,
 ) {

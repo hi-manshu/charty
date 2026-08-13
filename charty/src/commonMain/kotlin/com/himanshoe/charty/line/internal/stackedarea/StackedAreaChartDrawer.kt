@@ -3,7 +3,6 @@ package com.himanshoe.charty.line.internal.stackedarea
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -84,7 +83,7 @@ private fun addSegmentBounds(
     seriesIndex: Int,
     cumulativePositions: List<Offset>,
     lowerPositions: List<Offset>,
-    onSegmentBoundsCalculated: (Triple<Rect, Path, StackedAreaPoint>) -> Unit,
+    onSegmentBoundsCalculated: (Pair<Rect, StackedAreaPoint>) -> Unit,
 ) {
     dataList.fastForEachIndexed { dataIndex, group ->
         val segmentValue = group.values.getOrNull(seriesIndex) ?: 0f
@@ -95,15 +94,6 @@ private fun addSegmentBounds(
             val nextUpperPoint = cumulativePositions[dataIndex + 1]
             val nextLowerPoint = lowerPositions[dataIndex + 1]
 
-            val segmentPath =
-                Path().apply {
-                    moveTo(upperPoint.x, upperPoint.y)
-                    lineTo(nextUpperPoint.x, nextUpperPoint.y)
-                    lineTo(nextLowerPoint.x, nextLowerPoint.y)
-                    lineTo(lowerPoint.x, lowerPoint.y)
-                    close()
-                }
-
             val minX = minOf(upperPoint.x, lowerPoint.x, nextUpperPoint.x, nextLowerPoint.x)
             val maxX = maxOf(upperPoint.x, lowerPoint.x, nextUpperPoint.x, nextLowerPoint.x)
             val minY = minOf(upperPoint.y, lowerPoint.y, nextUpperPoint.y, nextLowerPoint.y)
@@ -112,9 +102,7 @@ private fun addSegmentBounds(
             val cumulativeValue = group.calculateCumulativeValue(seriesIndex)
 
             onSegmentBoundsCalculated(
-                Triple(
-                    Rect(left = minX, top = minY, right = maxX, bottom = maxY),
-                    segmentPath,
+                Rect(left = minX, top = minY, right = maxX, bottom = maxY) to
                     StackedAreaPoint(
                         lineGroup = group,
                         seriesIndex = seriesIndex,
@@ -122,7 +110,6 @@ private fun addSegmentBounds(
                         value = segmentValue,
                         cumulativeValue = cumulativeValue,
                     ),
-                ),
             )
         }
     }
@@ -163,7 +150,6 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
     val lineConfig = params.lineConfig
     val fillAlpha = params.fillAlpha
     val animationProgress = params.animationProgress
-    val onAreaClick = params.onAreaClick
     val areaSegmentBounds = params.areaSegmentBounds
     val tooltipState = params.tooltipState
     val textMeasurer = params.textMeasurer
@@ -208,7 +194,7 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
                 animationProgress = animationProgress,
                 dataList = dataList,
                 onSegmentBoundsCalculated =
-                    if (onAreaClick != null) {
+                    if (params.recordSegmentBounds) {
                         { bounds -> areaSegmentBounds.add(bounds) }
                     } else {
                         null
@@ -226,7 +212,7 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
         textMeasurer = textMeasurer,
     )
 
-    tooltipState?.let { state ->
+    tooltipState?.takeIf { params.drawTooltipBubble }?.let { state ->
         drawTooltip(
             tooltipState = state,
             config = lineConfig.tooltipConfig,

@@ -7,6 +7,7 @@ import com.himanshoe.charty.bar.data.SpanData
 import com.himanshoe.charty.common.gesture.rectangularChartClickHandler
 import com.himanshoe.charty.common.gesture.rectangularChartScrubHandler
 import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.util.toChartLabel
 
 internal fun createSpanChartModifier(
     onSpanClick: ((SpanData) -> Unit)?,
@@ -19,7 +20,7 @@ internal fun createSpanChartModifier(
 ): Modifier {
     val tooltipContentBuilder = { spanData: SpanData, rect: Rect ->
         TooltipState(
-            content = "${spanData.label}: ${spanData.startValue} - ${spanData.endValue}",
+            content = "${spanData.label}: ${spanData.startValue.toChartLabel()} - ${spanData.endValue.toChartLabel()}",
             x = rect.left,
             y = rect.top,
             barWidth = rect.width,

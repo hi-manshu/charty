@@ -62,7 +62,7 @@ fun ChartJumpToLatestPill(
     state: StreamingState,
     modifier: Modifier = Modifier,
     text: (Int) -> String = { "$it new" },
-    backgroundColor: ChartyColor = ChartyColor.Solid(currentChartyTheme.primaryColor),
+    backgroundColor: ChartyColor = currentChartyTheme.primaryColor,
     textStyle: TextStyle = TextStyle(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
     contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
     animation: Animation = Animation.Default,

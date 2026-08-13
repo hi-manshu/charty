@@ -3,19 +3,12 @@ package com.himanshoe.charty.common.annotation
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.color.toBrush
+import com.himanshoe.charty.color.withChartyColor
 import com.himanshoe.charty.common.ChartContext
-
-private const val LABEL_HORIZONTAL_PADDING = 8f
-private const val LABEL_VERTICAL_PADDING = 4f
-private const val LABEL_CORNER_RADIUS = 4f
-private val DASH_INTERVALS = floatArrayOf(6f, 3f)
-private val DASH_EFFECT = PathEffect.dashPathEffect(DASH_INTERVALS)
 
 /**
  * Draws a [ChartAnnotation] — a vertical marker line and an optional text label — onto the canvas.
@@ -39,15 +32,10 @@ fun DrawScope.drawChartAnnotation(
     }
     val x = chartContext.calculateCenteredXPosition(annotation.xIndex, totalItems)
 
-    val pathEffect =
-        if (annotation.style.isDashed) {
-            DASH_EFFECT
-        } else {
-            null
-        }
+    val pathEffect = annotation.style.dashPathEffect
 
     drawLine(
-        color = annotation.style.lineColor,
+        brush = annotation.style.lineColor.toBrush(),
         start = Offset(x, chartContext.top),
         end = Offset(x, chartContext.bottom),
         strokeWidth = annotation.style.lineWidth,
@@ -55,10 +43,10 @@ fun DrawScope.drawChartAnnotation(
     )
 
     if (annotation.label.isNotEmpty()) {
-        val textStyle = TextStyle(color = annotation.style.labelTextColor, fontSize = 11.sp)
-        val textResult = textMeasurer.measure(annotation.label, textStyle)
-        val labelWidth = textResult.size.width + LABEL_HORIZONTAL_PADDING * 2
-        val labelHeight = textResult.size.height + LABEL_VERTICAL_PADDING * 2
+        val textStyle = annotation.style.labelTextStyle.withChartyColor(annotation.style.labelTextColor)
+        val textResult = textMeasurer.measure(text = annotation.label, style = textStyle)
+        val labelWidth = textResult.size.width + annotation.style.labelHorizontalPadding * 2
+        val labelHeight = textResult.size.height + annotation.style.labelVerticalPadding * 2
 
         val labelX = (x - labelWidth / 2f).coerceIn(chartContext.left, chartContext.right - labelWidth)
         val labelY =
@@ -68,15 +56,19 @@ fun DrawScope.drawChartAnnotation(
             }
 
         drawRoundRect(
-            color = annotation.style.labelBackgroundColor,
+            brush = annotation.style.labelBackgroundColor.toBrush(),
             topLeft = Offset(labelX, labelY),
             size = Size(labelWidth, labelHeight),
-            cornerRadius = CornerRadius(LABEL_CORNER_RADIUS),
+            cornerRadius = CornerRadius(annotation.style.labelCornerRadius),
         )
 
         drawText(
             textLayoutResult = textResult,
-            topLeft = Offset(labelX + LABEL_HORIZONTAL_PADDING, labelY + LABEL_VERTICAL_PADDING),
+            topLeft =
+                Offset(
+                    labelX + annotation.style.labelHorizontalPadding,
+                    labelY + annotation.style.labelVerticalPadding,
+                ),
         )
     }
 }

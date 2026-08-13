@@ -33,11 +33,14 @@ private const val DEFAULT_GUIDE_LINE_ARGB = 0x552962FF
  * @property dotRingWidth Stroke width of the ring, in pixels.
  * @property showLabel Whether to draw the callout label above the dot.
  * @property labelTextStyle Text style for the callout label.
+ * @property labelTextColor Color applied to [labelTextStyle] when drawing, so a gradient can be used;
+ *   `null` keeps the color carried by [labelTextStyle] itself.
  * @property labelBackgroundColor Background fill (or gradient) of the callout pill.
  * @property labelPadding Padding between the label text and the pill edges, in pixels.
  * @property labelCornerRadius Corner radius of the callout pill, in pixels.
+ * @property labelGap Gap between the dot and the bottom of the callout pill, in pixels.
  * @property showGuideLine Whether to drop a thin guide line from the point to the value axis.
- * @property guideLineColor Color of the guide line.
+ * @property guideLineColor Color (or gradient) of the guide line.
  * @property guideLineWidth Stroke width of the guide line, in pixels.
  */
 @Immutable
@@ -47,7 +50,7 @@ data class PersistentMarker(
     val showDot: Boolean = true,
     val dotRadius: Float = 6f,
     val dotColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_DOT_ARGB)),
-    val dotRingColor: Color? = Color.White,
+    val dotRingColor: ChartyColor? = ChartyColor.Solid(Color.White),
     val dotRingWidth: Float = 2f,
     val showLabel: Boolean = true,
     val labelTextStyle: TextStyle =
@@ -56,11 +59,13 @@ data class PersistentMarker(
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
         ),
+    val labelTextColor: ChartyColor? = null,
     val labelBackgroundColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_LABEL_BACKGROUND_ARGB)),
     val labelPadding: Float = 6f,
     val labelCornerRadius: Float = 6f,
+    val labelGap: Float = 6f,
     val showGuideLine: Boolean = false,
-    val guideLineColor: Color = Color(DEFAULT_GUIDE_LINE_ARGB),
+    val guideLineColor: ChartyColor = ChartyColor.Solid(Color(DEFAULT_GUIDE_LINE_ARGB)),
     val guideLineWidth: Float = 1f,
 ) {
     init {
@@ -69,6 +74,7 @@ data class PersistentMarker(
         require(dotRingWidth >= 0f) { "Marker dotRingWidth must be non-negative" }
         require(labelPadding >= 0f) { "Marker labelPadding must be non-negative" }
         require(labelCornerRadius >= 0f) { "Marker labelCornerRadius must be non-negative" }
+        require(labelGap >= 0f) { "Marker labelGap must be non-negative" }
         require(guideLineWidth >= 0f) { "Marker guideLineWidth must be non-negative" }
     }
 }

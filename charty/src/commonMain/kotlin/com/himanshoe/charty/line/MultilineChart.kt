@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -28,7 +26,10 @@ import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
@@ -41,6 +42,7 @@ import com.himanshoe.charty.line.internal.multiline.MultilineChartOverlays
 import com.himanshoe.charty.line.internal.multiline.MultilineDrawParams
 import com.himanshoe.charty.line.internal.multiline.buildMultilineModifier
 import com.himanshoe.charty.line.internal.multiline.drawMultilineContent
+import com.himanshoe.charty.line.internal.multiline.resolveMultilineTapHandler
 
 /**
  * A composable function that displays a multiline chart.
@@ -72,7 +74,15 @@ import com.himanshoe.charty.line.internal.multiline.drawMultilineContent
  *   is a drag gesture that leaves taps alone, so tap-to-tooltip and the chart's click callback
  *   keep working alongside it; streaming scrollback ([ChartInteractionConfig.streamingState])
  *   does not, because the crosshair owns the drag.
+ * @param tooltip How a tapped point is presented: the built-in canvas bubble (the default), a custom
+ *   Compose overlay via [ChartTooltip.compose], or [ChartTooltip.none] to disable it. A tap resolves
+ *   to the single nearest [MultilinePoint], so it names one series rather than every series at that
+ *   x. Its text comes from [LineChartConfig.tooltipFormatter], which takes a
+ *   [com.himanshoe.charty.line.data.LineData]: the point is projected onto one with its series
+ *   number folded into the label, reading `Jan Line 2: 12` by default. The tooltip is shown
+ *   alongside [onPointClick], never instead of it.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun MultilineChart(
     data: () -> List<LineGroup>,
@@ -84,6 +94,7 @@ fun MultilineChart(
     onPointClick: ((MultilinePoint) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     crosshair: ChartCrosshair<MultilinePoint>? = null,
+    tooltip: ChartTooltip<MultilinePoint> = ChartTooltip.canvas(),
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -116,8 +127,8 @@ fun MultilineChart(
     val maxValue = chartState.maxValue
 
     val isBelowAxisMode = lineConfig.negativeValuesDrawMode == NegativeValuesDrawMode.BELOW_AXIS
-    var tooltipState by remember { mutableStateOf<TooltipState?>(null) }
-    val pointBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
+    val tooltipManager = rememberTooltipManager<Offset, MultilinePoint>(dataKey = dataList)
+    val tapEnabled = onPointClick != null || tooltip !is NoneTooltip
     val crosshairBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<MultilinePoint>(
@@ -141,10 +152,14 @@ fun MultilineChart(
                         crosshairManager = crosshairManager,
                         dataList = dataList,
                         lineConfig = effectiveLineConfig,
-                        pointBounds = pointBounds,
+                        pointBounds = tooltipManager.bounds,
                         crosshairBounds = crosshairBounds,
-                        onPointClick = onPointClick,
-                        onTooltipStateChange = { state, _ -> tooltipState = state },
+                        onPointTap =
+                            resolveMultilineTapHandler(
+                                onPointClick = onPointClick,
+                                tapEnabled = tapEnabled,
+                            ),
+                        onTooltipStateChange = tooltipManager::updateTooltip,
                         interactionConfig = interactionConfig,
                     ),
                 xLabels = dataList.getLabels(),
@@ -165,12 +180,13 @@ fun MultilineChart(
                         colorList = colorList,
                         lineConfig = effectiveLineConfig,
                         animationProgress = chartState.animationProgress.value,
-                        pointBounds = pointBounds,
+                        pointBounds = tooltipManager.bounds,
                         crosshairBounds = crosshairBounds,
-                        onPointClick = onPointClick,
+                        recordPointBounds = tapEnabled,
                         crosshairManager = crosshairManager,
                         crosshairState = animatedCrosshairState?.resolve(),
-                        tooltipState = tooltipState,
+                        tooltipState = tooltipManager.tooltipState,
+                        drawTooltipBubble = tooltip.isCanvas(),
                         textMeasurer = textMeasurer,
                         interactionConfig = interactionConfig,
                         drawCrosshairLabel = false,
@@ -182,6 +198,9 @@ fun MultilineChart(
                 crosshairManager = crosshairManager,
                 animatedCrosshairState = animatedCrosshairState?.resolve(),
                 crosshair = activeCrosshair,
+                tooltip = tooltip,
+                tooltipItem = tooltipManager.selectedItem,
+                tooltipAnchor = tooltipManager.tooltipState,
             )
         }
         if (lineConfig.legendLabels.isNotEmpty()) {

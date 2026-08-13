@@ -33,7 +33,7 @@ private const val PILL_CORNER_RADIUS_DP = 999
 @Composable
 fun TooltipScope<*>.PillTooltip(
     modifier: Modifier = Modifier,
-    backgroundColor: ChartyColor = ChartyColor.Solid(currentChartyTheme.primaryColor),
+    backgroundColor: ChartyColor = currentChartyTheme.primaryColor,
     textStyle: TextStyle = TextStyle(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
     cornerRadius: Int = PILL_CORNER_RADIUS_DP,
     contentPadding: PaddingValues = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
@@ -59,7 +59,7 @@ fun TooltipScope<*>.PillTooltip(
 @Composable
 fun TooltipScope<*>.CardTooltip(
     modifier: Modifier = Modifier,
-    accent: ChartyColor = ChartyColor.Solid(currentChartyTheme.primaryColor),
+    accent: ChartyColor = currentChartyTheme.primaryColor,
     backgroundColor: ChartyColor = ChartyColor.Solid(Color.White),
     textStyle: TextStyle = TextStyle(color = Color(CARD_TEXT_ARGB), fontSize = 12.sp, fontWeight = FontWeight.Medium),
 ) {

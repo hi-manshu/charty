@@ -10,6 +10,7 @@ import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.common.util.toChartLabel
 
 /**
  * Represents a single segment within a stacked horizontal bar that was clicked.
@@ -59,7 +60,7 @@ data class StackedHorizontalBarChartConfig(
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (StackedHorizontalBarSegment) -> String = { segment ->
-        "${segment.barGroup.label} [${segment.segmentIndex}]: ${segment.segmentValue}"
+        "${segment.barGroup.label} [${segment.segmentIndex}]: ${segment.segmentValue.toChartLabel()}"
     },
     val visibleWindow: Int? = null,
 ) {

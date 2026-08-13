@@ -3,9 +3,13 @@ package com.himanshoe.charty.common.draw
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.config.ScrollEdgeFadeConfig
+
+private const val TRANSPARENT_ALPHA = 0f
 
 /**
  * Draws the leading/trailing edge scrims for a scrollable chart. [fadeLeft]/[fadeRight] should be
@@ -28,14 +32,12 @@ fun DrawScope.drawScrollEdgeFades(
     if (config.width <= 0f) {
         return
     }
-    val edgeColor = config.color.copy(alpha = config.alpha)
-    val transparent = config.color.copy(alpha = 0f)
     val width = config.width.coerceAtMost(chartContext.width)
     if (fadeLeft) {
         drawRect(
             brush =
                 Brush.horizontalGradient(
-                    colors = listOf(edgeColor, transparent),
+                    colors = config.color.fadeStops(alpha = config.alpha, fadesInward = true),
                     startX = chartContext.left,
                     endX = chartContext.left + width,
                 ),
@@ -47,7 +49,7 @@ fun DrawScope.drawScrollEdgeFades(
         drawRect(
             brush =
                 Brush.horizontalGradient(
-                    colors = listOf(transparent, edgeColor),
+                    colors = config.color.fadeStops(alpha = config.alpha, fadesInward = false),
                     startX = chartContext.right - width,
                     endX = chartContext.right,
                 ),
@@ -56,3 +58,23 @@ fun DrawScope.drawScrollEdgeFades(
         )
     }
 }
+
+private fun ChartyColor.fadeStops(
+    alpha: Float,
+    fadesInward: Boolean,
+): List<Color> =
+    when (this) {
+        is ChartyColor.Solid ->
+            if (fadesInward) {
+                listOf(color.copy(alpha = alpha), color.copy(alpha = TRANSPARENT_ALPHA))
+            } else {
+                listOf(color.copy(alpha = TRANSPARENT_ALPHA), color.copy(alpha = alpha))
+            }
+
+        is ChartyColor.Gradient ->
+            if (fadesInward) {
+                colors.map { it.copy(alpha = alpha) } + colors.last().copy(alpha = TRANSPARENT_ALPHA)
+            } else {
+                listOf(colors.first().copy(alpha = TRANSPARENT_ALPHA)) + colors.map { it.copy(alpha = alpha) }
+            }
+    }

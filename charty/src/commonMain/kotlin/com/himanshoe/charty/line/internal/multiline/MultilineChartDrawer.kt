@@ -226,7 +226,7 @@ internal fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
             colorList = p.colorList,
             animationProgress = p.animationProgress,
             pointBounds =
-                p.pointBounds.takeIf { p.onPointClick != null },
+                p.pointBounds.takeIf { p.recordPointBounds },
         )
     }
 
@@ -239,7 +239,7 @@ internal fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
         textMeasurer = p.textMeasurer,
     )
 
-    p.tooltipState?.let { state ->
+    p.tooltipState?.takeIf { p.drawTooltipBubble }?.let { state ->
         drawTooltip(
             tooltipState = state,
             config = p.lineConfig.tooltipConfig,

@@ -1,11 +1,14 @@
 package com.himanshoe.charty.candlestick
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -21,7 +24,9 @@ import com.himanshoe.charty.candlestick.ext.getLabels
 import com.himanshoe.charty.candlestick.internal.CandlestickChartConstants
 import com.himanshoe.charty.candlestick.internal.CandlestickDrawParams
 import com.himanshoe.charty.candlestick.internal.calculateOptimizedLabels
+import com.himanshoe.charty.candlestick.internal.candlestickTooltipHandler
 import com.himanshoe.charty.candlestick.internal.drawCandlestick
+import com.himanshoe.charty.candlestick.internal.populateCandleBounds
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
@@ -41,6 +46,12 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.tooltip.ChartTooltip
+import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.tooltip.isCanvas
+import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 
 private const val CANDLE_PRICE_COUNT = 4
@@ -69,7 +80,13 @@ private const val CANDLE_PRICE_COUNT = 4
  * @param candlestickConfig The configuration for the candlestick's appearance.
  * @param scaffoldConfig The configuration for the chart's scaffold.
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
+ * @param tooltip How a tapped candle is presented: the built-in canvas bubble (the default), a custom
+ *   Compose overlay via [ChartTooltip.compose], or [ChartTooltip.none] to disable it. A tap resolves
+ *   to the whole candle — its column width, spanning high to low, so body and wicks share one hit
+ *   area — and shows every price that candle encodes, not one of the four:
+ *   [CandlestickChartConfig.tooltipFormatter] reads `Mon  O 100 H 110 L 95 C 105` by default.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun CandlestickChart(
     data: () -> List<CandleData>,
@@ -80,6 +97,7 @@ fun CandlestickChart(
     candlestickConfig: CandlestickChartConfig = CandlestickChartConfig(),
     scaffoldConfig: ChartScaffoldConfig = ChartyThemeDefaults.scaffoldConfig(),
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
+    tooltip: ChartTooltip<CandleData> = ChartTooltip.canvas(),
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -116,75 +134,114 @@ fun CandlestickChart(
 
     val animationProgress = chartState.animationProgress
     val textMeasurer = rememberTextMeasurer()
+    val tooltipManager = rememberTooltipManager<Rect, CandleData>(dataKey = dataList)
+    val tapEnabled = tooltip !is NoneTooltip
 
     val chartModifier =
         buildInteractionModifier(
-            base = modifier,
+            base =
+                modifier.candlestickTooltipHandler(
+                    dataList = dataList,
+                    candlestickConfig = candlestickConfig,
+                    candleBounds = tooltipManager.bounds,
+                    onTooltipUpdate = tooltipManager::updateTooltip,
+                    enabled = tapEnabled,
+                ),
             interactionConfig = interactionConfig,
             dataList = dataList,
         )
 
-    ChartScaffold(
-        accessibility =
-            ChartAccessibility(
-                contentDescription =
-                    interactionConfig.accessibilityDescription
-                        ?: generateCandlestickChartDescription(fullDataList),
-                dataPointDescriptions =
-                    buildDataPointDescriptions(
-                        labels = dataList.fastMap { it.label },
-                        values = dataList.fastMap { it.close },
-                    ),
-            ),
-        streaming = interactionConfig.streamingRender(chartState.streaming),
-        modifier = chartModifier,
-        xLabels = xLabels,
-        yAxisConfig =
-            AxisConfig(
-                minValue = minValue,
-                maxValue = maxValue,
-                steps = 6,
-                drawAxisAtZero = false,
-            ),
-        config = scaffoldConfig,
-    ) { chartContext ->
-        updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
+    Box(modifier = chartModifier) {
+        ChartScaffold(
+            accessibility =
+                ChartAccessibility(
+                    contentDescription =
+                        interactionConfig.accessibilityDescription
+                            ?: generateCandlestickChartDescription(fullDataList),
+                    dataPointDescriptions =
+                        buildDataPointDescriptions(
+                            labels = dataList.fastMap { it.label },
+                            values = dataList.fastMap { it.close },
+                        ),
+                ),
+            streaming = interactionConfig.streamingRender(chartState.streaming),
+            modifier = Modifier.fillMaxSize(),
+            xLabels = xLabels,
+            yAxisConfig =
+                AxisConfig(
+                    minValue = minValue,
+                    maxValue = maxValue,
+                    steps = 6,
+                    drawAxisAtZero = false,
+                ),
+            config = scaffoldConfig,
+        ) { chartContext ->
+            updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
-        val bullishBrush = Brush.verticalGradient(bullishColor.value)
-        val bearishBrush = Brush.verticalGradient(bearishColor.value)
-        displayList.fastForEachIndexed { index, candle ->
-            drawCandleBar(
-                index = index,
-                candle = candle,
-                dataList = displayList,
+            populateCandleBounds(
                 chartContext = chartContext,
-                candlestickConfig = candlestickConfig,
-                bullishBrush = bullishBrush,
-                bearishBrush = bearishBrush,
-                animationProgress = animationProgress.value,
+                dataList = dataList,
+                enabled = tapEnabled,
+                candleWidthFraction = candlestickConfig.candleWidthFraction,
+                candleBounds = tooltipManager.bounds,
             )
-        }
 
-        if (candlestickConfig.markers.isNotEmpty()) {
-            drawPersistentMarkers(
+            val bullishBrush = Brush.verticalGradient(bullishColor.value)
+            val bearishBrush = Brush.verticalGradient(bearishColor.value)
+            displayList.fastForEachIndexed { index, candle ->
+                drawCandleBar(
+                    index = index,
+                    candle = candle,
+                    dataList = displayList,
+                    chartContext = chartContext,
+                    candlestickConfig = candlestickConfig,
+                    bullishBrush = bullishBrush,
+                    bearishBrush = bearishBrush,
+                    animationProgress = animationProgress.value,
+                )
+            }
+
+            if (candlestickConfig.markers.isNotEmpty()) {
+                drawPersistentMarkers(
+                    chartContext = chartContext,
+                    markers = candlestickConfig.markers,
+                    pointPositions =
+                        candleMarkerPositions(
+                            chartContext = chartContext,
+                            dataList = displayList,
+                            candleWidthFraction = candlestickConfig.candleWidthFraction,
+                        ),
+                    valueLabelFor = { index -> formatMarkerValue(displayList[index].close) },
+                    textMeasurer = textMeasurer,
+                )
+            }
+
+            if (tooltip.isCanvas()) {
+                tooltipManager.tooltipState?.let { state ->
+                    drawTooltip(
+                        tooltipState = state,
+                        config = candlestickConfig.tooltipConfig,
+                        textMeasurer = textMeasurer,
+                        chartWidth = chartContext.right,
+                        chartTop = chartContext.top,
+                        chartBottom = chartContext.bottom,
+                    )
+                }
+            }
+
+            drawInteractionOverlays(
+                interactionConfig = interactionConfig,
                 chartContext = chartContext,
-                markers = candlestickConfig.markers,
-                pointPositions =
-                    candleMarkerPositions(
-                        chartContext = chartContext,
-                        dataList = displayList,
-                        candleWidthFraction = candlestickConfig.candleWidthFraction,
-                    ),
-                valueLabelFor = { index -> formatMarkerValue(displayList[index].close) },
+                totalItems = dataList.size,
                 textMeasurer = textMeasurer,
             )
         }
 
-        drawInteractionOverlays(
-            interactionConfig = interactionConfig,
-            chartContext = chartContext,
-            totalItems = dataList.size,
-            textMeasurer = textMeasurer,
+        ChartTooltipHost(
+            tooltip = tooltip,
+            item = tooltipManager.selectedItem,
+            anchor = tooltipManager.tooltipState,
+            modifier = Modifier.matchParentSize(),
         )
     }
 }

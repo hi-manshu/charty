@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.color.ChartyColor
 
 /**
  * An enum that defines the stroke style for reference, target, or average lines in a chart.
@@ -44,13 +45,15 @@ enum class ReferenceLineLabelPosition {
  *
  * @property isEnabled Determines whether the reference line should be rendered.
  * @property value The value on the chart's numeric axis where the line should be drawn.
- * @property color The color of the reference line.
+ * @property color The color of the reference line, solid or gradient.
  * @property strokeWidth The thickness of the reference line in pixels.
  * @property strokeStyle The stroke style of the line, either [ReferenceLineStrokeStyle.SOLID] or [ReferenceLineStrokeStyle.DASHED].
  * @property dashIntervals An optional array of floats for creating a custom dash pattern. If `null` and [strokeStyle] is [ReferenceLineStrokeStyle.DASHED], a default pattern is used.
  * @property label An optional text label to be displayed near the line. If `null`, the chart may show the numeric [value] or nothing.
  * @property showValueInLabelWhenNoText If `true`, the numeric [value] will be shown in the label when [label] is `null`.
  * @property labelTextStyle The [TextStyle] for the label.
+ * @property labelTextColor Color applied to [labelTextStyle] when drawing, so a gradient can be used;
+ *   `null` keeps the color carried by [labelTextStyle] itself.
  * @property labelPosition The position of the label relative to the line, defined by [ReferenceLineLabelPosition].
  * @property labelOffset The offset in pixels to be applied to the label's position, moving it away from the line.
  */
@@ -67,9 +70,9 @@ data class ReferenceLineConfig(
      */
     val value: Float,
     /**
-     * Color of the reference line.
+     * Color of the reference line, solid or gradient.
      */
-    val color: Color = Color.Red,
+    val color: ChartyColor = ChartyColor.Solid(Color.Red),
     /**
      * Thickness of the reference line stroke in pixels.
      */
@@ -102,6 +105,11 @@ data class ReferenceLineConfig(
             fontWeight = FontWeight.Bold,
             color = Color.Black,
         ),
+    /**
+     * Color applied to the label's text style when drawing, so a gradient can be used.
+     * Null keeps the color carried by the label text style itself.
+     */
+    val labelTextColor: ChartyColor? = null,
     /**
      * Position of the label relative to the line.
      */

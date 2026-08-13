@@ -3,20 +3,17 @@ package com.himanshoe.charty.common.gesture
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.color.toBrush
 import com.himanshoe.charty.common.theme.currentChartyTheme
 
-private const val CROSSHAIR_LABEL_TEXT_SP = 12
+private val LABEL_HORIZONTAL_PADDING = 8.dp
+private val LABEL_VERTICAL_PADDING = 4.dp
 
 /**
  * The draggable crosshair for a chart: a guide line (drawn on the chart canvas) that snaps to the
@@ -98,20 +95,13 @@ private fun <T> RenderCrosshairLabel(
 
 @Composable
 private fun DefaultCrosshairLabel(text: String) {
+    val theme = currentChartyTheme
     Box(
         modifier =
             Modifier
-                .background(brush = SolidColor(currentChartyTheme.primaryColor), shape = RoundedCornerShape(6.dp))
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .background(brush = theme.crosshairLabelBackground.toBrush(), shape = theme.shapes.crosshairLabel)
+                .padding(horizontal = LABEL_HORIZONTAL_PADDING, vertical = LABEL_VERTICAL_PADDING),
     ) {
-        BasicText(
-            text = text,
-            style =
-                TextStyle(
-                    color = currentChartyTheme.labelTextStyle.color,
-                    fontSize = CROSSHAIR_LABEL_TEXT_SP.sp,
-                    fontWeight = FontWeight.SemiBold,
-                ),
-        )
+        BasicText(text = text, style = theme.crosshairLabelStyle)
     }
 }

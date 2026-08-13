@@ -507,7 +507,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         // Tooltip styling
                                         tooltipConfig =
                                             TooltipConfig(
-                                                backgroundColor = Color.Black,
+                                                backgroundColor = ChartyColor.Solid(Color.Black),
                                                 textStyle =
                                                     TextStyle(
                                                         color = Color.White,
@@ -600,7 +600,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         // Tooltip styling
                                         tooltipConfig =
                                             TooltipConfig(
-                                                backgroundColor = Color.Black,
+                                                backgroundColor = ChartyColor.Solid(Color.Black),
                                                 textStyle =
                                                     TextStyle(
                                                         color = Color.White,
@@ -1042,7 +1042,7 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                         referenceLine =
                                             ReferenceLineConfig(
                                                 value = 150f,
-                                                color = Color(0xFF4CAF50),
+                                                color = ChartyColor.Solid(Color(0xFF4CAF50)),
                                                 strokeWidth = 2f,
                                                 strokeStyle = ReferenceLineStrokeStyle.DASHED,
                                                 label = "Target 150",
@@ -3736,8 +3736,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                 label = "Dip",
                                                 style =
                                                     AnnotationStyle(
-                                                        lineColor = Color(0xFFE53935),
-                                                        labelBackgroundColor = Color(0xFFE53935),
+                                                        lineColor = ChartyColor.Solid(Color(0xFFE53935)),
+                                                        labelBackgroundColor = ChartyColor.Solid(Color(0xFFE53935)),
                                                     ),
                                             ),
                                             ChartAnnotation(
@@ -3745,8 +3745,8 @@ fun AllChartsShowcase(modifier: Modifier = Modifier) {
                                                 label = "Peak",
                                                 style =
                                                     AnnotationStyle(
-                                                        lineColor = Color(0xFF43A047),
-                                                        labelBackgroundColor = Color(0xFF43A047),
+                                                        lineColor = ChartyColor.Solid(Color(0xFF43A047)),
+                                                        labelBackgroundColor = ChartyColor.Solid(Color(0xFF43A047)),
                                                         isDashed = false,
                                                     ),
                                             ),

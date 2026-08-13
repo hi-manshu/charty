@@ -13,17 +13,21 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
 import com.himanshoe.charty.bar.internal.bar.lollipop.createAxisConfig
 import com.himanshoe.charty.bar.internal.bar.lollipop.createLollipopChartModifier
+import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipopCrosshair
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipops
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipHighlightIfNeeded
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipIfNeeded
+import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopCrosshair
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopValueRange
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
+import com.himanshoe.charty.bar.internal.bar.seriesCrosshairHandler
+import com.himanshoe.charty.bar.internal.bar.seriesStreamingPan
 import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
-import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -34,8 +38,8 @@ import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
-import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -74,7 +78,14 @@ private const val DEFAULT_COLOR_HEX = 0xFF2196F3
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
  *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   vertical guide line that snaps by x to the nearest lollipop and rests on the centre of its head —
+ *   the same anchor the chart's persistent markers use. Its label reads that lollipop's value through
+ *   [LollipopBarChartConfig.tooltipFormatter], the same text a tap shows. It is a drag gesture that
+ *   leaves taps alone, so tapping a lollipop still raises its tooltip; streaming scrollback
+ *   ([ChartInteractionConfig.streamingState]) does not survive it, because the crosshair owns the drag.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun LollipopBarChart(
     data: () -> List<BarData>,
@@ -86,6 +97,7 @@ fun LollipopBarChart(
     onBarClick: ((BarData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<BarData> = ChartTooltip.canvas(),
+    crosshair: ChartCrosshair<BarData>? = null,
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -114,6 +126,8 @@ fun LollipopBarChart(
     val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Offset, BarData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
+    val crosshairScope =
+        rememberLollipopCrosshair(config = config, crosshair = crosshair, interactionConfig = interactionConfig)
 
     val clickModifier =
         createLollipopChartModifier(
@@ -123,7 +137,7 @@ fun LollipopBarChart(
             config = config,
             lollipopBounds = tooltipManager.bounds,
             onTooltipUpdate = tooltipManager::updateTooltip,
-        )
+        ).seriesCrosshairHandler(crosshair = crosshairScope, dataList = dataList)
 
     val chartModifier =
         buildInteractionModifier(
@@ -132,7 +146,7 @@ fun LollipopBarChart(
             dataList = dataList,
         )
 
-    val pan = interactionConfig.streamingPan(streaming = chartState.streaming, orientation = ChartOrientation.VERTICAL)
+    val pan = interactionConfig.seriesStreamingPan(streaming = chartState.streaming, crosshair = crosshairScope)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -195,6 +209,16 @@ fun LollipopBarChart(
                 totalItems = dataList.size,
                 textMeasurer = textMeasurer,
             )
+
+            drawLollipopCrosshair(
+                crosshair = crosshairScope,
+                dataList = dataList,
+                displayList = displayList,
+                chartContext = chartContext,
+                config = config,
+                colors = colors,
+                textMeasurer = textMeasurer,
+            )
         }
 
         ChartTooltipHost(
@@ -203,5 +227,6 @@ fun LollipopBarChart(
             anchor = tooltipManager.tooltipState,
             modifier = Modifier.matchParentSize(),
         )
+        SeriesCrosshairHost(crosshair = crosshairScope)
     }
 }

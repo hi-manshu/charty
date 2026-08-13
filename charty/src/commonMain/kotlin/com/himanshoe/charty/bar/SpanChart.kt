@@ -14,7 +14,10 @@ import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.data.SpanData
+import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedSpanValues
+import com.himanshoe.charty.bar.internal.bar.seriesCrosshairHandler
+import com.himanshoe.charty.bar.internal.bar.seriesStreamingPan
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_BLUE
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_GREEN
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_ORANGE
@@ -22,9 +25,11 @@ import com.himanshoe.charty.bar.internal.span.SpanDrawParams
 import com.himanshoe.charty.bar.internal.span.calculateAxisOffset
 import com.himanshoe.charty.bar.internal.span.createAxisConfig
 import com.himanshoe.charty.bar.internal.span.createSpanChartModifier
+import com.himanshoe.charty.bar.internal.span.drawSpanCrosshair
 import com.himanshoe.charty.bar.internal.span.drawSpanReferenceBandIfNeeded
 import com.himanshoe.charty.bar.internal.span.drawSpanReferenceLineIfNeeded
 import com.himanshoe.charty.bar.internal.span.drawSpans
+import com.himanshoe.charty.bar.internal.span.rememberSpanCrosshair
 import com.himanshoe.charty.bar.internal.span.rememberSpanValueRange
 import com.himanshoe.charty.bar.internal.span.spanEndMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
@@ -40,8 +45,8 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
-import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
@@ -49,6 +54,7 @@ import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
+import com.himanshoe.charty.common.util.toChartLabel
 
 /**
  * Span Chart - Display ranges/spans horizontally across categories
@@ -76,7 +82,16 @@ import com.himanshoe.charty.common.updateInteractionBounds
  * @param interactionConfig Bundles viewport, brush-selection, annotation, and accessibility options.
  * @param tooltip How the tap tooltip is shown: ChartTooltip.canvas() (built-in bubble),
  *   ChartTooltip.compose { } (your Composable), or ChartTooltip.none().
+ * @param crosshair The draggable crosshair: `null` (default) off, or a [ChartCrosshair] to enable a
+ *   horizontal guide line. The chart stacks its categories down the plot and runs values left to
+ *   right, so the crosshair snaps by y to the nearest span rather than by x. It rests on the centre of
+ *   that span's end edge — the same anchor the chart's persistent markers use — because a span's end
+ *   is the point its length reads to, and its label reads the whole range as
+ *   `label: startValue - endValue`, the same text a tap shows. It is a drag gesture that leaves taps
+ *   alone, so tapping a span still raises its tooltip; streaming scrollback
+ *   ([ChartInteractionConfig.streamingState]) does not survive it, because the crosshair owns the drag.
  */
+@Suppress("LongParameterList") // Public API surface; params get bundled in the next API pass.
 @Composable
 fun SpanChart(
     data: () -> List<SpanData>,
@@ -95,6 +110,7 @@ fun SpanChart(
     onSpanClick: ((SpanData) -> Unit)? = null,
     interactionConfig: ChartInteractionConfig = ChartInteractionConfig(),
     tooltip: ChartTooltip<SpanData> = ChartTooltip.canvas(),
+    crosshair: ChartCrosshair<SpanData>? = null,
 ) {
     val fullDataList by remember(data) { derivedStateOf { data() } }
     if (fullDataList.isEmpty()) {
@@ -123,6 +139,8 @@ fun SpanChart(
     val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, SpanData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
+    val crosshairScope =
+        rememberSpanCrosshair(config = barConfig, crosshair = crosshair, interactionConfig = interactionConfig)
 
     val clickModifier =
         createSpanChartModifier(
@@ -133,7 +151,7 @@ fun SpanChart(
             spanBounds = tooltipManager.bounds,
             onTooltipUpdate = tooltipManager::updateTooltip,
             enableScrub = interactionConfig.dragTooltipActive,
-        )
+        ).seriesCrosshairHandler(crosshair = crosshairScope, dataList = dataList)
 
     val chartModifier =
         buildInteractionModifier(
@@ -142,11 +160,7 @@ fun SpanChart(
             dataList = dataList,
         )
 
-    val pan =
-        interactionConfig.streamingPan(
-            streaming = chartState.streaming,
-            orientation = ChartOrientation.HORIZONTAL,
-        )
+    val pan = interactionConfig.seriesStreamingPan(streaming = chartState.streaming, crosshair = crosshairScope)
 
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
@@ -157,7 +171,7 @@ fun SpanChart(
                     dataPointDescriptions =
                         dataList.fastMapIndexed { index, item ->
                             "Point ${index + 1} of ${dataList.size}: ${item.label}, " +
-                                "${item.startValue} to ${item.endValue}"
+                                "${item.startValue.toChartLabel()} to ${item.endValue.toChartLabel()}"
                         },
                 ),
             streaming = interactionConfig.streamingRender(chartState.streaming),
@@ -178,7 +192,7 @@ fun SpanChart(
                 textMeasurer = textMeasurer,
             )
 
-            drawSpans(
+            val spanParams =
                 SpanDrawParams(
                     dataList = displayList,
                     chartContext = chartContext,
@@ -191,8 +205,8 @@ fun SpanChart(
                     onSpanClick = onSpanClick,
                     onSpanBoundCalculated = { tooltipManager.bounds.add(it) },
                     recordBounds = onSpanClick != null || interactionConfig.dragTooltipActive,
-                ),
-            )
+                )
+            drawSpans(spanParams)
 
             drawSpanReferenceLineIfNeeded(
                 barConfig = barConfig,
@@ -232,6 +246,13 @@ fun SpanChart(
                 totalItems = dataList.size,
                 textMeasurer = textMeasurer,
             )
+
+            drawSpanCrosshair(
+                crosshair = crosshairScope,
+                params = spanParams,
+                dataList = dataList,
+                textMeasurer = textMeasurer,
+            )
         }
 
         ChartTooltipHost(
@@ -240,5 +261,6 @@ fun SpanChart(
             anchor = tooltipManager.tooltipState,
             modifier = Modifier.matchParentSize(),
         )
+        SeriesCrosshairHost(crosshair = crosshairScope)
     }
 }

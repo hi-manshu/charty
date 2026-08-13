@@ -3,19 +3,16 @@ package com.himanshoe.charty.common.draw
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEach
-import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.toBrush
+import com.himanshoe.charty.color.withChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.util.toChartLabel
-
-private const val MARKER_LABEL_GAP = 6f
 
 /** Formats a value for a marker's default label, dropping the trailing `.0` on whole numbers. */
 fun formatMarkerValue(value: Float): String = value.toChartLabel()
@@ -92,17 +89,17 @@ private fun DrawScope.drawSingleMarker(
 ) {
     if (marker.showGuideLine) {
         drawLine(
-            color = marker.guideLineColor,
+            brush = marker.guideLineColor.toBrush(),
             start = position,
             end = Offset(x = position.x, y = chartContext.bottom),
             strokeWidth = marker.guideLineWidth,
         )
     }
     if (marker.showDot) {
-        drawCircle(brush = marker.dotColor.toMarkerBrush(), radius = marker.dotRadius, center = position)
+        drawCircle(brush = marker.dotColor.toBrush(), radius = marker.dotRadius, center = position)
         marker.dotRingColor?.let { ring ->
             drawCircle(
-                color = ring,
+                brush = ring.toBrush(),
                 radius = marker.dotRadius,
                 center = position,
                 style = Stroke(width = marker.dotRingWidth),
@@ -127,7 +124,11 @@ private fun DrawScope.drawMarkerLabel(
     labelText: String,
     textMeasurer: TextMeasurer,
 ) {
-    val layout = textMeasurer.measure(text = labelText, style = marker.labelTextStyle)
+    val layout =
+        textMeasurer.measure(
+            text = labelText,
+            style = marker.labelTextStyle.withChartyColor(marker.labelTextColor),
+        )
     val pillWidth = layout.size.width + marker.labelPadding * 2f
     val pillHeight = layout.size.height + marker.labelPadding * 2f
     val topLeft =
@@ -139,10 +140,10 @@ private fun DrawScope.drawMarkerLabel(
             left = chartContext.left,
             right = chartContext.right,
             top = chartContext.top,
-            gap = MARKER_LABEL_GAP,
+            gap = marker.labelGap,
         )
     drawRoundRect(
-        brush = marker.labelBackgroundColor.toMarkerBrush(),
+        brush = marker.labelBackgroundColor.toBrush(),
         topLeft = topLeft,
         size = Size(width = pillWidth, height = pillHeight),
         cornerRadius = CornerRadius(marker.labelCornerRadius, marker.labelCornerRadius),
@@ -152,12 +153,6 @@ private fun DrawScope.drawMarkerLabel(
         topLeft = Offset(x = topLeft.x + marker.labelPadding, y = topLeft.y + marker.labelPadding),
     )
 }
-
-private fun ChartyColor.toMarkerBrush(): Brush =
-    when (this) {
-        is ChartyColor.Solid -> SolidColor(color)
-        is ChartyColor.Gradient -> Brush.verticalGradient(colors)
-    }
 
 /**
  * Resolves a marker's [dataIndex] against the number of drawn points: a negative index counts back

@@ -10,6 +10,14 @@ import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.createRectangularTooltipState
 import com.himanshoe.charty.common.gesture.rectangularChartClickHandler
 import com.himanshoe.charty.common.tooltip.TooltipState
+import com.himanshoe.charty.common.util.toChartLabel
+
+/**
+ * The stand-in click callback used when the chart is tapped for a tooltip but the caller passed no
+ * click callback of its own. It is a single shared instance so the tap handler's `pointerInput` key
+ * stays stable across recompositions.
+ */
+private val TooltipOnlyTap: (ComboChartData) -> Unit = {}
 
 /**
  * Add tap gesture detection for data points
@@ -46,8 +54,9 @@ internal fun Modifier.comboChartClickHandler(
  * @param dataList The points currently drawn, which the handlers hit-test against.
  * @param crosshairBounds The line points the crosshair snaps to.
  * @param dataBounds The drawn bar and point rects the tap handler tests.
- * @param onDataClick Invoked when a point is tapped, or `null` when taps are ignored.
+ * @param onDataClick Invoked when a point is tapped, or `null` when the caller ignores clicks.
  * @param onTooltipStateChange Receives the tooltip raised by a tap, and the point it belongs to.
+ * @param tapEnabled When `false`, no tap handler is installed at all.
  * @return The [Modifier] carrying the configured handlers, or an empty one.
  */
 internal fun buildComboModifier(
@@ -58,15 +67,16 @@ internal fun buildComboModifier(
     dataBounds: MutableList<Pair<Rect, ComboChartData>>,
     onDataClick: ((ComboChartData) -> Unit)?,
     onTooltipStateChange: (TooltipState?, ComboChartData?) -> Unit,
+    tapEnabled: Boolean = onDataClick != null,
 ): Modifier {
     var mod: Modifier = Modifier
-    if (onDataClick != null) {
+    if (tapEnabled) {
         mod =
             mod.comboChartClickHandler(
                 dataList = dataList,
                 comboConfig = comboConfig,
                 dataBounds = dataBounds,
-                onDataClick = onDataClick,
+                onDataClick = onDataClick ?: TooltipOnlyTap,
                 onTooltipStateChange = onTooltipStateChange,
             )
     }
@@ -76,7 +86,7 @@ internal fun buildComboModifier(
                 dataList = dataList,
                 pointBounds = crosshairBounds,
                 onCrosshairUpdate = crosshairManager::update,
-                labelFormatter = { data -> "${data.label}: ${data.lineValue}" },
+                labelFormatter = { data -> "${data.label}: ${data.lineValue.toChartLabel()}" },
                 dismissOnRelease = comboConfig.crosshairConfig?.dismissOnRelease ?: true,
             )
     }

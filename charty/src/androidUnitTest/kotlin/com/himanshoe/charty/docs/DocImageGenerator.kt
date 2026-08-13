@@ -515,7 +515,7 @@ class DocImageGenerator {
                         referenceLine =
                             ReferenceLineConfig(
                                 value = 60f,
-                                color = Pink,
+                                color = ChartyColor.Solid(Pink),
                                 label = "Target",
                             ),
                         markers =

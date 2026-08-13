@@ -10,6 +10,7 @@ import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.requireValidVisibleWindow
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
+import com.himanshoe.charty.common.util.toChartLabel
 
 /**
  * Identifies a single bar inside a grouped horizontal bar chart that was clicked.
@@ -63,7 +64,7 @@ data class GroupedHorizontalBarChartConfig(
     val tooltipConfig: TooltipConfig = TooltipConfig(),
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (GroupedHorizontalBarEntry) -> String = { entry ->
-        "${entry.barGroup.label}[${entry.barIndex}]: ${entry.barValue}"
+        "${entry.barGroup.label}[${entry.barIndex}]: ${entry.barValue.toChartLabel()}"
     },
     val visibleWindow: Int? = null,
 ) {

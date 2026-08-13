@@ -7,17 +7,24 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.himanshoe.charty.color.ChartyColor
 
 private val DEFAULT_COLOR = Color(0xFF2D2D2D)
 
 /**
  * A data class that holds the configuration for the appearance and positioning of a tooltip.
  *
- * @property shape The shape of the tooltip's background.
- * @property backgroundColor The background color of the tooltip.
+ * Build one from the ambient theme with
+ * [com.himanshoe.charty.common.theme.ChartyThemeDefaults.tooltipConfig].
+ *
+ * @property shape The shape of the tooltip's background, used by the Compose-overlay tooltip.
+ * @property cornerRadius The corner radius the canvas tooltip rounds its bubble by.
+ * @property backgroundColor The background fill of the tooltip, solid or gradient.
  * @property borderColor The color of the tooltip's border. If `null`, no border is drawn.
  * @property borderWidth The width of the tooltip's border.
  * @property textStyle The [TextStyle] for the tooltip's text content.
+ * @property textColor Color applied to [textStyle] when drawing the text, so a gradient can be used;
+ *   `null` keeps the color carried by [textStyle] itself.
  * @property padding The padding inside the tooltip, defined by [TooltipPadding].
  * @property elevation The shadow elevation of the tooltip.
  * @property offsetY The vertical offset from the top of the bar (positive values move it down, negative values move it up).
@@ -27,14 +34,16 @@ private val DEFAULT_COLOR = Color(0xFF2D2D2D)
  */
 data class TooltipConfig(
     val shape: Shape = RoundedCornerShape(8.dp),
-    val backgroundColor: Color = DEFAULT_COLOR,
-    val borderColor: Color? = null,
+    val cornerRadius: Dp = 8.dp,
+    val backgroundColor: ChartyColor = ChartyColor.Solid(DEFAULT_COLOR),
+    val borderColor: ChartyColor? = null,
     val borderWidth: Dp = 1.dp,
     val textStyle: TextStyle =
         TextStyle(
             color = Color.White,
             fontSize = 14.sp,
         ),
+    val textColor: ChartyColor? = null,
     val padding: TooltipPadding = TooltipPadding(),
     val elevation: Dp = 4.dp,
     val offsetY: Dp = 8.dp,

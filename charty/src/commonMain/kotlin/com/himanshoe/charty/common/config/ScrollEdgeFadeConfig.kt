@@ -2,6 +2,7 @@ package com.himanshoe.charty.common.config
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import com.himanshoe.charty.color.ChartyColor
 
 private const val DEFAULT_FADE_WIDTH = 32f
 private const val DEFAULT_FADE_ALPHA = 0.9f
@@ -12,14 +13,15 @@ private const val DEFAULT_FADE_ALPHA = 0.9f
  * past it — the left fade hides when the window is at the start, the right fade when it is at the end.
  *
  * @property width Width of each edge scrim, in pixels.
- * @property color The scrim's solid color at the very edge; it fades to transparent inward. Choose a
- *   color matching the chart's background so the plotted data appears to dissolve into it.
+ * @property color The scrim's color at the very edge; it fades to transparent inward. Choose a color
+ *   matching the chart's background so the plotted data appears to dissolve into it. A gradient runs
+ *   from the edge inward before fading out.
  * @property alpha Opacity of the scrim at the edge, in `[0, 1]`.
  */
 @Immutable
 data class ScrollEdgeFadeConfig(
     val width: Float = DEFAULT_FADE_WIDTH,
-    val color: Color = Color.White,
+    val color: ChartyColor = ChartyColor.Solid(Color.White),
     val alpha: Float = DEFAULT_FADE_ALPHA,
 ) {
     init {
