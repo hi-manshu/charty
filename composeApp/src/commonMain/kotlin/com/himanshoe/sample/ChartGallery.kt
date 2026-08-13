@@ -94,6 +94,18 @@ import com.himanshoe.charty.common.theme.ChartyTheme
 import com.himanshoe.charty.common.theme.ChartyThemeProvider
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.PillTooltip
+import com.himanshoe.charty.diverging.DivergingBarChart
+import com.himanshoe.charty.diverging.config.DivergingBarChartConfig
+import com.himanshoe.charty.diverging.config.DivergingSideScaling
+import com.himanshoe.charty.diverging.data.DivergingData
+import com.himanshoe.charty.funnel.FunnelChart
+import com.himanshoe.charty.funnel.config.FunnelChartConfig
+import com.himanshoe.charty.funnel.config.FunnelOrientation
+import com.himanshoe.charty.funnel.data.FunnelStage
+import com.himanshoe.charty.gantt.GanttChart
+import com.himanshoe.charty.gantt.config.GanttChartConfig
+import com.himanshoe.charty.gantt.data.GanttRow
+import com.himanshoe.charty.gantt.data.GanttSegment
 import com.himanshoe.charty.gauge.AngularGaugeChart
 import com.himanshoe.charty.gauge.config.AngularGaugeConfig
 import com.himanshoe.charty.gauge.data.GaugeBand
@@ -546,6 +558,39 @@ private fun buildGalleryDemos(): List<ChartDemo> {
             PieData(label = "B", value = 25f, color = ChartyColor.Solid(green)),
             PieData(label = "C", value = 20f, color = ChartyColor.Solid(orange)),
             PieData(label = "D", value = 15f, color = ChartyColor.Solid(red)),
+        )
+    val pyramid =
+        listOf(
+            DivergingData(label = "0–17", leftValue = 42f, rightValue = 39f),
+            DivergingData(label = "18–34", leftValue = 61f, rightValue = 58f),
+            DivergingData(label = "35–54", leftValue = 55f, rightValue = 60f),
+            DivergingData(label = "55+", leftValue = 33f, rightValue = 41f),
+        )
+    val schedule =
+        listOf(
+            GanttRow(
+                label = "Design",
+                segments =
+                    listOf(
+                        GanttSegment(startValue = 0f, endValue = 5f, label = "Wireframes", progress = 1f),
+                        GanttSegment(startValue = 7f, endValue = 9f, label = "Revision", progress = 0.3f),
+                    ),
+            ),
+            GanttRow(
+                label = "Build",
+                segments =
+                    listOf(
+                        GanttSegment(startValue = 4f, endValue = 12f, label = "Implementation", progress = 0.6f),
+                    ),
+            ),
+            GanttRow(label = "QA", segments = listOf(GanttSegment(startValue = 11f, endValue = 15f))),
+        )
+    val funnelStages =
+        listOf(
+            FunnelStage(label = "Visited", value = 10_000f),
+            FunnelStage(label = "Signed up", value = 4_200f),
+            FunnelStage(label = "Activated", value = 1_800f),
+            FunnelStage(label = "Paid", value = 640f),
         )
     val bars =
         listOf(
@@ -1924,6 +1969,83 @@ private fun buildGalleryDemos(): List<ChartDemo> {
                                 BlockData(value = 10f, color = ChartyColor.Solid(red)),
                             )
                         },
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Diverging Bar",
+            "Two series back to back about a centre axis",
+            "Bar",
+            purple,
+            listOf(
+                ChartVariant("Default") { DivergingBarChart(data = { pyramid }, modifier = chartFill) },
+                ChartVariant("Named series") {
+                    DivergingBarChart(
+                        data = { pyramid },
+                        leftSeriesName = "Male",
+                        rightSeriesName = "Female",
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Independent scales (each half fills the plot)") {
+                    DivergingBarChart(
+                        data = { pyramid },
+                        divergingConfig =
+                            DivergingBarChartConfig(
+                                sideScaling = DivergingSideScaling.INDEPENDENT,
+                                showValueLabels = true,
+                            ),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Wide centre gap") {
+                    DivergingBarChart(
+                        data = { pyramid },
+                        divergingConfig = DivergingBarChartConfig(centerGapFraction = 0.18f),
+                        modifier = chartFill,
+                    )
+                },
+            ),
+        ),
+        ChartDemo(
+            "Gantt",
+            "Many ranges per row",
+            "Specialized",
+            blue,
+            listOf(
+                ChartVariant("Default") { GanttChart(data = { schedule }, modifier = chartFill) },
+                ChartVariant("Segment labels") {
+                    GanttChart(
+                        data = { schedule },
+                        ganttConfig = GanttChartConfig(showSegmentLabels = true),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Gradient rows") {
+                    GanttChart(data = { schedule }, color = coolGradient, modifier = chartFill)
+                },
+            ),
+        ),
+        ChartDemo(
+            "Funnel",
+            "Stage-by-stage drop-off",
+            "Specialized",
+            orange,
+            listOf(
+                ChartVariant("Default") { FunnelChart(data = { funnelStages }, modifier = chartFill) },
+                ChartVariant("Conversion labels") {
+                    FunnelChart(
+                        data = { funnelStages },
+                        funnelConfig = FunnelChartConfig(showConversionLabels = true),
+                        modifier = chartFill,
+                    )
+                },
+                ChartVariant("Horizontal") {
+                    FunnelChart(
+                        data = { funnelStages },
+                        funnelConfig = FunnelChartConfig(orientation = FunnelOrientation.HORIZONTAL),
                         modifier = chartFill,
                     )
                 },

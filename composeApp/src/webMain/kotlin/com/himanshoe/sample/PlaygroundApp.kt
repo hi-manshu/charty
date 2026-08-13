@@ -71,6 +71,7 @@ internal enum class PlaygroundFamily(
     Bar("Bar", "Categorical values", Color(0xFFFF6D00)),
     HorizontalBar("Horizontal bar", "Bars along the x-axis", Color(0xFFEF6C00)),
     StackedBar("Stacked bar", "Segments per group", Color(0xFFF4511E)),
+    Diverging("Diverging bar", "Two series about a centre axis", Color(0xFFC62828)),
     GroupedBar("Grouped bar", "Bars grouped by category", Color(0xFFD84315)),
     Point("Scatter", "Points on a plane", Color(0xFF8E24AA)),
     Bubble("Bubble", "Points sized by value", Color(0xFFE91E63)),
@@ -84,6 +85,8 @@ internal enum class PlaygroundFamily(
     Wavy("Wavy", "Wave-styled bars", Color(0xFF7CB342)),
     Block("Block bar", "Proportional blocks", Color(0xFF5E35B1)),
     Calendar("Calendar heatmap", "Values over days", Color(0xFF039BE5)),
+    Gantt("Gantt", "Many ranges per row", Color(0xFF00695C)),
+    Funnel("Funnel", "Stage-by-stage drop-off", Color(0xFFAD1457)),
 }
 
 /**
@@ -288,6 +291,7 @@ private fun PlaygroundContent(family: PlaygroundFamily) {
         PlaygroundFamily.Bar -> BarPlayground()
         PlaygroundFamily.HorizontalBar -> HorizontalBarPlayground()
         PlaygroundFamily.StackedBar -> StackedBarPlayground()
+        PlaygroundFamily.Diverging -> DivergingPlayground()
         PlaygroundFamily.GroupedBar -> GroupedBarPlayground()
         PlaygroundFamily.Point -> PointPlayground()
         PlaygroundFamily.Bubble -> BubblePlayground()
@@ -301,5 +305,7 @@ private fun PlaygroundContent(family: PlaygroundFamily) {
         PlaygroundFamily.Wavy -> WavyPlayground()
         PlaygroundFamily.Block -> BlockPlayground()
         PlaygroundFamily.Calendar -> CalendarPlayground()
+        PlaygroundFamily.Gantt -> GanttPlayground()
+        PlaygroundFamily.Funnel -> FunnelPlayground()
     }
 }
