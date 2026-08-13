@@ -42,6 +42,7 @@ import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.isCanvas
@@ -126,6 +127,7 @@ fun LollipopBarChart(
     val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Offset, BarData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = config.tooltipConfig.orThemeDefault()
     val crosshairScope =
         rememberLollipopCrosshair(config = config, crosshair = crosshair, interactionConfig = interactionConfig)
 
@@ -200,7 +202,12 @@ fun LollipopBarChart(
 
             drawTooltipHighlightIfNeeded(tooltipManager.tooltipState, config, chartContext)
             if (tooltip.isCanvas()) {
-                drawTooltipIfNeeded(tooltipManager.tooltipState, config, textMeasurer, chartContext)
+                drawTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    tooltipConfig = resolvedTooltipConfig,
+                    textMeasurer = textMeasurer,
+                    chartContext = chartContext,
+                )
             }
 
             drawInteractionOverlays(

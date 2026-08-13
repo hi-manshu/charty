@@ -21,7 +21,7 @@ Internally the library calls `.value` on a `ChartyColor` to obtain a `List<Color
 
 `ChartyColor.Gradient` requires at least one color; an empty list throws.
 
-> **Every public color parameter in Charty is a `ChartyColor`, never a raw `Color`** — chart `color`/`colors`, `PersistentMarker.dotColor`, `ChartCrosshairConfig.verticalLineColor`, `ChartJumpToLatestPill.backgroundColor`, and so on. A handful of internal styling properties (axis and grid colours, tooltip background, reference-line colour) are still plain `Color`, because they are chrome rather than data.
+> **Every public color parameter in Charty is a `ChartyColor`, never a raw `Color`** — chart `color`/`colors`, `PersistentMarker.dotColor`, `ChartCrosshairConfig.verticalLineColor`, `ChartJumpToLatestPill.backgroundColor`, axis and grid colours, tooltip background, reference-line colour, and every role in [`ChartyTheme`](theming.md). The one exception is `CalendarHeatmapConfig.intensityColors` and its companion `emptyColor`: those are stops on a single interpolated intensity scale, where a stop that is itself a gradient has no meaning.
 
 ### Creating colors
 

@@ -43,6 +43,8 @@ import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.theme.orThemeCrosshair
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.NoneTooltip
@@ -103,7 +105,9 @@ fun ComboChart(
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
-    val effectiveComboConfig = crosshair?.let { comboConfig.copy(crosshairConfig = it.config) } ?: comboConfig
+    val themedCrosshairConfig = crosshair?.config.orThemeCrosshair()
+    val effectiveComboConfig =
+        crosshair?.let { comboConfig.copy(crosshairConfig = themedCrosshairConfig) } ?: comboConfig
     val activeCrosshair = crosshair ?: comboConfig.crosshairConfig?.let { ChartCrosshair<ComboChartData>(config = it) }
 
     val chartState =
@@ -159,6 +163,7 @@ fun ComboChart(
             streamingState = interactionConfig.streamingState,
         )
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = comboConfig.tooltipConfig.orThemeDefault()
 
     val clickModifier =
         buildComboModifier(
@@ -201,6 +206,7 @@ fun ComboChart(
             tooltipManager.clearBounds()
             drawComboContent(
                 ComboDrawParams(
+                    tooltipConfig = resolvedTooltipConfig,
                     dataList = displayList,
                     chartContext = chartContext,
                     comboConfig = effectiveComboConfig,

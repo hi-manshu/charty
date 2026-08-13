@@ -72,7 +72,7 @@ data class MatrixHeatmapConfig(
             color = DEFAULT_LABEL_COLOR,
         ),
     val tooltipFormatter: (HeatmapCell) -> String = ::formatHeatmapTooltip,
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val animation: Animation = Animation.Default,
 ) {
     init {

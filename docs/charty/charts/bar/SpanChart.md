@@ -82,6 +82,12 @@ SpanChart(
 
 The canvas tooltip (`ChartTooltip.canvas()`, the default) is styled by `barConfig.tooltipConfig` and `barConfig.tooltipPosition`. Its text is generated as `"<label>: <start> - <end>"`; `barConfig.tooltipFormatter` is **not** used, because that formatter takes a `BarData` and this chart works with `SpanData`.
 
+## Crosshair
+
+A span has a start and an end, so the guide rests on the centre of each span's **end edge** — the point its length reads to, and where its marker is pinned. `SpanChart` is horizontal, so the crosshair snaps along y and its guide line is horizontal. The label reads the whole range, `label: start - end`, the same text a tap shows.
+
+Taps are untouched: the crosshair runs as its own gesture, so tapping still raises the tooltip and fires the click callback. Streaming scrollback does not survive a crosshair — the crosshair owns the drag.
+
 ## Accessibility
 
 The chart attaches a summary ("Span chart, N spans.") plus one focusable node per span, each announcing its label and its start-to-end range.
@@ -96,5 +102,4 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Monthly t
 
 ## Limitations
 
-- No crosshair: there is no `crosshair` parameter, and `barConfig.crosshairConfig` is ignored by this chart.
 - `negativeValuesDrawMode`, `referenceLine`, `referenceBand`, `showDataLabels`, and `tooltipFormatter` from `BarChartConfig` have no effect here.

@@ -17,6 +17,7 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -187,20 +188,20 @@ internal fun DrawScope.drawTooltipHighlightIfNeeded(
  * Draws the built-in canvas tooltip bubble when one is showing, clamped to the plotting area.
  *
  * @param tooltipState The active tooltip, or `null` when none is showing.
- * @param lineConfig Supplies the tooltip styling.
+ * @param tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  * @param textMeasurer Measurer used for the tooltip text.
  * @param chartContext The pixel bounds the bubble is kept inside.
  */
 internal fun DrawScope.drawTooltipIfNeeded(
     tooltipState: TooltipState?,
-    lineConfig: LineChartConfig,
+    tooltipConfig: TooltipConfig,
     textMeasurer: TextMeasurer,
     chartContext: ChartContext,
 ) {
     tooltipState?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = lineConfig.tooltipConfig,
+            config = tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,

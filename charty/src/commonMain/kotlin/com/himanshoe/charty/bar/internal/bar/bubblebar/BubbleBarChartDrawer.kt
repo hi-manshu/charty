@@ -82,7 +82,7 @@ internal fun DrawScope.drawTooltipIfNeeded(
     tooltipState?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = params.bubbleConfig.tooltipConfig,
+            config = params.tooltipConfig,
             textMeasurer = params.textMeasurer,
             chartWidth = params.chartContext.right,
             chartTop = params.chartContext.top,

@@ -73,20 +73,23 @@ fun DrawScope.drawReferenceBandIfNeeded(
  * Draws a tooltip on the chart if a [TooltipState] is provided.
  *
  * @param tooltipState The state of the tooltip. If `null`, no tooltip is drawn.
- * @param tooltipConfig The configuration for the tooltip's appearance.
+ * @param tooltipConfig The configuration for the tooltip's appearance. Charts resolve their own
+ *   `null` config against the ambient theme before drawing, so a `null` here means the caller asked
+ *   for no tooltip at all and nothing is drawn.
  * @param textMeasurer A [TextMeasurer] used for measuring the tooltip text.
  * @param chartContext The context of the chart, providing dimensions.
  */
 fun DrawScope.drawTooltipIfNeeded(
     tooltipState: TooltipState?,
-    tooltipConfig: TooltipConfig,
+    tooltipConfig: TooltipConfig?,
     textMeasurer: TextMeasurer,
     chartContext: ChartContext,
 ) {
-    tooltipState?.let { state ->
+    val state = tooltipState ?: return
+    tooltipConfig?.let { config ->
         drawTooltip(
             tooltipState = state,
-            config = tooltipConfig,
+            config = config,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,

@@ -215,7 +215,7 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
     tooltipState?.takeIf { params.drawTooltipBubble }?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = lineConfig.tooltipConfig,
+            config = params.tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,

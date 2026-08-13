@@ -32,6 +32,7 @@ import com.himanshoe.charty.calendar.internal.drawCalendarContent
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.generateCalendarHeatmapDescription
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.tooltip.TooltipState
 
@@ -99,6 +100,7 @@ fun CalendarHeatmapChart(
         return
     }
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = config.tooltipConfig.orThemeDefault()
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
 
@@ -181,6 +183,7 @@ fun CalendarHeatmapChart(
         ) {
             drawCalendarContent(
                 CalendarDrawParams(
+                    tooltipConfig = resolvedTooltipConfig,
                     config = config,
                     gridLayout = gridLayout,
                     measuredMonthLabels = measuredMonthLabels,

@@ -67,7 +67,7 @@ data class ComboChartConfig(
     val referenceBand: ReferenceBandConfig? = null,
     val markers: List<PersistentMarker> = emptyList(),
     val secondaryAxisForLine: Boolean = false,
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (ComboChartData) -> String = { data ->
         "${data.label}: Bar=${data.barValue.toChartLabel()}, Line=${data.lineValue.toChartLabel()}"

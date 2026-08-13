@@ -58,6 +58,7 @@ import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
@@ -69,6 +70,7 @@ import com.himanshoe.charty.common.util.calculateMinValue
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.PointData
+import com.himanshoe.charty.point.internal.rememberThemedPointStyling
 
 private const val TAP_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_TAP_RADIUS_MULTIPLIER
 private const val POINT_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_HIGHLIGHT_RADIUS_MULTIPLIER
@@ -218,6 +220,7 @@ private fun DrawScope.drawTooltipHighlight(
     chartContext: com.himanshoe.charty.common.ChartContext,
     textMeasurer: androidx.compose.ui.text.TextMeasurer,
     drawBubble: Boolean = true,
+    tooltipConfig: TooltipConfig,
 ) {
     val clickedPosition =
         pointBounds
@@ -247,7 +250,7 @@ private fun DrawScope.drawTooltipHighlight(
     if (drawBubble) {
         drawTooltip(
             tooltipState = tooltipState,
-            config = pointConfig.tooltipConfig,
+            config = tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,
@@ -308,8 +311,7 @@ fun PointChart(
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
-    val effectiveCrosshairConfig = crosshair?.config ?: pointConfig.crosshairConfig
-    val activeCrosshair = crosshair ?: pointConfig.crosshairConfig?.let { ChartCrosshair<PointData>(config = it) }
+    val styling = rememberThemedPointStyling(pointConfig = pointConfig, crosshair = crosshair)
 
     val chartState =
         rememberCartesianChartState(
@@ -348,7 +350,7 @@ fun PointChart(
 
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<PointData>(
-            enabled = effectiveCrosshairConfig != null,
+            enabled = styling.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
             streamingState = interactionConfig.streamingState,
         )
@@ -361,7 +363,7 @@ fun PointChart(
                 tooltipManager = tooltipManager,
                 pointConfig = pointConfig,
                 onPointClick = onPointClick,
-                crosshairConfig = effectiveCrosshairConfig,
+                crosshairConfig = styling.crosshairConfig,
                 interactionConfig = interactionConfig,
             ),
         )
@@ -412,15 +414,22 @@ fun PointChart(
                 textMeasurer = textMeasurer,
             )
 
-            drawPointTooltipAndCrosshair(
-                crosshairState = animatedCrosshairState?.resolve(),
+            drawPointTooltip(
                 tooltipManager = tooltipManager,
                 pointConfig = pointConfig,
-                crosshairConfig = effectiveCrosshairConfig,
+                tooltipConfig = styling.tooltipConfig,
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
                 drawBubble = tooltip.isCanvas(),
+            )
+
+            drawPointCrosshair(
+                crosshairState = animatedCrosshairState?.resolve(),
+                crosshairConfig = styling.crosshairConfig,
+                chartContext = chartContext,
+                textMeasurer = textMeasurer,
+                color = color,
                 drawCrosshairLabel = false,
             )
 
@@ -437,7 +446,7 @@ fun PointChart(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             tooltip = tooltip,
-            crosshair = activeCrosshair,
+            crosshair = styling.activeCrosshair,
         )
     }
 }
@@ -467,16 +476,14 @@ private fun BoxScope.PointChartOverlays(
     }
 }
 
-private fun DrawScope.drawPointTooltipAndCrosshair(
-    crosshairState: CrosshairState?,
+private fun DrawScope.drawPointTooltip(
     tooltipManager: TooltipManager<Offset, PointData>,
     pointConfig: PointChartConfig,
-    crosshairConfig: ChartCrosshairConfig?,
+    tooltipConfig: TooltipConfig,
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
     color: ChartyColor,
     drawBubble: Boolean,
-    drawCrosshairLabel: Boolean,
 ) {
     tooltipManager.tooltipState?.let { state ->
         drawTooltipHighlight(
@@ -486,21 +493,30 @@ private fun DrawScope.drawPointTooltipAndCrosshair(
             color = color,
             chartContext = chartContext,
             textMeasurer = textMeasurer,
+            tooltipConfig = tooltipConfig,
             drawBubble = drawBubble,
         )
     }
+}
 
-    crosshairState?.let { resolvedState ->
-        crosshairConfig?.let { config ->
-            drawLineChartCrosshair(
-                state = resolvedState,
-                config = config,
-                chartContext = chartContext,
-                textMeasurer = textMeasurer,
-                chartColor = color,
-                drawLabel = drawCrosshairLabel,
-            )
-        }
+private fun DrawScope.drawPointCrosshair(
+    crosshairState: CrosshairState?,
+    crosshairConfig: ChartCrosshairConfig?,
+    chartContext: ChartContext,
+    textMeasurer: TextMeasurer,
+    color: ChartyColor,
+    drawCrosshairLabel: Boolean,
+) {
+    val state = crosshairState ?: return
+    crosshairConfig?.let { config ->
+        drawLineChartCrosshair(
+            state = state,
+            config = config,
+            chartContext = chartContext,
+            textMeasurer = textMeasurer,
+            chartColor = color,
+            drawLabel = drawCrosshairLabel,
+        )
     }
 }
 

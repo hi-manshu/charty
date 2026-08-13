@@ -61,7 +61,7 @@ data class GroupedHorizontalBarChartConfig(
     val animateValueChanges: Boolean = false,
     val referenceLine: ReferenceLineConfig? = null,
     val markers: List<PersistentMarker> = emptyList(),
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (GroupedHorizontalBarEntry) -> String = { entry ->
         "${entry.barGroup.label}[${entry.barIndex}]: ${entry.barValue.toChartLabel()}"

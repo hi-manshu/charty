@@ -46,6 +46,7 @@ import com.himanshoe.charty.line.internal.area.drawTooltipHighlightIfNeeded
 import com.himanshoe.charty.line.internal.area.drawTooltipIfNeeded
 import com.himanshoe.charty.line.internal.area.rememberAreaValueRange
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
+import com.himanshoe.charty.line.internal.rememberThemedLineStyling
 
 /**
  * A composable function that displays an area chart.
@@ -107,8 +108,7 @@ fun AreaChart(
         return
     }
     val fillAlpha = lineConfig.fillAlpha
-    val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
-    val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
+    val styling = rememberThemedLineStyling(lineConfig = lineConfig, crosshair = crosshair)
 
     val chartState =
         rememberCartesianChartState(
@@ -135,7 +135,7 @@ fun AreaChart(
     val textMeasurer = rememberTextMeasurer()
 
     val (crosshairManager, animatedCrosshairState) =
-        rememberChartCrosshair<LineData>(effectiveLineConfig.crosshairConfig != null, interactionConfig)
+        rememberChartCrosshair<LineData>(styling.config.crosshairConfig != null, interactionConfig)
 
     val chartModifier =
         modifier.then(
@@ -143,7 +143,7 @@ fun AreaChart(
                 crosshairManager = crosshairManager,
                 dataList = dataList,
                 tooltipManager = tooltipManager,
-                lineConfig = effectiveLineConfig,
+                lineConfig = styling.config,
                 onPointClick = onPointClick,
                 interactionConfig = interactionConfig,
             ),
@@ -206,7 +206,7 @@ fun AreaChart(
             if (tooltip.isCanvas()) {
                 drawTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,
-                    lineConfig = lineConfig,
+                    tooltipConfig = styling.tooltipConfig,
                     textMeasurer = textMeasurer,
                     chartContext = chartContext,
                 )
@@ -218,7 +218,7 @@ fun AreaChart(
                 textMeasurer = textMeasurer,
             )
             animatedCrosshairState?.resolve()?.let { crosshairState ->
-                effectiveLineConfig.crosshairConfig?.let { crosshairConfig ->
+                styling.config.crosshairConfig?.let { crosshairConfig ->
                     drawLineChartCrosshair(
                         state = crosshairState,
                         config = crosshairConfig,
@@ -236,7 +236,7 @@ fun AreaChart(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             tooltip = tooltip,
-            crosshair = activeCrosshair,
+            crosshair = styling.activeCrosshair,
         )
     }
 }

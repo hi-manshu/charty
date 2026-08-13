@@ -40,6 +40,7 @@ import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.drawTooltip
@@ -126,6 +127,7 @@ fun WaterfallChart(
     val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = config.tooltipConfig.orThemeDefault()
     val crosshairScope =
         rememberWaterfallCrosshair(config = config, crosshair = crosshair, interactionConfig = interactionConfig)
 
@@ -212,7 +214,7 @@ fun WaterfallChart(
                 tooltipManager.tooltipState?.let { state ->
                     drawTooltip(
                         tooltipState = state,
-                        config = config.tooltipConfig,
+                        config = resolvedTooltipConfig,
                         chartWidth = chartContext.right,
                         chartTop = chartContext.top,
                         textMeasurer = textMeasurer,

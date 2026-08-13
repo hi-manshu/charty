@@ -98,5 +98,5 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "AAPL dail
 
 ## Limitations
 
-- **No click callback, no tooltip, and no crosshair.** `CandlestickChart` has no `onCandleClick`, no `tooltip` parameter, and no tooltip or crosshair settings on its config — markers and the axis labels are the only value read-out.
+- **No click callback and no crosshair.** `CandlestickChart` has no `onCandleClick` and no crosshair settings on its config.
 - `scaffoldConfig` styles the axes, grid, and label text style; it has no price formatter, so format prices into each `CandleData.label` if you need custom axis text.

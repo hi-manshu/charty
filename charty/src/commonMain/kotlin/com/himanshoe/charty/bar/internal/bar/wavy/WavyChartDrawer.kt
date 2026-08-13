@@ -16,6 +16,7 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.CrosshairState
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
@@ -153,7 +154,7 @@ internal fun DrawScope.drawSingleWave(
  * @param drawTooltipBubble Whether the tooltip is the built-in canvas bubble.
  * @param crosshairState The crosshair's resolved position, or `null` when it is not showing.
  * @param crosshairConfig The crosshair styling, or `null` when the crosshair is off.
- * @param wavyConfig Supplies the tooltip styling.
+ * @param tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  * @param chartContext The pixel bounds and value range of the plotting area.
  * @param color The chart colour, which tints the crosshair's snap dot.
  * @param textMeasurer Measurer used for the tooltip text.
@@ -163,7 +164,7 @@ internal fun DrawScope.drawWavyOverlays(
     drawTooltipBubble: Boolean,
     crosshairState: CrosshairState?,
     crosshairConfig: ChartCrosshairConfig?,
-    wavyConfig: WavyChartConfig,
+    tooltipConfig: TooltipConfig,
     chartContext: ChartContext,
     color: ChartyColor,
     textMeasurer: TextMeasurer,
@@ -171,7 +172,7 @@ internal fun DrawScope.drawWavyOverlays(
     tooltipState?.takeIf { drawTooltipBubble }?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = wavyConfig.tooltipConfig,
+            config = tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,

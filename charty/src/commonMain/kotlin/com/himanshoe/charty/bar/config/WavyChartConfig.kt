@@ -63,7 +63,7 @@ data class WavyChartConfig(
     val animateValueChanges: Boolean = false,
     val markers: List<PersistentMarker> = emptyList(),
     val visibleWindow: Int? = null,
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (BarData) -> String = { barData ->
         "${barData.label}: ${barData.value.toChartLabel()}"

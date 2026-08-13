@@ -23,6 +23,7 @@ import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.theme.orThemeCrosshair
 
 /**
  * Everything a bar-family chart whose items are not plain [com.himanshoe.charty.bar.data.BarData]
@@ -36,6 +37,8 @@ import com.himanshoe.charty.common.streamingPan
  * @property manager Owns the live crosshair state, or `null` when the crosshair is off.
  * @property bounds One anchor point per drawn item, refreshed on every draw pass.
  * @property crosshair The crosshair whose label composable is hosted over the chart, or `null`.
+ * @property themedCrosshairConfig The crosshair styling already resolved against the ambient theme,
+ *   or `null` when the chart has no crosshair.
  * @property orientation The host chart's orientation, deciding the snapping and guide-line axis.
  * @property labelFormatter Converts a snapped item into the text its label reads.
  */
@@ -45,6 +48,7 @@ internal class SeriesCrosshairScope<T>(
     private val animated: AnimatedCrosshair?,
     val bounds: MutableList<Pair<Offset, T>>,
     val crosshair: ChartCrosshair<T>?,
+    val themedCrosshairConfig: ChartCrosshairConfig?,
     val orientation: ChartOrientation,
     val labelFormatter: (T) -> String,
 ) {
@@ -55,7 +59,10 @@ internal class SeriesCrosshairScope<T>(
      * The crosshair styling in the shape the shared bar-family overlay drawer
      * ([drawBarCrosshairOverlay]) takes, so this scope draws exactly what a plain bar chart draws.
      */
-    val overlayStyle: BarChartConfig = BarChartConfig(crosshairConfig = crosshair?.config)
+    val overlayStyle: BarChartConfig =
+        BarChartConfig(
+            crosshairConfig = themedCrosshairConfig,
+        )
 
     /** The smoothed crosshair position to draw this frame, or `null` when nothing is snapped. */
     fun currentState(): CrosshairState? = animated?.resolve()
@@ -82,6 +89,7 @@ internal fun <T> rememberSeriesCrosshair(
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
 ): SeriesCrosshairScope<T> {
     val activeCrosshair = crosshair ?: crosshairConfig?.let { ChartCrosshair<T>(config = it) }
+    val themedConfig = activeCrosshair?.config.orThemeCrosshair().takeIf { activeCrosshair != null }
     val bounds = remember { mutableListOf<Pair<Offset, T>>() }
     val (manager, animated) =
         rememberChartCrosshair<T>(
@@ -93,6 +101,7 @@ internal fun <T> rememberSeriesCrosshair(
         animated = animated,
         bounds = bounds,
         crosshair = activeCrosshair,
+        themedCrosshairConfig = themedConfig,
         orientation = orientation,
         labelFormatter = labelFormatter,
     )

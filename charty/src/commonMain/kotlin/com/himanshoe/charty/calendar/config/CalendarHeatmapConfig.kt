@@ -110,7 +110,7 @@ data class CalendarHeatmapConfig(
             color = DEFAULT_LABEL_COLOR,
         ),
     val animation: Animation = Animation.Default,
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipFormatter: (CalendarData) -> String = { data ->
         val monthStr = calendarMonthName(data.month)
         "${data.value.toInt()} on $monthStr ${data.day}, ${data.year}"

@@ -10,6 +10,7 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
@@ -39,6 +40,7 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  * @property interactionConfig Supplies the annotation, brush-selection, and edge-fade overlays.
  * @property drawCrosshairLabel Whether the crosshair label is drawn on the canvas rather than as a
  *   composable overlay above it.
+ * @property tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  */
 internal data class ComboDrawParams(
     val dataList: List<ComboChartData>,
@@ -60,4 +62,5 @@ internal data class ComboDrawParams(
     val textMeasurer: TextMeasurer,
     val interactionConfig: ChartInteractionConfig,
     val drawCrosshairLabel: Boolean,
+    val tooltipConfig: TooltipConfig,
 )

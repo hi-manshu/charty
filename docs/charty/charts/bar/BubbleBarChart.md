@@ -94,5 +94,5 @@ The default `bubbleRadius` of `100f` produces one very large bubble per column a
 
 ## Limitations
 
-- No crosshair and no tooltip slot — the canvas tooltip is the only option.
+- No crosshair.
 - No corner radius and no data labels.

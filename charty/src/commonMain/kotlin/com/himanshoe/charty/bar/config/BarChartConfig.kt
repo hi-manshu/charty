@@ -91,7 +91,7 @@ data class BarChartConfig(
     val referenceLine: ReferenceLineConfig? = null,
     val referenceBand: ReferenceBandConfig? = null,
     val markers: List<PersistentMarker> = emptyList(),
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (BarData) -> String = { barData ->
         "${barData.label}: ${barData.value.toChartLabel()}"

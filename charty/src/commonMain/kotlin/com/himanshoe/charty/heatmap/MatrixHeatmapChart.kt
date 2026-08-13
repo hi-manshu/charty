@@ -19,6 +19,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.drawTooltip
@@ -112,6 +113,7 @@ private fun MatrixHeatmapContent(
     tooltip: ChartTooltip<HeatmapCell> = ChartTooltip.canvas(),
 ) {
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = config.tooltipConfig.orThemeDefault()
     val animationProgress = rememberChartAnimation(config.animation)
     val currentOnCellClick by rememberUpdatedState(onCellClick)
     val tooltipManager = rememberTooltipManager<Rect, HeatmapCell>(dataKey = grid)
@@ -182,7 +184,7 @@ private fun MatrixHeatmapContent(
                 tooltipManager.tooltipState?.let { state ->
                     drawTooltip(
                         tooltipState = state,
-                        config = config.tooltipConfig,
+                        config = resolvedTooltipConfig,
                         textMeasurer = textMeasurer,
                         chartWidth = size.width,
                         chartTop = 0f,

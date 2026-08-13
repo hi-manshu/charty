@@ -50,7 +50,7 @@ data class GanttChartConfig(
         ),
     val valueFormatter: (Float) -> String = { value -> value.toChartLabel() },
     val axisSteps: Int = 5,
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val visibleWindow: Int? = null,
 ) {

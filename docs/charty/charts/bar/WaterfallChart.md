@@ -75,6 +75,12 @@ WaterfallChart(
 )
 ```
 
+## Crosshair
+
+A vertical guide snaps to the top edge of the nearest floating bar. The label reads the step's **delta**, not the running total, matching `tooltipFormatter`, the tap tooltip, and the `BarData` handed to `onBarClick`; use a marker to label a running total.
+
+Taps are untouched: the crosshair runs as its own gesture, so tapping still raises the tooltip and fires the click callback. Streaming scrollback does not survive a crosshair — the crosshair owns the drag.
+
 ## Accessibility
 
 A generated summary plus one focusable node per step.
@@ -103,5 +109,5 @@ Note the default `positiveColor` is `Color.Yellow`; set it explicitly for anythi
 
 ## Limitations
 
-- No crosshair, no reference line, and no data labels.
+- No reference line, and no data labels.
 - `scaffoldConfig` styles the axes, grid, and label text style, but it has no value formatter — currency formatting has to happen in the `label` of each `BarData`.

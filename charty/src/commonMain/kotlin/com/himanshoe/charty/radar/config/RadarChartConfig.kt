@@ -106,14 +106,14 @@ data class RadarGridConfig(
  *
  * @property showCenterIcon Whether to show an icon/content in the center
  * @property centerIconSize Size of the center icon/content
- * @property centerBackgroundColor Background color for center area
+ * @property centerBackgroundColor Background fill, solid or gradient, for the center area.
  * @property centerBackgroundRadius Radius of center background circle
  */
 @Stable
 data class RadarCenterConfig(
     val showCenterIcon: Boolean = false,
     val centerIconSize: Float = DEFAULT_CENTER_ICON_SIZE,
-    val centerBackgroundColor: Color = Color.Transparent,
+    val centerBackgroundColor: ChartyColor = ChartyColor.Solid(Color.Transparent),
     val centerBackgroundRadius: Float = 0f,
 ) {
     init {

@@ -71,7 +71,7 @@ data class DivergingBarChartConfig(
             fontWeight = FontWeight.SemiBold,
             color = Color.DarkGray,
         ),
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val visibleWindow: Int? = null,
 ) {

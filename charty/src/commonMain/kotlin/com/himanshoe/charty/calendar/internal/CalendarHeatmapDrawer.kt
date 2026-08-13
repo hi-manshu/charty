@@ -56,7 +56,7 @@ internal fun DrawScope.drawCalendarContent(params: CalendarDrawParams) {
     params.tooltipState?.let { ts ->
         drawTooltip(
             tooltipState = ts,
-            config = params.config.tooltipConfig,
+            config = params.tooltipConfig,
             textMeasurer = params.textMeasurer,
             chartWidth = size.width,
             chartTop = params.topPadding,

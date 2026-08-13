@@ -6,9 +6,11 @@ import com.himanshoe.charty.bar.config.BubbleBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 
 /**
  * Parameters for drawing bubble bars
+ * @property tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  */
 internal data class BubbleBarDrawParams(
     val dataList: List<BarData>,
@@ -21,4 +23,5 @@ internal data class BubbleBarDrawParams(
     val barBounds: MutableList<Pair<Rect, BarData>>,
     val textMeasurer: TextMeasurer,
     val recordBounds: Boolean = onBarClick != null,
+    val tooltipConfig: TooltipConfig,
 )

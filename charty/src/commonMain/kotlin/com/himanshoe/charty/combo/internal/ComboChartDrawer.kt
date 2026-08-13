@@ -187,7 +187,7 @@ internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
     p.tooltipState?.takeIf { p.drawTooltipBubble }?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = p.comboConfig.tooltipConfig,
+            config = p.tooltipConfig,
             textMeasurer = p.textMeasurer,
             chartWidth = p.chartContext.right,
             chartTop = p.chartContext.top,

@@ -44,6 +44,7 @@ import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.NoneTooltip
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.common.tooltip.isCanvas
@@ -55,6 +56,7 @@ import com.himanshoe.charty.point.data.BubbleData
 import com.himanshoe.charty.point.internal.bubble.BubbleDrawParams
 import com.himanshoe.charty.point.internal.bubble.bubbleMarkerPositions
 import com.himanshoe.charty.point.internal.bubble.drawBubbleContent
+import com.himanshoe.charty.point.internal.rememberThemedPointStyling
 
 private const val MIN_RADIUS_DIVISOR = 2f
 
@@ -122,8 +124,7 @@ fun BubbleChart(
     }
     require(minBubbleRadius > 0f) { "Minimum bubble radius must be positive" }
     require(config.pointRadius > minBubbleRadius) { "Max radius must be greater than min radius" }
-    val crosshairConfig = crosshair?.config ?: config.crosshairConfig
-    val activeCrosshair = crosshair ?: config.crosshairConfig?.let { ChartCrosshair<BubbleData>(config = it) }
+    val styling = rememberThemedPointStyling(pointConfig = config, crosshair = crosshair)
 
     val chartState =
         rememberCartesianChartState(
@@ -154,7 +155,7 @@ fun BubbleChart(
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BubbleData>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<BubbleData>(
-            enabled = crosshairConfig != null,
+            enabled = styling.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
             streamingState = interactionConfig.streamingState,
         )
@@ -172,7 +173,7 @@ fun BubbleChart(
             crosshairBounds = crosshairBounds,
             onBubbleClick = onBubbleClick,
             crosshairManager = crosshairManager,
-            dismissOnRelease = crosshairConfig?.dismissOnRelease ?: true,
+            dismissOnRelease = styling.crosshairConfig?.dismissOnRelease ?: true,
             config = config,
             onTooltipUpdate = tooltipManager::updateTooltip,
             tapEnabled = tapEnabled,
@@ -229,7 +230,7 @@ fun BubbleChart(
 
             drawBubbleTooltip(
                 tooltipState = tooltipManager.tooltipState,
-                config = config,
+                tooltipConfig = styling.tooltipConfig,
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 drawBubble = tooltip.isCanvas(),
@@ -244,7 +245,7 @@ fun BubbleChart(
 
             drawBubbleCrosshair(
                 crosshairState = animatedCrosshairState?.resolve(),
-                crosshairConfig = crosshairConfig,
+                crosshairConfig = styling.crosshairConfig,
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
@@ -262,7 +263,7 @@ fun BubbleChart(
         BubbleChartOverlay(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
-            crosshair = activeCrosshair,
+            crosshair = styling.activeCrosshair,
         )
     }
 }
@@ -343,7 +344,7 @@ private fun BoxScope.BubbleChartOverlay(
  */
 private fun DrawScope.drawBubbleTooltip(
     tooltipState: TooltipState?,
-    config: PointChartConfig,
+    tooltipConfig: TooltipConfig,
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
     drawBubble: Boolean,
@@ -354,7 +355,7 @@ private fun DrawScope.drawBubbleTooltip(
     tooltipState?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = config.tooltipConfig,
+            config = tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,

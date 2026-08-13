@@ -85,6 +85,12 @@ ComparisonBarChart(
 )
 ```
 
+## Crosshair
+
+The crosshair snaps **per group**, not per bar — one guide line cannot sit on several bars, and the x axis is labelled by group. It rests on the top of the group's tallest bar and reports that bar as a `ComparisonBarSegment`, so the label reads the tallest bar's value. Ties resolve to the earlier bar.
+
+Taps are untouched: the crosshair runs as its own gesture, so tapping still raises the tooltip and fires the click callback. Streaming scrollback does not survive a crosshair — the crosshair owns the drag.
+
 ## Accessibility
 
 A generated summary plus one focusable node per group.
@@ -112,5 +118,4 @@ There is no `barWidthFraction` on this config — bar widths are derived from th
 
 ## Limitations
 
-- No crosshair: there is no `crosshair` parameter and no `crosshairConfig` on this config.
 - No data labels.

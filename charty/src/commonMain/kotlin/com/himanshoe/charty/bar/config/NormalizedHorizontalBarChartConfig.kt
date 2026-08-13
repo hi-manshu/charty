@@ -55,7 +55,7 @@ data class NormalizedHorizontalBarChartConfig(
     val animation: Animation = Animation.Default,
     val animateValueChanges: Boolean = false,
     val markers: List<PersistentMarker> = emptyList(),
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (NormalizedHorizontalBarSegment) -> String = { segment ->
         "${segment.barGroup.label} [${segment.segmentIndex}]: ${segment.segmentPercentage.toInt()}%"

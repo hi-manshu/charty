@@ -207,7 +207,7 @@ fun RadarChart(
 
             if (config.centerConfig.centerBackgroundRadius > 0f) {
                 drawCircle(
-                    color = config.centerConfig.centerBackgroundColor,
+                    brush = Brush.linearGradient(config.centerConfig.centerBackgroundColor.value),
                     radius = config.centerConfig.centerBackgroundRadius,
                     center = Offset(centerX, centerY),
                 )

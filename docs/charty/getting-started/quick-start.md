@@ -181,5 +181,7 @@ LineChart(
   brush selection, and which gestures can share a chart.
 - **[Colors and animations](../customization/colors-and-animations.md)** —
   `ChartyColor`, the palette, and the `Animation` type.
+- **[Theming](../customization/theming.md)** — map your design system's colors,
+  typography, shapes, and metrics onto every chart at once.
 - **Accessibility** — provide a custom content description through
   `ChartInteractionConfig.accessibilityDescription`.

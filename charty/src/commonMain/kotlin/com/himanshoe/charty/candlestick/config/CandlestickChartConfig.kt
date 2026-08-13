@@ -47,7 +47,7 @@ data class CandlestickChartConfig(
     val animateValueChanges: Boolean = false,
     val markers: List<PersistentMarker> = emptyList(),
     val visibleWindow: Int? = null,
-    val tooltipConfig: TooltipConfig = TooltipConfig(),
+    val tooltipConfig: TooltipConfig? = null,
     val tooltipPosition: TooltipPosition = TooltipPosition.AUTO,
     val tooltipFormatter: (CandleData) -> String = { candle -> formatCandleTooltip(candle) },
 ) {

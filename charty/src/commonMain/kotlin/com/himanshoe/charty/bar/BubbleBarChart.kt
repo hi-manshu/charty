@@ -39,6 +39,7 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.NoneTooltip
@@ -126,6 +127,7 @@ fun BubbleBarChart(
     val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
     val tapEnabled = onBarClick != null || tooltip !is NoneTooltip
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = bubbleConfig.tooltipConfig.orThemeDefault()
 
     val clickModifier =
         createBubbleChartModifier(
@@ -172,6 +174,7 @@ fun BubbleBarChart(
 
             val drawParams =
                 BubbleBarDrawParams(
+                    tooltipConfig = resolvedTooltipConfig,
                     dataList = displayList,
                     chartContext = chartContext,
                     bubbleConfig = bubbleConfig,

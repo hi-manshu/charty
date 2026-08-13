@@ -8,6 +8,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastFirstOrNull
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -15,6 +16,7 @@ import com.himanshoe.charty.line.data.LineData
 
 /**
  * Draw the tooltip with highlight effects
+ * @param tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  */
 internal fun DrawScope.drawLineChartTooltip(
     tooltipState: TooltipState,
@@ -24,6 +26,7 @@ internal fun DrawScope.drawLineChartTooltip(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
     drawBubble: Boolean = true,
+    tooltipConfig: TooltipConfig,
 ) {
     val clickedPosition =
         pointBounds
@@ -54,7 +57,7 @@ internal fun DrawScope.drawLineChartTooltip(
     if (drawBubble) {
         drawTooltip(
             tooltipState = tooltipState,
-            config = lineConfig.tooltipConfig,
+            config = tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,

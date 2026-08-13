@@ -29,6 +29,7 @@ import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.streamingPan
+import com.himanshoe.charty.common.theme.orThemeCrosshair
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.TooltipManager
@@ -86,7 +87,8 @@ internal fun rememberBarCrosshair(
     interactionConfig: ChartInteractionConfig,
     orientation: ChartOrientation = ChartOrientation.VERTICAL,
 ): BarCrosshairScope {
-    val effectiveConfig = crosshair?.let { barConfig.copy(crosshairConfig = it.config) } ?: barConfig
+    val themedCrosshairConfig = crosshair?.config.orThemeCrosshair()
+    val effectiveConfig = crosshair?.let { barConfig.copy(crosshairConfig = themedCrosshairConfig) } ?: barConfig
     val activeCrosshair = crosshair ?: barConfig.crosshairConfig?.let { ChartCrosshair<BarData>(config = it) }
     val bounds = remember { mutableListOf<Pair<Offset, BarData>>() }
     val (manager, animated) =

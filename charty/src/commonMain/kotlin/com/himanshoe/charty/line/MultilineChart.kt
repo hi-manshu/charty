@@ -43,6 +43,7 @@ import com.himanshoe.charty.line.internal.multiline.MultilineDrawParams
 import com.himanshoe.charty.line.internal.multiline.buildMultilineModifier
 import com.himanshoe.charty.line.internal.multiline.drawMultilineContent
 import com.himanshoe.charty.line.internal.multiline.resolveMultilineTapHandler
+import com.himanshoe.charty.line.internal.rememberThemedLineStyling
 
 /**
  * A composable function that displays a multiline chart.
@@ -101,8 +102,7 @@ fun MultilineChart(
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
-    val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
-    val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<MultilinePoint>(config = it) }
+    val styling = rememberThemedLineStyling(lineConfig = lineConfig, crosshair = crosshair)
 
     val colorList = remember(colors) { colors.value }
     val chartState =
@@ -132,7 +132,7 @@ fun MultilineChart(
     val crosshairBounds = remember { mutableListOf<Pair<Offset, MultilinePoint>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<MultilinePoint>(
-            enabled = effectiveLineConfig.crosshairConfig != null,
+            enabled = styling.config.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
             streamingState = interactionConfig.streamingState,
         )
@@ -151,7 +151,7 @@ fun MultilineChart(
                         base = Modifier.fillMaxSize(),
                         crosshairManager = crosshairManager,
                         dataList = dataList,
-                        lineConfig = effectiveLineConfig,
+                        lineConfig = styling.config,
                         pointBounds = tooltipManager.bounds,
                         crosshairBounds = crosshairBounds,
                         onPointTap =
@@ -175,10 +175,11 @@ fun MultilineChart(
                 updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
                 drawMultilineContent(
                     MultilineDrawParams(
+                        tooltipConfig = styling.tooltipConfig,
                         dataList = dataList,
                         chartContext = chartContext,
                         colorList = colorList,
-                        lineConfig = effectiveLineConfig,
+                        lineConfig = styling.config,
                         animationProgress = chartState.animationProgress.value,
                         pointBounds = tooltipManager.bounds,
                         crosshairBounds = crosshairBounds,
@@ -197,7 +198,7 @@ fun MultilineChart(
             MultilineChartOverlays(
                 crosshairManager = crosshairManager,
                 animatedCrosshairState = animatedCrosshairState?.resolve(),
-                crosshair = activeCrosshair,
+                crosshair = styling.activeCrosshair,
                 tooltip = tooltip,
                 tooltipItem = tooltipManager.selectedItem,
                 tooltipAnchor = tooltipManager.tooltipState,

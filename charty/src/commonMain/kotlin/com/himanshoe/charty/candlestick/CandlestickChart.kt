@@ -46,6 +46,7 @@ import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.NoneTooltip
@@ -134,6 +135,7 @@ fun CandlestickChart(
 
     val animationProgress = chartState.animationProgress
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = candlestickConfig.tooltipConfig.orThemeDefault()
     val tooltipManager = rememberTooltipManager<Rect, CandleData>(dataKey = dataList)
     val tapEnabled = tooltip !is NoneTooltip
 
@@ -220,7 +222,7 @@ fun CandlestickChart(
                 tooltipManager.tooltipState?.let { state ->
                     drawTooltip(
                         tooltipState = state,
-                        config = candlestickConfig.tooltipConfig,
+                        config = resolvedTooltipConfig,
                         textMeasurer = textMeasurer,
                         chartWidth = chartContext.right,
                         chartTop = chartContext.top,

@@ -535,7 +535,7 @@ private fun RadarChartContent(
 
             if (config.radarConfig.centerConfig.centerBackgroundRadius > 0f) {
                 drawCircle(
-                    color = config.radarConfig.centerConfig.centerBackgroundColor,
+                    brush = Brush.linearGradient(config.radarConfig.centerConfig.centerBackgroundColor.value),
                     radius = config.radarConfig.centerConfig.centerBackgroundRadius,
                     center = center,
                 )

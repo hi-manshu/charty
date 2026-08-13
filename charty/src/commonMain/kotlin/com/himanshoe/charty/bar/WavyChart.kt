@@ -43,6 +43,8 @@ import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
+import com.himanshoe.charty.common.theme.orThemeCrosshair
+import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.NoneTooltip
 import com.himanshoe.charty.common.tooltip.isCanvas
@@ -107,7 +109,7 @@ fun WavyChart(
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
-    val crosshairConfig = crosshair?.config
+    val crosshairConfig = crosshair?.config.orThemeCrosshair().takeIf { crosshair != null }
 
     val chartState =
         rememberCartesianChartState(
@@ -136,6 +138,7 @@ fun WavyChart(
     val maxValue = chartState.maxValue
 
     val textMeasurer = rememberTextMeasurer()
+    val resolvedTooltipConfig = wavyConfig.tooltipConfig.orThemeDefault()
     val tooltipManager = rememberTooltipManager<Rect, BarData>(dataKey = dataList)
     val tapEnabled = tooltip !is NoneTooltip
     val crosshairBounds = remember { mutableListOf<Pair<Offset, BarData>>() }
@@ -233,7 +236,7 @@ fun WavyChart(
                 drawTooltipBubble = tooltip.isCanvas(),
                 crosshairState = animatedCrosshairState?.resolve(),
                 crosshairConfig = crosshairConfig,
-                wavyConfig = wavyConfig,
+                tooltipConfig = resolvedTooltipConfig,
                 chartContext = chartContext,
                 color = color,
                 textMeasurer = textMeasurer,

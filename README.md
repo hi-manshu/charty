@@ -113,12 +113,12 @@ LineChart(
 
 | Family | Charts |
 | --- | --- |
-| **Bar** | Bar, Horizontal, Stacked, Stacked-Horizontal, Grouped-Horizontal, Normalized-Horizontal, Mosaic, Span, Comparison, Waterfall, Lollipop, Bubble-bar, Wavy |
+| **Bar** | Bar, Horizontal, Stacked, Stacked-Horizontal, Grouped-Horizontal, Normalized-Horizontal, Mosaic, Span, Comparison, Diverging, Waterfall, Lollipop, Bubble-bar, Wavy |
 | **Line / Area** | Line, Area, Multiline, Stacked-Area |
 | **Point** | Scatter (Point), Bubble |
 | **Combo** | Bars + line, optional secondary axis |
 | **Circular** | Pie, Donut, Radar, Multiple-Radar, Circular progress |
-| **Specialised** | Candlestick (OHLC), Calendar heatmap, Block bar |
+| **Specialised** | Candlestick (OHLC), Calendar heatmap, Matrix heatmap, Gantt, Funnel, Block bar |
 
 Explore every one in the **[live playground](https://hi-manshu.github.io/charty/)**.
 
@@ -182,6 +182,7 @@ Start here:
 | [Interactions](docs/charty/configurations/interactions.md) | Which gestures can share a chart. |
 | [Common configuration](docs/charty/configurations/common-config.md) | Axes, tooltips, markers, windows. |
 | [Colors and animations](docs/charty/customization/colors-and-animations.md) | `ChartyColor`, palettes, `Animation`. |
+| [Theming](docs/charty/customization/theming.md) | Point charts at your design system in one place. |
 
 ---
 

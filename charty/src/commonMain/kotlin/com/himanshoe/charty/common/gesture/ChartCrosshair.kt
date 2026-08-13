@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.color.toBrush
 import com.himanshoe.charty.common.theme.currentChartyTheme
+import com.himanshoe.charty.common.theme.orThemeCrosshair
 
 private val LABEL_HORIZONTAL_PADDING = 8.dp
 private val LABEL_VERTICAL_PADDING = 4.dp
@@ -26,13 +27,14 @@ private val LABEL_VERTICAL_PADDING = 4.dp
  * crosshair = ChartCrosshair(label = { point -> … })  // line + your own label, over the line
  * ```
  *
- * @property config Appearance of the guide line, dot, and dismiss behavior.
+ * @property config Appearance of the guide line, dot, and dismiss behavior. `null` — the default —
+ *   takes the guide line, dot, and value bubble from the ambient `ChartyTheme`.
  * @property label Optional custom label composable, rendered over the line at the snapped point; when
  *   `null` a built-in pill label is shown. The dragged point is available via [CrosshairScope].
  */
 @Immutable
 data class ChartCrosshair<T>(
-    val config: ChartCrosshairConfig = ChartCrosshairConfig(),
+    val config: ChartCrosshairConfig? = null,
     val label: (@Composable CrosshairScope<T>.() -> Unit)? = null,
 )
 
@@ -71,7 +73,7 @@ fun <T> ChartCrosshairHost(
     ChartCrosshairOverlay(
         item = item,
         state = state,
-        config = crosshair.config.tooltipConfig,
+        config = crosshair.config.orThemeCrosshair().tooltipConfig,
         modifier = modifier,
     ) { data ->
         RenderCrosshairLabel(

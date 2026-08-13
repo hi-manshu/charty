@@ -134,4 +134,3 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Orders wi
 ## Limitations
 
 - No `LineInterpolation` here — the line offers only `smoothCurve` on/off, unlike [LineChart](../line/LineChart.md).
-- No tooltip slot; the canvas tooltip is the only option.

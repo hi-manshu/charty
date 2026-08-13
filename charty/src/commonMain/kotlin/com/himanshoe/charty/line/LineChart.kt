@@ -52,6 +52,7 @@ import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
@@ -69,6 +70,7 @@ import com.himanshoe.charty.line.internal.line.drawSmoothLine
 import com.himanshoe.charty.line.internal.line.drawStepLineSegments
 import com.himanshoe.charty.line.internal.line.drawStraightLineSegments
 import com.himanshoe.charty.line.internal.line.lineChartInteractionHandler
+import com.himanshoe.charty.line.internal.rememberThemedLineStyling
 
 /**
  * A composable function that displays an interactive line chart.
@@ -119,8 +121,7 @@ fun LineChart(
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
-    val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
-    val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineData>(config = it) }
+    val styling = rememberThemedLineStyling(lineConfig = lineConfig, crosshair = crosshair)
 
     val chartState =
         rememberCartesianChartState(
@@ -158,7 +159,7 @@ fun LineChart(
 
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<LineData>(
-            enabled = effectiveLineConfig.crosshairConfig != null,
+            enabled = styling.config.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
             streamingState = interactionConfig.streamingState,
         )
@@ -172,7 +173,7 @@ fun LineChart(
     val interactionModifier =
         Modifier.lineChartInteractionHandler(
             dataList = dataList,
-            lineConfig = effectiveLineConfig,
+            lineConfig = styling.config,
             pointBounds = tooltipManager.bounds,
             onPointClick = onPointClick,
             onTooltipStateChange = tooltipManager::updateTooltip,
@@ -251,12 +252,13 @@ fun LineChart(
             drawLineCrosshairAndTooltip(
                 crosshairState = animatedCrosshairState?.resolve(),
                 tooltipManager = tooltipManager,
-                lineConfig = effectiveLineConfig,
+                lineConfig = styling.config,
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
                 drawBubble = tooltip.isCanvas(),
                 drawCrosshairLabel = false,
+                tooltipConfig = styling.tooltipConfig,
             )
         }
 
@@ -265,7 +267,7 @@ fun LineChart(
             crosshairManager = crosshairManager,
             animatedCrosshairState = animatedCrosshairState?.resolve(),
             tooltip = tooltip,
-            crosshair = activeCrosshair,
+            crosshair = styling.activeCrosshair,
         )
     }
 }
@@ -313,6 +315,7 @@ private fun DrawScope.drawLineCrosshairAndTooltip(
     color: ChartyColor,
     drawBubble: Boolean,
     drawCrosshairLabel: Boolean,
+    tooltipConfig: TooltipConfig,
 ) {
     crosshairState?.let { resolvedState ->
         lineConfig.crosshairConfig?.let { crosshairConfig ->
@@ -335,6 +338,7 @@ private fun DrawScope.drawLineCrosshairAndTooltip(
             lineConfig = lineConfig,
             chartContext = chartContext,
             textMeasurer = textMeasurer,
+            tooltipConfig = tooltipConfig,
             drawBubble = drawBubble,
         )
     }

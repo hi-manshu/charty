@@ -37,6 +37,7 @@ import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
 import com.himanshoe.charty.line.ext.getLabels
+import com.himanshoe.charty.line.internal.rememberThemedLineStyling
 import com.himanshoe.charty.line.internal.stackedarea.StackedAreaChartConstants
 import com.himanshoe.charty.line.internal.stackedarea.StackedAreaChartOverlays
 import com.himanshoe.charty.line.internal.stackedarea.StackedAreaDrawParams
@@ -109,8 +110,7 @@ fun StackedAreaChart(
         ChartEmptyState(modifier = modifier, content = emptyContent)
         return
     }
-    val effectiveLineConfig = crosshair?.let { lineConfig.copy(crosshairConfig = it.config) } ?: lineConfig
-    val activeCrosshair = crosshair ?: lineConfig.crosshairConfig?.let { ChartCrosshair<LineGroup>(config = it) }
+    val styling = rememberThemedLineStyling(lineConfig = lineConfig, crosshair = crosshair)
     require(fillAlpha in 0f..1f) { "Fill alpha must be between 0 and 1" }
 
     val colorList = remember(colors) { colors.value }
@@ -138,7 +138,7 @@ fun StackedAreaChart(
     val crosshairBounds = remember { mutableListOf<Pair<Offset, LineGroup>>() }
     val (crosshairManager, animatedCrosshairState) =
         rememberChartCrosshair<LineGroup>(
-            enabled = effectiveLineConfig.crosshairConfig != null,
+            enabled = styling.config.crosshairConfig != null,
             viewPortState = interactionConfig.viewPortState,
             streamingState = interactionConfig.streamingState,
         )
@@ -147,7 +147,7 @@ fun StackedAreaChart(
     val clickModifier =
         buildStackedAreaModifier(
             crosshairManager = crosshairManager,
-            lineConfig = effectiveLineConfig,
+            lineConfig = styling.config,
             dataList = dataList,
             crosshairBounds = crosshairBounds,
             areaSegmentBounds = tooltipManager.bounds,
@@ -180,10 +180,11 @@ fun StackedAreaChart(
                 tooltipManager.clearBounds()
                 drawStackedAreaContent(
                     StackedAreaDrawParams(
+                        tooltipConfig = styling.tooltipConfig,
                         dataList = dataList,
                         chartContext = chartContext,
                         colorList = colorList,
-                        lineConfig = effectiveLineConfig,
+                        lineConfig = styling.config,
                         fillAlpha = fillAlpha,
                         animationProgress = chartState.animationProgress.value,
                         recordSegmentBounds = tapEnabled,
@@ -204,7 +205,7 @@ fun StackedAreaChart(
             StackedAreaChartOverlays(
                 crosshairManager = crosshairManager,
                 animatedCrosshairState = animatedCrosshairState?.resolve(),
-                crosshair = activeCrosshair,
+                crosshair = styling.activeCrosshair,
                 tooltip = tooltip,
                 tooltipItem = tooltipManager.selectedItem,
                 tooltipAnchor = tooltipManager.tooltipState,

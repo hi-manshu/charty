@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.calendar.config.CalendarHeatmapConfig
 import com.himanshoe.charty.calendar.data.CalendarData
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 
 /**
@@ -24,6 +25,7 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  * @property cellBounds Sink refilled with hit-test rectangles for the visible data cells.
  * @property tooltipState The tooltip to render, or `null` when none is shown.
  * @property textMeasurer Measurer used for the tooltip text.
+ * @property tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  */
 internal data class CalendarDrawParams(
     val config: CalendarHeatmapConfig,
@@ -39,4 +41,5 @@ internal data class CalendarDrawParams(
     val cellBounds: MutableList<Pair<Rect, CalendarData>>,
     val tooltipState: TooltipState?,
     val textMeasurer: TextMeasurer,
+    val tooltipConfig: TooltipConfig,
 )

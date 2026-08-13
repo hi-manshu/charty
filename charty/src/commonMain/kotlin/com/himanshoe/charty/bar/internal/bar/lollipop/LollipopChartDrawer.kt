@@ -10,6 +10,7 @@ import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 
@@ -132,14 +133,14 @@ internal fun DrawScope.drawTooltipHighlightIfNeeded(
  */
 internal fun DrawScope.drawTooltipIfNeeded(
     tooltipState: TooltipState?,
-    config: LollipopBarChartConfig,
+    tooltipConfig: TooltipConfig,
     textMeasurer: TextMeasurer,
     chartContext: ChartContext,
 ) {
     tooltipState?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = config.tooltipConfig,
+            config = tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,

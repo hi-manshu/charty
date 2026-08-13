@@ -75,6 +75,12 @@ LollipopBarChart(
 )
 ```
 
+## Crosshair
+
+A vertical guide snaps to the centre of the nearest lollipop head — the same anchor its persistent markers use. The label reads `config.tooltipFormatter`, so it says exactly what a tap says.
+
+Taps are untouched: the crosshair runs as its own gesture, so tapping still raises the tooltip and fires the click callback. Streaming scrollback does not survive a crosshair — the crosshair owns the drag.
+
 ## Accessibility
 
 A generated summary plus one focusable node per entry.
@@ -102,5 +108,5 @@ interactionConfig = ChartInteractionConfig(accessibilityDescription = "Monthly s
 
 ## Limitations
 
-- No crosshair, no corner radius, no reference line, and no data labels.
+- No corner radius, no reference line, and no data labels.
 - There is no `negativeValuesDrawMode` on this config.

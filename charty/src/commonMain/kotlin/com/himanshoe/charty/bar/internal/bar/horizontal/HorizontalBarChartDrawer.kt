@@ -17,6 +17,7 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.draw.drawReferenceLine
+import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
 
@@ -129,7 +130,7 @@ internal fun DrawScope.drawHorizontalReferenceLineIfNeeded(
  * Draws the configured reference band behind the bars, or nothing when none is configured. The
  * band spans a value range on the horizontal value axis, so it renders as a vertical stripe.
  *
- * @param barConfig Supplies the optional band.
+ * @param tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  * @param chartContext The chart's coordinate context.
  * @param textMeasurer Measures the band's label.
  */
@@ -150,14 +151,14 @@ internal fun DrawScope.drawHorizontalReferenceBandIfNeeded(
 
 internal fun DrawScope.drawHorizontalTooltipIfNeeded(
     tooltipState: TooltipState?,
-    barConfig: BarChartConfig,
+    tooltipConfig: TooltipConfig,
     textMeasurer: TextMeasurer,
     chartContext: ChartContext,
 ) {
     tooltipState?.let { state ->
         drawTooltip(
             tooltipState = state,
-            config = barConfig.tooltipConfig,
+            config = tooltipConfig,
             textMeasurer = textMeasurer,
             chartWidth = chartContext.right,
             chartTop = chartContext.top,
