@@ -2,6 +2,8 @@
 
 Best for schedules and occupancy — project plans, shift rosters, booking calendars, machine utilisation: anything where each row holds several ranges rather than one.
 
+![GanttChart](../../img/gantt_chart.png)
+
 ```kotlin
 GanttChart(
     data = {

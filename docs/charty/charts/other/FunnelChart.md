@@ -2,6 +2,8 @@
 
 Best for stage-by-stage drop-off — a signup or checkout funnel, a hiring pipeline, a support queue.
 
+![FunnelChart](../../img/funnel_chart.png)
+
 ```kotlin
 FunnelChart(
     data = {

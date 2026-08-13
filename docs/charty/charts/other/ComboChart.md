@@ -2,6 +2,8 @@
 
 Best for overlaying a bar series and a line series on the same axes — sales volume with a moving-average line, requests with a latency trend.
 
+![ComboChart](../../img/combo_chart.png)
+
 ```kotlin
 ComboChart(
     data = {
@@ -30,6 +32,8 @@ ComboChart(
 ## Secondary axis
 
 When the two series live on different scales, give the line its own axis:
+
+![Secondary axis](../../img/combo_chart_secondary_axis.png)
 
 ```kotlin
 comboConfig = ComboChartConfig(secondaryAxisForLine = true)

@@ -2,6 +2,8 @@
 
 Best for comparing multiple values (e.g. two metrics side by side) within the same category group — each `BarGroup` renders its values as individual bars clustered together.
 
+![ComparisonBarChart](../../img/comparison_bar_chart.png)
+
 ```kotlin
 ComparisonBarChart(
     data = {

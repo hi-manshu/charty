@@ -2,6 +2,8 @@
 
 Best for one or more concentric progress rings — activity rings, goal completion, multi-metric progress.
 
+![CircularProgressIndicator](../../img/circular_progress_indicator.png)
+
 ```kotlin
 CircularProgressIndicator(
     rings = {

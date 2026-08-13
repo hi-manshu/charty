@@ -2,6 +2,8 @@
 
 Best for financial time-series data (OHLC) such as stock prices or commodity values.
 
+![CandlestickChart](../../img/candlestick_chart.png)
+
 ```kotlin
 CandlestickChart(
     data = {

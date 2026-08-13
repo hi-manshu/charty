@@ -2,6 +2,8 @@
 
 Best for displaying start-to-end ranges — confidence intervals, temperature highs and lows, bid-ask spreads, Gantt-like durations.
 
+![SpanChart](../../img/span_chart.png)
+
 ```kotlin
 SpanChart(
     data = {

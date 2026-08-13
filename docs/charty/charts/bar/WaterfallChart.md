@@ -2,6 +2,8 @@
 
 Best for showing cumulative effects of sequential positive and negative values — profit/loss bridges, cash flow, budget variance.
 
+![WaterfallChart](../../img/waterfall_chart.png)
+
 ```kotlin
 WaterfallChart(
     data = {

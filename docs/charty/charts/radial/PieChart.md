@@ -2,6 +2,8 @@
 
 Best for showing the proportional breakdown of a whole into named slices.
 
+![PieChart](../../img/pie_chart.png)
+
 ## Pie style
 
 ```kotlin
@@ -33,6 +35,8 @@ PieChart(
 `PieData` requires a positive `value` and a non-blank `label`, and the chart requires the total to be positive.
 
 ## Donut style
+
+![Donut style](../../img/pie_chart_donut.png)
 
 ```kotlin
 PieChart(

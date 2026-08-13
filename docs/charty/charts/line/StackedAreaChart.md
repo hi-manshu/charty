@@ -2,6 +2,8 @@
 
 Best for showing how multiple series combine to form a cumulative total, emphasizing both individual contributions and the whole.
 
+![StackedAreaChart](../../img/stacked_area_chart.png)
+
 ```kotlin
 StackedAreaChart(
     data = {

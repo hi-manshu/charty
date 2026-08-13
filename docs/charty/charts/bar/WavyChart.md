@@ -2,6 +2,8 @@
 
 Best for drawing attention to a trend with continuously animated bars. Each bar is a **stroked vertical sine wave** running from its value down to the baseline, not a filled rectangle.
 
+![WavyChart](../../img/wavy_chart.png)
+
 ```kotlin
 WavyChart(
     data = {

@@ -2,6 +2,8 @@
 
 Best for a single categorical distribution shown as one horizontal row of coloured blocks — a compact alternative to a stacked bar when the visual presence of each category matters more than precise proportions.
 
+![BlockBarChart](../../img/block_bar_chart.png)
+
 ```kotlin
 BlockBarChart(
     data = {

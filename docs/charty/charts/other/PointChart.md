@@ -2,6 +2,8 @@
 
 Best for scatter-plot style visualization where individual data point positions matter more than connecting trends.
 
+![PointChart](../../img/point_chart.png)
+
 ```kotlin
 PointChart(
     data = {

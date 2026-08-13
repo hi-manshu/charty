@@ -2,6 +2,8 @@
 
 Best for comparing discrete values across categories with vertical bars.
 
+![BarChart](../../img/bar_chart.png)
+
 ```kotlin
 BarChart(
     data = {
@@ -64,6 +66,8 @@ It must be `null` (disabled) or at least `2`.
 ## Persistent markers
 
 `markers` pins a permanent dot and callout to the top of a bar. A **negative `dataIndex` counts back from the end of the drawn data**, so `dataIndex = -1` labels the newest bar — the idiom for keeping a label on the latest value of a rolling window.
+
+![Persistent markers](../../img/bar_chart_markers.png)
 
 ```kotlin
 BarChart(

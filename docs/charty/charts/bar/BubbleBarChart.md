@@ -2,6 +2,8 @@
 
 Best for a playful alternative to a plain bar: instead of a solid rectangle, each column is filled with a stack of circles whose overall height still encodes the value.
 
+![BubbleBarChart](../../img/bubble_bar_chart.png)
+
 ```kotlin
 BubbleBarChart(
     data = {

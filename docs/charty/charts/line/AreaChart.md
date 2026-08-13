@@ -2,6 +2,8 @@
 
 Best for emphasizing the volume or magnitude of a single series by filling the area beneath the line.
 
+![AreaChart](../../img/area_chart.png)
+
 ```kotlin
 AreaChart(
     data = {

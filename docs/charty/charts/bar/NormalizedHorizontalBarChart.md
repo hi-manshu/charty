@@ -2,6 +2,8 @@
 
 Best for showing each group's composition as a percentage of the whole — every row always fills 100% of the width.
 
+![NormalizedHorizontalBarChart](../../img/normalized_horizontal_bar_chart.png)
+
 ```kotlin
 NormalizedHorizontalBarChart(
     data = {

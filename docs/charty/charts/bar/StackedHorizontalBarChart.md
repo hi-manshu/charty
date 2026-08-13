@@ -2,6 +2,8 @@
 
 Best for showing cumulative part-to-whole composition across categories in a horizontal layout.
 
+![StackedHorizontalBarChart](../../img/stacked_horizontal_bar_chart.png)
+
 ```kotlin
 StackedHorizontalBarChart(
     data = {

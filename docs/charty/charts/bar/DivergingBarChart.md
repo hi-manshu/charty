@@ -2,6 +2,8 @@
 
 Best for comparing two opposed series across the same categories — population pyramids, agree/disagree survey splits, imports against exports, gains against losses.
 
+![DivergingBarChart](../../img/diverging_bar_chart.png)
+
 ```kotlin
 DivergingBarChart(
     data = {

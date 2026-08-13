@@ -2,6 +2,8 @@
 
 Best for showing a single value against a fixed range as a speedometer-style dial — KPIs, utilization meters, speed and level indicators.
 
+![AngularGaugeChart](../../img/angular_gauge_chart.png)
+
 ```kotlin
 AngularGaugeChart(
     value = { 62f },

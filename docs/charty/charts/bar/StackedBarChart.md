@@ -2,6 +2,8 @@
 
 Best for showing part-to-whole relationships across categories with vertical stacked bars.
 
+![StackedBarChart](../../img/stacked_bar_chart.png)
+
 ```kotlin
 StackedBarChart(
     data = {

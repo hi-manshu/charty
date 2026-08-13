@@ -2,6 +2,8 @@
 
 Best for comparing the *composition* of several categories: each `BarGroup` becomes one vertical column, and its values are stacked as percentages so every column fills the full plot height.
 
+![MosaicBarChart](../../img/mosaic_bar_chart.png)
+
 ```kotlin
 MosaicBarChart(
     data = {

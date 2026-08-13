@@ -2,6 +2,8 @@
 
 Best for side-by-side comparison of multiple series across the same categories in a horizontal layout.
 
+![GroupedHorizontalBarChart](../../img/grouped_horizontal_bar_chart.png)
+
 ```kotlin
 GroupedHorizontalBarChart(
     data = {

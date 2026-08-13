@@ -2,6 +2,8 @@
 
 Best for datasets where the exact value at the tip matters more than bar area — each entry is rendered as a thin stem topped with a circle.
 
+![LollipopBarChart](../../img/lollipop_bar_chart.png)
+
 ```kotlin
 LollipopBarChart(
     data = {

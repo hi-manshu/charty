@@ -2,6 +2,8 @@
 
 Best for a general-purpose grid of cells where colour intensity encodes magnitude — activity by weekday and hour, correlation matrices, cohort tables. Unlike [CalendarHeatmapChart](CalendarHeatmapChart.md) it is not tied to dates: rows and columns are whatever labels the data carries.
 
+![MatrixHeatmapChart](../../img/matrix_heatmap_chart.png)
+
 ```kotlin
 MatrixHeatmapChart(
     data = {

@@ -2,6 +2,8 @@
 
 Best for long category labels or ranked lists where horizontal reading is more natural.
 
+![HorizontalBarChart](../../img/horizontal_bar_chart.png)
+
 ```kotlin
 HorizontalBarChart(
     data = {

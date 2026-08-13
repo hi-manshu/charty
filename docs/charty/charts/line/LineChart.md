@@ -2,6 +2,8 @@
 
 Best for visualizing a single data series over time or an ordered sequence of values.
 
+![LineChart](../../img/line_chart.png)
+
 ```kotlin
 LineChart(
     data = {
@@ -34,6 +36,8 @@ LineChart(
 - `LineInterpolation.LINEAR` — straight segments (default)
 - `LineInterpolation.SMOOTH` — a cubic-bezier curve through the points
 - `LineInterpolation.STEP` — the value holds until the next x, then jumps
+
+![Interpolation](../../img/line_chart_interpolation.png)
 
 ```kotlin
 LineChart(

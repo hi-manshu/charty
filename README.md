@@ -113,12 +113,12 @@ LineChart(
 
 | Family | Charts |
 | --- | --- |
-| **Bar** | Bar, Horizontal, Stacked, Stacked-Horizontal, Grouped-Horizontal, Normalized-Horizontal, Mosaic, Span, Comparison, Diverging, Waterfall, Lollipop, Bubble-bar, Wavy |
-| **Line / Area** | Line, Area, Multiline, Stacked-Area |
-| **Point** | Scatter (Point), Bubble |
-| **Combo** | Bars + line, optional secondary axis |
-| **Circular** | Pie, Donut, Radar, Multiple-Radar, Circular progress |
-| **Specialised** | Candlestick (OHLC), Calendar heatmap, Matrix heatmap, Gantt, Funnel, Block bar |
+| **Bar** | [Bar](docs/charty/charts/bar/BarChart.md), [Horizontal](docs/charty/charts/bar/HorizontalBarChart.md), [Stacked](docs/charty/charts/bar/StackedBarChart.md), [Stacked-Horizontal](docs/charty/charts/bar/StackedHorizontalBarChart.md), [Grouped-Horizontal](docs/charty/charts/bar/GroupedHorizontalBarChart.md), [Normalized-Horizontal](docs/charty/charts/bar/NormalizedHorizontalBarChart.md), [Mosaic](docs/charty/charts/bar/MosaicBarChart.md), [Span](docs/charty/charts/bar/SpanChart.md), [Comparison](docs/charty/charts/bar/ComparisonBarChart.md), [Diverging](docs/charty/charts/bar/DivergingBarChart.md), [Waterfall](docs/charty/charts/bar/WaterfallChart.md), [Lollipop](docs/charty/charts/bar/LollipopBarChart.md), [Bubble-bar](docs/charty/charts/bar/BubbleBarChart.md), [Wavy](docs/charty/charts/bar/WavyChart.md) |
+| **Line / Area** | [Line](docs/charty/charts/line/LineChart.md), [Area](docs/charty/charts/line/AreaChart.md), [Multiline](docs/charty/charts/line/MultilineChart.md), [Stacked-Area](docs/charty/charts/line/StackedAreaChart.md), [Sparkline](docs/charty/charts/line/Sparkline.md) |
+| **Point** | [Scatter (Point)](docs/charty/charts/other/PointChart.md), [Bubble](docs/charty/charts/other/BubbleChart.md) |
+| **Combo** | [Bars + line, optional secondary axis](docs/charty/charts/other/ComboChart.md) |
+| **Circular** | [Pie](docs/charty/charts/radial/PieChart.md), [Donut](docs/charty/charts/radial/PieChart.md), [Radar](docs/charty/charts/radial/RadarChart.md), [Multiple-Radar](docs/charty/charts/radial/MultipleRadarChart.md), [Circular progress](docs/charty/charts/radial/CircularProgressIndicator.md), [Angular gauge](docs/charty/charts/radial/AngularGaugeChart.md) |
+| **Specialised** | [Candlestick (OHLC)](docs/charty/charts/other/CandlestickChart.md), [Calendar heatmap](docs/charty/charts/other/CalendarHeatmapChart.md), [Matrix heatmap](docs/charty/charts/other/MatrixHeatmapChart.md), [Gantt](docs/charty/charts/other/GanttChart.md), [Funnel](docs/charty/charts/other/FunnelChart.md), [Block bar](docs/charty/charts/radial/BlockBarChart.md) |
 
 Explore every one in the **[live playground](https://hi-manshu.github.io/charty/)**.
 

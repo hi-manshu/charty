@@ -2,6 +2,8 @@
 
 Best for three-variable data where the category, the y-position, and a third variable (bubble size) are all meaningful.
 
+![BubbleChart](../../img/bubble_chart.png)
+
 ```kotlin
 BubbleChart(
     data = {

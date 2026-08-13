@@ -2,6 +2,8 @@
 
 Best for comparing multiple entities or time periods across the same set of axes on a single radar.
 
+![MultipleRadarChart](../../img/multiple_radar_chart.png)
+
 ```kotlin
 MultipleRadarChart(
     dataSets = {

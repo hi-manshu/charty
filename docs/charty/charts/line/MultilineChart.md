@@ -2,6 +2,8 @@
 
 Best for comparing multiple data series on a single set of axes.
 
+![MultilineChart](../../img/multiline_chart.png)
+
 ```kotlin
 MultilineChart(
     data = {

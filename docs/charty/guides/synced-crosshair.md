@@ -4,8 +4,6 @@ Stacked charts of the same x-domain — price above volume, revenue above costs 
 read much better when one guide line moves across all of them at once. Wrap them in
 `CrosshairSyncScope` and they share a single crosshair position.
 
-![Synced crosshair across stacked charts](../img/synced_crosshair.gif)
-
 ---
 
 ## The basics

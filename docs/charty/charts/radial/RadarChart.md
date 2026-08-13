@@ -2,6 +2,8 @@
 
 Best for displaying a single entity's performance across multiple axes (spider chart / star chart).
 
+![RadarChart](../../img/radar_chart.png)
+
 ```kotlin
 RadarChart(
     data = {

@@ -2,6 +2,8 @@
 
 Best for an inline trend inside something else — a table row, a list item, a dashboard tile, a card header. It plots a plain `List<Float>` across the whole area you give it, with no chrome of any kind.
 
+![Sparkline](../../img/sparkline.png)
+
 ```kotlin
 Sparkline(
     data = { listOf(12f, 15f, 11f, 18f, 22f, 19f, 26f) },

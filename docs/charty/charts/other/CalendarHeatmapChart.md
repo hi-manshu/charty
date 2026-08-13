@@ -2,6 +2,8 @@
 
 Best for visualizing daily activity or intensity over weeks and months in a calendar grid, like GitHub's contribution graph. For a grid that is not tied to dates, see [MatrixHeatmapChart](MatrixHeatmapChart.md).
 
+![CalendarHeatmapChart](../../img/calendar_heatmap_chart.png)
+
 ```kotlin
 CalendarHeatmapChart(
     data = {

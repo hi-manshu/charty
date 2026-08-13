@@ -7,8 +7,6 @@ points and slides as new ones arrive.
 Everything on this page is opt-in. A chart you do not configure for streaming
 behaves exactly as it always has.
 
-![Rolling streaming window](../img/streaming_window.gif)
-
 ---
 
 ## The rolling window
