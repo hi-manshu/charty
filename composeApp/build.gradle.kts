@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -40,7 +41,22 @@ kotlin {
     jvm()
 
     js {
-        browser()
+        browser {
+            /*
+             * The dev server takes its port from the PORT environment variable when one is set.
+             *
+             * Webpack's default is 8080, which is a busy port on any machine running more than one
+             * thing; the preview harness assigns a free port and publishes it as PORT, and without
+             * this the server ignored that and collided. Falling back to 8080 keeps a plain
+             * `./gradlew jsBrowserDevelopmentRun` behaving exactly as it always has.
+             */
+            commonWebpackConfig {
+                devServer =
+                    (devServer ?: KotlinWebpackConfig.DevServer()).copy(
+                        port = System.getenv("PORT")?.toIntOrNull() ?: 8080,
+                    )
+            }
+        }
         binaries.executable()
     }
 

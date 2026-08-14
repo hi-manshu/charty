@@ -5,7 +5,8 @@
       "name": "web-playground",
       "runtimeExecutable": "./gradlew",
       "runtimeArgs": ["-q", ":composeApp:jsBrowserDevelopmentRun", "--continuous"],
-      "port": 8080
+      "port": 8080,
+      "autoPort": true
     }
   ]
 }
