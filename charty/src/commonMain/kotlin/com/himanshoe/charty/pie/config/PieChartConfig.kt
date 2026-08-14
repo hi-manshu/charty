@@ -17,7 +17,6 @@ private const val DEFAULT_PULL_OUT_DISTANCE = 8f
 private const val DEFAULT_ANIMATION_DURATION_MS = 200
 private const val DEFAULT_UNSELECTED_OPACITY = 0.6f
 private const val MIN_SCALE_MULTIPLIER = 1f
-private const val MIN_PERCENTAGE = 0f
 private const val MAX_PERCENTAGE = 100f
 private const val MIN_OPACITY = 0f
 private const val MAX_OPACITY = 1f
@@ -67,8 +66,8 @@ data class LabelConfig(
         ),
 ) {
     init {
-        require(minimumPercentageToShowLabel in MIN_PERCENTAGE..MAX_PERCENTAGE) {
-            "minimumPercentageToShowLabel must be between $MIN_PERCENTAGE and $MAX_PERCENTAGE"
+        require(minimumPercentageToShowLabel in 0f..MAX_PERCENTAGE) {
+            "minimumPercentageToShowLabel must be between 0 and $MAX_PERCENTAGE"
         }
     }
 }
@@ -99,7 +98,7 @@ data class InteractionConfig(
         require(selectedScaleMultiplier >= MIN_SCALE_MULTIPLIER) {
             "selectedScaleMultiplier must be >= $MIN_SCALE_MULTIPLIER"
         }
-        require(selectedSlicePullOutDistance >= MIN_PERCENTAGE) {
+        require(selectedSlicePullOutDistance >= 0f) {
             "selectedSlicePullOutDistance must be non-negative"
         }
         require(selectionAnimationDurationMs > 0) {
@@ -142,11 +141,11 @@ data class PieChartConfig(
         ),
 ) {
     init {
-        require(donutHoleRatio in MIN_PERCENTAGE..MAX_DONUT_HOLE_RATIO) {
-            "donutHoleRatio must be between $MIN_PERCENTAGE and $MAX_DONUT_HOLE_RATIO"
+        require(donutHoleRatio in 0f..MAX_DONUT_HOLE_RATIO) {
+            "donutHoleRatio must be between 0 and $MAX_DONUT_HOLE_RATIO"
         }
-        require(sliceSpacingDegrees in MIN_PERCENTAGE..MAX_SLICE_SPACING_DEGREES) {
-            "sliceSpacingDegrees must be between $MIN_PERCENTAGE and $MAX_SLICE_SPACING_DEGREES"
+        require(sliceSpacingDegrees in 0f..MAX_SLICE_SPACING_DEGREES) {
+            "sliceSpacingDegrees must be between 0 and $MAX_SLICE_SPACING_DEGREES"
         }
     }
 }

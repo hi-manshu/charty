@@ -12,9 +12,7 @@ import com.himanshoe.charty.bar.config.MosaicBarChartConfig
 import com.himanshoe.charty.bar.config.MosaicBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.common.ChartContext
-
-private const val MAX_PERCENTAGE = 100f
-private const val MIN_PERCENTAGE = 0f
+import com.himanshoe.charty.common.PERCENT_SCALE
 
 /**
  * Draws all mosaic bars on the chart.
@@ -71,7 +69,7 @@ private fun DrawScope.drawMosaicBarSegments(
         if (value <= 0f) {
             return@fastForEachIndexed
         }
-        val fraction = (value / total).coerceIn(MIN_PERCENTAGE, 1f)
+        val fraction = (value / total).coerceIn(0f, 1f)
         val fullHeight = chartHeight * fraction
         val animatedHeight = fullHeight * animationProgress
         val top = currentTop - animatedHeight
@@ -88,7 +86,7 @@ private fun DrawScope.drawMosaicBarSegments(
                         barGroup = group,
                         segmentIndex = segmentIndex,
                         segmentValue = value,
-                        segmentPercentage = fraction * MAX_PERCENTAGE,
+                        segmentPercentage = fraction * PERCENT_SCALE,
                     ),
             )
         }

@@ -12,6 +12,7 @@ import com.himanshoe.charty.bar.internal.bar.BarCorners
 import com.himanshoe.charty.bar.internal.bar.drawBarShape
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.PERCENT_SCALE
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.tooltip.TooltipState
 
@@ -65,7 +66,7 @@ internal fun DrawScope.drawNormalizedHorizontalBars(params: NormalizedHorizontal
             }
 
             val fraction = value / groupTotal
-            val segmentPercentage = fraction * NORMALIZED_HORIZONTAL_MAX_PERCENT
+            val segmentPercentage = fraction * PERCENT_SCALE
             val startX = params.chartContext.left + (cumulativeFraction * effectiveWidth)
             val segmentWidth = fraction * effectiveWidth
 

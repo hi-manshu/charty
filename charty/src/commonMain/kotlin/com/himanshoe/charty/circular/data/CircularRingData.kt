@@ -3,8 +3,9 @@ package com.himanshoe.charty.circular.data
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.PERCENT_SCALE
+import com.himanshoe.charty.common.percentOf
 
-private const val PERCENTAGE_MULTIPLIER = 100f
 private const val DEGREES_IN_CIRCLE = 360f
 
 /**
@@ -68,8 +69,7 @@ data class CircularRingData(
     /**
      * Calculates the percentage of completion (0f to 100f)
      */
-    fun calculatePercentage(): Float =
-        ((progress / maxValue) * PERCENTAGE_MULTIPLIER).coerceIn(0f, PERCENTAGE_MULTIPLIER)
+    fun calculatePercentage(): Float = percentOf(value = progress, total = maxValue).coerceIn(0f, PERCENT_SCALE)
 
     /**
      * Calculates the sweep angle in degrees for drawing (0f to 360f)

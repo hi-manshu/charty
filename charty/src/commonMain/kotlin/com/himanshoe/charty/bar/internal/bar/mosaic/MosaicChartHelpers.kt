@@ -2,10 +2,9 @@ package com.himanshoe.charty.bar.internal.bar.mosaic
 
 import androidx.compose.ui.graphics.Color
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.PERCENT_SCALE
 import com.himanshoe.charty.common.axis.AxisConfig
 
-private const val MAX_PERCENTAGE = 100f
-private const val MIN_PERCENTAGE = 0f
 private const val DEFAULT_AXIS_STEPS = 5
 
 /**
@@ -23,7 +22,7 @@ internal val defaultMosaicColors =
  */
 internal fun createMosaicAxisConfig(): AxisConfig =
     AxisConfig(
-        minValue = MIN_PERCENTAGE,
-        maxValue = MAX_PERCENTAGE,
+        minValue = 0f,
+        maxValue = PERCENT_SCALE,
         steps = DEFAULT_AXIS_STEPS,
     )

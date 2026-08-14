@@ -2,8 +2,8 @@ package com.himanshoe.charty.pie.data
 
 import androidx.compose.runtime.Immutable
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.percentOf
 
-private const val PERCENTAGE_MULTIPLIER = 100f
 private const val DEGREES_IN_CIRCLE = 360f
 
 /**
@@ -40,14 +40,7 @@ data class PieData(
      * @param total The sum of all slice values
      * @return Percentage as a float (0.0 to 100.0)
      */
-    fun calculatePercentage(total: Float): Float =
-        if (total >
-            0f
-        ) {
-            (value / total) * PERCENTAGE_MULTIPLIER
-        } else {
-            0f
-        }
+    fun calculatePercentage(total: Float): Float = percentOf(value = value, total = total)
 
     /**
      * Calculates the sweep angle for this slice in degrees

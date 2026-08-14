@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.circular.config.CircularProgressConfig
 import com.himanshoe.charty.circular.data.CircularRingData
-import com.himanshoe.charty.circular.internal.CircularProgressConstants
 import com.himanshoe.charty.circular.internal.calculateRingRadius
 import com.himanshoe.charty.circular.internal.calculateStrokeWidth
 import com.himanshoe.charty.circular.internal.drawRingBackground
@@ -34,6 +33,7 @@ import com.himanshoe.charty.circular.internal.drawRingProgress
 import com.himanshoe.charty.circular.internal.rememberAnimatedProgress
 import com.himanshoe.charty.circular.internal.ringClickHandler
 import com.himanshoe.charty.common.ChartEmptyState
+import com.himanshoe.charty.common.PERCENT_SCALE
 import com.himanshoe.charty.common.accessibility.generateCircularProgressDescription
 
 private const val FULL_ROTATION_DEGREES = 360f
@@ -156,7 +156,7 @@ fun CircularProgressIndicator(
                 val percentage =
                     remember(animatedProgress.firstOrNull()) {
                         val progress = animatedProgress.firstOrNull() ?: firstRing.progress
-                        ((progress / firstRing.maxValue) * CircularProgressConstants.PERCENTAGE_MULTIPLIER).toInt()
+                        ((progress / firstRing.maxValue) * PERCENT_SCALE).toInt()
                     }
                 Text(text = "$percentage%", style = config.centerTextStyle)
             }

@@ -1,5 +1,6 @@
 package com.himanshoe.charty.bar.internal.bar.normalizedhorizontal
 
+import com.himanshoe.charty.common.PERCENT_SCALE
 import com.himanshoe.charty.common.axis.AxisConfig
 
 /**
@@ -10,6 +11,6 @@ import com.himanshoe.charty.common.axis.AxisConfig
 internal fun createNormalizedHorizontalAxisConfig(): AxisConfig =
     AxisConfig(
         minValue = 0f,
-        maxValue = NORMALIZED_HORIZONTAL_MAX_PERCENT,
+        maxValue = PERCENT_SCALE,
         steps = NORMALIZED_HORIZONTAL_AXIS_STEPS,
     )
