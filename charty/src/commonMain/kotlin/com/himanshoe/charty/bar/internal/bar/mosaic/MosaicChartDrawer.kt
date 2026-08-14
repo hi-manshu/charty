@@ -104,19 +104,12 @@ private fun DrawScope.drawMosaicBarSegments(
                 endY = currentTop,
             )
 
-        val isTop = segmentIndex == group.values.lastIndex
         drawMosaicSegment(
             brush = segmentBrush,
             x = barX,
             y = top,
             width = barWidth,
             height = animatedHeight,
-            cornerRadius =
-                if (isTop) {
-                    CornerRadius(0f, 0f)
-                } else {
-                    CornerRadius.Zero
-                },
         )
 
         currentTop -= animatedHeight
@@ -132,8 +125,15 @@ private fun DrawScope.drawMosaicSegment(
     y: Float,
     width: Float,
     height: Float,
-    cornerRadius: CornerRadius,
 ) {
+    /*
+     * Still drawn as a path with an all-zero RoundRect rather than as a plain rect.
+     *
+     * The two are the same rectangle but not the same pixels: swapping in drawRect moved the mosaic's
+     * documentation image, because a path and a rect do not anti-alias their edges identically. The
+     * corner radius that used to be a parameter is gone — both of its branches produced zero — but the
+     * draw call it fed stays exactly as it was.
+     */
     val path =
         Path().apply {
             addRoundRect(
@@ -142,8 +142,8 @@ private fun DrawScope.drawMosaicSegment(
                     top = y,
                     right = x + width,
                     bottom = y + height,
-                    topLeftCornerRadius = cornerRadius,
-                    topRightCornerRadius = cornerRadius,
+                    topLeftCornerRadius = CornerRadius.Zero,
+                    topRightCornerRadius = CornerRadius.Zero,
                     bottomLeftCornerRadius = CornerRadius.Zero,
                     bottomRightCornerRadius = CornerRadius.Zero,
                 ),

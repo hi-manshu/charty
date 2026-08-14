@@ -32,14 +32,12 @@ internal const val DEFAULT_NORMALIZED_SIZE = 0.5f
  * @property minValue The minimum y-value in the dataset.
  * @property maxValue The maximum y-value in the dataset.
  * @property minSize The minimum size value in the dataset.
- * @property maxSize The maximum size value in the dataset.
- * @property sizeRange The range of sizes (maxSize - minSize).
+ * @property sizeRange How far the largest bubble's size is above the smallest.
  */
 internal data class BubbleSizeInfo(
     val minValue: Float,
     val maxValue: Float,
     val minSize: Float,
-    val maxSize: Float,
     val sizeRange: Float,
 )
 
@@ -119,15 +117,13 @@ internal fun BubbleData.toTooltipPointData(): PointData =
 internal fun calculateBubbleSizeInfo(dataList: List<BubbleData>): BubbleSizeInfo {
     val yValues = dataList.fastMap { it.yValue }
     val sizes = dataList.fastMap { it.size }
-    val min = sizes.minOrNull() ?: 0f
-    val max = sizes.maxOrNull() ?: 1f
+    val smallest = sizes.minOrNull() ?: 0f
+    val largest = sizes.maxOrNull() ?: 1f
     return BubbleSizeInfo(
         minValue = calculateMinValue(yValues),
         maxValue = calculateMaxValue(yValues),
-        minSize = min,
-        maxSize = max,
-        sizeRange =
-            max - min,
+        minSize = smallest,
+        sizeRange = largest - smallest,
     )
 }
 
