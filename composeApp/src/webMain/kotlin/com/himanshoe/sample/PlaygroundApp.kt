@@ -101,7 +101,8 @@ internal enum class PlaygroundFamily(
  */
 @Composable
 fun WebApp() {
-    var dark by remember { mutableStateOf(false) }
+    val theme = rememberPlaygroundTheme()
+    val dark = theme.dark
     var animate by remember { mutableStateOf(false) }
     val navigation = rememberPlaygroundNavigation()
     val family = navigation.family
@@ -130,7 +131,7 @@ fun WebApp() {
                         backTitle = family?.title,
                         onBack = navigation::back,
                         dark = dark,
-                        onToggleDark = { dark = !dark },
+                        onToggleDark = theme::toggle,
                         animate = animate,
                         onToggleAnimate = { animate = !animate },
                     )

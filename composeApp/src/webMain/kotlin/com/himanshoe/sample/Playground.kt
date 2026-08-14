@@ -63,9 +63,10 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 
-private val codeBackground = Color(0xFF1E1E2E)
+private val codeBackground = Color(0xFF16161A)
+private val codeChrome = Color(0xFF1F1F24)
 private val codeForeground = Color(0xFFE4E6F1)
-private val codeLabel = Color(0xFF9AA0B4)
+private val codeLabel = Color(0xFFA5A5B2)
 
 /** Formats a [Color] as a Kotlin `0xAARRGGBB` literal for the code panel. */
 internal fun colorHex(color: Color): String =
@@ -263,16 +264,27 @@ private fun CodePanel(
     val clipboard = LocalClipboardManager.current
     Column(modifier = modifier.clip(RoundedCornerShape(12.dp)).background(codeBackground)) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 2.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(codeChrome)
+                    .padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = "CODE",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = codeLabel,
-            )
+            // The same window the documentation site draws its snippets in, so the two halves of the
+            // site do not present the same thing two different ways.
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                listOf(Color(0xFFFF5F57), Color(0xFFFEBC2E), Color(0xFF28C840)).forEach { light ->
+                    Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(50)).background(light))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Kotlin",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = codeLabel,
+                )
+            }
             var copied by remember { mutableStateOf(false) }
             LaunchedEffect(copied) {
                 if (copied) {
@@ -295,9 +307,9 @@ private fun CodePanel(
                         .clip(RoundedCornerShape(6.dp))
                         .background(
                             if (copied) {
-                                Color(0xFF3A6B4A)
+                                Color(0xFF2F6B45)
                             } else {
-                                Color(0xFF3B3B54)
+                                Color(0xFF2A2A33)
                             },
                         ).clickable {
                             clipboard.setText(AnnotatedString(code))
