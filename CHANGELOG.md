@@ -3,7 +3,7 @@
 Notable changes to Charty. Versions follow [semantic versioning](https://semver.org); breaking
 changes are listed first in each release and say what to do about them.
 
-## 3.0.1
+## 3.1.0
 
 Fixes to the zoom and pan path and to the crosshair label, one new parameter with a default, and two
 types moved to a package that all their callers can reach. Nothing is removed: the moved types keep
