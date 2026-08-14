@@ -202,7 +202,6 @@ fun SpanChart(
                     maxValue = maxValue,
                     animationProgress = animationProgress.value,
                     colors = colors,
-                    onSpanClick = onSpanClick,
                     onSpanBoundCalculated = { tooltipManager.bounds.add(it) },
                     recordBounds = onSpanClick != null || interactionConfig.dragTooltipActive,
                 )

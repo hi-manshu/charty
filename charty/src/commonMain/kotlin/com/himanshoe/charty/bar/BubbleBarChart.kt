@@ -176,7 +176,6 @@ fun BubbleBarChart(
                     baselineY = baselineY,
                     animationProgress = animationProgress.value,
                     color = color,
-                    onBarClick = onBarClick,
                     barBounds = tooltipManager.bounds,
                     textMeasurer = textMeasurer,
                     recordBounds = tapEnabled || interactionConfig.dragTooltipActive,

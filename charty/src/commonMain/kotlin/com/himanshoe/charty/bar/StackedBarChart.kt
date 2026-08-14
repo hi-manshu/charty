@@ -185,7 +185,6 @@ fun StackedBarChart(
                     stackedConfig = stackedConfig,
                     colorList = colorList,
                     animationProgress = animationProgress.value,
-                    onSegmentClick = onSegmentClick,
                     segmentBounds = tooltipManager.bounds,
                     textMeasurer = textMeasurer,
                     recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,

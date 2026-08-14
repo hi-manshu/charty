@@ -195,7 +195,6 @@ fun HorizontalBarChart(
                     isBelowAxisMode = isBelowAxisMode,
                     minValue = minValue,
                     maxValue = maxValue,
-                    onBarClick = onBarClick,
                     onBarBoundCalculated = { bounds -> tooltipManager.bounds.add(bounds) },
                     textMeasurer = textMeasurer,
                     recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,

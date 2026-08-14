@@ -188,7 +188,6 @@ fun ComparisonBarChart(
                     comparisonConfig = comparisonConfig,
                     baselineY = baselineY,
                     animationProgress = animationProgress.value,
-                    onBarClick = onBarClick,
                     barBounds = tooltipManager.bounds,
                     recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
                     textMeasurer = textMeasurer,

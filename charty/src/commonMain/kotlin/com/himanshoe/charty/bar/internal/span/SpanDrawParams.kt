@@ -18,7 +18,6 @@ internal data class SpanDrawParams(
     val maxValue: Float,
     val animationProgress: Float,
     val colors: ChartyColor,
-    val onSpanClick: ((SpanData) -> Unit)?,
     val onSpanBoundCalculated: (Pair<Rect, SpanData>) -> Unit,
-    val recordBounds: Boolean = onSpanClick != null,
+    val recordBounds: Boolean,
 )

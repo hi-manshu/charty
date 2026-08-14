@@ -192,7 +192,6 @@ fun GroupedHorizontalBarChart(
                     minValue = state.minValue,
                     maxValue = state.maxValue,
                     animationProgress = animationProgress.value,
-                    onBarClick = onBarClick,
                     barBounds = tooltipManager.bounds,
                     recordBounds = onBarClick != null || interactionConfig.dragTooltipActive,
                     textMeasurer = textMeasurer,

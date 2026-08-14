@@ -17,8 +17,7 @@ internal data class StackedBarDrawParams(
     val stackedConfig: StackedBarChartConfig,
     val colorList: List<Color>,
     val animationProgress: Float,
-    val onSegmentClick: ((StackedBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, StackedBarSegment>>,
     val textMeasurer: TextMeasurer? = null,
-    val recordBounds: Boolean = onSegmentClick != null,
+    val recordBounds: Boolean,
 )

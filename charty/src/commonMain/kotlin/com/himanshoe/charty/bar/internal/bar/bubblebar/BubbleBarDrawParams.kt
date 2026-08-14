@@ -19,9 +19,8 @@ internal data class BubbleBarDrawParams(
     val baselineY: Float,
     val animationProgress: Float,
     val color: ChartyColor,
-    val onBarClick: ((BarData) -> Unit)?,
     val barBounds: MutableList<Pair<Rect, BarData>>,
     val textMeasurer: TextMeasurer,
-    val recordBounds: Boolean = onBarClick != null,
+    val recordBounds: Boolean,
     val tooltipConfig: TooltipConfig,
 )

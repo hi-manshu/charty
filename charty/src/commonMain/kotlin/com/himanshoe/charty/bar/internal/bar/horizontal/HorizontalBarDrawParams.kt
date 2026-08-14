@@ -20,8 +20,7 @@ internal data class HorizontalBarDrawParams(
     val isBelowAxisMode: Boolean,
     val minValue: Float,
     val maxValue: Float,
-    val onBarClick: ((BarData) -> Unit)?,
     val onBarBoundCalculated: (Pair<Rect, BarData>) -> Unit,
     val textMeasurer: TextMeasurer? = null,
-    val recordBounds: Boolean = onBarClick != null,
+    val recordBounds: Boolean,
 )

@@ -154,7 +154,6 @@ fun NormalizedHorizontalBarChart(
                     config = config,
                     colorList = colorList,
                     animationProgress = animationProgress.value,
-                    onSegmentClick = onSegmentClick,
                     segmentBounds = tooltipManager.bounds,
                     recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
                 ),

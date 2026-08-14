@@ -17,7 +17,6 @@ internal data class NormalizedHorizontalBarDrawParams(
     /** Resolved [Color] list derived from the chart-level [ChartyColor]. */
     val colorList: List<Color>,
     val animationProgress: Float,
-    val onSegmentClick: ((NormalizedHorizontalBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, NormalizedHorizontalBarSegment>>,
-    val recordBounds: Boolean = onSegmentClick != null,
+    val recordBounds: Boolean,
 )

@@ -162,7 +162,6 @@ fun StackedHorizontalBarChart(
                     colorList = colorList,
                     maxTotal = maxTotal,
                     animationProgress = animationProgress.value,
-                    onSegmentClick = onSegmentClick,
                     segmentBounds = tooltipManager.bounds,
                     recordBounds = onSegmentClick != null || interactionConfig.dragTooltipActive,
                 ),

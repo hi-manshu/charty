@@ -25,9 +25,8 @@ internal data class GroupedHorizontalBarDrawParams(
     val minValue: Float,
     val maxValue: Float,
     val animationProgress: Float,
-    val onBarClick: ((GroupedHorizontalBarEntry) -> Unit)?,
     val barBounds: MutableList<Pair<Rect, GroupedHorizontalBarEntry>>,
-    val recordBounds: Boolean = onBarClick != null,
+    val recordBounds: Boolean,
     /** Measures persistent-marker labels; `null` skips marker drawing. */
     val textMeasurer: TextMeasurer? = null,
 )

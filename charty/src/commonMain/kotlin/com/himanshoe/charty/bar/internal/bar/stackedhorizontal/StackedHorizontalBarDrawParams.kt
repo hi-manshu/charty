@@ -22,7 +22,6 @@ internal data class StackedHorizontalBarDrawParams(
     /** Pre-computed maximum total across all groups — used as the value axis upper bound. */
     val maxTotal: Float,
     val animationProgress: Float,
-    val onSegmentClick: ((StackedHorizontalBarSegment) -> Unit)?,
     val segmentBounds: MutableList<Pair<Rect, StackedHorizontalBarSegment>>,
-    val recordBounds: Boolean = onSegmentClick != null,
+    val recordBounds: Boolean,
 )
