@@ -1,9 +1,9 @@
-package com.himanshoe.charty.line.internal.path
+package com.himanshoe.charty.common.draw
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
-import com.himanshoe.charty.line.config.LineInterpolation
+import com.himanshoe.charty.common.config.LineInterpolation
 
 private const val CONTROL_POINT_DIVISOR = 3f
 private const val CONTROL_POINT_MULTIPLIER = 2f

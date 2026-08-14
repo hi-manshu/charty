@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
@@ -16,25 +17,6 @@ import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.common.util.toChartLabel
-
-/**
- * Defines how negative values should be drawn in bar charts
- */
-enum class NegativeValuesDrawMode {
-    /**
-     * Negative bars extend below the zero axis line (axis centered)
-     * Positive bars extend above the zero axis line
-     * Best for visualizing profit/loss, gains/losses, etc.
-     */
-    BELOW_AXIS,
-
-    /**
-     * All bars drawn from the minimum value upward
-     * The axis starts at the lowest value instead of zero
-     * Best for showing relative differences when all values should appear above baseline
-     */
-    FROM_MIN_VALUE,
-}
 
 /**
  * Configuration for Bar Chart appearance and behavior

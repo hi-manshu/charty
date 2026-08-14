@@ -13,15 +13,15 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
+import com.himanshoe.charty.common.draw.interpolatedAreaPath
+import com.himanshoe.charty.common.draw.interpolatedLinePath
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.drawPointCrosshair
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.StackedAreaPoint
-import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.line.internal.marker.markerAnchorPositions
 import com.himanshoe.charty.line.internal.marker.stackedTotalValues
-import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
-import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 import com.himanshoe.charty.line.resolveLineInterpolation
 
 /**
@@ -232,7 +232,7 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
     params.crosshairState?.let { state ->
         lineConfig.crosshairConfig?.let { config ->
             val dotColor = ChartyColor.Solid(colorList.firstOrNull() ?: Color.Transparent)
-            drawLineChartCrosshair(
+            drawPointCrosshair(
                 state = state,
                 config = config,
                 chartContext = chartContext,

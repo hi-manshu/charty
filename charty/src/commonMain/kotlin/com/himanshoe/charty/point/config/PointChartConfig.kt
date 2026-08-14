@@ -2,9 +2,9 @@ package com.himanshoe.charty.point.config
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.Animation
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig

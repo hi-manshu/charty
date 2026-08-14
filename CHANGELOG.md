@@ -3,6 +3,17 @@
 Notable changes to Charty. Versions follow [semantic versioning](https://semver.org); breaking
 changes are listed first in each release and say what to do about them.
 
+## Unreleased
+
+### Changed
+
+- **`NegativeValuesDrawMode` and `LineInterpolation` moved to `com.himanshoe.charty.common.config`.**
+  Both were sitting in the package of one chart family while four others took them as settings, so a
+  line chart's config had to import from `bar.config` to describe its own axis. The old names remain
+  as deprecated typealiases, so code written against 3.0.0 keeps compiling; update the import when
+  convenient. Recompile rather than swapping the jar — an alias is a source-level compatibility
+  measure, not a binary one.
+
 ## 3.0.1
 
 Bug fixes only, all in the zoom and pan path. No API removed, one parameter added with a default, so

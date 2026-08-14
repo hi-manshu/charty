@@ -2,8 +2,8 @@ package com.himanshoe.charty.bar.internal.bar.bubblebar
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.util.baselineValueRange
 

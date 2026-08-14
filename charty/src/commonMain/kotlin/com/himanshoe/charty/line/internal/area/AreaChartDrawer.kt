@@ -17,13 +17,13 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
+import com.himanshoe.charty.common.draw.interpolatedAreaPath
+import com.himanshoe.charty.common.draw.interpolatedLinePath
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createLineBrush
-import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
-import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 import com.himanshoe.charty.line.resolveLineInterpolation
 
 private const val HIGHLIGHT_LINE_ALPHA = 0.1f

@@ -15,7 +15,6 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
@@ -30,6 +29,7 @@ import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
@@ -47,6 +47,7 @@ import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.createPointTooltipState
+import com.himanshoe.charty.common.gesture.drawPointCrosshair
 import com.himanshoe.charty.common.gesture.pointChartClickHandler
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
@@ -63,7 +64,6 @@ import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.common.util.calculateMaxValue
 import com.himanshoe.charty.common.util.calculateMinValue
-import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.point.config.PointChartConfig
 import com.himanshoe.charty.point.data.PointData
 import com.himanshoe.charty.point.internal.rememberThemedPointStyling
@@ -478,7 +478,7 @@ private fun DrawScope.drawPointCrosshair(
 ) {
     val state = crosshairState ?: return
     crosshairConfig?.let { config ->
-        drawLineChartCrosshair(
+        drawPointCrosshair(
             state = state,
             config = config,
             chartContext = chartContext,

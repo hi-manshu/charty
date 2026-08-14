@@ -11,7 +11,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BubbleBarChartConfig
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.bubblebar.BubbleBarDrawParams
@@ -29,6 +28,7 @@ import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.draw.drawPersistentMarkers

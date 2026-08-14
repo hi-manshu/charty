@@ -148,7 +148,7 @@ BarChart(
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.config.LineChartConfig
-import com.himanshoe.charty.line.config.LineInterpolation
+import com.himanshoe.charty.common.config.LineInterpolation
 
 LineChart(
     data = { priceData },

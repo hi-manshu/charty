@@ -40,10 +40,10 @@ import com.himanshoe.charty.circular.config.RingDirection
 import com.himanshoe.charty.circular.data.CircularRingData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.LineInterpolation
 import com.himanshoe.charty.line.MultilineChart
 import com.himanshoe.charty.line.StackedAreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
-import com.himanshoe.charty.line.config.LineInterpolation
 import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.radar.RadarChart
 import com.himanshoe.charty.radar.config.RadarChartConfig

@@ -1,10 +1,10 @@
 package com.himanshoe.charty.line
 
 import androidx.compose.ui.geometry.Offset
-import com.himanshoe.charty.line.internal.path.CubicSegment
-import com.himanshoe.charty.line.internal.path.smoothSegments
-import com.himanshoe.charty.line.internal.path.stepCorner
-import com.himanshoe.charty.line.internal.path.stepVertices
+import com.himanshoe.charty.common.draw.CubicSegment
+import com.himanshoe.charty.common.draw.smoothSegments
+import com.himanshoe.charty.common.draw.stepCorner
+import com.himanshoe.charty.common.draw.stepVertices
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

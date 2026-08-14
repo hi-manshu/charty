@@ -28,7 +28,7 @@ private val CrosshairContentGap = 12.dp
  * Renders a caller-supplied composable as the crosshair label, positioned over the chart.
  *
  * This is the Compose-based counterpart to the canvas crosshair label drawn by
- * [drawLineChartCrosshair][com.himanshoe.charty.line.internal.line.drawLineChartCrosshair]. When a
+ * [drawPointCrosshair][com.himanshoe.charty.line.internal.line.drawPointCrosshair]. When a
  * chart is given a `crosshairContent` slot, it places this overlay on top of its drawing surface and
  * lets the caller render any layout they like for [item]. The content is horizontally centred over
  * the snapped data point ([CrosshairState.x]), clamped to stay [TooltipConfig.minDistanceFromEdge]

@@ -1,10 +1,10 @@
 package com.himanshoe.charty.bar
 
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.internal.bar.barchart.barValueRange
 import com.himanshoe.charty.bar.internal.bar.barchart.calculateVerticalBarDimensions
 import com.himanshoe.charty.bar.internal.bar.horizontal.calculateHorizontalBaselineX
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

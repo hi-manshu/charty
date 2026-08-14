@@ -13,7 +13,6 @@ import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarEntry
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.groupedhorizontal.GroupedHorizontalBarDrawParams
@@ -35,6 +34,7 @@ import com.himanshoe.charty.common.animation.rememberChartAnimation
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberWindowedData

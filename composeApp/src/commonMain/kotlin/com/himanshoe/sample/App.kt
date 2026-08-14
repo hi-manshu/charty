@@ -63,7 +63,6 @@ import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.config.MosaicBarChartConfig
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.config.StackedHorizontalBarChartConfig
@@ -98,6 +97,7 @@ import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.ReferenceLineConfig
 import com.himanshoe.charty.common.config.ReferenceLineLabelPosition
 import com.himanshoe.charty.common.config.ReferenceLineStrokeStyle

@@ -24,12 +24,12 @@ import com.himanshoe.charty.bar.HorizontalBarChart
 import com.himanshoe.charty.bar.StackedBarChart
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import kotlin.random.Random
 
 private fun randomBarGroups(

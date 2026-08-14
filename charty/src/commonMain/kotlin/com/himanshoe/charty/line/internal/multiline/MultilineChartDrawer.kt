@@ -14,6 +14,8 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBand
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
+import com.himanshoe.charty.common.draw.interpolatedAreaPath
+import com.himanshoe.charty.common.draw.interpolatedLinePath
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
@@ -23,8 +25,6 @@ import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createLineBrush
 import com.himanshoe.charty.line.internal.marker.markerAnchorPositions
 import com.himanshoe.charty.line.internal.marker.topSeriesValues
-import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
-import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 import com.himanshoe.charty.line.resolveLineInterpolation
 
 /**
@@ -124,10 +124,13 @@ private fun DrawScope.drawPointsForSeries(
 ) {
     val seriesColor = colorList[seriesIndex % colorList.size]
     pointPositions.fastForEachIndexed { index, position ->
+        // Dots appear left to right rather than all at once: a dot's own progress is how far along
+        // the series it sits, held back by how far the line has actually been drawn. The first dot is
+        // 1/n rather than 0 so that it is visible from the opening frame instead of after one step.
         val pointProgress =
             if (lineConfig.animation.isAnimated) {
                 ((index + 1).toFloat() / pointPositions.size)
-                    .coerceAtMost(animationProgress * MultilineChartConstants.ANIMATION_PROGRESS_MULTIPLIER)
+                    .coerceAtMost(animationProgress * MultilineChartConstants.POINT_REVEAL_LEAD)
             } else {
                 1f
             }

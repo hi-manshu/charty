@@ -2,7 +2,7 @@ package com.himanshoe.charty.line.internal.area
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.line.data.LineData
 

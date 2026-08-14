@@ -18,13 +18,13 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.accessibility.toReadableString
 import com.himanshoe.charty.common.animation.rememberChartAnimation
+import com.himanshoe.charty.common.config.LineInterpolation
+import com.himanshoe.charty.common.draw.interpolatedAreaPath
+import com.himanshoe.charty.common.draw.interpolatedLinePath
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
-import com.himanshoe.charty.line.config.LineInterpolation
 import com.himanshoe.charty.line.config.SparklineConfig
 import com.himanshoe.charty.line.ext.createAreaBrush
 import com.himanshoe.charty.line.ext.createLineBrush
-import com.himanshoe.charty.line.internal.path.interpolatedAreaPath
-import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 
 private const val CENTER_FRACTION = 0.5f
 

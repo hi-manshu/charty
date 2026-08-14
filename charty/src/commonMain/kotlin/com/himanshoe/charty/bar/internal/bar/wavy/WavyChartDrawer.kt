@@ -17,10 +17,10 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.CrosshairState
+import com.himanshoe.charty.common.gesture.drawPointCrosshair
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
 import com.himanshoe.charty.common.tooltip.drawTooltip
-import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -182,7 +182,7 @@ internal fun DrawScope.drawWavyOverlays(
     }
     crosshairState?.let { state ->
         crosshairConfig?.let { config ->
-            drawLineChartCrosshair(
+            drawPointCrosshair(
                 state = state,
                 config = config,
                 chartContext = chartContext,

@@ -1,7 +1,7 @@
 package com.himanshoe.charty.line
 
+import com.himanshoe.charty.common.config.LineInterpolation
 import com.himanshoe.charty.line.config.LineChartConfig
-import com.himanshoe.charty.line.config.LineInterpolation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -10,5 +10,13 @@ import com.himanshoe.charty.common.constants.ChartConstants
 internal object MultilineChartConstants {
     const val TAP_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_TAP_RADIUS_MULTIPLIER
     const val POINT_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_HIGHLIGHT_RADIUS_MULTIPLIER
-    const val ANIMATION_PROGRESS_MULTIPLIER = 1.2f
+
+    /**
+     * How far ahead of the line's own progress the dots are allowed to run.
+     *
+     * At 1.0 the last dot would land exactly as the line finished drawing, which reads as the dot
+     * arriving late — it appears only once the line has already reached it. Letting the reveal run a
+     * fifth faster puts each dot on its point just before the stroke gets there.
+     */
+    const val POINT_REVEAL_LEAD = 1.2f
 }

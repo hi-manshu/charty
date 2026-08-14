@@ -15,8 +15,8 @@ import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLine
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
+import com.himanshoe.charty.common.gesture.drawPointCrosshair
 import com.himanshoe.charty.common.tooltip.drawTooltip
-import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 
 /**
  * Draw all bars in the combo chart
@@ -198,7 +198,7 @@ internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
     )
     p.crosshairState?.let { state ->
         p.comboConfig.crosshairConfig?.let { config ->
-            drawLineChartCrosshair(
+            drawPointCrosshair(
                 state = state,
                 config = config,
                 chartContext = p.chartContext,

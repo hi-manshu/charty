@@ -1,9 +1,9 @@
 package com.himanshoe.charty.combo
 
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.internal.comboLineRange
 import com.himanshoe.charty.combo.internal.comboPrimaryRange
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

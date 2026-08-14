@@ -66,7 +66,6 @@ import com.himanshoe.charty.bar.WaterfallChart
 import com.himanshoe.charty.bar.WavyChart
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.GroupedHorizontalBarChartConfig
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.config.StackedBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
@@ -86,6 +85,8 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.LineInterpolation
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
@@ -118,7 +119,6 @@ import com.himanshoe.charty.line.MultilineChart
 import com.himanshoe.charty.line.Sparkline
 import com.himanshoe.charty.line.StackedAreaChart
 import com.himanshoe.charty.line.config.LineChartConfig
-import com.himanshoe.charty.line.config.LineInterpolation
 import com.himanshoe.charty.line.config.SparklineConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.data.LineGroup

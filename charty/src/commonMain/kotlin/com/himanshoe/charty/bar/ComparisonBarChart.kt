@@ -13,7 +13,6 @@ import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarSegment
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
@@ -36,6 +35,7 @@ import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair

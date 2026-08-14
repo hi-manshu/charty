@@ -8,7 +8,6 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.ComparisonBarChartConfig
 import com.himanshoe.charty.bar.config.ComparisonBarSegment
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.internal.bar.BarCorners
 import com.himanshoe.charty.bar.internal.bar.drawBarShape
@@ -16,6 +15,7 @@ import com.himanshoe.charty.bar.internal.bar.drawVerticalBarMarkers
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.tooltip.TooltipState

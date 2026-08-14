@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.himanshoe.charty.bar.BarChart
 import com.himanshoe.charty.bar.config.BarChartConfig
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.ComboChart
@@ -30,6 +29,8 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.CornerRadius
+import com.himanshoe.charty.common.config.LineInterpolation
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.config.PersistentMarker
 import com.himanshoe.charty.common.config.ReferenceBandConfig
 import com.himanshoe.charty.common.config.ReferenceLineConfig
@@ -41,7 +42,6 @@ import com.himanshoe.charty.common.tooltip.TooltipPosition
 import com.himanshoe.charty.line.AreaChart
 import com.himanshoe.charty.line.LineChart
 import com.himanshoe.charty.line.config.LineChartConfig
-import com.himanshoe.charty.line.config.LineInterpolation
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.pie.PieChart
 import com.himanshoe.charty.pie.config.InteractionConfig

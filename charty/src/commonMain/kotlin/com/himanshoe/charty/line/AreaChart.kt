@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.rememberTextMeasurer
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
@@ -23,11 +22,13 @@ import com.himanshoe.charty.common.axis.valueAxisConfig
 import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
 import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
+import com.himanshoe.charty.common.gesture.drawPointCrosshair
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
 import com.himanshoe.charty.common.streamingPan
@@ -45,7 +46,6 @@ import com.himanshoe.charty.line.internal.area.calculatePointPositions
 import com.himanshoe.charty.line.internal.area.drawAreaChart
 import com.himanshoe.charty.line.internal.area.drawAreaTooltipHighlight
 import com.himanshoe.charty.line.internal.area.rememberAreaValueRange
-import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.line.internal.rememberThemedLineStyling
 
 /**
@@ -214,7 +214,7 @@ fun AreaChart(
             )
             animatedCrosshairState?.resolve()?.let { crosshairState ->
                 styling.config.crosshairConfig?.let { crosshairConfig ->
-                    drawLineChartCrosshair(
+                    drawPointCrosshair(
                         state = crosshairState,
                         config = crosshairConfig,
                         chartContext = chartContext,

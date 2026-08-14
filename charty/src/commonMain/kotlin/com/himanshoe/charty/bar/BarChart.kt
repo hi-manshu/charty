@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.bar.config.BarChartConfig
-import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.BarChartOverlays
 import com.himanshoe.charty.bar.internal.bar.barCrosshairHandler
@@ -35,6 +34,7 @@ import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.config.NegativeValuesDrawMode
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.drawInteractionOverlays

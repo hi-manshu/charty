@@ -1,4 +1,4 @@
-package com.himanshoe.charty.line.config
+package com.himanshoe.charty.common.config
 
 /**
  * How consecutive points of a line chart are connected.

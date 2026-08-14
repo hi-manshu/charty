@@ -7,9 +7,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.config.ComboChartConfig
-import com.himanshoe.charty.line.config.LineInterpolation
-import com.himanshoe.charty.line.internal.line.drawAnimatedLineSegments
-import com.himanshoe.charty.line.internal.path.interpolatedLinePath
+import com.himanshoe.charty.common.config.LineInterpolation
+import com.himanshoe.charty.common.draw.drawAnimatedLineSegments
+import com.himanshoe.charty.common.draw.interpolatedLinePath
 
 /**
  * Draw smooth curve line through points using cubic bezier curves
