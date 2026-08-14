@@ -196,6 +196,26 @@ jobs:
             --no-configuration-cache \
             --stacktrace
 
+      # The step above proves the artifacts publish. This one proves they can be used: it compiles a
+      # consumer against the published coordinates, resolving them from the Maven Local the previous
+      # step just wrote. A dependency missing from the POM, a platform variant that never got built,
+      # or a version pairing that resolves to two incompatible halves all pass the publish task and
+      # fail here — which is the whole reason a rehearsal is worth running.
+      - name: Verify the published artifacts are consumable
+        if: ${{ github.event.inputs.dryRun == 'true' }}
+        env:
+          CHARTY_VERSION: ${{ github.event.inputs.versionName }}
+          CHARTY_3D_VERSION: ${{ github.event.inputs.versionName3d }}
+        run: |
+          if [ -z "$CHARTY_3D_VERSION" ]; then
+            echo "ℹ️ charty-3d was not published in this run; verifying charty alone is not supported by the consumer project, which depends on both. Skipping."
+            exit 0
+          fi
+          ./gradlew -p release-verification verifyRelease \
+            -PchartyVersion="$CHARTY_VERSION" \
+            -Pcharty3dVersion="$CHARTY_3D_VERSION" \
+            --stacktrace
+
       - name: Publish to Maven Central
         if: ${{ github.event.inputs.dryRun != 'true' }}
         env:
@@ -308,8 +328,9 @@ jobs:
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🧪 Dry run of Charty v$VERSION succeeded
 
-          The quality gate passed and both artifacts built, signed and published to this runner's
-          Maven Local. **Nothing reached Maven Central, no tag was created, and no release was cut.**
+          The quality gate passed, both artifacts built, signed and published to this runner's Maven
+          Local, and a consumer compiled against the published coordinates on every target this host
+          can build. **Nothing reached Maven Central, no tag was created, and no release was cut.**
 
           Re-run with **Dry run** unchecked to release for real.
           EOF

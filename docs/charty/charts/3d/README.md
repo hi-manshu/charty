@@ -13,6 +13,10 @@ behind it, and calling it 3.0.0 would claim two major versions it never had. It 
 pace: it is experimental, so it will break more often than `charty` does, and tying it to `charty`'s
 number would force a major bump on the stable library every time a 3D chart changed shape.
 
+Every release is rehearsed against this: `scripts/verify-release.sh` publishes both artifacts locally
+and then compiles a consumer against the published coordinates, so a POM missing a dependency or a
+platform variant that never got built fails before the release rather than after it.
+
 You never have to work out which pair goes together. Each `charty-3d` release declares the exact
 `charty` it was built and tested against — `1.0.0` requires `charty:3.0.0` — so the build resolves
 the right one whether or not you name `charty` yourself.
