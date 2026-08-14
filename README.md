@@ -64,10 +64,10 @@ dependencies {
 }
 ```
 
-The 3D charts live in a second artifact, released at the same version, and are opt-in on purpose — see [charty-3d](docs/charty/charts/3d/README.md):
+The 3D charts live in a second artifact with its own version, and are opt-in on purpose — see [charty-3d](docs/charty/charts/3d/README.md). It declares the `charty` it was built against, so the pair always resolves correctly:
 
 ```kotlin
-implementation("com.himanshoe:charty-3d:<latest-version>")
+implementation("com.himanshoe:charty-3d:1.0.0")
 ```
 
 Your first chart is three lines:

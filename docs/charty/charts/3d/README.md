@@ -4,12 +4,18 @@ Projected three-dimensional charts, published as a **separate artifact** so a pr
 want them does not carry them.
 
 ```kotlin
-implementation("com.himanshoe:charty:<version>")
-implementation("com.himanshoe:charty-3d:<version>")
+implementation("com.himanshoe:charty:3.0.0")
+implementation("com.himanshoe:charty-3d:1.0.0")
 ```
 
-Both artifacts are released together at the same version, so `charty-3d` can never resolve against a
-`charty` it was not built for.
+**The two carry their own version numbers.** `charty-3d` arrived at Charty 3.0 with no releases
+behind it, and calling it 3.0.0 would claim two major versions it never had. It also moves at its own
+pace: it is experimental, so it will break more often than `charty` does, and tying it to `charty`'s
+number would force a major bump on the stable library every time a 3D chart changed shape.
+
+You never have to work out which pair goes together. Each `charty-3d` release declares the exact
+`charty` it was built and tested against — `1.0.0` requires `charty:3.0.0` — so the build resolves
+the right one whether or not you name `charty` yourself.
 
 ## Opting in
 

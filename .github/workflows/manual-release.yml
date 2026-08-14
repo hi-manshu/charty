@@ -1,8 +1,10 @@
 name: Manual Publish to Maven Central
 
-# Publishes `charty` and `charty-3d` together at the version you type in. They are always released
-# as a pair and at the same version, so `charty-3d` can never resolve against a `charty` it was not
-# built against.
+# Publishes `charty` and `charty-3d` together, each at its own version. They carry separate numbers
+# because charty-3d arrived with no releases behind it and, being experimental, changes shape more
+# often than a stable library should. Building them in one run is what keeps them honest: charty-3d
+# depends on charty as a project, so the version it records is the one charty was actually built at
+# here, and a pairing that was never built together can never be published.
 #
 # A release to Maven Central cannot be taken back — a version number, once used, is spent. So this
 # runs the full quality gate first and refuses to publish a version that already has a tag, and it
@@ -12,8 +14,12 @@ on:
   workflow_dispatch:
     inputs:
       versionName:
-        description: 'Version to release (e.g. 3.0.1 or 3.1.0-rc01)'
+        description: 'charty version to release (e.g. 3.0.0)'
         required: true
+        type: string
+      versionName3d:
+        description: 'charty-3d version to release (e.g. 1.0.0). Leave blank to skip publishing charty-3d.'
+        required: false
         type: string
       dryRun:
         description: 'Rehearse only: build, verify and publish to the runner Maven Local. Nothing reaches Maven Central, no tag, no GitHub release.'
@@ -72,7 +78,18 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Releasing version: $VERSION"
+          echo "✅ Releasing charty: $VERSION"
+
+          VERSION_3D="${{ github.event.inputs.versionName3d }}"
+          if [ -z "$VERSION_3D" ]; then
+            echo "ℹ️ charty-3d will not be published in this run."
+          else
+            if git rev-parse "charty-3d/v$VERSION_3D" >/dev/null 2>&1; then
+              echo "❌ Tag charty-3d/v$VERSION_3D already exists — that version has been released."
+              exit 1
+            fi
+            echo "✅ Releasing charty-3d: $VERSION_3D"
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -167,9 +184,15 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           VERSION_NAME: ${{ github.event.inputs.versionName }}
+          VERSION_NAME_3D: ${{ github.event.inputs.versionName3d }}
         run: |
-          echo "🧪 Dry run: building and signing Charty $VERSION_NAME, publishing to this runner's Maven Local."
-          ./gradlew :charty:publishToMavenLocal :charty3d:publishToMavenLocal \
+          echo "🧪 Dry run: building and signing charty $VERSION_NAME, publishing to this runner's Maven Local."
+          MODULES=":charty:publishToMavenLocal"
+          if [ -n "$VERSION_NAME_3D" ]; then
+            echo "🧪 ...and charty-3d $VERSION_NAME_3D."
+            MODULES="$MODULES :charty3d:publishToMavenLocal"
+          fi
+          ./gradlew $MODULES \
             --no-configuration-cache \
             --stacktrace
 
@@ -183,9 +206,15 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           MAVEN_CENTRAL_VERIFICATION_TOKEN: ${{ secrets.MAVEN_CENTRAL_VERIFICATION_TOKEN }}
           VERSION_NAME: ${{ github.event.inputs.versionName }}
+          VERSION_NAME_3D: ${{ github.event.inputs.versionName3d }}
         run: |
-          echo "📦 Publishing charty and charty-3d $VERSION_NAME to Maven Central..."
-          ./gradlew :charty:publishAndReleaseToMavenCentral :charty3d:publishAndReleaseToMavenCentral \
+          echo "📦 Publishing charty $VERSION_NAME to Maven Central..."
+          MODULES=":charty:publishAndReleaseToMavenCentral"
+          if [ -n "$VERSION_NAME_3D" ]; then
+            echo "📦 ...and charty-3d $VERSION_NAME_3D."
+            MODULES="$MODULES :charty3d:publishAndReleaseToMavenCentral"
+          fi
+          ./gradlew $MODULES \
             --no-configuration-cache \
             --stacktrace
 
@@ -200,14 +229,32 @@ jobs:
 
           git tag -a "$TAG" -m "Release version $VERSION"
           git push origin "$TAG"
-
           echo "✅ Created and pushed tag: $TAG"
+
+          # charty-3d gets its own namespaced tag, so the two version histories stay readable
+          # side by side in `git tag` instead of interleaving into one confusing sequence.
+          VERSION_3D="${{ github.event.inputs.versionName3d }}"
+          if [ -n "$VERSION_3D" ]; then
+            TAG_3D="charty-3d/v$VERSION_3D"
+            git tag -a "$TAG_3D" -m "Release charty-3d version $VERSION_3D"
+            git push origin "$TAG_3D"
+            echo "✅ Created and pushed tag: $TAG_3D"
+          fi
 
       - name: Generate release notes
         if: ${{ success() && github.event.inputs.dryRun != 'true' }}
         id: release_notes
         run: |
           VERSION="${{ github.event.inputs.versionName }}"
+          VERSION_3D="${{ github.event.inputs.versionName3d }}"
+
+          if [ -n "$VERSION_3D" ]; then
+            THREE_D_COORDINATE=$(printf '\n          // Optional, projected 3D charts. Every declaration is @ChartyExperimental — see\n          // docs/charty/charts/3d/README.md for the opt-in and for when not to use them.\n          implementation("com.himanshoe:charty-3d:%s")' "$VERSION_3D")
+            THREE_D_LINK=$(printf '\n          - [charty-3d on Maven Central](https://central.sonatype.com/artifact/com.himanshoe/charty-3d/%s)' "$VERSION_3D")
+          else
+            THREE_D_COORDINATE=""
+            THREE_D_LINK=""
+          fi
 
           # The tag for this release was created a step ago, so exclude it to find the one before.
           LAST_TAG=$(git tag --sort=-creatordate | grep -v "^v$VERSION\$" | head -1)
@@ -224,20 +271,17 @@ jobs:
           ### 📦 Maven coordinates
           \`\`\`kotlin
           implementation("com.himanshoe:charty:$VERSION")
-
-          // Optional, projected 3D charts. Every declaration is @ChartyExperimental — see
-          // docs/charty/charts/3d/README.md for the opt-in and for when not to use them.
-          implementation("com.himanshoe:charty-3d:$VERSION")
+          $THREE_D_COORDINATE
           \`\`\`
 
-          Both artifacts are released together at the same version.
+          The two artifacts carry separate versions. Each charty-3d release records the charty it was
+          built against, so the pair always resolves together.
 
           ### 📝 Changes
           $COMMITS
 
           ### 🔗 Links
-          - [charty on Maven Central](https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION)
-          - [charty-3d on Maven Central](https://central.sonatype.com/artifact/com.himanshoe/charty-3d/$VERSION)
+          - [charty on Maven Central](https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION)$THREE_D_LINK
           - [Changelog](https://github.com/hi-manshu/charty/blob/main/CHANGELOG.md)
           - [Live playground](https://hi-manshu.github.io/charty/)
 
@@ -274,20 +318,30 @@ jobs:
         if: ${{ success() && github.event.inputs.dryRun != 'true' }}
         run: |
           VERSION="${{ github.event.inputs.versionName }}"
+          VERSION_3D="${{ github.event.inputs.versionName3d }}"
+
+          if [ -n "$VERSION_3D" ]; then
+            SUMMARY_3D_LINK=$(printf '\n          - https://central.sonatype.com/artifact/com.himanshoe/charty-3d/%s' "$VERSION_3D")
+            SUMMARY_3D_TAG=$(printf ' and \\`charty-3d/v%s\\`' "$VERSION_3D")
+            SUMMARY_3D_COORDINATE=$(printf '\n          implementation("com.himanshoe:charty-3d:%s")' "$VERSION_3D")
+          else
+            SUMMARY_3D_LINK=""
+            SUMMARY_3D_TAG=""
+            SUMMARY_3D_COORDINATE=""
+          fi
+
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## ✅ Published Charty v$VERSION
 
           ### 📦 Maven Central
-          - https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION
-          - https://central.sonatype.com/artifact/com.himanshoe/charty-3d/$VERSION
+          - https://central.sonatype.com/artifact/com.himanshoe/charty/$VERSION$SUMMARY_3D_LINK
 
-          ### 🏷️ Git tag
-          Created and pushed: \`v$VERSION\`
+          ### 🏷️ Git tags
+          Created and pushed: \`v$VERSION\`$SUMMARY_3D_TAG
 
           ### 📱 Usage
           \`\`\`kotlin
-          implementation("com.himanshoe:charty:$VERSION")
-          implementation("com.himanshoe:charty-3d:$VERSION")
+          implementation("com.himanshoe:charty:$VERSION")$SUMMARY_3D_COORDINATE
           \`\`\`
 
           ### ⏱️ Availability
@@ -311,6 +365,7 @@ jobs:
           ### Reproduce locally
           \`\`\`bash
           ./gradlew :charty:publishToMavenLocal :charty3d:publishToMavenLocal \\
-            -PVERSION_NAME=${{ github.event.inputs.versionName }} --no-configuration-cache
+            -PVERSION_NAME=${{ github.event.inputs.versionName }} \\
+            -PVERSION_NAME_3D=${{ github.event.inputs.versionName3d }} --no-configuration-cache
           \`\`\`
           EOF

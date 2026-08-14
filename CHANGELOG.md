@@ -42,8 +42,10 @@ will point at each call site. None changes behaviour: the defaults render exactl
 
 ### Added
 
-- **`charty-3d`** — a separate artifact for projected 3D charts, released in lockstep with `charty`
-  at the same version. `Bar3DChart` and `Pie3DChart`, both `@ChartyExperimental`. See
+- **`charty-3d` 1.0.0** — a separate artifact for projected 3D charts, carrying its own version
+  because it arrived here with no releases behind it and because, being experimental, it will move
+  faster than `charty` should. It declares the `charty` it was built against, so the pair always
+  resolves together. `Bar3DChart` and `Pie3DChart`, both `@ChartyExperimental`. See
   [its page](docs/charty/charts/3d/README.md), which is candid about what depth costs you.
 - **`@ChartyExperimental`** — a `RequiresOptIn` marker at ERROR level for APIs that may change in a
   minor release without deprecation.

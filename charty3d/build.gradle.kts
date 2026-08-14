@@ -13,7 +13,16 @@ plugins {
 }
 
 group = System.getenv("GROUP") ?: project.findProperty("GROUP")?.toString() ?: "com.himanshoe"
-version = System.getenv("VERSION_NAME") ?: project.findProperty("VERSION_NAME")?.toString() ?: "1.0.0-SNAPSHOT"
+
+// charty-3d carries its own version, because it has its own history. It arrived at Charty 3.0 with
+// no releases behind it, and numbering it 3.0.0 would claim two major versions it never had. Its
+// dependency on charty is a project dependency, so whatever version charty is built at here is the
+// version the published metadata requires — the two can move independently without ever resolving
+// against a pairing that was not built and tested together.
+version =
+    System.getenv("VERSION_NAME_3D")
+        ?: project.findProperty("VERSION_NAME_3D")?.toString()
+        ?: "1.0.0-SNAPSHOT"
 
 kotlin {
     sourceSets.all {
@@ -87,6 +96,16 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
+    }
+}
+
+// The publishing plugin stamps every publication with the VERSION_NAME property, which is charty's
+// version. This puts charty-3d's own version back on them. Without it the artifact would publish at
+// charty's version whatever VERSION_NAME_3D said, and the mismatch would surface only once it was on
+// Maven Central and could not be taken back.
+publishing {
+    publications.withType<MavenPublication>().configureEach {
+        version = project.version.toString()
     }
 }
 
