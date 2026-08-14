@@ -1,7 +1,11 @@
-name: Deploy playground
+name: Deploy site
 
-# Builds the Compose/Wasm web playground and publishes it to GitHub Pages.
-# One-time setup: repo Settings → Pages → Build and deployment → Source = "GitHub Actions".
+# Builds the documentation site and the Compose/Wasm playground and publishes both to GitHub Pages:
+# the docs at the root, the playground under /playground.
+#
+# Both are assembled by the Gradle build rather than here, so the directory this uploads is the same
+# one a developer gets locally. A site whose parts are only ever joined together on CI is a site
+# whose links can only be tested on CI.
 
 on:
   push:
@@ -9,10 +13,13 @@ on:
     paths:
       - "charty/**"
       - "composeApp/**"
+      - "docs/**"
+      - "docsite/**"
+      - "img/**"
       - "gradle/**"
       - "*.gradle.kts"
       - "gradle.properties"
-      - ".github/workflows/deploy-playground.yml"
+      - ".github/workflows/deploy-site.yml"
   workflow_dispatch:
 
 permissions:
@@ -45,13 +52,16 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build Wasm distribution
-        run: ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon -PkotlinYarnLockMismatchReport=warning
+      # Renders the docs and builds the playground, then assembles them into one directory. The
+      # generator fails on a dead link, so a broken cross-reference stops the deploy rather than
+      # reaching a reader.
+      - name: Build the site
+        run: ./gradlew :docsite:assembleSite --no-daemon -PkotlinYarnLockMismatchReport=warning
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: composeApp/build/dist/wasmJs/productionExecutable
+          path: docsite/build/published-site
 
   deploy:
     needs: build

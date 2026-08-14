@@ -1,82 +1,82 @@
 /*
   Charty documentation.
 
-  The palette is Material 3, seeded from Charty's own purple, and used the way M3 intends: nothing is
-  plain white or plain black. Surfaces are tinted with the seed and separated by tone rather than by
-  borders, which is what stops a documentation page reading as a wall of white with lines drawn on it.
+  Monochrome by design. A charting library's pages are full of colour already — every screenshot is
+  six or seven hues — and a coloured interface competes with the thing it is presenting. So the
+  chrome is black, white and grey, structure comes from hairline borders and space rather than from
+  tinted panels, and the only colour on any page belongs to the charts.
 
-  Both themes are declared as variables here and every rule below is written once against them, so
-  neither theme is the special case. The attribute is set by an inline script before the first paint;
-  a class toggled after load would flash the wrong colours on every navigation.
+  Both themes are declared here as variables and every rule below is written once against them, so
+  neither is the special case. The attribute is set by an inline script before the first paint; a
+  class toggled after load would flash the wrong colours on every navigation.
 
-  Code blocks are the deliberate exception: they stay dark in both themes. Syntax colours are built
-  for a dark ground, and a block that inverts with the page makes the same snippet look like two
+  Code blocks are the deliberate exception: they stay dark in both themes, because syntax colours are
+  built for a dark ground and a block that inverts with the page makes one snippet look like two
   different things.
 */
 
 :root {
-    /* Material 3 light, seeded from #6650A4 */
-    --bg: #fdf7ff;
-    --surface: #fdf7ff;
-    --surface-container-low: #f8f1fa;
-    --surface-container: #f2ebf4;
-    --surface-container-high: #ece5ef;
-    --surface-container-highest: #e6dfe9;
-    --outline: #7a757f;
-    --outline-variant: #ded4e4;
-    --text: #1d1a22;
-    --text-muted: #4a454e;
-    --text-faint: #7a757f;
-    --primary: #6650a4;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-container-low: #fafafa;
+    --surface-container: #f5f5f5;
+    --surface-container-high: #ededed;
+    --surface-container-highest: #e3e3e3;
+    --outline: #a1a1a1;
+    --outline-variant: #eaeaea;
+    --text: #000000;
+    --text-muted: #525252;
+    --text-faint: #8f8f8f;
+    /* "Primary" is ink, not a hue: a filled control is black on white and white on black. */
+    --primary: #000000;
     --on-primary: #ffffff;
-    --primary-container: #e9ddff;
-    --on-primary-container: #22005d;
-    --secondary-container: #e6deed;
-    --on-secondary-container: #1e192b;
-    --shadow: 0 1px 3px rgba(29, 26, 34, 0.08), 0 10px 30px rgba(29, 26, 34, 0.07);
-    --sidebar-width: 282px;
+    --primary-container: #f2f2f2;
+    --on-primary-container: #000000;
+    --secondary-container: #f2f2f2;
+    --on-secondary-container: #000000;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+    --sidebar-width: 268px;
     --toc-width: 224px;
-    --topbar-height: 68px;
+    --topbar-height: 64px;
     --content-max: 780px;
-    --radius: 20px;
-    --radius-sm: 14px;
+    --radius: 12px;
+    --radius-sm: 8px;
     --radius-pill: 999px;
 }
 
 :root[data-theme="dark"] {
-    /* Material 3 dark, same seed */
-    --bg: #141218;
-    --surface: #141218;
-    --surface-container-low: #1d1b20;
-    --surface-container: #211f26;
-    --surface-container-high: #2b2930;
-    --surface-container-highest: #36343b;
-    --outline: #948f99;
-    --outline-variant: #49454e;
-    --text: #e6e0e9;
-    --text-muted: #cac4d0;
-    --text-faint: #948f99;
-    --primary: #d0bcff;
-    --on-primary: #381e72;
-    --primary-container: #4f378a;
-    --on-primary-container: #e9ddff;
-    --secondary-container: #4a4458;
-    --on-secondary-container: #e8def8;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 10px 30px rgba(0, 0, 0, 0.35);
+    --bg: #000000;
+    --surface: #000000;
+    --surface-container-low: #0a0a0a;
+    --surface-container: #111111;
+    --surface-container-high: #1a1a1a;
+    --surface-container-highest: #262626;
+    --outline: #6f6f6f;
+    --outline-variant: #262626;
+    --text: #ffffff;
+    --text-muted: #a1a1a1;
+    --text-faint: #7d7d7d;
+    --primary: #ffffff;
+    --on-primary: #000000;
+    --primary-container: #1a1a1a;
+    --on-primary-container: #ffffff;
+    --secondary-container: #1a1a1a;
+    --on-secondary-container: #ffffff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* The code surface does not follow the theme. */
 :root {
-    --code-bg: #16141d;
-    --code-bg-header: #1e1b26;
-    --code-text: #e6e0e9;
-    --code-gutter: #6a6474;
-    --tok-keyword: #d0bcff;
-    --tok-string: #8fd8ac;
-    --tok-comment: #7f7a8b;
-    --tok-number: #f3b184;
-    --tok-type: #9ec9ff;
-    --tok-annotation: #e6c288;
+    --code-bg: #0a0a0a;
+    --code-bg-header: #161616;
+    --code-text: #ededed;
+    --code-gutter: #6f6f6f;
+    --tok-keyword: #d6b4fc;
+    --tok-string: #7ce6a6;
+    --tok-comment: #8f8f8f;
+    --tok-number: #f5a97f;
+    --tok-type: #8ec9ff;
+    --tok-annotation: #f0c674;
 }
 
 * {
@@ -1420,4 +1420,235 @@ code {
 
 :root[data-theme="dark"] .heart {
     color: #ff8fa3;
+}
+
+/* ---------- monochrome refinements ---------- */
+
+/*
+  Structure comes from hairline borders and space, not from tinted panels. Cards get a border and the
+  page background rather than a fill, which is what keeps a grid of chart thumbnails reading as
+  images on a page instead of as tiles in an app.
+*/
+.card,
+.platform,
+.stat,
+.chart-card,
+.page-nav-card {
+    background: var(--bg);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-sm);
+}
+
+.card:hover,
+.chart-card:hover,
+.page-nav-card:hover {
+    background: var(--bg);
+    border-color: var(--text);
+}
+
+.band--alt {
+    background: var(--surface-container-low);
+}
+
+.footer {
+    background: var(--bg);
+    border-top: 1px solid var(--outline-variant);
+}
+
+.brand {
+    gap: 8px;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+}
+
+.logo-mark {
+    display: block;
+    color: var(--text);
+}
+
+.footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+}
+
+.footer-brand strong {
+    letter-spacing: -0.02em;
+}
+
+/* Buttons are ink on paper: the filled one is solid black on white and solid white on black. */
+.button {
+    border: 1px solid var(--outline-variant);
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 11px 20px;
+    font-size: 14.5px;
+}
+
+.button:hover {
+    background: var(--bg);
+    border-color: var(--text);
+    color: var(--text);
+}
+
+.button--primary,
+.button--primary:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.button--primary:hover {
+    opacity: 0.85;
+}
+
+.button--sponsor,
+.button--sponsor:hover {
+    background: var(--bg);
+    color: var(--text);
+    filter: none;
+}
+
+.sponsor-link {
+    background: transparent;
+    color: var(--text-muted) !important;
+    border: 1px solid var(--outline-variant);
+    padding: 6px 13px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+.sponsor-link:hover {
+    border-color: var(--text);
+    color: var(--text) !important;
+    filter: none;
+}
+
+.heart,
+:root[data-theme="dark"] .heart {
+    color: var(--text);
+}
+
+/* Search: a bordered field rather than a tonal pill. */
+.search input {
+    background: var(--bg);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-sm);
+    height: 40px;
+}
+
+.search input:focus {
+    outline: none;
+    border-color: var(--text);
+}
+
+.search-results {
+    background: var(--bg);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-sm);
+}
+
+.search-results a:hover,
+.search-results a.is-active {
+    background: var(--surface-container);
+    color: var(--text);
+}
+
+.search-hint {
+    background: var(--bg);
+    border: 1px solid var(--outline-variant);
+}
+
+.theme-toggle {
+    border: 1px solid var(--outline-variant);
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    width: 36px;
+    height: 36px;
+}
+
+.theme-toggle:hover {
+    background: var(--bg);
+    border-color: var(--text);
+}
+
+/* Sidebar: the current page is marked with weight and a rule, not a coloured pill. */
+.nav-link,
+.nav-home {
+    border-radius: var(--radius-sm);
+}
+
+.nav-link:hover,
+.nav-home:hover,
+.nav-section summary:hover {
+    background: var(--surface-container);
+}
+
+.nav-link.is-active,
+.nav-home.is-active {
+    background: var(--surface-container);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.nav-icon {
+    background: var(--bg);
+    border: 1px solid var(--outline-variant);
+    color: var(--text);
+}
+
+.nav-section summary {
+    border-radius: var(--radius-sm);
+}
+
+/* Prose */
+.eyebrow {
+    color: var(--text-muted);
+}
+
+.content blockquote {
+    background: var(--bg);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-sm);
+}
+
+.content blockquote::before {
+    color: var(--text);
+}
+
+:not(pre) > code {
+    background: var(--surface-container);
+    border: 1px solid var(--outline-variant);
+}
+
+.content th {
+    background: var(--surface-container-low);
+}
+
+.count {
+    background: var(--surface-container);
+    color: var(--text-muted);
+}
+
+.page-nav-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.hero-art img,
+.content img,
+.chart-card-art,
+.marquee img {
+    background: #ffffff;
+}
+
+.stat strong {
+    letter-spacing: -0.03em;
+}
+
+/* Charts are white-background images; on a black page they need a border to sit on, not to float. */
+.marquee img,
+.hero-art img {
+    border: 1px solid var(--outline-variant);
 }

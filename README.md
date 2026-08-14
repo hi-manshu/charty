@@ -14,9 +14,15 @@
 
 ---
 
+## 📖 Documentation
+
+**[Read the docs →](https://hi-manshu.github.io/charty/)** — every chart with a picture, the code that produced it, and its full configuration, plus guides for streaming, theming, interactions and export.
+
+---
+
 ## ▶️ Try it live in your browser
 
-**[Open the interactive playground →](https://hi-manshu.github.io/charty/)** — every chart in the catalog below, with its configuration exposed as controls you can turn. Change the data, the axes, the animation, the theme, and watch it re-render instantly. No install, no emulator: it is the same Compose code you would ship, running in your browser via WebAssembly.
+**[Open the interactive playground →](https://hi-manshu.github.io/charty/playground/)** — every chart in the catalog below, with its configuration exposed as controls you can turn. Change the data, the axes, the animation, the theme, and watch it re-render instantly. No install, no emulator: it is the same Compose code you would ship, running in your browser via WebAssembly.
 
 It also carries live sandboxes for streaming, synced crosshairs, PNG export, tooltips, and interpolation — each showing the exact Kotlin that produced what you are looking at.
 
@@ -126,7 +132,7 @@ LineChart(
 | **3D** (opt-in `charty-3d`) | [Bar3D](docs/charty/charts/3d/Bar3DChart.md), [Pie3D](docs/charty/charts/3d/Pie3DChart.md) |
 | **Specialised** | [Candlestick (OHLC)](docs/charty/charts/other/CandlestickChart.md), [Calendar heatmap](docs/charty/charts/other/CalendarHeatmapChart.md), [Matrix heatmap](docs/charty/charts/other/MatrixHeatmapChart.md), [Gantt](docs/charty/charts/other/GanttChart.md), [Funnel](docs/charty/charts/other/FunnelChart.md), [Block bar](docs/charty/charts/radial/BlockBarChart.md) |
 
-Explore every one in the **[live playground](https://hi-manshu.github.io/charty/)**.
+Explore every one in the **[live playground](https://hi-manshu.github.io/charty/playground/)**.
 
 ---
 
@@ -173,7 +179,7 @@ _Vico and MPAndroidChart are excellent, mature libraries on Android — Charty's
 
 ## 📚 Documentation
 
-Full API reference and guides: 👉 **[himanshoe.com/docs/charty](https://himanshoe.com/docs/charty)**
+Full reference and guides: 👉 **[hi-manshu.github.io/charty](https://hi-manshu.github.io/charty/)**
 
 Start here:
 

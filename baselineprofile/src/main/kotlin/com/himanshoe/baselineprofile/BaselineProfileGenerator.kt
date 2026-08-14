@@ -21,6 +21,10 @@ class BaselineProfileGenerator {
     @get:Rule
     val baselineProfileRule = BaselineProfileRule()
 
+    /**
+     * Exercises the sample app's startup path and records the profile the AAR ships with, so a
+     * consuming app gets Charty's hot paths compiled ahead of time instead of on first render.
+     */
     @Test
     fun generate() {
         baselineProfileRule.collect(

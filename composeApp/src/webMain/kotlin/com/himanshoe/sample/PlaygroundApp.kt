@@ -104,7 +104,8 @@ internal enum class PlaygroundFamily(
 fun WebApp() {
     var dark by remember { mutableStateOf(false) }
     var animate by remember { mutableStateOf(false) }
-    var family by remember { mutableStateOf<PlaygroundFamily?>(null) }
+    val navigation = rememberPlaygroundNavigation()
+    val family = navigation.family
     val shared = remember { PlaygroundSharedState() }
 
     MaterialTheme(
@@ -128,7 +129,7 @@ fun WebApp() {
                 Column(modifier = Modifier.fillMaxSize()) {
                     WebTopBar(
                         backTitle = family?.title,
-                        onBack = { family = null },
+                        onBack = navigation::back,
                         dark = dark,
                         onToggleDark = { dark = !dark },
                         animate = animate,
@@ -140,9 +141,9 @@ fun WebApp() {
                             LocalPlaygroundShared provides shared,
                         ) {
                             if (family != null) {
-                                PlaygroundContent(family = family!!)
+                                PlaygroundContent(family = family)
                             } else {
-                                PlaygroundHome(onOpen = { family = it })
+                                PlaygroundHome(onOpen = navigation::open)
                             }
                         }
                     }

@@ -2,10 +2,23 @@ package com.himanshoe.docsite
 
 private const val FAVICON =
     "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>" +
-        "<rect width='32' height='32' rx='7' fill='%236650a4'/>" +
-        "<rect x='7' y='17' width='4' height='9' rx='1.4' fill='white'/>" +
-        "<rect x='14' y='11' width='4' height='15' rx='1.4' fill='white'/>" +
-        "<rect x='21' y='6' width='4' height='20' rx='1.4' fill='white'/></svg>"
+        "<rect width='32' height='32' rx='8' fill='black'/>" +
+        "<path d='M8 21 L14 13 L19 17 L25 8' fill='none' stroke='white' stroke-width='2.6' " +
+        "stroke-linecap='round' stroke-linejoin='round'/>" +
+        "<circle cx='25' cy='8' r='2.6' fill='white'/></svg>"
+
+/**
+ * The Charty mark: a rising series with its latest point called out.
+ *
+ * Drawn in `currentColor` rather than a fixed colour, so it is black on the light theme and white on
+ * the dark one without a second asset — which is also what stops it going invisible if the palette
+ * ever changes underneath it.
+ */
+private const val LOGO_MARK =
+    """<svg class="logo-mark" viewBox="0 0 28 28" width="26" height="26" aria-hidden="true">""" +
+        """<path d="M3 20 L10.5 10.5 L16 15.5 L24 5" fill="none" stroke="currentColor" """ +
+        """stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>""" +
+        """<circle cx="24" cy="5" r="2.6" fill="currentColor"/></svg>"""
 
 /** `../` repeated enough times to climb back to the site root from [depth]. */
 fun rootPrefix(depth: Int): String = "../".repeat(depth)
@@ -61,8 +74,8 @@ fun renderPage(
 <header class="topbar">
   <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
   <a class="brand" href="${root}index.html">
-    <span class="brand-mark" aria-hidden="true"></span>
-    <span class="brand-name">Charty</span>
+    $LOGO_MARK
+    <span class="brand-name">charty</span>
   </a>
   <div class="search">
     <span class="search-icon" aria-hidden="true">⌕</span>
@@ -118,8 +131,7 @@ private fun renderFooter(root: String): String =
 <footer class="footer">
   <div class="footer-inner">
     <div>
-      <span class="brand-mark" aria-hidden="true"></span>
-      <strong>Charty</strong>
+      <span class="footer-brand">$LOGO_MARK<strong>charty</strong></span>
       <p>Charts for Compose Multiplatform, by <a href="https://github.com/hi-manshu">Himanshu Singh</a>.</p>
       <p class="footer-license">Apache 2.0</p>
     </div>

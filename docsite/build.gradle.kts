@@ -10,6 +10,14 @@ kotlin {
     jvmToolchain(17)
 }
 
+// The shared detekt configuration lists the multiplatform source sets, which a plain JVM module does
+// not have. Added here rather than to the root, so the generator is analysed without also dragging in
+// the JMH fixtures under :benchmark — code whose whole job is hard-coded numbers, and which a rule set
+// written for library code has nothing useful to say about.
+detekt {
+    source.setFrom("src/main/kotlin")
+}
+
 /**
  * Renders `docs/` into a static site under `build/site`.
  *
@@ -42,4 +50,23 @@ val generateDocsSite by tasks.registering(JavaExec::class) {
             )
         },
     )
+}
+
+/**
+ * The whole published site: documentation at the root, playground under `/playground`.
+ *
+ * Assembled by the build rather than by the deploy workflow, so what runs locally is byte for byte
+ * what ships. A site whose parts are only ever joined together on CI is a site whose links can only
+ * be tested on CI.
+ */
+val assembleSite by tasks.registering(Sync::class) {
+    group = "documentation"
+    description = "Assembles the documentation site with the playground under /playground."
+
+    into(layout.buildDirectory.dir("published-site"))
+
+    from(generateDocsSite)
+    from(project(":composeApp").tasks.named("wasmJsBrowserDistribution")) {
+        into("playground")
+    }
 }
