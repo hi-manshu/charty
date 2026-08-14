@@ -11,6 +11,7 @@
 
 package com.himanshoe.sample
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -106,21 +107,59 @@ internal class PlaygroundSharedState {
             )
 
     /** The theme to provide around the chart, or `null` to leave Charty's own defaults in place. */
-    fun theme(dark: Boolean): ChartyTheme? =
-        if (!themed) {
-            null
-        } else {
-            val base =
-                if (dark) {
-                    ChartyTheme.dark()
-                } else {
-                    ChartyTheme.light()
-                }
-            base.copy(
-                primaryColor = ChartyColor.Solid(themePrimary),
-                palette = playgroundPalette.map { hue -> ChartyColor.Solid(hue) },
-            )
-        }
+    fun theme(dark: Boolean): ChartyTheme {
+        val base =
+            if (dark) {
+                ChartyTheme.dark()
+            } else {
+                ChartyTheme.light()
+            }
+        val palette =
+            if (themed) {
+                base.copy(
+                    primaryColor = ChartyColor.Solid(themePrimary),
+                    palette = playgroundPalette.map { hue -> ChartyColor.Solid(hue) },
+                )
+            } else {
+                base
+            }
+        return palette.withTooltipStyle(this)
+    }
+
+    /**
+     * Folds the tooltip controls into the theme, which is how they reach a chart at all.
+     *
+     * Tooltip styling lives on each chart's own config, so a shared panel has nowhere to send it —
+     * which is why these five controls used to adjust nothing. But a config left unset resolves
+     * against the ambient theme, and the theme carries every one of these values. Putting them here
+     * reaches all thirty-five charts at once, and does it the way the library intends rather than by
+     * threading an argument through thirty-five call sites.
+     */
+    private fun ChartyTheme.withTooltipStyle(state: PlaygroundSharedState): ChartyTheme =
+        copy(
+            componentColors = componentColors.copy(tooltipBackground = ChartyColor.Solid(state.tooltipBackground)),
+            shapes =
+                shapes.copy(
+                    tooltip = RoundedCornerShape(state.tooltipCorner.dp),
+                    tooltipCornerRadius = state.tooltipCorner.dp,
+                ),
+            dimensions =
+                dimensions.copy(
+                    tooltipElevation = state.tooltipElevation.dp,
+                    tooltipBorderWidth =
+                        if (state.tooltipBorder) {
+                            dimensions.tooltipBorderWidth
+                        } else {
+                            0.dp
+                        },
+                    tooltipArrowSize =
+                        if (state.tooltipArrow) {
+                            dimensions.tooltipArrowSize
+                        } else {
+                            0.dp
+                        },
+                ),
+        )
 
     /**
      * The interaction settings the controls currently describe, given the brush state the chart owns.
@@ -336,4 +375,27 @@ internal fun InteractionControls(state: PlaygroundSharedState) {
 internal fun playgroundInteractionConfig(pointCount: Int = 0): ChartInteractionConfig {
     val brushState = rememberBrushSelectionState()
     return LocalPlaygroundShared.current.interactionConfig(brushState = brushState, pointCount = pointCount)
+}
+
+/**
+ * The shared interaction settings, laid over a config a screen has already built for itself.
+ *
+ * The streaming and synced screens each construct a [ChartInteractionConfig] carrying something only
+ * they know about — a streaming state, a viewport, a jump-to-latest slot. They used to build it and
+ * stop there, which left the shared switches beside them doing nothing at all. Copying the shared
+ * settings onto that config keeps what the screen needs and adds back what the panel promises.
+ */
+@Composable
+internal fun withPlaygroundInteractions(
+    base: ChartInteractionConfig,
+    pointCount: Int = 0,
+): ChartInteractionConfig {
+    val shared = playgroundInteractionConfig(pointCount = pointCount)
+    return base.copy(
+        brushSelectionState = shared.brushSelectionState,
+        onRangeSelect = shared.onRangeSelect,
+        annotations = shared.annotations,
+        accessibilityDescription = shared.accessibilityDescription ?: base.accessibilityDescription,
+        dragTooltipEnabled = shared.dragTooltipEnabled,
+    )
 }

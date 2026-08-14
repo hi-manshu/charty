@@ -83,7 +83,9 @@ internal fun SyncedPlayground() {
                 crosshair = ChartCrosshair(
                     config = ChartCrosshairConfig(dismissOnRelease = ${!pinOnRelease}),
                 ),
-                interactionConfig = ChartInteractionConfig(viewPortState = revenueViewport),
+                scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig =
+                    withPlaygroundInteractions(base = ChartInteractionConfig(viewPortState = revenueViewport)),
             )
 
             val ordersViewport = rememberViewPortState()
@@ -92,7 +94,9 @@ internal fun SyncedPlayground() {
                 crosshair = ChartCrosshair(
                     config = ChartCrosshairConfig(dismissOnRelease = ${!pinOnRelease}),
                 ),
-                interactionConfig = ChartInteractionConfig(viewPortState = ordersViewport),
+                scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig =
+                    withPlaygroundInteractions(base = ChartInteractionConfig(viewPortState = ordersViewport)),
             )
         }
         // A chart participates when it has a crosshair AND a viewPortState (the plot geometry
@@ -162,7 +166,9 @@ private fun SyncedCharts(
                     ),
                 crosshair =
                     ChartCrosshair(config = crosshairConfig),
-                interactionConfig = ChartInteractionConfig(viewPortState = topViewport),
+                scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig =
+                    withPlaygroundInteractions(base = ChartInteractionConfig(viewPortState = topViewport)),
             )
             Spacer(modifier = Modifier.height(12.dp))
             val bottomViewport = rememberViewPortState()
@@ -177,7 +183,9 @@ private fun SyncedCharts(
                     ),
                 crosshair =
                     ChartCrosshair(config = crosshairConfig),
-                interactionConfig = ChartInteractionConfig(viewPortState = bottomViewport),
+                scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig =
+                    withPlaygroundInteractions(base = ChartInteractionConfig(viewPortState = bottomViewport)),
             )
         }
     }

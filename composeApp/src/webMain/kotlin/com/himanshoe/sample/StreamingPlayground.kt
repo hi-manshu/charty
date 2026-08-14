@@ -172,14 +172,18 @@ internal fun StreamingLinePlayground() {
             animation = animation,
             markers = markers,
             interactionConfig =
-                ChartInteractionConfig(
-                    streamingState =
-                        if (scrollback) {
-                            streamingState
-                        } else {
-                            null
-                        },
-                    jumpToLatest = jumpToLatestSlot(overlay = jumpOverlay, enabled = scrollback),
+                withPlaygroundInteractions(
+                    base =
+                        ChartInteractionConfig(
+                            streamingState =
+                                if (scrollback) {
+                                    streamingState
+                                } else {
+                                    null
+                                },
+                            jumpToLatest = jumpToLatestSlot(overlay = jumpOverlay, enabled = scrollback),
+                        ),
+                    pointCount = values.size,
                 ),
             tooltipMode = tooltipMode,
             crosshairEnabled = crosshairEnabled && supportsCrosshair,

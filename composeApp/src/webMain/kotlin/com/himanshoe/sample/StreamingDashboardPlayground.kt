@@ -222,10 +222,14 @@ private fun StreamingDashboardCharts(
                         animation = animation,
                         markers = markers,
                     ),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 interactionConfig =
-                    ChartInteractionConfig(
-                        streamingState = throughputStream,
-                        jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+                    withPlaygroundInteractions(
+                        base =
+                            ChartInteractionConfig(
+                                streamingState = throughputStream,
+                                jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+                            ),
                     ),
                 crosshair = crosshairConfig?.let { ChartCrosshair(config = it) },
                 tooltip = ChartTooltip.none(),
@@ -242,10 +246,14 @@ private fun StreamingDashboardCharts(
                         animation = animation,
                         markers = markers,
                     ),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 interactionConfig =
-                    ChartInteractionConfig(
-                        streamingState = requestsStream,
-                        jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+                    withPlaygroundInteractions(
+                        base =
+                            ChartInteractionConfig(
+                                streamingState = requestsStream,
+                                jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+                            ),
                     ),
                 tooltip = ChartTooltip.none(),
             )
@@ -261,10 +269,14 @@ private fun StreamingDashboardCharts(
                         animation = animation,
                         markers = markers,
                     ),
+                scaffoldConfig = playgroundScaffoldConfig(),
                 interactionConfig =
-                    ChartInteractionConfig(
-                        streamingState = latencyStream,
-                        jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+                    withPlaygroundInteractions(
+                        base =
+                            ChartInteractionConfig(
+                                streamingState = latencyStream,
+                                jumpToLatest = { state -> ChartJumpToLatestPill(state = state) },
+                            ),
                     ),
                 crosshair = crosshairConfig?.let { ChartCrosshair(config = it) },
                 tooltip = ChartTooltip.none(),

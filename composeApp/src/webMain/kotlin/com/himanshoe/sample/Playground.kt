@@ -246,10 +246,7 @@ private fun ControlPanel(
             if (cartesian) {
                 InteractionControls(state = shared)
                 AxisAndGridControls(state = shared)
-                // The tooltip style section is not shown: nothing consumes what it produces. Every
-                // chart carries its tooltip styling on its own config, so a single shared panel has
-                // nowhere to send it, and it sat here adjusting five values that reached no chart.
-                // Restoring it means wiring playgroundTooltipConfig() into each chart's own config.
+                TooltipStyleControls(state = shared)
             }
             ThemeControls(state = shared)
         }

@@ -946,6 +946,9 @@ internal fun CalendarPlayground() {
         )
         """.trimIndent()
     PlaygroundScaffold(
+        // The calendar draws no ChartScaffold and takes neither a scaffold nor an interaction config,
+        // so the shared axis, grid and interaction sections would be controls that reach nothing.
+        cartesian = false,
         code = code,
         chart = {
             CalendarHeatmapChart(

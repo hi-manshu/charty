@@ -49,7 +49,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.himanshoe.charty.common.theme.ChartyTheme
 import com.himanshoe.charty.common.theme.ChartyThemeProvider
 
 /** When `true`, playground charts play their entry animation; when `false` they render instantly. */
@@ -118,12 +117,7 @@ fun WebApp() {
     ) {
         ChartyThemeProvider(
             theme =
-                shared.theme(dark = dark)
-                    ?: if (dark) {
-                        ChartyTheme.dark()
-                    } else {
-                        ChartyTheme.light()
-                    },
+                shared.theme(dark = dark),
         ) {
             Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 Column(modifier = Modifier.fillMaxSize()) {
