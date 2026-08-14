@@ -23,7 +23,6 @@ import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_GREEN
 import com.himanshoe.charty.bar.internal.span.DEFAULT_COLOR_ORANGE
 import com.himanshoe.charty.bar.internal.span.SpanDrawParams
 import com.himanshoe.charty.bar.internal.span.calculateAxisOffset
-import com.himanshoe.charty.bar.internal.span.createAxisConfig
 import com.himanshoe.charty.bar.internal.span.createSpanChartModifier
 import com.himanshoe.charty.bar.internal.span.drawSpanCrosshair
 import com.himanshoe.charty.bar.internal.span.drawSpanReferenceBandIfNeeded
@@ -37,6 +36,7 @@ import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
+import com.himanshoe.charty.common.axis.valueAxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -177,7 +177,7 @@ fun SpanChart(
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.fastMap { it.label },
-            yAxisConfig = createAxisConfig(minValue, maxValue),
+            yAxisConfig = valueAxisConfig(minValue = minValue, maxValue = maxValue, drawAxisAtZero = false),
             config = scaffoldConfig,
             orientation = ChartOrientation.HORIZONTAL,
         ) { chartContext ->

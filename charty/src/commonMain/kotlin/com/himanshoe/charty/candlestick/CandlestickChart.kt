@@ -36,11 +36,11 @@ import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.axis.DEFAULT_VALUE_AXIS_STEPS
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
@@ -174,7 +174,7 @@ fun CandlestickChart(
                 AxisConfig(
                     minValue = minValue,
                     maxValue = maxValue,
-                    steps = DEFAULT_VALUE_AXIS_STEPS,
+                    steps = ChartConstants.DEFAULT_AXIS_STEPS,
                     drawAxisAtZero = false,
                 ),
             config = scaffoldConfig,

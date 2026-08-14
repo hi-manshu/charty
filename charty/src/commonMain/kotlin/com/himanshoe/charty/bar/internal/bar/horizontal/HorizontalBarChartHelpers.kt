@@ -6,6 +6,7 @@ import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 
 internal fun createHorizontalAxisConfig(
     minValue: Float,
@@ -15,7 +16,7 @@ internal fun createHorizontalAxisConfig(
     AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
-        steps = HORIZONTAL_DEFAULT_AXIS_STEPS,
+        steps = ChartConstants.DEFAULT_AXIS_STEPS,
         drawAxisAtZero = drawAxisAtZero,
     )
 

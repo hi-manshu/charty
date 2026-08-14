@@ -1,14 +1,7 @@
 package com.himanshoe.charty.common.axis
 
+import com.himanshoe.charty.common.constants.ChartConstants
 import kotlin.math.round
-
-/**
- * The number of divisions charts put on a value axis unless they say otherwise.
- *
- * Written as a bare `6` at nine call sites across the library, which made a shared decision look like
- * nine independent ones — and meant changing it required finding all nine.
- */
-const val DEFAULT_VALUE_AXIS_STEPS = 6
 
 /**
  * A data class that holds the configuration for a chart axis.
@@ -64,3 +57,23 @@ internal fun formatAxisLabel(value: Float): String {
         }
     }
 }
+
+/**
+ * The value axis a chart puts against its data range.
+ *
+ * Four packages had each declared a `createAxisConfig` of their own — same three lines, same purpose,
+ * differing only in whether [drawAxisAtZero] was a parameter or hard-coded, and in which of six
+ * spellings of "six steps" they happened to import. Same-named functions in different packages are
+ * worse than no sharing at all: a reader who finds one has no way to know the others exist.
+ */
+internal fun valueAxisConfig(
+    minValue: Float,
+    maxValue: Float,
+    drawAxisAtZero: Boolean,
+): AxisConfig =
+    AxisConfig(
+        minValue = minValue,
+        maxValue = maxValue,
+        steps = ChartConstants.DEFAULT_AXIS_STEPS,
+        drawAxisAtZero = drawAxisAtZero,
+    )

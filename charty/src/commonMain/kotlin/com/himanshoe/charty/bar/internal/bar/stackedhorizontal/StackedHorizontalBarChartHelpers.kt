@@ -1,6 +1,7 @@
 package com.himanshoe.charty.bar.internal.bar.stackedhorizontal
 
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 
 /**
  * Builds the [AxisConfig] that drives the horizontal (value) axis.
@@ -12,5 +13,5 @@ internal fun createStackedHorizontalAxisConfig(maxTotal: Float): AxisConfig =
     AxisConfig(
         minValue = 0f,
         maxValue = maxTotal,
-        steps = STACKED_HORIZONTAL_DEFAULT_AXIS_STEPS,
+        steps = ChartConstants.DEFAULT_AXIS_STEPS,
     )

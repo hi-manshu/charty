@@ -5,7 +5,11 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.PERCENT_SCALE
 import com.himanshoe.charty.common.axis.AxisConfig
 
-private const val DEFAULT_AXIS_STEPS = 5
+/**
+ * Five divisions of a 0–100% axis, which puts the labels on the twenties. The library's usual six
+ * would land them on sixths of a percentage, which reads as noise.
+ */
+private const val PERCENT_AXIS_STEPS = 5
 
 /**
  * Default colors for mosaic bar segments.
@@ -24,5 +28,5 @@ internal fun createMosaicAxisConfig(): AxisConfig =
     AxisConfig(
         minValue = 0f,
         maxValue = PERCENT_SCALE,
-        steps = DEFAULT_AXIS_STEPS,
+        steps = PERCENT_AXIS_STEPS,
     )

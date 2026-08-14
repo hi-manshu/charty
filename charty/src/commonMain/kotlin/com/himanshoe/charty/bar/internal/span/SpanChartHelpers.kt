@@ -2,7 +2,6 @@ package com.himanshoe.charty.bar.internal.span
 
 import androidx.compose.ui.geometry.Offset
 import com.himanshoe.charty.common.ChartContext
-import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
 private const val CENTER_DIVISOR = 2f
@@ -41,17 +40,6 @@ internal fun spanEndMarkerPositions(
         )
     }
 }
-
-internal fun createAxisConfig(
-    minValue: Float,
-    maxValue: Float,
-): AxisConfig =
-    AxisConfig(
-        minValue = minValue,
-        maxValue = maxValue,
-        steps = DEFAULT_AXIS_STEPS,
-        drawAxisAtZero = false,
-    )
 
 internal fun calculateAxisOffset(scaffoldConfig: ChartScaffoldConfig): Float =
     if (scaffoldConfig.showAxis) {

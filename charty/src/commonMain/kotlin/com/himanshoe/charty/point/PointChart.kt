@@ -74,7 +74,6 @@ private const val HIGHLIGHT_CIRCLE_OUTER_OFFSET = ChartConstants.DEFAULT_HIGHLIG
 private const val HIGHLIGHT_CIRCLE_INNER_OFFSET = ChartConstants.DEFAULT_HIGHLIGHT_INNER_OFFSET
 private const val GUIDELINE_WIDTH = ChartConstants.DEFAULT_GUIDELINE_WIDTH
 private const val GUIDELINE_ALPHA = ChartConstants.DEFAULT_GUIDELINE_ALPHA
-private const val AXIS_STEPS = ChartConstants.DEFAULT_AXIS_STEPS
 private const val MIN_ANIMATION_PROGRESS = ChartConstants.MIN_ANIMATION_PROGRESS
 private const val MAX_ANIMATION_PROGRESS = ChartConstants.MAX_ANIMATION_PROGRESS
 
@@ -376,7 +375,7 @@ fun PointChart(
                 AxisConfig(
                     minValue = minValue,
                     maxValue = maxValue,
-                    steps = AXIS_STEPS,
+                    steps = ChartConstants.DEFAULT_AXIS_STEPS,
                     drawAxisAtZero = isBelowAxisMode,
                 ),
             config = scaffoldConfig,

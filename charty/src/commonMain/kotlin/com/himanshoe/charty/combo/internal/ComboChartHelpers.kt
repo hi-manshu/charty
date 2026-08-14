@@ -11,13 +11,12 @@ import com.himanshoe.charty.combo.ext.getAllValues
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.util.toChartLabel
-
-private const val COMBO_SECONDARY_AXIS_STEPS = 6
 
 /** Builds the secondary [AxisConfig] for a `(min, max)` line range, or `null` when the range is null. */
 internal fun Pair<Float, Float>?.toSecondaryAxisConfig(): AxisConfig? =
-    this?.let { AxisConfig(minValue = it.first, maxValue = it.second, steps = COMBO_SECONDARY_AXIS_STEPS) }
+    this?.let { AxisConfig(minValue = it.first, maxValue = it.second, steps = ChartConstants.DEFAULT_AXIS_STEPS) }
 
 /**
  * Computes the primary (left) value-axis range for a combo chart. Uses only the bar values when

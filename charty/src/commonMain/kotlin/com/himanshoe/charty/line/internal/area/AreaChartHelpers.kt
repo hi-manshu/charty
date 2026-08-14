@@ -3,25 +3,8 @@ package com.himanshoe.charty.line.internal.area
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.common.ChartContext
-import com.himanshoe.charty.common.axis.AxisConfig
-import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.internal.line.calculatePointPositions
-
-/**
- * Creates axis configuration for area chart.
- */
-internal fun createAxisConfig(
-    minValue: Float,
-    maxValue: Float,
-    isBelowAxisMode: Boolean,
-): AxisConfig =
-    AxisConfig(
-        minValue = minValue,
-        maxValue = maxValue,
-        steps = ChartConstants.DEFAULT_AXIS_STEPS,
-        drawAxisAtZero = isBelowAxisMode,
-    )
 
 /**
  * The plotted position of every point in [dataList], reporting each one to [onPointCalculated] as it

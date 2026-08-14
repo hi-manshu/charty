@@ -2,6 +2,7 @@ package com.himanshoe.charty.bar.internal.bar.comparison
 
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 
 internal fun createComparisonAxisConfig(
     minValue: Float,
@@ -11,7 +12,7 @@ internal fun createComparisonAxisConfig(
     AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
-        steps = COMPARISON_DEFAULT_AXIS_STEPS,
+        steps = ChartConstants.DEFAULT_AXIS_STEPS,
         drawAxisAtZero = isBelowAxisMode,
     )
 

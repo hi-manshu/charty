@@ -19,6 +19,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
+import com.himanshoe.charty.common.axis.valueAxisConfig
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
@@ -40,7 +41,6 @@ import com.himanshoe.charty.line.internal.area.AreaChartDrawParams
 import com.himanshoe.charty.line.internal.area.buildAreaModifier
 import com.himanshoe.charty.line.internal.area.calculateBaselineY
 import com.himanshoe.charty.line.internal.area.calculatePointPositions
-import com.himanshoe.charty.line.internal.area.createAxisConfig
 import com.himanshoe.charty.line.internal.area.drawAreaChart
 import com.himanshoe.charty.line.internal.area.drawTooltipHighlightIfNeeded
 import com.himanshoe.charty.line.internal.area.drawTooltipIfNeeded
@@ -162,10 +162,10 @@ fun AreaChart(
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
             yAxisConfig =
-                createAxisConfig(
+                valueAxisConfig(
                     minValue = minValue,
                     maxValue = maxValue,
-                    isBelowAxisMode = isBelowAxisMode,
+                    drawAxisAtZero = isBelowAxisMode,
                 ),
             config = scaffoldConfig,
         ) { chartContext ->

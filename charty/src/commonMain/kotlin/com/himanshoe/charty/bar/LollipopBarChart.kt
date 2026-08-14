@@ -15,7 +15,6 @@ import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
-import com.himanshoe.charty.bar.internal.bar.lollipop.createAxisConfig
 import com.himanshoe.charty.bar.internal.bar.lollipop.createLollipopChartModifier
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipopCrosshair
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipops
@@ -30,6 +29,7 @@ import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.axis.valueAxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -161,7 +161,7 @@ fun LollipopBarChart(
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
             xLabels = dataList.getLabels(),
-            yAxisConfig = createAxisConfig(minValue, maxValue),
+            yAxisConfig = valueAxisConfig(minValue = minValue, maxValue = maxValue, drawAxisAtZero = true),
             config = scaffoldConfig,
         ) { chartContext ->
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)

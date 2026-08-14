@@ -7,6 +7,7 @@ import androidx.compose.ui.util.fastFlatMap
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.common.util.calculateNiceAxisRange
 
 /**
@@ -60,7 +61,7 @@ internal fun rememberGroupedHorizontalState(
             calculateNiceAxisRange(
                 rawMin = axisMin,
                 rawMax = axisMax,
-                targetSteps = GROUPED_HORIZONTAL_DEFAULT_AXIS_STEPS,
+                targetSteps = ChartConstants.DEFAULT_AXIS_STEPS,
             )
 
         GroupedHorizontalState(

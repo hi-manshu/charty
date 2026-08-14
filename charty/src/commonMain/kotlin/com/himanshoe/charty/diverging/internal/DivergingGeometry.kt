@@ -4,12 +4,12 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.util.fastForEach
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.constants.ChartConstants
 import com.himanshoe.charty.diverging.config.DivergingSideScaling
 import com.himanshoe.charty.diverging.data.DivergingData
 import com.himanshoe.charty.diverging.data.DivergingSide
 import kotlin.math.abs
 
-internal const val DIVERGING_AXIS_STEPS = 6
 private const val HALF = 2f
 private const val EMPTY_SCALE = 0f
 
@@ -159,7 +159,7 @@ internal fun divergingAxisConfig(
     return AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
-        steps = DIVERGING_AXIS_STEPS,
+        steps = ChartConstants.DEFAULT_AXIS_STEPS,
         drawAxisAtZero = true,
         valueFormatter = { value ->
             if (sideScaling == DivergingSideScaling.INDEPENDENT) {
