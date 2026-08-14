@@ -13,6 +13,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.draw.drawHighlightedPoint
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
@@ -170,15 +171,12 @@ internal fun DrawScope.drawTooltipHighlightIfNeeded(
                 end = Offset(position.x, chartContext.bottom),
                 strokeWidth = HIGHLIGHT_LINE_WIDTH,
             )
-            drawCircle(
-                color = Color.White,
-                radius = lineConfig.pointRadius + HIGHLIGHT_CIRCLE_OUTER_PADDING,
+            drawHighlightedPoint(
                 center = position,
-            )
-            drawCircle(
-                brush = Brush.linearGradient(color.value),
-                radius = lineConfig.pointRadius + HIGHLIGHT_CIRCLE_INNER_PADDING,
-                center = position,
+                pointRadius = lineConfig.pointRadius,
+                colorBrush = Brush.linearGradient(color.value),
+                outerRadiusAddition = HIGHLIGHT_CIRCLE_OUTER_PADDING,
+                innerRadiusAddition = HIGHLIGHT_CIRCLE_INNER_PADDING,
             )
         }
     }
