@@ -106,6 +106,9 @@ internal fun HeatmapPlayground() {
         """.trimIndent()
 
     PlaygroundScaffold(
+        // MatrixHeatmapChart draws no ChartScaffold and takes neither a scaffold nor an interaction
+        // config, so the shared axis, grid and interaction sections would be controls that do nothing.
+        cartesian = false,
         code = code,
         chart = {
             MatrixHeatmapChart(

@@ -35,6 +35,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -57,6 +58,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.himanshoe.charty.common.config.CornerRadius
 import kotlin.math.roundToInt
@@ -173,10 +175,9 @@ private fun ChartStage(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
-        shadowElevation = 2.dp,
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(20.dp), contentAlignment = Alignment.Center) {
             chart()
@@ -202,10 +203,9 @@ private fun ControlPanel(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
-        shadowElevation = 2.dp,
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),
     ) {
         Column(
             modifier =
@@ -246,7 +246,10 @@ private fun ControlPanel(
             if (cartesian) {
                 InteractionControls(state = shared)
                 AxisAndGridControls(state = shared)
-                TooltipStyleControls(state = shared)
+                // The tooltip style section is not shown: nothing consumes what it produces. Every
+                // chart carries its tooltip styling on its own config, so a single shared panel has
+                // nowhere to send it, and it sat here adjusting five values that reached no chart.
+                // Restoring it means wiring playgroundTooltipConfig() into each chart's own config.
             }
             ThemeControls(state = shared)
         }
@@ -330,15 +333,28 @@ private fun CodePanel(
     }
 }
 
+/**
+ * A heading in the control panel.
+ *
+ * Set in the muted foreground with a rule beside it rather than in the accent colour: there are eight
+ * of these down a single panel, and eight headings competing for attention is the same as none.
+ */
 @Composable
 internal fun ControlSection(title: String) {
-    Text(
-        text = title.uppercase(),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 8.dp),
-    )
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.09.em,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
+    }
 }
 
 @Composable
@@ -429,15 +445,24 @@ internal fun <T> ChoiceRow(
                     modifier =
                         Modifier
                             .padding(top = 6.dp)
-                            .clip(RoundedCornerShape(50))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (isSelected) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.surface
                                 },
+                            ).border(
+                                width = 1.dp,
+                                color =
+                                    if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.outline
+                                    },
+                                shape = RoundedCornerShape(8.dp),
                             ).clickable { onSelect(option) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
                 )
             }
         }

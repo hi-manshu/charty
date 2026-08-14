@@ -88,6 +88,8 @@ internal fun ExportPlayground() {
             LineChart(
                 data = { data },
                 modifier = Modifier.fillMaxSize().chartCapture(controller),
+                scaffoldConfig = playgroundScaffoldConfig(),
+                interactionConfig = playgroundInteractionConfig(pointCount = data.size),
                 color = ChartyColor.Solid(color),
                 lineConfig =
                     LineChartConfig(

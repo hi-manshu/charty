@@ -152,7 +152,11 @@ internal class PlaygroundSharedState {
                 },
             annotations =
                 if (annotate) {
-                    listOf(ChartAnnotation(xIndex = (pointCount / 2).coerceAtLeast(0), label = "Note"))
+                    // The first point, not the middle one. Most screens call this without a count —
+                    // the parameter defaults to zero — so "middle" resolved to index 0 anyway and the
+                    // label was describing something that never happened. Annotating the first point
+                    // is true on every screen, whether or not the caller knows how many there are.
+                    listOf(ChartAnnotation(xIndex = 0, label = "Note"))
                 } else {
                     emptyList()
                 },
@@ -301,7 +305,7 @@ internal fun InteractionControls(state: PlaygroundSharedState) {
         )
     }
     SwitchRow(
-        label = "Annotate the middle point",
+        label = "Annotate the first point",
         checked = state.annotate,
         onCheckedChange = { state.annotate = it },
     )
@@ -310,16 +314,10 @@ internal fun InteractionControls(state: PlaygroundSharedState) {
         checked = state.dragTooltip,
         onCheckedChange = { state.dragTooltip = it },
     )
-    SwitchRow(
-        label = "Fade the scroll edges",
-        checked = state.edgeFade,
-        onCheckedChange = { state.edgeFade = it },
-    )
-    SwitchRow(
-        label = "Follow the newest point",
-        checked = state.autoScrollToLatest,
-        onCheckedChange = { state.autoScrollToLatest = it },
-    )
+    // "Fade the scroll edges" and "Follow the newest point" are not offered here. Both only take
+    // effect when the chart has a viewport — the library guards each on `viewPortState != null` —
+    // and this panel supplies none, so the switches moved but nothing ever did. They belong on a
+    // screen that sets one up, not on every screen as controls that quietly do nothing.
     SwitchRow(
         label = "Screen-reader description",
         checked = state.describeForScreenReaders,
