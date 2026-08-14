@@ -13,6 +13,18 @@ changes are listed first in each release and say what to do about them.
   as deprecated typealiases, so code written against 3.0.0 keeps compiling; update the import when
   convenient. Recompile rather than swapping the jar — an alias is a source-level compatibility
   measure, not a binary one.
+- **Bar data labels are formatted like every other label in the library.** `BarChartConfig`'s default
+  formatter ended in a raw `toString()`, which prints a float differently on JS than on the JVM and
+  gave values like `12.300000190734863` in a browser. It now rounds to one decimal place as axis
+  labels, tooltips and crosshair labels already did. A value carrying more precision than that will
+  read shorter than before; pass your own `dataLabelFormatter` to keep the extra digits.
+
+### Fixed
+
+- **`ChartCrosshairConfig.showLabel = false` works on line, area, stacked area, point, bubble, wavy
+  and combo charts.** The crosshair's value label moved from the canvas to a Composable overlay and
+  the check on this flag did not move with it, so setting it did nothing on those charts while
+  continuing to work on the bar family. Charts that never wanted a crosshair label were drawing one.
 
 ## 3.0.1
 
