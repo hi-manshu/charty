@@ -100,14 +100,7 @@ data class BarChartConfig(
     },
     val crosshairConfig: ChartCrosshairConfig? = null,
     val showDataLabels: Boolean = false,
-    val dataLabelFormatter: (BarData) -> String = { barData ->
-        val v = barData.value
-        if (v == v.toLong().toFloat()) {
-            v.toLong().toString()
-        } else {
-            v.toString()
-        }
-    },
+    val dataLabelFormatter: (BarData) -> String = { barData -> barData.value.toChartLabel() },
     val dataLabelStyle: TextStyle =
         TextStyle(
             fontSize = 10.sp,
