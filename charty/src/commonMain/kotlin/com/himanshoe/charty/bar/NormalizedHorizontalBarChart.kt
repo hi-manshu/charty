@@ -100,7 +100,7 @@ fun NormalizedHorizontalBarChart(
         )
     val dataList = chartState.data
     val displayList = chartState.displayData
-    val colorList = rememberNormalizedHorizontalColors(dataList = displayList, colors = colors)
+    val colorList = rememberNormalizedHorizontalColors(colors = colors)
     val animationProgress = chartState.animationProgress
     val tooltipManager = rememberTooltipManager<Rect, NormalizedHorizontalBarSegment>(dataKey = dataList)
     val textMeasurer = rememberTextMeasurer()

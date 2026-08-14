@@ -220,7 +220,6 @@ fun ComboChart(
                     dataBounds = tooltipManager.bounds,
                     crosshairBounds =
                         crosshairBounds.takeIf { crosshairManager != null },
-                    crosshairManager = crosshairManager,
                     crosshairState = animatedCrosshairState?.resolve(),
                     tooltipState = tooltipManager.tooltipState,
                     drawTooltipBubble = tooltip.isCanvas(),

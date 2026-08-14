@@ -1,11 +1,8 @@
 package com.himanshoe.charty.bar.internal.bar.lollipop
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.axis.AxisConfig
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 private const val DEFAULT_AXIS_STEPS = 6
 
@@ -22,18 +19,6 @@ internal fun createAxisConfig(
         steps = DEFAULT_AXIS_STEPS,
         drawAxisAtZero = true,
     )
-
-/**
- * Calculates Euclidean distance between two points.
- */
-internal fun calculateDistance(
-    point1: Offset,
-    point2: Offset,
-): Float {
-    val dx = point1.x - point2.x
-    val dy = point1.y - point2.y
-    return sqrt(dx.pow(2) + dy.pow(2))
-}
 
 /**
  * Creates brush for the lollipop stem based on ChartyColor.

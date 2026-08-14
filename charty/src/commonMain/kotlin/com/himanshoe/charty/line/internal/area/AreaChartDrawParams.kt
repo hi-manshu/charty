@@ -20,7 +20,6 @@ import com.himanshoe.charty.line.data.LineData
  * @property animationProgress The reveal progress, from `0f` (nothing drawn) to `1f` (fully drawn).
  * @property chartContext The pixel bounds and value range of the plotting area.
  * @property textMeasurer Measurer used for reference-band and marker labels.
- * @property onBarBoundCalculated Receives every point position paired with its data, for hit-testing.
  */
 internal data class AreaChartDrawParams(
     val dataList: List<LineData>,
@@ -32,5 +31,4 @@ internal data class AreaChartDrawParams(
     val animationProgress: Float,
     val chartContext: ChartContext,
     val textMeasurer: TextMeasurer,
-    val onBarBoundCalculated: (Pair<Offset, LineData>) -> Unit,
 )

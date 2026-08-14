@@ -193,7 +193,6 @@ fun AreaChart(
                         animationProgress = chartState.animationProgress.value,
                         chartContext = chartContext,
                         textMeasurer = textMeasurer,
-                        onBarBoundCalculated = { if (onPointClick != null) tooltipManager.bounds.add(it) },
                     ),
             )
             drawTooltipHighlightIfNeeded(

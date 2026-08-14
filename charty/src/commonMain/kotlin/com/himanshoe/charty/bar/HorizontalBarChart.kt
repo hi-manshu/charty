@@ -113,10 +113,7 @@ fun HorizontalBarChart(
                 generateBarChartDescription(data = series, minValue = min, maxValue = max)
             },
         ) { windowed, _ ->
-            rememberHorizontalValueRange(
-                dataList = windowed,
-                negativeValuesDrawMode = barConfig.negativeValuesDrawMode,
-            )
+            rememberHorizontalValueRange(dataList = windowed)
         }
     val dataList = chartState.data
     val displayList = chartState.displayData

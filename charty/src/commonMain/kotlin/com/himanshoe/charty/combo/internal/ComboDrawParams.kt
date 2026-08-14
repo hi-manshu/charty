@@ -8,7 +8,6 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.config.ChartInteractionConfig
-import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -31,7 +30,6 @@ import com.himanshoe.charty.common.tooltip.TooltipState
  *   when nothing hit-tests them.
  * @property dataBounds Collects each drawn bar and point rect with its data, for tap hit-testing.
  * @property crosshairBounds Collects the line points the crosshair snaps to, or `null` when off.
- * @property crosshairManager The crosshair state holder, or `null` when the crosshair is off.
  * @property crosshairState The crosshair's resolved position, or `null` when it is not showing.
  * @property tooltipState The active tooltip, or `null` when none is showing.
  * @property drawTooltipBubble Whether the active tooltip is drawn as the built-in canvas bubble; a
@@ -55,7 +53,6 @@ internal data class ComboDrawParams(
     val recordDataBounds: Boolean,
     val dataBounds: MutableList<Pair<Rect, ComboChartData>>,
     val crosshairBounds: MutableList<Pair<Offset, ComboChartData>>?,
-    val crosshairManager: CrosshairManager<ComboChartData>?,
     val crosshairState: CrosshairState?,
     val tooltipState: TooltipState?,
     val drawTooltipBubble: Boolean,

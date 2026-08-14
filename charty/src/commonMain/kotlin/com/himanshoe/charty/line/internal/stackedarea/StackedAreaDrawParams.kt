@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.config.ChartInteractionConfig
-import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -29,7 +28,6 @@ import com.himanshoe.charty.line.data.StackedAreaPoint
  * @property areaSegmentBounds Collects each drawn segment's rect and data, for hit-testing.
  * @property crosshairBounds Collects the topmost stack points the crosshair snaps to, or `null`
  *   when the crosshair is off.
- * @property crosshairManager The crosshair state holder, or `null` when the crosshair is off.
  * @property crosshairState The crosshair's resolved position, or `null` when it is not showing.
  * @property tooltipState The active tooltip, or `null` when none is showing.
  * @property drawTooltipBubble Whether the active tooltip is drawn as the built-in canvas bubble; a
@@ -50,7 +48,6 @@ internal data class StackedAreaDrawParams(
     val recordSegmentBounds: Boolean,
     val areaSegmentBounds: MutableList<Pair<Rect, StackedAreaPoint>>,
     val crosshairBounds: MutableList<Pair<Offset, LineGroup>>?,
-    val crosshairManager: CrosshairManager<LineGroup>?,
     val crosshairState: CrosshairState?,
     val tooltipState: TooltipState?,
     val drawTooltipBubble: Boolean,
