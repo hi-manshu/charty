@@ -126,7 +126,7 @@ private fun DrawScope.drawPointsForSeries(
     pointPositions.fastForEachIndexed { index, position ->
         val pointProgress =
             if (lineConfig.animation.isAnimated) {
-                ((index + MultilineChartConstants.SERIES_INDEX_OFFSET).toFloat() / pointPositions.size)
+                ((index + 1).toFloat() / pointPositions.size)
                     .coerceAtMost(animationProgress * MultilineChartConstants.ANIMATION_PROGRESS_MULTIPLIER)
             } else {
                 1f

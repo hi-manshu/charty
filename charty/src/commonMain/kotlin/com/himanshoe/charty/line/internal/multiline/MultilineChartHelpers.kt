@@ -34,7 +34,7 @@ internal fun ChartContext.calculateSeriesPointPositions(
  */
 internal fun MultilinePoint.toTooltipLineData(): LineData =
     LineData(
-        label = "${lineGroup.label} Line ${seriesIndex + MultilineChartConstants.SERIES_INDEX_OFFSET}",
+        label = "${lineGroup.label} Line ${seriesIndex + 1}",
         value = value,
     )
 
@@ -49,4 +49,4 @@ internal fun MultilinePoint.toTooltipLineData(): LineData =
 internal fun crosshairSeriesLineData(
     seriesIndex: Int,
     value: Float,
-): LineData = LineData(label = "L${seriesIndex + MultilineChartConstants.SERIES_INDEX_OFFSET}", value = value)
+): LineData = LineData(label = "L${seriesIndex + 1}", value = value)

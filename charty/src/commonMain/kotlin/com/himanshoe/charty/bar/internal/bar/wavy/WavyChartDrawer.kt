@@ -48,11 +48,11 @@ internal fun DrawScope.drawWavyBars(
     textMeasurer: TextMeasurer,
 ) {
     val barCount = dataList.size
-    val barSpacing = chartContext.width / (barCount * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
-    val barWidth = barSpacing * wavyConfig.barWidthFraction.coerceIn(MIN_BAR_WIDTH_FRACTION, 1f)
+    val slotHalfWidth = waveSlotHalfWidth(chartContext = chartContext, barCount = barCount)
+    val barWidth = slotHalfWidth * wavyConfig.barWidthFraction.coerceIn(MIN_BAR_WIDTH_FRACTION, 1f)
     val waveCtx =
         WaveDrawContext(
-            barSpacing = barSpacing,
+            slotHalfWidth = slotHalfWidth,
             baselineY = wavyBaselineY(chartContext = chartContext, minValue = minValue),
             waveAmplitude = barWidth * wavyConfig.waveAmplitudeFractionOfBarWidth,
             segments = wavyConfig.waveSegments.coerceAtLeast(MIN_WAVE_SEGMENTS),
@@ -92,14 +92,14 @@ internal fun DrawScope.drawSingleWave(
     chartContext: ChartContext,
     waveCtx: WaveDrawContext,
 ) {
-    val barSpacing = waveCtx.barSpacing
+    val slotHalfWidth = waveCtx.slotHalfWidth
     val baselineY = waveCtx.baselineY
     val waveAmplitude = waveCtx.waveAmplitude
     val segments = waveCtx.segments
     val basePhase = waveCtx.basePhase
     val wavyConfig = waveCtx.wavyConfig
     val strokeWidthPx = waveCtx.strokeWidthPx
-    val xCenter = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = barSpacing, index = index)
+    val xCenter = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = slotHalfWidth, index = index)
     val valueTop = chartContext.convertValueToYPosition(barData.value)
 
     val top: Float

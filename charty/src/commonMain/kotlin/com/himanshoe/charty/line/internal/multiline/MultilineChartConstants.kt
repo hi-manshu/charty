@@ -11,5 +11,4 @@ internal object MultilineChartConstants {
     const val TAP_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_TAP_RADIUS_MULTIPLIER
     const val POINT_RADIUS_MULTIPLIER = ChartConstants.DEFAULT_HIGHLIGHT_RADIUS_MULTIPLIER
     const val ANIMATION_PROGRESS_MULTIPLIER = 1.2f
-    const val SERIES_INDEX_OFFSET = 1
 }

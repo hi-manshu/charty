@@ -7,12 +7,22 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.gesture.CrosshairManager
+import kotlin.math.PI
+
+/** One full turn of the sine, which is where the wave's phase animation ends up back where it began. */
+internal const val FULL_WAVE_CYCLE_RADIANS = (2 * PI).toFloat()
 
 /**
- * How many bar-widths the plotting area is divided into per bar: each bar owns one slot of
- * whitespace and one slot of wave, so the wave centres land on the odd multiples of the spacing.
+ * Half the horizontal slot one bar owns, in pixels.
+ *
+ * The plotting area is divided into two slots per bar — one of whitespace, one of wave — so the wave
+ * centres land on the odd multiples of this and each wave has clear air either side. Three call sites
+ * derived it separately from the same two inputs.
  */
-internal const val WAVY_CHART_PHASE_TARGET_MULTIPLIER = 2f
+internal fun waveSlotHalfWidth(
+    chartContext: ChartContext,
+    barCount: Int,
+): Float = chartContext.width / (barCount * 2f)
 
 /** The floor on wave segments, below which the sine curve stops reading as a curve. */
 internal const val MIN_WAVE_SEGMENTS = 4
@@ -32,10 +42,10 @@ internal fun wavyPointPositions(
     chartContext: ChartContext,
     values: List<Float>,
 ): List<Offset> {
-    val barSpacing = chartContext.width / (values.size * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
+    val slotHalfWidth = waveSlotHalfWidth(chartContext = chartContext, barCount = values.size)
     return List(values.size) { index ->
         Offset(
-            x = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = barSpacing, index = index),
+            x = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = slotHalfWidth, index = index),
             y = chartContext.convertValueToYPosition(values[index]),
         )
     }
@@ -108,15 +118,15 @@ internal fun wavyBarHitRects(
     strokeWidthPx: Float,
 ): List<Rect> {
     val baselineY = wavyBaselineY(chartContext = chartContext, minValue = minValue)
-    val barSpacing = chartContext.width / (values.size * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
-    val halfStroke = strokeWidthPx / WAVY_CHART_PHASE_TARGET_MULTIPLIER
+    val slotHalfWidth = waveSlotHalfWidth(chartContext = chartContext, barCount = values.size)
+    val halfStroke = strokeWidthPx / 2f
     return List(values.size) { index ->
-        val centerX = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = barSpacing, index = index)
+        val centerX = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = slotHalfWidth, index = index)
         val valueY = chartContext.convertValueToYPosition(values[index])
         Rect(
-            left = centerX - barSpacing,
+            left = centerX - slotHalfWidth,
             top = minOf(valueY, baselineY) - halfStroke,
-            right = centerX + barSpacing,
+            right = centerX + slotHalfWidth,
             bottom = maxOf(valueY, baselineY) + halfStroke,
         )
     }

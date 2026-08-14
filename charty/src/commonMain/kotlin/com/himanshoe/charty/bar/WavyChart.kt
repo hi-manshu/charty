@@ -21,7 +21,7 @@ import com.himanshoe.charty.bar.config.WavyChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
-import com.himanshoe.charty.bar.internal.bar.wavy.WAVY_CHART_PHASE_TARGET_MULTIPLIER
+import com.himanshoe.charty.bar.internal.bar.wavy.FULL_WAVE_CYCLE_RADIANS
 import com.himanshoe.charty.bar.internal.bar.wavy.WavyChartOverlays
 import com.himanshoe.charty.bar.internal.bar.wavy.buildWavyGestureModifier
 import com.himanshoe.charty.bar.internal.bar.wavy.drawWavyBars
@@ -50,7 +50,6 @@ import com.himanshoe.charty.common.tooltip.NoneTooltip
 import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
 import com.himanshoe.charty.common.updateInteractionBounds
-import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
 
@@ -262,7 +261,7 @@ private fun rememberWavyBasePhase(wavyConfig: WavyChartConfig): Float {
     val infinite = rememberInfiniteTransition(label = "wavy-chart")
     val basePhase by infinite.animateFloat(
         initialValue = 0f,
-        targetValue = (WAVY_CHART_PHASE_TARGET_MULTIPLIER * PI).toFloat(),
+        targetValue = FULL_WAVE_CYCLE_RADIANS,
         animationSpec =
             infiniteRepeatable(
                 animation =
