@@ -44,15 +44,15 @@ internal fun comboPrimaryRange(
         } else {
             calculatedMin
         }
+    // A chart showing negatives has to show the zero line they hang from, even when every value is
+    // below it. Without negatives the maximum is simply the largest value — the old expression also
+    // took maxOf against the *minimum* there, which by definition can never win.
     val maxVal =
-        maxOf(
-            calculatedMax,
-            if (minVal < 0f) {
-                0f
-            } else {
-                calculatedMin
-            },
-        )
+        if (minVal < 0f) {
+            maxOf(calculatedMax, 0f)
+        } else {
+            calculatedMax
+        }
     return minVal to maxVal
 }
 

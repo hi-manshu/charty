@@ -27,7 +27,8 @@ private const val DEFAULT_STROKE_WIDTH_DP = 3f
  * A value of `1f / 3f` means the wave will deviate up to one third of the bar width
  * from its center line.
  * @property waveSegments Number of vertical segments used to approximate the sine wave.
- * Higher values produce smoother curves at the cost of more draw operations.
+ * Higher values produce smoother curves at the cost of more draw operations. Fewer than four is
+ * raised to four when drawing, below which the result is a zigzag rather than a wave.
  * @property animationDurationMillis Duration (in milliseconds) of one full wave cycle.
  * @property animationEasing Easing function used for the wave phase animation.
  * @property strokeWidthDp Stroke width of the wavy line in dp.
