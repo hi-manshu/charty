@@ -44,8 +44,16 @@ internal class PlaygroundSharedState {
     var showAxis by mutableStateOf(true)
     var showGrid by mutableStateOf(true)
     var showLabels by mutableStateOf(true)
-    var axisColor by mutableStateOf(Color.Black)
-    var gridColor by mutableStateOf(Color.LightGray)
+
+    /*
+     * Null means "whatever suits the current theme". The axis, grid and labels were fixed at black
+     * and light grey, which is invisible on a dark background — the labels vanished entirely, since
+     * ChartScaffoldConfig's own default label style is black text. A colour picked in the panel still
+     * wins; it is only the untouched state that follows the theme.
+     */
+    var dark by mutableStateOf(false)
+    var axisColor: Color? by mutableStateOf(null)
+    var gridColor: Color? by mutableStateOf(null)
     var axisThickness by mutableIntStateOf(2)
     var gridThickness by mutableIntStateOf(1)
     var rotateLabels by mutableStateOf(false)
@@ -72,14 +80,40 @@ internal class PlaygroundSharedState {
     var themePrimary by mutableStateOf(playgroundPalette[0])
 
     /** The scaffold config the controls currently describe. */
+
+    /** The axis colour when none has been picked: ink on paper, either way round. */
+    fun defaultAxisColor(): Color =
+        if (dark) {
+            Color(0xFFE6E6EA)
+        } else {
+            Color.Black
+        }
+
+    /** The grid colour when none has been picked, kept well below the axis in weight. */
+    fun defaultGridColor(): Color =
+        if (dark) {
+            Color(0xFF3A3A42)
+        } else {
+            Color.LightGray
+        }
+
+    /** Axis labels, which have no picker and so always follow the theme. */
+    fun defaultLabelColor(): Color =
+        if (dark) {
+            Color(0xFFE6E6EA)
+        } else {
+            Color.Black
+        }
+
     val scaffoldConfig: ChartScaffoldConfig
         get() =
             ChartScaffoldConfig(
                 showAxis = showAxis,
                 showGrid = showGrid,
                 showLabels = showLabels,
-                axisColor = ChartyColor.Solid(axisColor),
-                gridColor = ChartyColor.Solid(gridColor),
+                axisColor = ChartyColor.Solid(axisColor ?: defaultAxisColor()),
+                gridColor = ChartyColor.Solid(gridColor ?: defaultGridColor()),
+                labelTextColor = ChartyColor.Solid(defaultLabelColor()),
                 axisThickness = axisThickness.toFloat(),
                 gridThickness = gridThickness.toFloat(),
                 leftLabelRotation =
@@ -220,8 +254,8 @@ internal class PlaygroundSharedState {
         showAxis = true
         showGrid = true
         showLabels = true
-        axisColor = Color.Black
-        gridColor = Color.LightGray
+        axisColor = null
+        gridColor = null
         axisThickness = 2
         gridThickness = 1
         rotateLabels = false
@@ -282,8 +316,16 @@ internal fun AxisAndGridControls(state: PlaygroundSharedState) {
         valueRange = 0..8,
         onValueChange = { state.gridThickness = it },
     )
-    ColorRow(label = "Axis colour", selected = state.axisColor, onSelect = { state.axisColor = it })
-    ColorRow(label = "Grid colour", selected = state.gridColor, onSelect = { state.gridColor = it })
+    ColorRow(
+        label = "Axis colour",
+        selected = state.axisColor ?: state.defaultAxisColor(),
+        onSelect = { state.axisColor = it },
+    )
+    ColorRow(
+        label = "Grid colour",
+        selected = state.gridColor ?: state.defaultGridColor(),
+        onSelect = { state.gridColor = it },
+    )
 }
 
 /** Controls for the shared [TooltipConfig], which almost every chart draws its tap bubble with. */

@@ -106,6 +106,7 @@ fun WebApp() {
     val navigation = rememberPlaygroundNavigation()
     val family = navigation.family
     val shared = remember { PlaygroundSharedState() }
+    shared.dark = dark
 
     MaterialTheme(
         colorScheme =
