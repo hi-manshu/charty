@@ -12,6 +12,7 @@ import com.himanshoe.charty.bar.config.WavyChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
@@ -53,7 +54,7 @@ internal fun DrawScope.drawWavyBars(
     val waveCtx =
         WaveDrawContext(
             slotHalfWidth = slotHalfWidth,
-            baselineY = wavyBaselineY(chartContext = chartContext, minValue = minValue),
+            baselineY = chartContext.baselineY(minValue = minValue, drawNegativesInPlace = true),
             waveAmplitude = barWidth * wavyConfig.waveAmplitudeFractionOfBarWidth,
             segments = wavyConfig.waveSegments.coerceAtLeast(MIN_WAVE_SEGMENTS),
             basePhase = basePhase,

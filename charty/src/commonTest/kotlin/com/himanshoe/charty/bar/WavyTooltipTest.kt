@@ -6,8 +6,8 @@ import com.himanshoe.charty.bar.config.WavyChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.wavy.populateWavyBarBounds
 import com.himanshoe.charty.bar.internal.bar.wavy.wavyBarHitRects
-import com.himanshoe.charty.bar.internal.bar.wavy.wavyBaselineY
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.gesture.findClickedItemWithBounds
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -59,7 +59,7 @@ class WavyTooltipTest {
     fun hitRects_measureFromTheZeroLineWhenValuesGoNegative() {
         val negativeContext =
             ChartContext(left = 0f, top = 0f, right = 100f, bottom = 100f, minValue = -100f, maxValue = 100f)
-        assertEquals(50f, wavyBaselineY(chartContext = negativeContext, minValue = -100f), TOLERANCE)
+        assertEquals(50f, negativeContext.baselineY(minValue = -100f, drawNegativesInPlace = true), TOLERANCE)
         val rects =
             wavyBarHitRects(
                 chartContext = negativeContext,

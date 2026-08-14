@@ -20,10 +20,12 @@ import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateLineChartDescription
 import com.himanshoe.charty.common.axis.valueAxisConfig
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.data.getValues
+import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
@@ -39,11 +41,9 @@ import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.internal.area.AreaChartDrawParams
 import com.himanshoe.charty.line.internal.area.buildAreaModifier
-import com.himanshoe.charty.line.internal.area.calculateBaselineY
 import com.himanshoe.charty.line.internal.area.calculatePointPositions
 import com.himanshoe.charty.line.internal.area.drawAreaChart
-import com.himanshoe.charty.line.internal.area.drawTooltipHighlightIfNeeded
-import com.himanshoe.charty.line.internal.area.drawTooltipIfNeeded
+import com.himanshoe.charty.line.internal.area.drawAreaTooltipHighlight
 import com.himanshoe.charty.line.internal.area.rememberAreaValueRange
 import com.himanshoe.charty.line.internal.line.drawLineChartCrosshair
 import com.himanshoe.charty.line.internal.rememberThemedLineStyling
@@ -176,11 +176,7 @@ fun AreaChart(
                     tooltipManager.bounds.add(it)
                 }
             val baselineY =
-                calculateBaselineY(
-                    minValue = minValue,
-                    isBelowAxisMode = isBelowAxisMode,
-                    chartContext = chartContext,
-                )
+                chartContext.baselineY(minValue = minValue, drawNegativesInPlace = isBelowAxisMode)
             drawAreaChart(
                 params =
                     AreaChartDrawParams(
@@ -195,7 +191,7 @@ fun AreaChart(
                         textMeasurer = textMeasurer,
                     ),
             )
-            drawTooltipHighlightIfNeeded(
+            drawAreaTooltipHighlight(
                 tooltipState = tooltipManager.tooltipState,
                 lineConfig = lineConfig,
                 pointBounds = tooltipManager.bounds,

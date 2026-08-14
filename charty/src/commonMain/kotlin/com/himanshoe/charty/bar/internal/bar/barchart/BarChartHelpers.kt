@@ -2,7 +2,6 @@ package com.himanshoe.charty.bar.internal.bar.barchart
 
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
-import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.axis.AxisConfig
@@ -65,20 +64,6 @@ internal fun calculateVerticalBarDimensions(
     } else {
         val animatedBarHeight = (baselineY - barValueY) * animationProgress
         (baselineY - animatedBarHeight) to animatedBarHeight
-    }
-
-/**
- * Calculate the baseline Y position for bars, considering negative values and axis position
- */
-internal fun calculateBarBaselineY(
-    minValue: Float,
-    isBelowAxisMode: Boolean,
-    chartContext: ChartContext,
-): Float =
-    if (minValue < 0f && isBelowAxisMode) {
-        chartContext.convertValueToYPosition(0f)
-    } else {
-        chartContext.bottom
     }
 
 /**

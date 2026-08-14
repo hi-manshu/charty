@@ -17,9 +17,8 @@ import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.lollipop.createLollipopChartModifier
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipopCrosshair
+import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipopTooltipHighlight
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipops
-import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipHighlightIfNeeded
-import com.himanshoe.charty.bar.internal.bar.lollipop.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopCrosshair
 import com.himanshoe.charty.bar.internal.bar.lollipop.rememberLollipopValueRange
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
@@ -35,6 +34,7 @@ import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
@@ -192,7 +192,7 @@ fun LollipopBarChart(
                 )
             }
 
-            drawTooltipHighlightIfNeeded(tooltipManager.tooltipState, config, chartContext)
+            drawLollipopTooltipHighlight(tooltipManager.tooltipState, config, chartContext)
             if (tooltip.isCanvas()) {
                 drawTooltipIfNeeded(
                     tooltipState = tooltipManager.tooltipState,

@@ -1,21 +1,8 @@
 package com.himanshoe.charty.bar.internal.bar.bubblebar
 
-import com.himanshoe.charty.common.ChartContext
-
 /**
  * Helper functions for BubbleBarChart calculations
  */
-
-internal fun calculateBaselineY(
-    minValue: Float,
-    isBelowAxisMode: Boolean,
-    chartContext: ChartContext,
-): Float =
-    if (minValue < 0f && isBelowAxisMode) {
-        chartContext.convertValueToYPosition(0f)
-    } else {
-        chartContext.bottom
-    }
 
 internal fun calculateBubbleBarDimensions(
     barValue: Float,

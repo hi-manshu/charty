@@ -25,13 +25,3 @@ internal fun calculatePointPositions(
 /**
  * Calculates baseline Y position for the area fill.
  */
-internal fun calculateBaselineY(
-    minValue: Float,
-    isBelowAxisMode: Boolean,
-    chartContext: ChartContext,
-): Float =
-    if (minValue < 0f && isBelowAxisMode) {
-        chartContext.convertValueToYPosition(0f)
-    } else {
-        chartContext.bottom
-    }

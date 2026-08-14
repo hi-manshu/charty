@@ -184,3 +184,21 @@ data class ChartContext(
             endY = bottom,
         )
 }
+
+/**
+ * The y a chart's fill is drawn down to: the zero line when the data reaches below it and the chart
+ * is drawing negatives in place, and the bottom of the plot otherwise.
+ *
+ * The area chart and the bubble-bar chart had each written this out in their own package, under the
+ * same name — close enough to look deliberate, far enough apart that a fix to one would never reach
+ * the other. It belongs to the plot's geometry rather than to either of them.
+ */
+internal fun ChartContext.baselineY(
+    minValue: Float,
+    drawNegativesInPlace: Boolean,
+): Float =
+    if (minValue < 0f && drawNegativesInPlace) {
+        convertValueToYPosition(0f)
+    } else {
+        bottom
+    }

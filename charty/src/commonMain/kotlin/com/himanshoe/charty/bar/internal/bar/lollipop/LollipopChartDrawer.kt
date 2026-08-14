@@ -4,15 +4,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
-import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 
 private const val CIRCLE_HIGHLIGHT_OUTER_PADDING = 3f
 private const val CIRCLE_HIGHLIGHT_INNER_PADDING = 2f
@@ -96,7 +93,7 @@ private fun DrawScope.drawLollipopCircle(
 /**
  * Draws tooltip highlight (vertical line and circles) if tooltip is active.
  */
-internal fun DrawScope.drawTooltipHighlightIfNeeded(
+internal fun DrawScope.drawLollipopTooltipHighlight(
     tooltipState: TooltipState?,
     config: LollipopBarChartConfig,
     chartContext: ChartContext,
@@ -124,27 +121,6 @@ internal fun DrawScope.drawTooltipHighlightIfNeeded(
             color = Color.Black.copy(alpha = HIGHLIGHT_CIRCLE_ALPHA),
             radius = config.circleRadius + CIRCLE_HIGHLIGHT_INNER_PADDING,
             center = clickedPosition,
-        )
-    }
-}
-
-/**
- * Draws tooltip if active.
- */
-internal fun DrawScope.drawTooltipIfNeeded(
-    tooltipState: TooltipState?,
-    tooltipConfig: TooltipConfig,
-    textMeasurer: TextMeasurer,
-    chartContext: ChartContext,
-) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = tooltipConfig,
-            textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
         )
     }
 }

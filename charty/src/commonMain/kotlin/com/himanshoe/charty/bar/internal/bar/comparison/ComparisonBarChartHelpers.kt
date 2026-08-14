@@ -16,17 +16,6 @@ internal fun createComparisonAxisConfig(
         drawAxisAtZero = isBelowAxisMode,
     )
 
-internal fun calculateComparisonBaselineY(
-    minValue: Float,
-    isBelowAxisMode: Boolean,
-    chartContext: ChartContext,
-): Float =
-    if (minValue < 0f && isBelowAxisMode) {
-        chartContext.convertValueToYPosition(0f)
-    } else {
-        chartContext.bottom
-    }
-
 internal fun calculateComparisonBarX(
     chartContext: ChartContext,
     groupWidth: Float,

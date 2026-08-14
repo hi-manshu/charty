@@ -19,7 +19,6 @@ import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.comparison.ComparisonBarDrawParams
-import com.himanshoe.charty.bar.internal.bar.comparison.calculateComparisonBaselineY
 import com.himanshoe.charty.bar.internal.bar.comparison.createComparisonAxisConfig
 import com.himanshoe.charty.bar.internal.bar.comparison.createComparisonChartModifier
 import com.himanshoe.charty.bar.internal.bar.comparison.drawComparisonBars
@@ -33,6 +32,7 @@ import com.himanshoe.charty.bar.internal.bar.seriesCrosshairHandler
 import com.himanshoe.charty.bar.internal.bar.seriesStreamingPan
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -175,11 +175,7 @@ fun ComparisonBarChart(
 
             tooltipManager.clearBounds()
             val baselineY =
-                calculateComparisonBaselineY(
-                    minValue = minValue,
-                    isBelowAxisMode = isBelowAxisMode,
-                    chartContext = chartContext,
-                )
+                chartContext.baselineY(minValue = minValue, drawNegativesInPlace = isBelowAxisMode)
 
             drawComparisonBars(
                 ComparisonBarDrawParams(

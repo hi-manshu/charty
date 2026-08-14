@@ -9,6 +9,7 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLine
@@ -130,12 +131,7 @@ internal fun DrawScope.drawComboLine(
  * @param p The data, geometry, styling, and interaction state for this pass.
  */
 internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
-    val baselineY =
-        if (p.minValue < 0f && p.isBelowAxisMode) {
-            p.chartContext.convertValueToYPosition(0f)
-        } else {
-            p.chartContext.bottom
-        }
+    val baselineY = p.chartContext.baselineY(minValue = p.minValue, drawNegativesInPlace = p.isBelowAxisMode)
     drawReferenceBandIfNeeded(
         referenceBandConfig = p.comboConfig.referenceBand,
         chartContext = p.chartContext,

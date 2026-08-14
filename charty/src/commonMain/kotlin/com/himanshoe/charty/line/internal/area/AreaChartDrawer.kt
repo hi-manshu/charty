@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
@@ -18,9 +17,7 @@ import com.himanshoe.charty.common.draw.drawPersistentMarkers
 import com.himanshoe.charty.common.draw.drawReferenceBandIfNeeded
 import com.himanshoe.charty.common.draw.drawReferenceLineIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
-import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.ext.createAreaBrush
@@ -150,7 +147,7 @@ internal fun DrawScope.drawAreaPoints(
  * @param chartContext The pixel bounds of the plotting area, giving the guide line its extent.
  * @param color The colour or gradient the inner dot is filled with.
  */
-internal fun DrawScope.drawTooltipHighlightIfNeeded(
+internal fun DrawScope.drawAreaTooltipHighlight(
     tooltipState: TooltipState?,
     lineConfig: LineChartConfig,
     pointBounds: List<Pair<Offset, LineData>>,
@@ -179,31 +176,5 @@ internal fun DrawScope.drawTooltipHighlightIfNeeded(
                 innerRadiusAddition = HIGHLIGHT_CIRCLE_INNER_PADDING,
             )
         }
-    }
-}
-
-/**
- * Draws the built-in canvas tooltip bubble when one is showing, clamped to the plotting area.
- *
- * @param tooltipState The active tooltip, or `null` when none is showing.
- * @param tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
- * @param textMeasurer Measurer used for the tooltip text.
- * @param chartContext The pixel bounds the bubble is kept inside.
- */
-internal fun DrawScope.drawTooltipIfNeeded(
-    tooltipState: TooltipState?,
-    tooltipConfig: TooltipConfig,
-    textMeasurer: TextMeasurer,
-    chartContext: ChartContext,
-) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = tooltipConfig,
-            textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
-        )
     }
 }

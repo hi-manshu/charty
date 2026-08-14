@@ -17,7 +17,6 @@ import com.himanshoe.charty.bar.internal.bar.barCrosshairHandler
 import com.himanshoe.charty.bar.internal.bar.barStreamingPan
 import com.himanshoe.charty.bar.internal.bar.barchart.BarDrawParams
 import com.himanshoe.charty.bar.internal.bar.barchart.barChartAccessibility
-import com.himanshoe.charty.bar.internal.bar.barchart.calculateBarBaselineY
 import com.himanshoe.charty.bar.internal.bar.barchart.createBarAxisConfig
 import com.himanshoe.charty.bar.internal.bar.barchart.createBarChartModifier
 import com.himanshoe.charty.bar.internal.bar.barchart.drawBarReferenceBandIfNeeded
@@ -32,6 +31,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateBarChartDescription
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -183,11 +183,7 @@ fun BarChart(
 
             tooltipManager.clearBounds()
             val baselineY =
-                calculateBarBaselineY(
-                    minValue = minValue,
-                    isBelowAxisMode = isBelowAxisMode,
-                    chartContext = chartContext,
-                )
+                chartContext.baselineY(minValue = minValue, drawNegativesInPlace = isBelowAxisMode)
 
             drawBarReferenceBandIfNeeded(
                 barConfig = barConfig,

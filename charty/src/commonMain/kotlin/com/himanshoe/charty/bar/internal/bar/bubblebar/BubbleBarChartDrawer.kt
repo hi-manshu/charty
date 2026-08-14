@@ -8,7 +8,6 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.draw.drawReferenceLine
-import com.himanshoe.charty.common.tooltip.drawTooltip
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -71,22 +70,6 @@ internal fun DrawScope.drawReferenceLineIfNeeded(params: BubbleBarDrawParams) {
             orientation = ChartOrientation.VERTICAL,
             config = referenceLineConfig,
             textMeasurer = params.textMeasurer,
-        )
-    }
-}
-
-internal fun DrawScope.drawTooltipIfNeeded(
-    params: BubbleBarDrawParams,
-    tooltipState: com.himanshoe.charty.common.tooltip.TooltipState?,
-) {
-    tooltipState?.let { state ->
-        drawTooltip(
-            tooltipState = state,
-            config = params.tooltipConfig,
-            textMeasurer = params.textMeasurer,
-            chartWidth = params.chartContext.right,
-            chartTop = params.chartContext.top,
-            chartBottom = params.chartContext.bottom,
         )
     }
 }

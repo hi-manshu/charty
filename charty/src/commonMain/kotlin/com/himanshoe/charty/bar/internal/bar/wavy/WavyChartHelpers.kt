@@ -6,6 +6,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.common.ChartContext
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import kotlin.math.PI
 
@@ -82,24 +83,6 @@ internal fun populateWavyCrosshairBounds(
 }
 
 /**
- * The y pixel every wave is measured from: the zero line when the data reaches below zero, otherwise
- * the bottom of the plotting area.
- *
- * @param chartContext The pixel bounds and value range of the plotting area.
- * @param minValue The lowest value on the axis.
- * @return The baseline y, in canvas pixels.
- */
-internal fun wavyBaselineY(
-    chartContext: ChartContext,
-    minValue: Float,
-): Float =
-    if (minValue < 0f) {
-        chartContext.convertValueToYPosition(0f)
-    } else {
-        chartContext.bottom
-    }
-
-/**
  * The tap hit area of every wave: the wave is a thin stroked sine curve that is all but impossible
  * to hit directly, so a tap is resolved against the whole column the wave occupies — its full slot
  * width horizontally, and the span between its value and the baseline vertically, grown by the
@@ -117,7 +100,7 @@ internal fun wavyBarHitRects(
     minValue: Float,
     strokeWidthPx: Float,
 ): List<Rect> {
-    val baselineY = wavyBaselineY(chartContext = chartContext, minValue = minValue)
+    val baselineY = chartContext.baselineY(minValue = minValue, drawNegativesInPlace = true)
     val slotHalfWidth = waveSlotHalfWidth(chartContext = chartContext, barCount = values.size)
     val halfStroke = strokeWidthPx / 2f
     return List(values.size) { index ->

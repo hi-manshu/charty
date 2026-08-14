@@ -15,11 +15,9 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.bubblebar.BubbleBarDrawParams
-import com.himanshoe.charty.bar.internal.bar.bubblebar.calculateBaselineY
 import com.himanshoe.charty.bar.internal.bar.bubblebar.createBubbleChartModifier
 import com.himanshoe.charty.bar.internal.bar.bubblebar.drawBubbleBars
 import com.himanshoe.charty.bar.internal.bar.bubblebar.drawReferenceLineIfNeeded
-import com.himanshoe.charty.bar.internal.bar.bubblebar.drawTooltipIfNeeded
 import com.himanshoe.charty.bar.internal.bar.bubblebar.rememberValueRange
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
 import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
@@ -27,12 +25,14 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.valueAxisConfig
+import com.himanshoe.charty.common.baselineY
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.data.getLabels
 import com.himanshoe.charty.common.dragTooltipActive
 import com.himanshoe.charty.common.draw.drawPersistentMarkers
+import com.himanshoe.charty.common.draw.drawTooltipIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.rememberCartesianChartState
@@ -165,7 +165,7 @@ fun BubbleBarChart(
             updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)
 
             tooltipManager.clearBounds()
-            val baselineY = calculateBaselineY(minValue, isBelowAxisMode, chartContext)
+            val baselineY = chartContext.baselineY(minValue = minValue, drawNegativesInPlace = isBelowAxisMode)
 
             val drawParams =
                 BubbleBarDrawParams(
@@ -197,7 +197,12 @@ fun BubbleBarChart(
             }
             drawReferenceLineIfNeeded(drawParams)
             if (tooltip.isCanvas()) {
-                drawTooltipIfNeeded(drawParams, tooltipManager.tooltipState)
+                drawTooltipIfNeeded(
+                    tooltipState = tooltipManager.tooltipState,
+                    tooltipConfig = drawParams.tooltipConfig,
+                    textMeasurer = drawParams.textMeasurer,
+                    chartContext = drawParams.chartContext,
+                )
             }
 
             drawInteractionOverlays(
