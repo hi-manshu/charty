@@ -24,12 +24,12 @@ internal fun Modifier.ringClickHandler(
 
     return this.pointerInput(ringsList) {
         detectTapGestures { offset ->
-            val center = Offset(size.width / CircularProgressConstants.TWO, size.height / CircularProgressConstants.TWO)
+            val center = Offset(size.width / 2f, size.height / 2f)
             val dx = offset.x - center.x
             val dy = offset.y - center.y
             val distance = sqrt(dx * dx + dy * dy)
             val canvasSize = minOf(size.width, size.height)
-            val radius = canvasSize / CircularProgressConstants.TWO
+            val radius = canvasSize / 2f
             val strokeWidth =
                 calculateStrokeWidth(
                     radius = radius,
@@ -45,7 +45,7 @@ internal fun Modifier.ringClickHandler(
                         gapBetweenRings = config.gapBetweenRings,
                         strokeWidth = strokeWidth,
                     )
-                val ringHalfStroke = strokeWidth / CircularProgressConstants.TWO
+                val ringHalfStroke = strokeWidth / 2f
 
                 if (distance in (ringRadius - ringHalfStroke)..(ringRadius + ringHalfStroke)) {
                     onRingClick(ring, index)

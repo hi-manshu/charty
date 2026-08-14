@@ -31,6 +31,7 @@ import com.himanshoe.charty.bar.internal.bar.waterfall.rememberWaterfallCrosshai
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.axis.DEFAULT_VALUE_AXIS_STEPS
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -166,7 +167,7 @@ fun WaterfallChart(
                 AxisConfig(
                     minValue = minValue,
                     maxValue = maxValue,
-                    steps = 6,
+                    steps = DEFAULT_VALUE_AXIS_STEPS,
                     drawAxisAtZero = true,
                 ),
             config = scaffoldConfig,

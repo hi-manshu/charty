@@ -36,6 +36,7 @@ import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateCandlestickChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.axis.DEFAULT_VALUE_AXIS_STEPS
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -173,7 +174,7 @@ fun CandlestickChart(
                 AxisConfig(
                     minValue = minValue,
                     maxValue = maxValue,
-                    steps = 6,
+                    steps = DEFAULT_VALUE_AXIS_STEPS,
                     drawAxisAtZero = false,
                 ),
             config = scaffoldConfig,
@@ -300,7 +301,7 @@ private fun candleMarkerPositions(
         Offset(
             x =
                 chartContext.calculateBarLeftPosition(index, dataList.size, candleWidthFraction) +
-                    candleWidth / CandlestickChartConstants.TWO,
+                    candleWidth / 2f,
             y = chartContext.convertValueToYPosition(dataList[index].close),
         )
     }
@@ -345,7 +346,7 @@ private fun DrawScope.drawCandleBar(
     val actualBodyHeight = maxOf(bodyHeight, candlestickConfig.minCandleBodyHeight)
     val actualBodyTop =
         if (bodyHeight < candlestickConfig.minCandleBodyHeight) {
-            (openY + closeY - candlestickConfig.minCandleBodyHeight) / CandlestickChartConstants.TWO
+            (openY + closeY - candlestickConfig.minCandleBodyHeight) / 2f
         } else {
             bodyTop
         }
@@ -364,7 +365,7 @@ private fun DrawScope.drawCandleBar(
     drawCandlestick(
         CandlestickDrawParams(
             brush = candleBrush,
-            centerX = candleX + candleWidth / CandlestickChartConstants.TWO,
+            centerX = candleX + candleWidth / 2f,
             bodyTop = animatedBodyTop,
             bodyHeight = animatedBodyHeight,
             bodyWidth = candleWidth,

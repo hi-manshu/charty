@@ -19,6 +19,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.axis.DEFAULT_VALUE_AXIS_STEPS
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -174,7 +175,13 @@ fun StackedAreaChart(
                 streaming = interactionConfig.streamingRender(chartState.streaming),
                 modifier = chartModifier,
                 xLabels = dataList.getLabels(),
-                yAxisConfig = AxisConfig(minValue = 0f, maxValue = maxValue, steps = 6, drawAxisAtZero = false),
+                yAxisConfig =
+                    AxisConfig(
+                        minValue = 0f,
+                        maxValue = maxValue,
+                        steps = DEFAULT_VALUE_AXIS_STEPS,
+                        drawAxisAtZero = false,
+                    ),
                 config = scaffoldConfig,
             ) { chartContext ->
                 updateInteractionBounds(interactionConfig = interactionConfig, chartContext = chartContext)

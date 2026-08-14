@@ -33,6 +33,7 @@ import com.himanshoe.charty.common.accessibility.generateComboChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.axis.DEFAULT_VALUE_AXIS_STEPS
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -196,7 +197,7 @@ fun ComboChart(
                 AxisConfig(
                     minValue = minValue,
                     maxValue = maxValue,
-                    steps = 6,
+                    steps = DEFAULT_VALUE_AXIS_STEPS,
                     drawAxisAtZero = isBelowAxisMode,
                 ),
             config = scaffoldConfig,

@@ -2,6 +2,7 @@ package com.himanshoe.charty.bar.internal.bar.bubblebar
 
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.axis.DEFAULT_VALUE_AXIS_STEPS
 
 /**
  * Helper functions for BubbleBarChart calculations
@@ -15,7 +16,7 @@ internal fun createAxisConfig(
     AxisConfig(
         minValue = minValue,
         maxValue = maxValue,
-        steps = 6,
+        steps = DEFAULT_VALUE_AXIS_STEPS,
         drawAxisAtZero = isBelowAxisMode,
     )
 

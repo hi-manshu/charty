@@ -19,6 +19,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
 import com.himanshoe.charty.common.axis.AxisConfig
+import com.himanshoe.charty.common.axis.DEFAULT_VALUE_AXIS_STEPS
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshair
@@ -168,7 +169,7 @@ fun MultilineChart(
                     AxisConfig(
                         minValue = minValue,
                         maxValue = maxValue,
-                        steps = 6,
+                        steps = DEFAULT_VALUE_AXIS_STEPS,
                         drawAxisAtZero = isBelowAxisMode,
                     ),
                 config = scaffoldConfig,

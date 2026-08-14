@@ -24,7 +24,7 @@ internal fun DrawScope.drawSmoothCurveLine(
         return
     }
     // The same curve the line chart draws. This used to hand-roll its control points as
-    // deltaX/THREE and TWO * deltaX/THREE, which is what `smoothSegments` computes behind
+    // deltaX/3 and 2 * deltaX/3, which is what `smoothSegments` computes behind
     // `interpolatedLinePath` — two implementations of one curve, kept in step by nobody.
     drawPath(
         path = interpolatedLinePath(points = pointPositions, interpolation = LineInterpolation.SMOOTH),

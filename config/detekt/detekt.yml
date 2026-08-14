@@ -297,7 +297,7 @@ style:
   MagicNumber:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/*Test.kt', '**/*Spec.kt']
-    ignoreNumbers: ['-1', '0', '1', '2', '100']
+    ignoreNumbers: ['-1', '0', '1', '2', '100', '-1f', '0f', '1f', '2f', '100f']
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: true
     ignoreAnnotation: true

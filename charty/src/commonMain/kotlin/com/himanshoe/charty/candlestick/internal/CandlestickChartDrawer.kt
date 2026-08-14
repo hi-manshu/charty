@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
  */
 internal fun DrawScope.drawCandlestick(params: CandlestickDrawParams) {
     with(params) {
-        val bodyLeft = centerX - bodyWidth / CandlestickChartConstants.TWO
+        val bodyLeft = centerX - bodyWidth / 2f
         val bodyBottom = bodyTop + bodyHeight
 
         if (showWicks) {

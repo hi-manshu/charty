@@ -196,8 +196,8 @@ private fun DrawScope.drawRingsContent(
     rotationAngle: Float,
 ) {
     val canvasSize = size.minDimension
-    val radius = canvasSize / CircularProgressConstants.TWO
-    val center = Offset(size.width / CircularProgressConstants.TWO, size.height / CircularProgressConstants.TWO)
+    val radius = canvasSize / 2f
+    val center = Offset(size.width / 2f, size.height / 2f)
     val strokeWidth =
         calculateStrokeWidth(
             radius = radius,

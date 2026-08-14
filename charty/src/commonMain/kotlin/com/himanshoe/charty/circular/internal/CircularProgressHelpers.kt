@@ -30,5 +30,5 @@ internal fun calculateRingRadius(
     strokeWidth: Float,
 ): Float {
     val accumulatedWidth = index * (strokeWidth + gapBetweenRings)
-    return radius - accumulatedWidth - (strokeWidth / CircularProgressConstants.TWO)
+    return radius - accumulatedWidth - (strokeWidth / 2f)
 }

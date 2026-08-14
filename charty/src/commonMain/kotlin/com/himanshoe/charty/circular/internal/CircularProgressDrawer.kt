@@ -22,7 +22,7 @@ internal fun DrawScope.drawRingBackground(
     strokeWidth: Float,
 ) {
     val topLeft = Offset(center.x - radius, center.y - radius)
-    val size = Size(radius * CircularProgressConstants.TWO, radius * CircularProgressConstants.TWO)
+    val size = Size(radius * 2f, radius * 2f)
 
     drawArc(
         color = ring.getBackgroundColor(),
@@ -52,7 +52,7 @@ internal fun DrawScope.drawRingProgress(
     strokeWidth: Float,
 ) {
     val topLeft = Offset(center.x - radius, center.y - radius)
-    val size = Size(radius * CircularProgressConstants.TWO, radius * CircularProgressConstants.TWO)
+    val size = Size(radius * 2f, radius * 2f)
     val sweepAngle =
         ((progress / ring.maxValue) * CircularProgressConstants.FULL_CIRCLE_DEGREES)
             .coerceIn(0f, CircularProgressConstants.FULL_CIRCLE_DEGREES)
@@ -116,8 +116,8 @@ private fun DrawScope.drawRingShadow(
             useCenter = false,
             topLeft =
                 Offset(
-                    topLeft.x - shadowExpand / CircularProgressConstants.TWO,
-                    topLeft.y - shadowExpand / CircularProgressConstants.TWO,
+                    topLeft.x - shadowExpand / 2f,
+                    topLeft.y - shadowExpand / 2f,
                 ),
             size = Size(size.width + shadowExpand, size.height + shadowExpand),
             style =

@@ -3,6 +3,14 @@ package com.himanshoe.charty.common.axis
 import kotlin.math.round
 
 /**
+ * The number of divisions charts put on a value axis unless they say otherwise.
+ *
+ * Written as a bare `6` at nine call sites across the library, which made a shared decision look like
+ * nine independent ones — and meant changing it required finding all nine.
+ */
+const val DEFAULT_VALUE_AXIS_STEPS = 6
+
+/**
  * A data class that holds the configuration for a chart axis.
  *
  * @property minValue The minimum value to be displayed on the axis.
@@ -13,6 +21,7 @@ import kotlin.math.round
  *   [formatAxisLabel] (integers without decimals, floats trimmed to two places). Override it to
  *   render dates, currency, percentages, or any custom units — e.g. `{ "$${'$'}{it.toInt()}" }`.
  */
+
 data class AxisConfig(
     val minValue: Float = 0f,
     val maxValue: Float = 100f,
