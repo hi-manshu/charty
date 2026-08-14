@@ -2,21 +2,15 @@ package com.himanshoe.charty.line.internal.line
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.CrosshairState
-import com.himanshoe.charty.common.tooltip.TooltipPosition
-import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
-
-private val CROSSHAIR_DASH_INTERVALS = floatArrayOf(8f, 4f)
-private val CROSSHAIR_DASH_EFFECT = PathEffect.dashPathEffect(CROSSHAIR_DASH_INTERVALS)
-private const val DOT_OUTER_PADDING = 2f
+import com.himanshoe.charty.common.gesture.drawCrosshairDot
+import com.himanshoe.charty.common.gesture.drawCrosshairGuides
+import com.himanshoe.charty.common.gesture.drawCrosshairValueLabel
 
 /**
  * Draws the crosshair overlay for a line or area chart.
@@ -37,53 +31,18 @@ internal fun DrawScope.drawLineChartCrosshair(
     textMeasurer: TextMeasurer,
     chartColor: ChartyColor,
 ) {
-    val dashEffect = CROSSHAIR_DASH_EFFECT
-
-    drawLine(
-        brush = Brush.verticalGradient(config.verticalLineColor.value),
-        start = Offset(state.x, chartContext.top),
-        end = Offset(state.x, chartContext.bottom),
-        strokeWidth = config.lineWidth,
-        pathEffect = dashEffect,
+    drawCrosshairGuides(state = state, config = config, chartContext = chartContext)
+    drawCrosshairDot(
+        center = Offset(x = state.x, y = state.y),
+        config = config,
+        fill = Brush.linearGradient(chartColor.value),
     )
-
-    if (config.showHorizontalLine) {
-        drawLine(
-            brush = Brush.horizontalGradient(config.horizontalLineColor.value),
-            start = Offset(chartContext.left, state.y),
-            end = Offset(chartContext.right, state.y),
-            strokeWidth = config.lineWidth,
-            pathEffect = dashEffect,
-        )
-    }
-
-    drawCircle(
-        color = Color.White,
-        radius = config.dotRadius + DOT_OUTER_PADDING,
-        center = Offset(state.x, state.y),
-    )
-    drawCircle(
-        brush = Brush.linearGradient(chartColor.value),
-        radius = config.dotRadius,
-        center = Offset(state.x, state.y),
-    )
-
     if (config.showLabel) {
-        val tooltipState =
-            TooltipState(
-                content = state.label,
-                x = state.x - config.dotRadius,
-                y = state.y,
-                barWidth = config.dotRadius * 2f,
-                position = TooltipPosition.ABOVE,
-            )
-        drawTooltip(
-            tooltipState = tooltipState,
-            config = config.tooltipConfig,
+        drawCrosshairValueLabel(
+            state = state,
+            config = config,
+            chartContext = chartContext,
             textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
         )
     }
 }

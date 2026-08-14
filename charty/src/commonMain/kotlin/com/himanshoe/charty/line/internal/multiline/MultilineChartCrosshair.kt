@@ -1,24 +1,19 @@
 package com.himanshoe.charty.line.internal.multiline
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.CrosshairState
-import com.himanshoe.charty.common.tooltip.TooltipPosition
-import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
+import com.himanshoe.charty.common.gesture.drawCrosshairDot
+import com.himanshoe.charty.common.gesture.drawCrosshairGuides
+import com.himanshoe.charty.common.gesture.drawCrosshairValueLabel
 import com.himanshoe.charty.line.data.LineGroup
 import kotlin.math.abs
-
-private val MULTILINE_CROSSHAIR_DASH = floatArrayOf(8f, 4f)
-private val MULTILINE_CROSSHAIR_DASH_EFFECT = PathEffect.dashPathEffect(MULTILINE_CROSSHAIR_DASH)
-private const val MULTILINE_DOT_OUTER_PADDING = 2f
 
 /**
  * Draws the crosshair overlay for a multiline chart.
@@ -45,60 +40,27 @@ internal fun DrawScope.drawMultilineChartCrosshair(
     if (dataList.isEmpty() || colorList.isEmpty()) {
         return
     }
-    val dashEffect = MULTILINE_CROSSHAIR_DASH_EFFECT
-
     val snappedIndex =
-        dataList.indices.minByOrNull { idx ->
-            abs(chartContext.calculateCenteredXPosition(idx, dataList.size) - state.x)
+        dataList.indices.minByOrNull { index ->
+            abs(chartContext.calculateCenteredXPosition(index, dataList.size) - state.x)
         } ?: return
 
-    drawLine(
-        brush = Brush.verticalGradient(config.verticalLineColor.value),
-        start = Offset(state.x, chartContext.top),
-        end = Offset(state.x, chartContext.bottom),
-        strokeWidth = config.lineWidth,
-        pathEffect = dashEffect,
-    )
-    if (config.showHorizontalLine) {
-        drawLine(
-            brush = Brush.horizontalGradient(config.horizontalLineColor.value),
-            start = Offset(chartContext.left, state.y),
-            end = Offset(chartContext.right, state.y),
-            strokeWidth = config.lineWidth,
-            pathEffect = dashEffect,
-        )
-    }
+    drawCrosshairGuides(state = state, config = config, chartContext = chartContext)
 
     dataList[snappedIndex].values.fastForEachIndexed { seriesIndex, value ->
-        val seriesY = chartContext.convertValueToYPosition(value)
-        val seriesColor = colorList[seriesIndex % colorList.size]
-        drawCircle(
-            color = Color.White,
-            radius = config.dotRadius + MULTILINE_DOT_OUTER_PADDING,
-            center = Offset(state.x, seriesY),
-        )
-        drawCircle(
-            color = seriesColor,
-            radius = config.dotRadius,
-            center = Offset(state.x, seriesY),
+        drawCrosshairDot(
+            center = Offset(x = state.x, y = chartContext.convertValueToYPosition(value)),
+            config = config,
+            fill = SolidColor(colorList[seriesIndex % colorList.size]),
         )
     }
 
     if (config.showLabel) {
-        drawTooltip(
-            tooltipState =
-                TooltipState(
-                    content = state.label,
-                    x = state.x - config.dotRadius,
-                    y = state.y,
-                    barWidth = config.dotRadius * 2f,
-                    position = TooltipPosition.ABOVE,
-                ),
-            config = config.tooltipConfig,
+        drawCrosshairValueLabel(
+            state = state,
+            config = config,
+            chartContext = chartContext,
             textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
         )
     }
 }

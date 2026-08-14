@@ -8,8 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastMap
@@ -21,26 +19,21 @@ import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.gesture.AnimatedCrosshair
+import com.himanshoe.charty.common.gesture.CROSSHAIR_DASH_EFFECT
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
 import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
+import com.himanshoe.charty.common.gesture.drawCrosshairDot
+import com.himanshoe.charty.common.gesture.drawCrosshairValueLabel
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.theme.orThemeCrosshair
 import com.himanshoe.charty.common.tooltip.ChartTooltip
 import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.TooltipManager
-import com.himanshoe.charty.common.tooltip.TooltipPosition
-import com.himanshoe.charty.common.tooltip.TooltipState
-import com.himanshoe.charty.common.tooltip.drawTooltip
-
-private val BAR_CROSSHAIR_DASH_INTERVALS = floatArrayOf(8f, 4f)
-private val BAR_CROSSHAIR_DASH_EFFECT = PathEffect.dashPathEffect(BAR_CROSSHAIR_DASH_INTERVALS)
-private const val BAR_CROSSHAIR_DOT_OUTER_PADDING = 2f
-private const val BAR_CROSSHAIR_LABEL_SPAN_FACTOR = 2f
 
 /**
  * Everything a bar-family chart needs to run a crosshair: the gesture manager, the smoothed position
@@ -258,32 +251,18 @@ internal fun DrawScope.drawBarCrosshairOverlay(
         )
     }
 
-    drawCircle(
-        color = Color.White,
-        radius = config.dotRadius + BAR_CROSSHAIR_DOT_OUTER_PADDING,
+    drawCrosshairDot(
         center = Offset(x = state.x, y = state.y),
-    )
-    drawCircle(
-        brush = Brush.linearGradient(chartColor.value),
-        radius = config.dotRadius,
-        center = Offset(x = state.x, y = state.y),
+        config = config,
+        fill = Brush.linearGradient(chartColor.value),
     )
 
     if (config.showLabel) {
-        drawTooltip(
-            tooltipState =
-                TooltipState(
-                    content = state.label,
-                    x = state.x - config.dotRadius,
-                    y = state.y,
-                    barWidth = config.dotRadius * BAR_CROSSHAIR_LABEL_SPAN_FACTOR,
-                    position = TooltipPosition.ABOVE,
-                ),
-            config = config.tooltipConfig,
+        drawCrosshairValueLabel(
+            state = state,
+            config = config,
+            chartContext = chartContext,
             textMeasurer = textMeasurer,
-            chartWidth = chartContext.right,
-            chartTop = chartContext.top,
-            chartBottom = chartContext.bottom,
         )
     }
 }
@@ -323,6 +302,6 @@ private fun DrawScope.drawBarCrosshairGuide(
         start = start,
         end = end,
         strokeWidth = config.lineWidth,
-        pathEffect = BAR_CROSSHAIR_DASH_EFFECT,
+        pathEffect = CROSSHAIR_DASH_EFFECT,
     )
 }
