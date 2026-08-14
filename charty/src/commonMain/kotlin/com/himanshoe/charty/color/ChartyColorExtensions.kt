@@ -19,11 +19,15 @@ fun ChartyColor.toBrush(): Brush =
     }
 
 /**
- * Converts this [ChartyColor] into a [Brush] whose gradient runs corner to corner. Use it for round
+ * Converts this [ChartyColor] into a [Brush] whose gradient runs corner to corner. Used for round
  * elements — a pie slice, a gauge arc — where neither a vertical nor a horizontal sweep follows the
  * shape and a diagonal reads as lighting rather than as banding.
+ *
+ * Internal, unlike its two neighbours. It exists because the pie and gauge drawers had each written
+ * it out privately, and consolidating them is no reason to hand callers a third public overload they
+ * never asked for. Publishing it later is additive; unpublishing it would not be.
  */
-fun ChartyColor.toDiagonalBrush(): Brush =
+internal fun ChartyColor.toDiagonalBrush(): Brush =
     when (this) {
         is ChartyColor.Solid -> brush
         is ChartyColor.Gradient -> Brush.linearGradient(colors)
