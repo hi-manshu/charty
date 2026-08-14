@@ -60,7 +60,7 @@ and width, and those two state holders are what carry them.
 LineChart(
     data = { revenue },
     crosshair = ChartCrosshair(),
-    interactionConfig = ChartInteractionConfig(viewPortState = rememberViewPortState(initialVisibleItems = 30)),
+    interactionConfig = ChartInteractionConfig(viewPortState = rememberViewPortState(initialVisibleFraction = 0.3f)),
 )
 
 // Does NOT participate — crosshair, but no geometry source.

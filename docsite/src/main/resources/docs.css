@@ -622,13 +622,17 @@ code {
 
 .code-block pre {
     margin: 0;
-    padding: 18px 18px 18px 0;
+    padding: 20px 20px 20px 0;
     overflow-x: auto;
     background: var(--code-bg);
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    line-height: 1.65;
+    /* Looser than prose: code is read a line at a time, and tight leading makes a dense argument
+       list read as a block of noise. */
+    line-height: 1.78;
     color: var(--code-text);
+    /* Tabular figures keep the line numbers in a true column instead of wobbling by digit. */
+    font-variant-numeric: tabular-nums;
 }
 
 /* Line numbers come from a counter rather than from text, so they cannot be selected and a copied
@@ -637,20 +641,32 @@ code {
     counter-reset: line;
 }
 
+/*
+  A line is a block so it can be numbered, and so hovering can pick one out. The highlight is the
+  faintest thing that still works: reading code in a document usually means tracking one line across
+  a wide argument list, and losing your place is the whole difficulty.
+*/
 .line {
     display: block;
-    padding: 0 18px 0 0;
-    min-height: 1.65em;
+    padding: 0 20px 0 0;
+    min-height: 1.78em;
+    transition: background 120ms ease;
+}
+
+.code-block:hover .line:hover {
+    background: color-mix(in srgb, #ffffff 4%, transparent);
 }
 
 .line::before {
     counter-increment: line;
     content: counter(line);
     display: inline-block;
-    width: 44px;
-    padding-right: 16px;
+    width: 46px;
+    padding-right: 18px;
     text-align: right;
     color: var(--code-gutter);
+    /* Numbers are for orientation, not for reading, so they sit back a step from the code. */
+    opacity: 0.75;
     user-select: none;
     -webkit-user-select: none;
 }
@@ -1823,6 +1839,7 @@ code {
 
 .code-block code {
     font-size: 13.5px;
+    letter-spacing: 0.002em;
 }
 
 .line::before {

@@ -252,36 +252,56 @@ Wrap several charts in `CrosshairSyncScope { }` and they mirror a single guide p
 
 ## Zoom and Pan
 
-Zoom and pan allow users to pinch-zoom and drag the visible chart window. This is especially useful for dense time-series data.
+Zoom and pan let a reader narrow the chart to part of the series and drag through it. It suits dense
+time series, where every point drawn at once is a row of slivers.
 
-Create the state in a `@Composable` scope and pass it via `ChartInteractionConfig`:
+Create the state in a `@Composable` scope and pass it through `ChartInteractionConfig`:
 
 ```kotlin
-val viewPortState = rememberViewPortState(initialVisibleItems = 10)
+val viewPortState = rememberViewPortState(initialVisibleFraction = 0.1f)
 
 BarChart(
     data = { barData },
-    interactionConfig = ChartInteractionConfig(
-        viewPortState = viewPortState,
-    ),
+    interactionConfig = ChartInteractionConfig(viewPortState = viewPortState),
 )
 ```
 
-`initialVisibleItems` controls how many data points are visible at once when the chart first renders. The user can then pinch to zoom out (show more items) or in (show fewer).
+`initialVisibleFraction` is how much of the series to show at first, as a fraction of the whole —
+`0.1f` opens on the first tenth. It matters more than it sounds: a chart showing everything has
+nothing off-screen to pan to, so at the default of `1f` dragging does nothing until the reader
+thinks to zoom in first.
+
+### How a reader zooms
+
+| Input | Gesture |
+| --- | --- |
+| Touch | Pinch to zoom, drag to pan, flick to fling |
+| Mouse or trackpad | Wheel to zoom, horizontal wheel or two-finger swipe to pan |
+
+Wheel support matters on desktop and web, where there is no second touch point to pinch with.
+
+### Reading and driving the viewport
+
+The window is expressed as fractions of the whole series, not as item counts, so charts of different
+widths and different data sizes can be kept in step:
 
 ```kotlin
-// Show 7 items initially; user can zoom to see the full dataset
-val viewPortState = rememberViewPortState(initialVisibleItems = 7)
+viewPortState.startFraction      // 0f is the first point
+viewPortState.endFraction        // 1f is the last
+viewPortState.visibleFraction    // how much of the series is on screen
+viewPortState.visibleIndices(totalItems = data.size)   // the indices actually drawn
 
-LineChart(
-    data = { lineData },
-    interactionConfig = ChartInteractionConfig(
-        viewPortState = viewPortState,
-    ),
-)
+viewPortState.isAtStart          // true when the window is against the beginning
+viewPortState.isAtEnd            // true when it is against the end
+
+viewPortState.reset()             // back to the whole series
+viewPortState.animateScrollToEnd()  // slide to the newest data
 ```
 
-You can read the current viewport from `viewPortState` (e.g., `viewPortState.visibleRange`) if you need to synchronise multiple charts.
+> Zoom and pan take precedence over a rolling `visibleWindow`: with a `viewPortState` configured the
+> window is ignored and the chart draws statically. If what you want is a fixed-width window a
+> reader drags through, use `visibleWindow` with a `StreamingState` instead — see
+> [Streaming](../guides/streaming.md).
 
 ---
 
@@ -310,7 +330,7 @@ Brush selection and zoom/pan can be combined in a single `ChartInteractionConfig
 
 ```kotlin
 ChartInteractionConfig(
-    viewPortState = rememberViewPortState(initialVisibleItems = 15),
+    viewPortState = rememberViewPortState(initialVisibleFraction = 0.2f),
     brushSelectionState = rememberBrushSelectionState(),
 )
 ```
@@ -363,7 +383,7 @@ class ChartInteractionConfig(
 
 | Property | Description |
 |---|---|
-| `viewPortState` | Enables zoom and pan. Create with `rememberViewPortState(initialVisibleItems)`. |
+| `viewPortState` | Enables zoom and pan. Create with `rememberViewPortState(initialVisibleFraction)`. |
 | `brushSelectionState` | Enables brush range selection. Create with `rememberBrushSelectionState()`. |
 | `onRangeSelect` | Called with `(startIndex, endIndex)` when a brush selection gesture completes. |
 | `annotations` | List of `ChartAnnotation` markers rendered on top of the chart content. |
@@ -381,7 +401,7 @@ Note it is a plain `class`, not a `data class` — there is no `copy()`.
 ```kotlin
 @Composable
 fun SalesChart(data: List<BarData>) {
-    val viewPortState = rememberViewPortState(initialVisibleItems = 12)
+    val viewPortState = rememberViewPortState(initialVisibleFraction = 0.25f)
     val brushState = rememberBrushSelectionState()
 
     BarChart(

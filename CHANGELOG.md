@@ -3,6 +3,35 @@
 Notable changes to Charty. Versions follow [semantic versioning](https://semver.org); breaking
 changes are listed first in each release and say what to do about them.
 
+## 3.0.1
+
+Bug fixes only, all in the zoom and pan path. No API removed, one parameter added with a default, so
+nothing that compiles against 3.0.0 needs changing.
+
+### Fixed
+
+- **Zoom is reachable without a touchscreen.** Zooming was pinch-only, and a pinch needs two touch
+  points, so on desktop and in a browser with a mouse the viewport could never be narrowed. Panning
+  is bounded by whatever sits off-screen, which at full width is nothing, so that did nothing either
+  — a chart given a `ViewPortState` was inert on exactly the platforms most likely to supply one.
+  The wheel and trackpad now zoom, and a horizontal wheel pans.
+- **A viewport no longer costs the chart its tooltip.** The zoom gesture claimed every pointer
+  change, including a stationary tap, which cancelled the tap detector underneath it. Supplying a
+  viewport therefore switched taps off silently: the zoom worked and the tooltip simply stopped
+  appearing. The gesture now only consumes an event when it actually moved the viewport.
+
+### Added
+
+- **`rememberViewPortState(initialVisibleFraction)`.** Left at its default a chart shows the whole
+  series, and a chart showing everything cannot be panned, so a long series arrives as a row of
+  slivers and stays that way until a reader thinks to pinch it. Opening at `0.1f` shows the first
+  tenth and is draggable straight away.
+  ```kotlin
+  val viewport = rememberViewPortState(initialVisibleFraction = 0.1f)
+  ```
+
+Reported as [#154](https://github.com/hi-manshu/charty/issues/154).
+
 ## 3.0.0
 
 The first stable release of the 3.0 line. From here the public API is committed: nothing outside
