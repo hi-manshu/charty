@@ -87,8 +87,8 @@ fun renderPage(
   <nav class="topbar-links">
     <a href="${root}playground/index.html">Playground</a>
     <a href="https://github.com/hi-manshu/charty" rel="noopener">GitHub</a>
-    <a class="sponsor-link" href="https://buymeacoffee.com/himanshoe" rel="noopener">
-      <span aria-hidden="true">☕</span> Sponsor
+    <a class="sponsor-link" href="https://github.com/sponsors/hi-manshu" rel="noopener">
+      <span aria-hidden="true">♥</span> Sponsor
     </a>
     <button class="theme-toggle" type="button" aria-label="Switch between light and dark"></button>
   </nav>
@@ -152,7 +152,8 @@ private fun renderFooter(root: String): String =
     <div>
       <h3>Project</h3>
       <a href="${root}playground/index.html">Playground</a>
-      <a href="https://buymeacoffee.com/himanshoe">Sponsor</a>
+      <a href="https://github.com/sponsors/hi-manshu">Sponsor on GitHub</a>
+      <a href="https://buymeacoffee.com/himanshoe">Buy me a coffee</a>
       <a href="https://github.com/hi-manshu/charty">GitHub</a>
       <a href="https://central.sonatype.com/artifact/com.himanshoe/charty">Maven Central</a>
       <a href="https://github.com/hi-manshu/charty/blob/main/CHANGELOG.md">Changelog</a>

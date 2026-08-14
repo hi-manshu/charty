@@ -93,6 +93,60 @@
         headings.forEach(function (heading) { observer.observe(heading); });
     }
 
+    /* ---------- reveal on scroll ---------- */
+
+    /*
+      Sections below the fold rise into place as they are reached.
+
+      Driven by a scroll sweep rather than an IntersectionObserver, because the observer gets this
+      wrong in a way that loses content: jump straight to the bottom of the page — an anchor link, a
+      restored scroll position, End — and the sections you flew past never intersected anything, so
+      they stay hidden forever. A sweep asks the only question that matters, "is this above the fold
+      now", and answers it correctly however the reader got there.
+
+      Elements are marked hidden here rather than in the stylesheet, and only if they start below the
+      fold, so a reader who never scrolls still sees a complete page and a broken script degrades to
+      no animation instead of no content.
+    */
+    var revealables = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+
+    if (revealables.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var pending = revealables.filter(function (element) {
+            return element.getBoundingClientRect().top > window.innerHeight * 0.9;
+        });
+        pending.forEach(function (element) { element.classList.add('is-pending'); });
+
+        var ticking = false;
+
+        function sweep() {
+            ticking = false;
+            var limit = window.innerHeight * 0.9;
+            pending = pending.filter(function (element) {
+                if (element.getBoundingClientRect().top > limit) {
+                    return true;
+                }
+                element.classList.remove('is-pending');
+                return false;
+            });
+            if (!pending.length) {
+                window.removeEventListener('scroll', onScroll);
+                window.removeEventListener('resize', onScroll);
+            }
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                ticking = true;
+                requestAnimationFrame(sweep);
+            }
+        }
+
+        if (pending.length) {
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll);
+        }
+    }
+
     /* ---------- search ---------- */
 
     var input = document.getElementById('search-input');

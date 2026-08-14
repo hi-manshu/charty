@@ -126,8 +126,11 @@ private fun hero(chartCount: Int): String =
     <div class="hero-actions">
       <a class="button button--primary" href="getting-started/quick-start.html">Get started</a>
       <a class="button" href="playground/index.html">Try it in your browser</a>
+      <a class="button button--sponsor" href="https://github.com/sponsors/hi-manshu" rel="noopener">
+        <span aria-hidden="true">♥</span> Sponsor on GitHub
+      </a>
       <a class="button button--sponsor" href="https://buymeacoffee.com/himanshoe" rel="noopener">
-        <span aria-hidden="true">☕</span> Sponsor
+        <span aria-hidden="true">☕</span> Buy me a coffee
       </a>
     </div>
     <div class="hero-code">${renderKotlinBlock(quickStart)}</div>
@@ -145,13 +148,20 @@ private fun hero(chartCount: Int): String =
  * Charty's whole argument is visual, so the page shows the charts before it describes them. The row
  * is duplicated end to end and translated by exactly half its width, which is what makes the loop
  * seamless — at the moment it resets, the second copy is sitting exactly where the first began.
+ *
+ * Each thumbnail is named. A strip of unlabelled charts is decoration; the same strip with names is
+ * a contents page, and a reader can tell at a glance whether the library draws the thing they came
+ * for. The strip is hidden from screen readers all the same: every chart in it appears again in the
+ * catalog below, and announcing each one twice — here, doubled for the loop — is worse than not
+ * announcing the decorative copy at all.
  */
 private fun marquee(catalog: List<CatalogSection>): String {
     val shots = catalog.flatMap { section -> section.charts }.filter { chart -> chart.image != null }
     val row =
         shots.joinToString("") { chart ->
             """<a href="${chart.url}" title="${escapeAttribute(chart.name)}">""" +
-                """<img src="img/${chart.image}" alt="${escapeAttribute(chart.name)}" loading="lazy"></a>"""
+                """<img src="img/${chart.image}" alt="" loading="lazy">""" +
+                """<span class="marquee-label">${escapeText(chart.name)}</span></a>"""
         }
     return """<section class="marquee" aria-hidden="true"><div class="marquee-track">$row$row</div></section>"""
 }
@@ -165,7 +175,7 @@ private fun featureGrid(): String {
                </a>"""
         }
     return """
-<section class="band">
+<section class="reveal band">
   <div class="band-inner">
     <h2 class="section-title">Everything in the box</h2>
     <p class="section-lede">The things you would otherwise build yourself, already built and documented.</p>
@@ -197,7 +207,7 @@ private fun catalogSection(catalog: List<CatalogSection>): String {
                </div>"""
         }
     return """
-<section class="band band--alt" id="charts">
+<section class="reveal band band--alt" id="charts">
   <div class="band-inner">
     <h2 class="section-title">Every chart</h2>
     <p class="section-lede">
@@ -216,7 +226,7 @@ private fun platformSection(): String {
                  <span>${escapeText(platform.detail)}</span></div>"""
         }
     return """
-<section class="band">
+<section class="reveal band">
   <div class="band-inner">
     <h2 class="section-title">Write once</h2>
     <p class="section-lede">One dependency, one API, and the same rendering on every target.</p>
@@ -236,7 +246,7 @@ private fun platformSection(): String {
 
 private const val PERFORMANCE_SECTION =
     """
-<section class="band band--alt">
+<section class="reveal band band--alt">
   <div class="band-inner narrow">
     <h2 class="section-title">And it is quick</h2>
     <p class="section-lede">
@@ -255,14 +265,14 @@ private const val PERFORMANCE_SECTION =
 
 private const val CLOSING_SECTION =
     """
-<section class="closing">
+<section class="reveal closing">
   <h2>Start with a chart on screen</h2>
   <p>Two minutes from an empty file to something rendering, on whichever platform you are on.</p>
   <div class="hero-actions">
     <a class="button button--primary" href="getting-started/quick-start.html">Quick start</a>
     <a class="button" href="playground/index.html">Open the playground</a>
-    <a class="button button--sponsor" href="https://buymeacoffee.com/himanshoe" rel="noopener">
-      <span aria-hidden="true">☕</span> Sponsor
+    <a class="button button--sponsor" href="https://github.com/sponsors/hi-manshu" rel="noopener">
+      <span aria-hidden="true">♥</span> Sponsor on GitHub
     </a>
   </div>
 </section>

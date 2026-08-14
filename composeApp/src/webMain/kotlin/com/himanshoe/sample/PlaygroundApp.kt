@@ -12,6 +12,7 @@
 package com.himanshoe.sample
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,8 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -111,9 +110,9 @@ fun WebApp() {
     MaterialTheme(
         colorScheme =
             if (dark) {
-                darkColorScheme()
+                playgroundDarkScheme()
             } else {
-                lightColorScheme()
+                playgroundLightScheme()
             },
     ) {
         ChartyThemeProvider(
@@ -319,9 +318,16 @@ private fun FamilyCard(
             Modifier
                 .fillMaxWidth()
                 .height(96.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(family.accent.copy(alpha = 0.12f))
-                .clickable(onClick = onClick)
+                .clip(RoundedCornerShape(12.dp))
+                // Ink and paper, with a hairline edge. The accent survives only as the dot below:
+                // a wall of tinted cards competes with the charts they open, which are the coloured
+                // thing a reader is actually here to look at.
+                .background(MaterialTheme.colorScheme.surface)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(12.dp),
+                ).clickable(onClick = onClick)
                 .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {

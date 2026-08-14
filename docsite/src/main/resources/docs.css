@@ -67,16 +67,17 @@
 
 /* The code surface does not follow the theme. */
 :root {
-    --code-bg: #0a0a0a;
-    --code-bg-header: #161616;
-    --code-text: #ededed;
-    --code-gutter: #6f6f6f;
-    --tok-keyword: #d6b4fc;
-    --tok-string: #7ce6a6;
-    --tok-comment: #8f8f8f;
-    --tok-number: #f5a97f;
-    --tok-type: #8ec9ff;
-    --tok-annotation: #f0c674;
+    --code-bg: #16161a;
+    --code-bg-header: #1f1f24;
+    --code-border: #32323a;
+    --code-text: #f7f7f8;
+    --code-gutter: #6e6e78;
+    --tok-keyword: #e0b6ff;
+    --tok-string: #7dfab5;
+    --tok-comment: #9b9baa;
+    --tok-number: #ffbc8a;
+    --tok-type: #9fd4ff;
+    --tok-annotation: #ffd98a;
 }
 
 * {
@@ -1651,4 +1652,155 @@ code {
 .marquee img,
 .hero-art img {
     border: 1px solid var(--outline-variant);
+}
+
+/* ---------- code contrast ---------- */
+
+/*
+  On the dark theme the page is pure black, so a near-black code block dissolves into it. The block
+  is lifted a few steps and given a border, which is what makes it read as a distinct object rather
+  than as a region where the text happens to be monospaced.
+*/
+.code-block pre {
+    border: 1px solid var(--code-border);
+}
+
+.code-block code {
+    font-size: 13.5px;
+}
+
+.line::before {
+    color: var(--code-gutter);
+}
+
+/* ---------- marquee labels ---------- */
+
+.marquee a {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.marquee img {
+    border-radius: 0;
+    border: 0;
+}
+
+/*
+  Every thumbnail says what it is. A strip of unlabelled charts is decoration; the same strip with
+  names is a contents page, and the reader can tell whether the library draws the thing they came
+  looking for.
+*/
+.marquee-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 16px 12px 8px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0));
+    color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-align: left;
+}
+
+.marquee a {
+    border: 1px solid var(--outline-variant);
+}
+
+/* ---------- motion ---------- */
+
+/*
+  Sections rise into place the first time they are scrolled to. The transform is small and the
+  duration short: enough to make the page feel assembled rather than dumped, not so much that a
+  reader waits for it. Everything below is disabled outright under prefers-reduced-motion.
+*/
+/*
+  The hidden state is applied by script, never by this stylesheet, and only to sections that are
+  below the fold when the page loads. Authoring `opacity: 0` as the resting state means any failure
+  — a script error, an old browser, a blocked file — leaves the page blank rather than unanimated.
+  This way the worst case is that nothing moves.
+*/
+.reveal.is-pending {
+    opacity: 0;
+    transform: translateY(14px);
+}
+
+.reveal {
+    transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Staggered so a grid arrives as a sequence rather than as one block. */
+.cards .card,
+.chart-grid .chart-card,
+.platforms .platform,
+.stats .stat {
+    transition: opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 160ms ease, background 160ms ease;
+}
+
+.hero-text > * {
+    animation: rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-text > *:nth-child(1) { animation-delay: 40ms; }
+.hero-text > *:nth-child(2) { animation-delay: 90ms; }
+.hero-text > *:nth-child(3) { animation-delay: 150ms; }
+.hero-text > *:nth-child(4) { animation-delay: 210ms; }
+.hero-text > *:nth-child(5) { animation-delay: 270ms; }
+
+.hero-art {
+    animation: rise 720ms cubic-bezier(0.22, 1, 0.36, 1) 180ms both;
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.chart-card-art img {
+    transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chart-card:hover .chart-card-art img {
+    transform: scale(1.04);
+}
+
+.button,
+.nav-link,
+.nav-home,
+.search input,
+.theme-toggle {
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease,
+                opacity 160ms ease, transform 160ms ease;
+}
+
+.button:active {
+    transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .reveal.is-pending,
+    .hero-text > *,
+    .hero-art {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .chart-card:hover .chart-card-art img {
+        transform: none;
+    }
 }
