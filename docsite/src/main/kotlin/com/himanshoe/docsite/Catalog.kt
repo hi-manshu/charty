@@ -4,14 +4,19 @@ import java.io.File
 
 /** One chart in the landing page's catalog. */
 data class CatalogChart(
+    /** The chart's display name. */
     val name: String,
+    /** Where its documentation page lives on the site. */
     val url: String,
+    /** Its thumbnail's file name, or `null` when it has none. */
     val image: String?,
 )
 
 /** A family of charts, as the catalog groups them. */
 data class CatalogSection(
+    /** The family heading, such as "Bar charts". */
     val title: String,
+    /** The charts in this family. */
     val charts: List<CatalogChart>,
 )
 

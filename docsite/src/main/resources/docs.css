@@ -845,8 +845,24 @@ code {
     border: 1px solid var(--outline-variant);
 }
 
-:root[data-theme="dark"] .hero-banner {
-    filter: brightness(0.92);
+/*
+  Two renderings of the same artwork, swapped by the theme rather than by a filter. Dimming a light
+  image is not a dark version of it — the ground stays pale and merely gets duller. The dark file has
+  the illustration's lightness inverted, so it is genuinely drawn on black.
+
+  Swapped in CSS rather than with <picture>, because <picture> can only follow the operating system's
+  preference and this site has a toggle of its own that must win.
+*/
+.hero-banner--dark {
+    display: none;
+}
+
+:root[data-theme="dark"] .hero-banner--light {
+    display: none;
+}
+
+:root[data-theme="dark"] .hero-banner--dark {
+    display: block;
 }
 
 /*
@@ -2129,4 +2145,21 @@ code {
 .hero-code .code-block,
 .install .code-block {
     box-shadow: var(--shadow);
+}
+
+
+/* ---------- inline code inside cards ---------- */
+
+/*
+  Cards are already a box; a second box around a type name inside them reads as clutter and pushes
+  the line height around. In prose the chip earns its place by separating code from the sentence —
+  in a four-line card the monospace face alone is enough.
+*/
+.card :not(pre) > code,
+.card code {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--text);
+    font-size: 0.92em;
 }

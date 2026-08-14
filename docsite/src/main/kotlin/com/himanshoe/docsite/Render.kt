@@ -6,16 +6,23 @@ import org.intellij.markdown.parser.MarkdownParser
 
 /** A heading a reader can jump to, for the on-page contents. */
 data class Heading(
+    /** The anchor this heading can be linked to. */
     val id: String,
+    /** The heading's visible text, markup stripped. */
     val text: String,
+    /** Heading depth: 1 for the page title, 2 and 3 for its sections. */
     val level: Int,
 )
 
 /** A markdown file, rendered. */
 data class RenderedPage(
+    /** The page's own first-level heading. */
     val title: String,
+    /** The rendered body, ready to drop into the content column. */
     val html: String,
+    /** Second-level headings, for the on-page contents. */
     val headings: List<Heading>,
+    /** The page as plain words, for the search index. */
     val searchText: String,
 )
 

@@ -33,8 +33,11 @@ private const val SCROLL_ANIMATION_MILLIS = 600
  * Use [rememberViewPortState] to create an instance bound to the composition lifecycle.
  */
 class ViewPortState : PlotBoundsSource {
+    /** Where the visible window starts, as a fraction of the whole series. `0f` is the first point. */
     var startFraction by mutableFloatStateOf(0f)
         private set
+
+    /** Where the visible window ends, as a fraction of the whole series. `1f` is the last point. */
     var endFraction by mutableFloatStateOf(1f)
         private set
 

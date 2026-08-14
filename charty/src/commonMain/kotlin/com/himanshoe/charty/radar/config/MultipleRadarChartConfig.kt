@@ -42,15 +42,33 @@ data class MultipleRadarChartConfig(
 }
 
 /**
- * Position for chart legend
+ * Where the legend sits relative to the chart.
+ *
+ * The four edges lay the entries out along that edge; the four corners stack them in place, which
+ * keeps a long legend from stealing the chart's width.
  */
 enum class LegendPosition {
+    /** Centred above the chart, entries in a row. */
     TOP,
+
+    /** Centred below the chart, entries in a row. */
     BOTTOM,
+
+    /** Down the left side, entries in a column. */
     LEFT,
+
+    /** Down the right side, entries in a column. */
     RIGHT,
+
+    /** Stacked in the top-left corner, over the plot. */
     TOP_LEFT,
+
+    /** Stacked in the top-right corner, over the plot. */
     TOP_RIGHT,
+
+    /** Stacked in the bottom-left corner, over the plot. */
     BOTTOM_LEFT,
+
+    /** Stacked in the bottom-right corner, over the plot. */
     BOTTOM_RIGHT,
 }

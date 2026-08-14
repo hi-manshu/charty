@@ -133,9 +133,11 @@ private fun copyBrand(
     brandDir: File,
     outputDir: File,
 ) {
-    val banner = brandDir.resolve("banner.png")
-    require(banner.isFile) { "Missing brand asset: ${banner.absolutePath}" }
-    banner.copyTo(target = outputDir.resolve("img/banner.png"), overwrite = true)
+    listOf("banner.png", "banner-dark.png").forEach { name ->
+        val asset = brandDir.resolve(name)
+        require(asset.isFile) { "Missing brand asset: ${asset.absolutePath}" }
+        asset.copyTo(target = outputDir.resolve("img/$name"), overwrite = true)
+    }
 }
 
 private fun copyAssets(outputDir: File) {

@@ -48,7 +48,7 @@ comments:
     active: true
     excludes: ['**/test/**', '**/androidTest/**']
   UndocumentedPublicProperty:
-    active: false
+    active: true
 
 complexity:
   active: true

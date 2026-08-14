@@ -153,8 +153,10 @@ private fun hero(chartCount: Int): String =
 
   <div class="hero-art">
     ${renderKotlinBlock(quickStart)}
-    <img class="hero-banner" src="img/banner.png" width="1280" height="640"
+    <img class="hero-banner hero-banner--light" src="img/banner.png" width="1280" height="640"
          alt="Charty — an elementary compose library" fetchpriority="high">
+    <img class="hero-banner hero-banner--dark" src="img/banner-dark.png" width="1280" height="640"
+         alt="" aria-hidden="true" loading="lazy">
   </div>
 </section>
 """

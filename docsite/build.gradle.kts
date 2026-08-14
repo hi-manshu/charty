@@ -69,4 +69,34 @@ val assembleSite by tasks.registering(Sync::class) {
     from(project(":composeApp").tasks.named("wasmJsBrowserDistribution")) {
         into("playground")
     }
+
+    /*
+     * Stamps the playground's script tag with the hash of the script itself.
+     *
+     * The WebAssembly bundle is content-hashed but composeApp.js is not, and the two ship together.
+     * A browser holding a cached composeApp.js from an earlier deploy asks for the bundle that build
+     * referenced — a file the current deploy no longer contains — and the playground dies on a 404
+     * with nothing on screen. Naming the script by its own content makes every deploy a new URL, so
+     * a stale copy can never be paired with a bundle that has been deleted.
+     */
+    // Resolved here rather than inside doLast: a task action that reaches back into the project at
+    // execution time cannot be stored in the configuration cache.
+    val scriptReference = "composeApp.js"
+    val playgroundDir = layout.buildDirectory.dir("published-site/playground")
+
+    doLast {
+        val playground = playgroundDir.get().asFile
+        val script = playground.resolve(scriptReference)
+        val page = playground.resolve("index.html")
+        if (script.isFile && page.isFile) {
+            val fingerprint =
+                script
+                    .readBytes()
+                    .contentHashCode()
+                    .toUInt()
+                    .toString(radix = 16)
+            page.writeText(page.readText().replace(scriptReference, "$scriptReference?v=$fingerprint"))
+            println("Playground script stamped: $scriptReference?v=$fingerprint")
+        }
+    }
 }

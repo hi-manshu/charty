@@ -2,13 +2,17 @@ package com.himanshoe.docsite
 
 /** One page in the sidebar: where its markdown lives, and what the nav calls it. */
 data class NavEntry(
+    /** Path to the markdown file, relative to the docs root. */
     val path: String,
+    /** What the sidebar calls this page, which may be shorter than the page's own heading. */
     val title: String,
 )
 
 /** A titled group of pages in the sidebar. */
 data class NavSection(
+    /** The group heading shown in the sidebar. */
     val title: String,
+    /** The pages in this group, in reading order. */
     val entries: List<NavEntry>,
 )
 
