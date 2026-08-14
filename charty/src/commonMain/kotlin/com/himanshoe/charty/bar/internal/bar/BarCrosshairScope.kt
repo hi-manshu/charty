@@ -16,13 +16,13 @@ import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.gesture.AnimatedCrosshair
 import com.himanshoe.charty.common.gesture.CROSSHAIR_DASH_EFFECT
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
-import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartCrosshairHandler
@@ -32,7 +32,6 @@ import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.theme.orThemeCrosshair
 import com.himanshoe.charty.common.tooltip.ChartTooltip
-import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.TooltipManager
 
 /**
@@ -196,20 +195,14 @@ internal fun BoxScope.BarChartOverlays(
     tooltipManager: TooltipManager<Rect, BarData>,
     crosshair: BarCrosshairScope,
 ) {
-    ChartTooltipHost(
+    ChartOverlays(
         tooltip = tooltip,
-        item = tooltipManager.selectedItem,
-        anchor = tooltipManager.tooltipState,
-        modifier = Modifier.matchParentSize(),
+        tooltipItem = tooltipManager.selectedItem,
+        tooltipAnchor = tooltipManager.tooltipState,
+        crosshair = crosshair.crosshair,
+        crosshairItem = crosshair.manager?.selectedItem,
+        crosshairState = crosshair.currentState(),
     )
-    crosshair.crosshair?.let { activeCrosshair ->
-        ChartCrosshairHost(
-            crosshair = activeCrosshair,
-            item = crosshair.manager?.selectedItem,
-            state = crosshair.currentState(),
-            modifier = Modifier.matchParentSize(),
-        )
-    }
 }
 
 /**

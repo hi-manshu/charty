@@ -1,7 +1,6 @@
 package com.himanshoe.charty.line
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -20,6 +19,7 @@ import com.himanshoe.charty.common.AutoScrollToLatestEffect
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -39,8 +39,6 @@ import com.himanshoe.charty.common.draw.drawSelectionColumnIfNeeded
 import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
-import com.himanshoe.charty.common.gesture.ChartCrosshairHost
-import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartZoomAndPan
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
@@ -49,7 +47,6 @@ import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
-import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.isCanvas
@@ -259,12 +256,13 @@ fun LineChart(
             )
         }
 
-        LineChartOverlays(
-            tooltipManager = tooltipManager,
-            crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState?.resolve(),
+        ChartOverlays(
             tooltip = tooltip,
+            tooltipItem = tooltipManager.selectedItem,
+            tooltipAnchor = tooltipManager.tooltipState,
             crosshair = styling.activeCrosshair,
+            crosshairItem = crosshairManager?.selectedItem,
+            crosshairState = animatedCrosshairState?.resolve(),
         )
     }
 }
@@ -277,31 +275,6 @@ private fun lineChartAccessibility(
         contentDescription = chartDescription,
         dataPointDescriptions = buildDataPointDescriptions(dataList.getLabels(), dataList.getValues()),
     )
-
-@Composable
-private fun BoxScope.LineChartOverlays(
-    tooltipManager: TooltipManager<Offset, LineData>,
-    crosshairManager: CrosshairManager<LineData>?,
-    animatedCrosshairState: CrosshairState?,
-    tooltip: ChartTooltip<LineData>,
-    crosshair: ChartCrosshair<LineData>?,
-) {
-    ChartTooltipHost(
-        tooltip = tooltip,
-        item = tooltipManager.selectedItem,
-        anchor = tooltipManager.tooltipState,
-        modifier = Modifier.matchParentSize(),
-    )
-
-    if (crosshair != null) {
-        ChartCrosshairHost(
-            crosshair = crosshair,
-            item = crosshairManager?.selectedItem,
-            state = animatedCrosshairState,
-            modifier = Modifier.matchParentSize(),
-        )
-    }
-}
 
 private fun DrawScope.drawLineCrosshairAndTooltip(
     crosshairState: CrosshairState?,

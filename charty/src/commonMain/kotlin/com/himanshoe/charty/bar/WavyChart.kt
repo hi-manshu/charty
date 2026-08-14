@@ -22,7 +22,6 @@ import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.rememberAnimatedBarValues
 import com.himanshoe.charty.bar.internal.bar.wavy.FULL_WAVE_CYCLE_RADIANS
-import com.himanshoe.charty.bar.internal.bar.wavy.WavyChartOverlays
 import com.himanshoe.charty.bar.internal.bar.wavy.buildWavyGestureModifier
 import com.himanshoe.charty.bar.internal.bar.wavy.drawWavyBars
 import com.himanshoe.charty.bar.internal.bar.wavy.drawWavyOverlays
@@ -30,6 +29,7 @@ import com.himanshoe.charty.bar.internal.bar.wavy.populateWavyBarBounds
 import com.himanshoe.charty.bar.internal.bar.wavy.populateWavyCrosshairBounds
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
@@ -242,13 +242,13 @@ fun WavyChart(
             )
         }
 
-        WavyChartOverlays(
-            crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState?.resolve(),
-            crosshair = crosshair,
+        ChartOverlays(
             tooltip = tooltip,
             tooltipItem = tooltipManager.selectedItem,
             tooltipAnchor = tooltipManager.tooltipState,
+            crosshair = crosshair,
+            crosshairItem = crosshairManager?.selectedItem,
+            crosshairState = animatedCrosshairState?.resolve(),
         )
     }
 }

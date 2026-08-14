@@ -15,6 +15,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartLegend
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
@@ -40,7 +41,6 @@ import com.himanshoe.charty.line.data.StackedAreaPoint
 import com.himanshoe.charty.line.ext.getLabels
 import com.himanshoe.charty.line.internal.rememberThemedLineStyling
 import com.himanshoe.charty.line.internal.stackedarea.StackedAreaChartConstants
-import com.himanshoe.charty.line.internal.stackedarea.StackedAreaChartOverlays
 import com.himanshoe.charty.line.internal.stackedarea.StackedAreaDrawParams
 import com.himanshoe.charty.line.internal.stackedarea.buildStackedAreaModifier
 import com.himanshoe.charty.line.internal.stackedarea.calculateStackedCumulativeValues
@@ -208,13 +208,13 @@ fun StackedAreaChart(
                 )
             }
 
-            StackedAreaChartOverlays(
-                crosshairManager = crosshairManager,
-                animatedCrosshairState = animatedCrosshairState?.resolve(),
-                crosshair = styling.activeCrosshair,
+            ChartOverlays(
                 tooltip = tooltip,
                 tooltipItem = tooltipManager.selectedItem,
                 tooltipAnchor = tooltipManager.tooltipState,
+                crosshair = styling.activeCrosshair,
+                crosshairItem = crosshairManager?.selectedItem,
+                crosshairState = animatedCrosshairState?.resolve(),
             )
         }
         if (lineConfig.legendLabels.isNotEmpty()) {

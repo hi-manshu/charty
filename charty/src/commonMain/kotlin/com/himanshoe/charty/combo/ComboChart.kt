@@ -18,7 +18,6 @@ import com.himanshoe.charty.combo.config.ComboChartConfig
 import com.himanshoe.charty.combo.data.ComboChartData
 import com.himanshoe.charty.combo.ext.getLabels
 import com.himanshoe.charty.combo.internal.ComboChartConstants
-import com.himanshoe.charty.combo.internal.ComboChartOverlays
 import com.himanshoe.charty.combo.internal.ComboDrawParams
 import com.himanshoe.charty.combo.internal.buildComboModifier
 import com.himanshoe.charty.combo.internal.comboChartAccessibility
@@ -28,6 +27,7 @@ import com.himanshoe.charty.combo.internal.drawComboContent
 import com.himanshoe.charty.combo.internal.toSecondaryAxisConfig
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.generateComboChartDescription
 import com.himanshoe.charty.common.animation.rememberAnimatedRange
@@ -47,7 +47,6 @@ import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.theme.orThemeCrosshair
 import com.himanshoe.charty.common.theme.orThemeDefault
 import com.himanshoe.charty.common.tooltip.ChartTooltip
-import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.NoneTooltip
 import com.himanshoe.charty.common.tooltip.isCanvas
 import com.himanshoe.charty.common.tooltip.rememberTooltipManager
@@ -230,17 +229,13 @@ fun ComboChart(
             )
         }
 
-        ChartTooltipHost(
+        ChartOverlays(
             tooltip = tooltip,
-            item = tooltipManager.selectedItem,
-            anchor = tooltipManager.tooltipState,
-            modifier = Modifier.matchParentSize(),
-        )
-
-        ComboChartOverlays(
-            crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState?.resolve(),
+            tooltipItem = tooltipManager.selectedItem,
+            tooltipAnchor = tooltipManager.tooltipState,
             crosshair = activeCrosshair,
+            crosshairItem = crosshairManager?.selectedItem,
+            crosshairState = animatedCrosshairState?.resolve(),
         )
     }
 }

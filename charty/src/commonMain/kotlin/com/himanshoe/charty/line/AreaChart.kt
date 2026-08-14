@@ -14,6 +14,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -36,7 +37,6 @@ import com.himanshoe.charty.common.updateInteractionBounds
 import com.himanshoe.charty.line.config.LineChartConfig
 import com.himanshoe.charty.line.data.LineData
 import com.himanshoe.charty.line.internal.area.AreaChartDrawParams
-import com.himanshoe.charty.line.internal.area.AreaChartOverlays
 import com.himanshoe.charty.line.internal.area.buildAreaModifier
 import com.himanshoe.charty.line.internal.area.calculateBaselineY
 import com.himanshoe.charty.line.internal.area.calculatePointPositions
@@ -229,12 +229,13 @@ fun AreaChart(
             }
         }
 
-        AreaChartOverlays(
-            tooltipManager = tooltipManager,
-            crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState?.resolve(),
+        ChartOverlays(
             tooltip = tooltip,
+            tooltipItem = tooltipManager.selectedItem,
+            tooltipAnchor = tooltipManager.tooltipState,
             crosshair = styling.activeCrosshair,
+            crosshairItem = crosshairManager?.selectedItem,
+            crosshairState = animatedCrosshairState?.resolve(),
         )
     }
 }

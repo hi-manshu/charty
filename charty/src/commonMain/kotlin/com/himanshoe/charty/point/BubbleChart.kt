@@ -1,7 +1,6 @@
 package com.himanshoe.charty.point
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -19,6 +18,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -33,8 +33,6 @@ import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
-import com.himanshoe.charty.common.gesture.ChartCrosshairHost
-import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.rememberChartCrosshair
 import com.himanshoe.charty.common.rememberCartesianChartState
@@ -42,7 +40,6 @@ import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
-import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.NoneTooltip
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -252,17 +249,13 @@ fun BubbleChart(
             )
         }
 
-        ChartTooltipHost(
+        ChartOverlays(
             tooltip = tooltip,
-            item = tooltipManager.selectedItem,
-            anchor = tooltipManager.tooltipState,
-            modifier = Modifier.matchParentSize(),
-        )
-
-        BubbleChartOverlay(
-            crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState?.resolve(),
+            tooltipItem = tooltipManager.selectedItem,
+            tooltipAnchor = tooltipManager.tooltipState,
             crosshair = styling.activeCrosshair,
+            crosshairItem = crosshairManager?.selectedItem,
+            crosshairState = animatedCrosshairState?.resolve(),
         )
     }
 }
@@ -317,22 +310,6 @@ private fun rememberAnimatedBubbleData(
         valueOf = { item -> item.yValue },
         withValue = { item, animated -> item.copy(yValue = animated) },
     )
-
-@Composable
-private fun BoxScope.BubbleChartOverlay(
-    crosshairManager: CrosshairManager<BubbleData>?,
-    animatedCrosshairState: CrosshairState?,
-    crosshair: ChartCrosshair<BubbleData>?,
-) {
-    if (crosshair != null) {
-        ChartCrosshairHost(
-            crosshair = crosshair,
-            item = crosshairManager?.selectedItem,
-            state = animatedCrosshairState,
-            modifier = Modifier.matchParentSize(),
-        )
-    }
-}
 
 /**
  * Draws the built-in canvas tooltip for the selected bubble. Draws nothing when nothing is selected

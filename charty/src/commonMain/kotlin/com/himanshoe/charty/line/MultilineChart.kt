@@ -15,6 +15,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartLegend
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.generateLineGroupChartDescription
@@ -39,7 +40,6 @@ import com.himanshoe.charty.line.data.LineGroup
 import com.himanshoe.charty.line.data.MultilinePoint
 import com.himanshoe.charty.line.ext.getAllValues
 import com.himanshoe.charty.line.ext.getLabels
-import com.himanshoe.charty.line.internal.multiline.MultilineChartOverlays
 import com.himanshoe.charty.line.internal.multiline.MultilineDrawParams
 import com.himanshoe.charty.line.internal.multiline.buildMultilineModifier
 import com.himanshoe.charty.line.internal.multiline.drawMultilineContent
@@ -196,13 +196,13 @@ fun MultilineChart(
                 )
             }
 
-            MultilineChartOverlays(
-                crosshairManager = crosshairManager,
-                animatedCrosshairState = animatedCrosshairState?.resolve(),
-                crosshair = styling.activeCrosshair,
+            ChartOverlays(
                 tooltip = tooltip,
                 tooltipItem = tooltipManager.selectedItem,
                 tooltipAnchor = tooltipManager.tooltipState,
+                crosshair = styling.activeCrosshair,
+                crosshairItem = crosshairManager?.selectedItem,
+                crosshairState = animatedCrosshairState?.resolve(),
             )
         }
         if (lineConfig.legendLabels.isNotEmpty()) {

@@ -1,7 +1,6 @@
 package com.himanshoe.charty.point
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -21,6 +20,7 @@ import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
+import com.himanshoe.charty.common.ChartOverlays
 import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
@@ -41,7 +41,6 @@ import com.himanshoe.charty.common.draw.formatMarkerValue
 import com.himanshoe.charty.common.drawInteractionOverlays
 import com.himanshoe.charty.common.gesture.ChartCrosshair
 import com.himanshoe.charty.common.gesture.ChartCrosshairConfig
-import com.himanshoe.charty.common.gesture.ChartCrosshairHost
 import com.himanshoe.charty.common.gesture.CrosshairManager
 import com.himanshoe.charty.common.gesture.CrosshairState
 import com.himanshoe.charty.common.gesture.chartBrushSelectionHandler
@@ -55,7 +54,6 @@ import com.himanshoe.charty.common.streamingPan
 import com.himanshoe.charty.common.streamingRender
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 import com.himanshoe.charty.common.tooltip.ChartTooltip
-import com.himanshoe.charty.common.tooltip.ChartTooltipHost
 import com.himanshoe.charty.common.tooltip.TooltipConfig
 import com.himanshoe.charty.common.tooltip.TooltipManager
 import com.himanshoe.charty.common.tooltip.TooltipState
@@ -438,37 +436,13 @@ fun PointChart(
             )
         }
 
-        PointChartOverlays(
-            tooltipManager = tooltipManager,
-            crosshairManager = crosshairManager,
-            animatedCrosshairState = animatedCrosshairState?.resolve(),
+        ChartOverlays(
             tooltip = tooltip,
+            tooltipItem = tooltipManager.selectedItem,
+            tooltipAnchor = tooltipManager.tooltipState,
             crosshair = styling.activeCrosshair,
-        )
-    }
-}
-
-@Composable
-private fun BoxScope.PointChartOverlays(
-    tooltipManager: TooltipManager<Offset, PointData>,
-    crosshairManager: CrosshairManager<PointData>?,
-    animatedCrosshairState: CrosshairState?,
-    tooltip: ChartTooltip<PointData>,
-    crosshair: ChartCrosshair<PointData>?,
-) {
-    ChartTooltipHost(
-        tooltip = tooltip,
-        item = tooltipManager.selectedItem,
-        anchor = tooltipManager.tooltipState,
-        modifier = Modifier.matchParentSize(),
-    )
-
-    if (crosshair != null) {
-        ChartCrosshairHost(
-            crosshair = crosshair,
-            item = crosshairManager?.selectedItem,
-            state = animatedCrosshairState,
-            modifier = Modifier.matchParentSize(),
+            crosshairItem = crosshairManager?.selectedItem,
+            crosshairState = animatedCrosshairState?.resolve(),
         )
     }
 }
