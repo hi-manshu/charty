@@ -35,7 +35,7 @@ internal fun wavyPointPositions(
     val barSpacing = chartContext.width / (values.size * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
     return List(values.size) { index ->
         Offset(
-            x = chartContext.left + barSpacing * (1 + index * 2),
+            x = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = barSpacing, index = index),
             y = chartContext.convertValueToYPosition(values[index]),
         )
     }
@@ -111,7 +111,7 @@ internal fun wavyBarHitRects(
     val barSpacing = chartContext.width / (values.size * WAVY_CHART_PHASE_TARGET_MULTIPLIER)
     val halfStroke = strokeWidthPx / WAVY_CHART_PHASE_TARGET_MULTIPLIER
     return List(values.size) { index ->
-        val centerX = chartContext.left + barSpacing * (1 + index * 2)
+        val centerX = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = barSpacing, index = index)
         val valueY = chartContext.convertValueToYPosition(values[index])
         Rect(
             left = centerX - barSpacing,
@@ -154,3 +154,16 @@ internal fun populateWavyBarBounds(
         )
     dataList.fastForEachIndexed { index, barData -> barBounds.add(rects[index] to barData) }
 }
+
+/**
+ * The horizontal centre of the slot at [index].
+ *
+ * The formula reads oddly because [slotHalfWidth] is half a slot, not a gap: slot `i` runs from
+ * `2i` to `2i + 2` half-widths, so its centre is at `2i + 1`. Written out at three call sites it
+ * looked like three different pieces of arithmetic rather than one idea.
+ */
+internal fun waveSlotCenterX(
+    chartContext: ChartContext,
+    slotHalfWidth: Float,
+    index: Int,
+): Float = chartContext.left + slotHalfWidth * (1 + index * 2)

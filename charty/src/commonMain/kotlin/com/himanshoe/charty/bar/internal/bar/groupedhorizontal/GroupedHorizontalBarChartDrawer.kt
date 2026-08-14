@@ -12,6 +12,7 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.internal.bar.BarCorners
 import com.himanshoe.charty.bar.internal.bar.drawBarShape
 import com.himanshoe.charty.bar.internal.bar.drawHorizontalBarMarkers
+import com.himanshoe.charty.bar.internal.bar.horizontal.calculateHorizontalBarDimensions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
@@ -72,13 +73,13 @@ internal fun DrawScope.drawGroupedHorizontalBars(params: GroupedHorizontalBarDra
             val isNegative = value < 0f
 
             val (barLeft, barWidth) =
-                if (isNegative && isBelowAxisMode) {
-                    val fullWidth = params.baselineX - barValueX
-                    barValueX to (fullWidth * params.animationProgress)
-                } else {
-                    val fullWidth = barValueX - params.baselineX
-                    params.baselineX to (fullWidth * params.animationProgress)
-                }
+                calculateHorizontalBarDimensions(
+                    isNegative = isNegative,
+                    isBelowAxisMode = isBelowAxisMode,
+                    baselineX = params.baselineX,
+                    barValueX = barValueX,
+                    animationProgress = params.animationProgress,
+                )
 
             if (barWidth <= 0f) {
                 return@fastForEachIndexed

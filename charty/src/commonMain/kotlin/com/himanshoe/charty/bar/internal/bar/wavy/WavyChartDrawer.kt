@@ -99,7 +99,7 @@ internal fun DrawScope.drawSingleWave(
     val basePhase = waveCtx.basePhase
     val wavyConfig = waveCtx.wavyConfig
     val strokeWidthPx = waveCtx.strokeWidthPx
-    val xCenter = chartContext.left + barSpacing * (1 + index * 2)
+    val xCenter = waveSlotCenterX(chartContext = chartContext, slotHalfWidth = barSpacing, index = index)
     val valueTop = chartContext.convertValueToYPosition(barData.value)
 
     val top: Float
