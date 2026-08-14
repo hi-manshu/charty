@@ -32,13 +32,15 @@ private const val SCROLL_ANIMATION_MILLIS = 600
  *
  * Use [rememberViewPortState] to create an instance bound to the composition lifecycle.
  */
-class ViewPortState : PlotBoundsSource {
+class ViewPortState(
+    initialVisibleFraction: Float = 1f,
+) : PlotBoundsSource {
     /** Where the visible window starts, as a fraction of the whole series. `0f` is the first point. */
     var startFraction by mutableFloatStateOf(0f)
         private set
 
     /** Where the visible window ends, as a fraction of the whole series. `1f` is the last point. */
-    var endFraction by mutableFloatStateOf(1f)
+    var endFraction by mutableFloatStateOf(initialVisibleFraction.coerceIn(MIN_VISIBLE_FRACTION, 1f))
         private set
 
     /** Pixel x-coordinate of the chart's left edge — set by ChartScaffold each draw. */
@@ -217,11 +219,19 @@ class ViewPortState : PlotBoundsSource {
  *
  * Pass the returned state to a chart's `viewPortState` parameter inside
  * [com.himanshoe.charty.common.config.ChartInteractionConfig] to enable pinch-to-zoom,
- * drag-to-pan, and inertial fling. Call [ViewPortState.reset] to restore the full-data
- * view at any time.
+ * wheel-zoom, drag-to-pan, and inertial fling. Call [ViewPortState.reset] to restore the
+ * full-data view at any time.
+ *
+ * @param initialVisibleFraction How much of the series to show at first, as a fraction of the whole.
+ *   The default of `1f` shows everything, and a chart showing everything cannot be panned — there is
+ *   nothing off-screen to pan to — so a series of two hundred points opens as two hundred slivers
+ *   and stays that way until someone thinks to pinch it. Opening at `0.1f` shows the first tenth and
+ *   is draggable immediately, which is what a long series usually wants.
  */
 @Composable
-fun rememberViewPortState(): ViewPortState {
+fun rememberViewPortState(initialVisibleFraction: Float = 1f): ViewPortState {
     val scope = rememberCoroutineScope()
-    return remember { ViewPortState() }.also { it.bindCoroutineScope(scope) }
+    return remember(initialVisibleFraction) {
+        ViewPortState(initialVisibleFraction = initialVisibleFraction)
+    }.also { state -> state.bindCoroutineScope(scope) }
 }

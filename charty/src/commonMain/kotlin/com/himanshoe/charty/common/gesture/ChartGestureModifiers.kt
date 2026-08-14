@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.input.pointer.util.VelocityTracker
@@ -333,25 +334,67 @@ fun <D> Modifier.chartBrushSelectionHandler(
  * @param viewPortState The shared viewport state the chart reads each frame.
  */
 fun Modifier.chartZoomAndPan(viewPortState: ViewPortState): Modifier =
-    this.pointerInput(viewPortState) {
-        awaitEachGesture {
-            viewPortState.cancelFling()
-            val velocityTracker = VelocityTracker()
-            awaitFirstDown(requireUnconsumed = false)
-            do {
+    this
+        .pointerInput(viewPortState) {
+            awaitEachGesture {
+                viewPortState.cancelFling()
+                val velocityTracker = VelocityTracker()
+                awaitFirstDown(requireUnconsumed = false)
+                do {
+                    val event = awaitPointerEvent()
+                    val zoom = event.calculateZoom()
+                    val pan = event.calculatePan()
+                    val centroid = event.calculateCentroid(useCurrent = true)
+                    val chartWidth = viewPortState.chartWidth.coerceAtLeast(1f)
+                    val focusFraction = ((centroid.x - viewPortState.chartLeft) / chartWidth).coerceIn(0f, 1f)
+                    viewPortState.zoom(focusFraction, zoom)
+                    viewPortState.pan(-pan.x / chartWidth * viewPortState.visibleFraction)
+                    event.changes.fastFirstOrNull { true }?.let { change ->
+                        velocityTracker.addPosition(change.uptimeMillis, change.position)
+                    }
+                    // Only claim the event when the gesture actually moved the viewport. Consuming
+                    // unconditionally swallowed stationary taps too, which cancelled the tap
+                    // detector underneath and cost the chart its tooltip the moment a viewport was
+                    // supplied — the zoom worked and the tap silently stopped.
+                    if (zoom != 1f || pan != Offset.Zero) {
+                        event.changes.fastForEach { it.consume() }
+                    }
+                } while (event.changes.fastAny { it.pressed })
+                viewPortState.fling(-velocityTracker.calculateVelocity().x)
+            }
+        }.pointerInput(viewPortState) {
+            /*
+             * Wheel and trackpad, which is the only way to zoom on a desktop or a laptop.
+             *
+             * Zooming was reachable by pinch alone, and pinching needs two touch points. On the JVM
+             * and in a browser with a mouse there are none, so the viewport could never be narrowed
+             * — and panning is clamped to the part of the series that is off-screen, which at full
+             * width is nothing. The result was that a chart given a viewport did nothing at all on
+             * the two targets most likely to have one.
+             */
+            awaitEachGesture {
                 val event = awaitPointerEvent()
-                val zoom = event.calculateZoom()
-                val pan = event.calculatePan()
-                val centroid = event.calculateCentroid(useCurrent = true)
-                val chartWidth = viewPortState.chartWidth.coerceAtLeast(1f)
-                val focusFraction = ((centroid.x - viewPortState.chartLeft) / chartWidth).coerceIn(0f, 1f)
-                viewPortState.zoom(focusFraction, zoom)
-                viewPortState.pan(-pan.x / chartWidth * viewPortState.visibleFraction)
-                event.changes.fastFirstOrNull { true }?.let { change ->
-                    velocityTracker.addPosition(change.uptimeMillis, change.position)
+                if (event.type != PointerEventType.Scroll) {
+                    return@awaitEachGesture
                 }
-                event.changes.fastForEach { it.consume() }
-            } while (event.changes.fastAny { it.pressed })
-            viewPortState.fling(-velocityTracker.calculateVelocity().x)
+                viewPortState.cancelFling()
+                val chartWidth = viewPortState.chartWidth.coerceAtLeast(1f)
+                event.changes.fastForEach { change ->
+                    val scroll = change.scrollDelta
+                    if (scroll.y != 0f) {
+                        val focus = ((change.position.x - viewPortState.chartLeft) / chartWidth).coerceIn(0f, 1f)
+                        viewPortState.zoom(focus, 1f - scroll.y * WHEEL_ZOOM_SENSITIVITY)
+                    }
+                    if (scroll.x != 0f) {
+                        viewPortState.pan(scroll.x * WHEEL_PAN_SENSITIVITY * viewPortState.visibleFraction)
+                    }
+                    change.consume()
+                }
+            }
         }
-    }
+
+/** How much of a zoom one wheel notch is worth. Small enough that a scroll reads as a movement. */
+private const val WHEEL_ZOOM_SENSITIVITY = 0.12f
+
+/** A horizontal wheel or two-finger swipe moves the window by this share of itself per notch. */
+private const val WHEEL_PAN_SENSITIVITY = 0.05f
