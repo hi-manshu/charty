@@ -2,12 +2,14 @@ package com.himanshoe.charty.combo.internal
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.combo.config.ComboChartConfig
+import com.himanshoe.charty.line.config.LineInterpolation
+import com.himanshoe.charty.line.internal.line.drawAnimatedLineSegments
+import com.himanshoe.charty.line.internal.path.interpolatedLinePath
 
 /**
  * Draw smooth curve line through points using cubic bezier curves
@@ -18,41 +20,18 @@ internal fun DrawScope.drawSmoothCurveLine(
     comboConfig: ComboChartConfig,
     animationProgress: Float,
 ) {
-    val path = Path()
-
-    if (pointPositions.isNotEmpty()) {
-        path.moveTo(pointPositions[0].x, pointPositions[0].y)
-
-        for (i in 0 until pointPositions.size - 1) {
-            val current = pointPositions[i]
-            val next = pointPositions[i + 1]
-
-            val controlPoint1X = current.x + (next.x - current.x) / ComboChartConstants.THREE
-            val controlPoint1Y = current.y
-            val controlPoint2X = current.x + ComboChartConstants.TWO * (next.x - current.x) / ComboChartConstants.THREE
-            val controlPoint2Y = next.y
-
-            path.cubicTo(
-                controlPoint1X,
-                controlPoint1Y,
-                controlPoint2X,
-                controlPoint2Y,
-                next.x,
-                next.y,
-            )
-        }
-
-        drawPath(
-            path = path,
-            brush = Brush.linearGradient(lineColor.value),
-            style =
-                Stroke(
-                    width = comboConfig.lineWidth,
-                    cap = comboConfig.strokeCap,
-                ),
-            alpha = animationProgress,
-        )
+    if (pointPositions.isEmpty()) {
+        return
     }
+    // The same curve the line chart draws. This used to hand-roll its control points as
+    // deltaX/THREE and TWO * deltaX/THREE, which is what `smoothSegments` computes behind
+    // `interpolatedLinePath` — two implementations of one curve, kept in step by nobody.
+    drawPath(
+        path = interpolatedLinePath(points = pointPositions, interpolation = LineInterpolation.SMOOTH),
+        brush = Brush.linearGradient(lineColor.value),
+        style = Stroke(width = comboConfig.lineWidth, cap = comboConfig.strokeCap),
+        alpha = animationProgress,
+    )
 }
 
 /**
@@ -64,36 +43,15 @@ internal fun DrawScope.drawStraightLine(
     comboConfig: ComboChartConfig,
     animationProgress: Float,
 ) {
-    val segmentsToDraw = ((pointPositions.size - 1) * animationProgress).toInt()
-    val segmentProgress = ((pointPositions.size - 1) * animationProgress) - segmentsToDraw
-    val brush = Brush.linearGradient(lineColor.value)
-
-    for (i in 0 until segmentsToDraw) {
-        drawLine(
-            brush = brush,
-            start = pointPositions[i],
-            end = pointPositions[i + 1],
-            strokeWidth = comboConfig.lineWidth,
-            cap = comboConfig.strokeCap,
-        )
-    }
-
-    if (segmentsToDraw < pointPositions.size - 1 && segmentProgress > 0) {
-        val start = pointPositions[segmentsToDraw]
-        val end = pointPositions[segmentsToDraw + 1]
-        val partialEnd =
-            Offset(
-                x = start.x + (end.x - start.x) * segmentProgress,
-                y = start.y + (end.y - start.y) * segmentProgress,
-            )
-        drawLine(
-            brush = brush,
-            start = start,
-            end = partialEnd,
-            strokeWidth = comboConfig.lineWidth,
-            cap = comboConfig.strokeCap,
-        )
-    }
+    // Byte-for-byte the line chart's own segment drawer before this delegated to it, down to the
+    // partial trailing segment that makes the line grow rather than appear.
+    drawAnimatedLineSegments(
+        pointPositions = pointPositions,
+        color = lineColor,
+        lineWidth = comboConfig.lineWidth,
+        strokeCap = comboConfig.strokeCap,
+        animationProgress = animationProgress,
+    )
 }
 
 /**

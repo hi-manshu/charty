@@ -2,6 +2,7 @@ package com.himanshoe.charty.line.internal.line
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -52,10 +53,31 @@ internal fun DrawScope.drawStraightLineSegments(
     color: ChartyColor,
     lineConfig: LineChartConfig,
     animationProgress: Float,
+) = drawAnimatedLineSegments(
+    pointPositions = pointPositions,
+    color = color,
+    lineWidth = lineConfig.lineWidth,
+    strokeCap = lineConfig.strokeCap,
+    animationProgress = animationProgress,
+)
+
+/**
+ * Strokes [pointPositions] segment by segment, revealing the line as [animationProgress] runs.
+ *
+ * The final segment is drawn partially, so the line grows out of the last vertex rather than snapping
+ * whole into place a segment at a time. Takes the stroke width and cap directly rather than a config,
+ * because the combo chart draws the same line from a different one — it used to carry a verbatim copy
+ * of this function, which meant any change to how a line animates had to be made twice.
+ */
+internal fun DrawScope.drawAnimatedLineSegments(
+    pointPositions: List<Offset>,
+    color: ChartyColor,
+    lineWidth: Float,
+    strokeCap: StrokeCap,
+    animationProgress: Float,
 ) {
     val segmentsToDraw = ((pointPositions.size - 1) * animationProgress).toInt()
     val segmentProgress = ((pointPositions.size - 1) * animationProgress) - segmentsToDraw
-
     val brush = Brush.linearGradient(color.value)
 
     for (i in 0 until segmentsToDraw) {
@@ -63,8 +85,8 @@ internal fun DrawScope.drawStraightLineSegments(
             brush = brush,
             start = pointPositions[i],
             end = pointPositions[i + 1],
-            strokeWidth = lineConfig.lineWidth,
-            cap = lineConfig.strokeCap,
+            strokeWidth = lineWidth,
+            cap = strokeCap,
         )
     }
 
@@ -80,8 +102,8 @@ internal fun DrawScope.drawStraightLineSegments(
             brush = brush,
             start = start,
             end = partialEnd,
-            strokeWidth = lineConfig.lineWidth,
-            cap = lineConfig.strokeCap,
+            strokeWidth = lineWidth,
+            cap = strokeCap,
         )
     }
 }
