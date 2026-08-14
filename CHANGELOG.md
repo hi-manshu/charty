@@ -3,7 +3,11 @@
 Notable changes to Charty. Versions follow [semantic versioning](https://semver.org); breaking
 changes are listed first in each release and say what to do about them.
 
-## Unreleased
+## 3.0.1
+
+Fixes to the zoom and pan path and to the crosshair label, one new parameter with a default, and two
+types moved to a package that all their callers can reach. Nothing is removed: the moved types keep
+deprecated aliases at their old names, so code written against 3.0.0 still compiles once recompiled.
 
 ### Changed
 
@@ -25,14 +29,6 @@ changes are listed first in each release and say what to do about them.
   and combo charts.** The crosshair's value label moved from the canvas to a Composable overlay and
   the check on this flag did not move with it, so setting it did nothing on those charts while
   continuing to work on the bar family. Charts that never wanted a crosshair label were drawing one.
-
-## 3.0.1
-
-Bug fixes only, all in the zoom and pan path. No API removed, one parameter added with a default, so
-nothing that compiles against 3.0.0 needs changing.
-
-### Fixed
-
 - **Zoom is reachable without a touchscreen.** Zooming was pinch-only, and a pinch needs two touch
   points, so on desktop and in a browser with a mouse the viewport could never be narrowed. Panning
   is bounded by whatever sits off-screen, which at full width is nothing, so that did nothing either
@@ -53,7 +49,7 @@ nothing that compiles against 3.0.0 needs changing.
   val viewport = rememberViewPortState(initialVisibleFraction = 0.1f)
   ```
 
-Reported as [#154](https://github.com/hi-manshu/charty/issues/154).
+The zoom and pan items above were reported as [#154](https://github.com/hi-manshu/charty/issues/154).
 
 ## 3.0.0
 
