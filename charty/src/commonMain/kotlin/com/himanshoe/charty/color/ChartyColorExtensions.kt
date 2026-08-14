@@ -19,6 +19,17 @@ fun ChartyColor.toBrush(): Brush =
     }
 
 /**
+ * Converts this [ChartyColor] into a [Brush] whose gradient runs corner to corner. Use it for round
+ * elements — a pie slice, a gauge arc — where neither a vertical nor a horizontal sweep follows the
+ * shape and a diagonal reads as lighting rather than as banding.
+ */
+fun ChartyColor.toDiagonalBrush(): Brush =
+    when (this) {
+        is ChartyColor.Solid -> brush
+        is ChartyColor.Gradient -> Brush.linearGradient(colors)
+    }
+
+/**
  * Converts this [ChartyColor] into a [Brush] whose gradient runs left-to-right instead of
  * top-to-bottom. Use it for horizontal elements — a horizontal crosshair line, an edge scrim — where
  * a vertical gradient would collapse into a single visible color.

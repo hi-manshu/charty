@@ -2,10 +2,9 @@ package com.himanshoe.charty.common.draw
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.toBrush
 import com.himanshoe.charty.common.ChartContext
 
 /**
@@ -30,7 +29,7 @@ fun DrawScope.drawSelectionColumn(
         return
     }
     drawRect(
-        brush = color.toColumnBrush(),
+        brush = color.toBrush(),
         topLeft = Offset(x = left, y = chartContext.top),
         size = Size(width = right - left, height = chartContext.height),
     )
@@ -52,9 +51,3 @@ fun DrawScope.drawSelectionColumnIfNeeded(
     }
     drawSelectionColumn(chartContext = chartContext, centerX = selectedX, columnWidth = columnWidth, color = color)
 }
-
-private fun ChartyColor.toColumnBrush(): Brush =
-    when (this) {
-        is ChartyColor.Solid -> SolidColor(color)
-        is ChartyColor.Gradient -> Brush.verticalGradient(colors)
-    }

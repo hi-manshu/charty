@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -13,6 +12,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.util.fastForEach
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.toDiagonalBrush
 import com.himanshoe.charty.gauge.config.AngularGaugeConfig
 import kotlin.math.PI
 import kotlin.math.cos
@@ -112,7 +112,7 @@ private fun DrawScope.drawTrack(
 ) {
     drawDialArc(
         geometry = geometry,
-        brush = params.config.trackColor.toGaugeBrush(),
+        brush = params.config.trackColor.toDiagonalBrush(),
         startAngleDegrees = params.config.startAngleDegrees,
         sweepAngleDegrees = params.config.sweepAngleDegrees,
         radius = geometry.arcRadius,
@@ -145,7 +145,7 @@ private fun DrawScope.drawPlotBands(
         if (arc.sweepAngleDegrees > 0f) {
             drawDialArc(
                 geometry = geometry,
-                brush = band.color.toGaugeBrush(),
+                brush = band.color.toDiagonalBrush(),
                 startAngleDegrees = arc.startAngleDegrees,
                 sweepAngleDegrees = arc.sweepAngleDegrees,
                 radius = bandRadius,
@@ -171,7 +171,7 @@ private fun DrawScope.drawProgressArc(
     if (sweep > 0f) {
         drawDialArc(
             geometry = geometry,
-            brush = params.progressColor.toGaugeBrush(),
+            brush = params.progressColor.toDiagonalBrush(),
             startAngleDegrees = config.startAngleDegrees,
             sweepAngleDegrees = sweep,
             radius = geometry.arcRadius,
@@ -185,7 +185,7 @@ private fun DrawScope.drawTicks(
     params: GaugeDrawParams,
 ) {
     val config = params.config
-    val tickBrush = config.trackColor.toGaugeBrush()
+    val tickBrush = config.trackColor.toDiagonalBrush()
     val tickStartRadius = geometry.outerRadius + geometry.half * TICK_GAP_FRACTION
     val tickEndRadius = tickStartRadius + geometry.half * TICK_LENGTH_FRACTION
     val labelRadius = tickEndRadius + geometry.half * TICK_LABEL_OFFSET_FRACTION
@@ -245,7 +245,7 @@ private fun DrawScope.drawNeedle(
             )
             close()
         }
-    val needleBrush = config.needleColor.toGaugeBrush()
+    val needleBrush = config.needleColor.toDiagonalBrush()
     drawPath(path = needlePath, brush = needleBrush)
     drawCircle(
         brush = needleBrush,
@@ -323,8 +323,3 @@ internal fun gaugeDirection(angleDegrees: Float): Offset {
 }
 
 /** Resolves a [ChartyColor] to a [Brush] for painting a gauge element (solid or gradient). */
-private fun ChartyColor.toGaugeBrush(): Brush =
-    when (this) {
-        is ChartyColor.Solid -> SolidColor(color)
-        is ChartyColor.Gradient -> Brush.linearGradient(colors)
-    }

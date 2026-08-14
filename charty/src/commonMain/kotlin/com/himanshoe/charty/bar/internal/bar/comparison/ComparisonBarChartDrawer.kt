@@ -113,21 +113,11 @@ private fun createComparisonBarBrush(
     barTop: Float,
     barHeight: Float,
 ): Brush =
-    when (barChartyColor) {
-        is ChartyColor.Solid ->
-            Brush.verticalGradient(
-                colors = listOf(barChartyColor.color, barChartyColor.color),
-                startY = barTop,
-                endY = barTop + barHeight,
-            )
-
-        is ChartyColor.Gradient ->
-            Brush.verticalGradient(
-                colors = barChartyColor.colors,
-                startY = barTop,
-                endY = barTop + barHeight,
-            )
-    }
+    Brush.verticalGradient(
+        colors = barChartyColor.value,
+        startY = barTop,
+        endY = barTop + barHeight,
+    )
 
 /**
  * Helper function to draw a comparison bar with rounded corners and gradient support

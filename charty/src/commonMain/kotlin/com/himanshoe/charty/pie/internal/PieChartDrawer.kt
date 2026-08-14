@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.color.ChartyColor
+import com.himanshoe.charty.color.toDiagonalBrush
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.data.PieData
@@ -125,7 +125,7 @@ internal fun PieChartContent(
     modifier: Modifier = Modifier,
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val sliceBrushes = remember(params.sliceColors) { params.sliceColors.map { it.toSliceBrush() } }
+    val sliceBrushes = remember(params.sliceColors) { params.sliceColors.map { it.toDiagonalBrush() } }
 
     Box(
         modifier = modifier,
@@ -406,8 +406,3 @@ internal fun generateSliceColors(
 }
 
 /** Resolves a [ChartyColor] to a [Brush] for filling a slice (solid or gradient). */
-private fun ChartyColor.toSliceBrush(): Brush =
-    when (this) {
-        is ChartyColor.Solid -> SolidColor(color)
-        is ChartyColor.Gradient -> Brush.linearGradient(colors)
-    }
