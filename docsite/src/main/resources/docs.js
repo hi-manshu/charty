@@ -114,7 +114,6 @@
         var pending = revealables.filter(function (element) {
             return element.getBoundingClientRect().top > window.innerHeight * 0.9;
         });
-        pending.forEach(function (element) { element.classList.add('is-pending'); });
 
         var ticking = false;
 
@@ -141,9 +140,13 @@
             }
         }
 
+        // Listeners first, and only then hide anything. Hiding before the thing that un-hides is
+        // listening leaves a window — however short — in which a thrown exception strands the rest
+        // of the page at zero opacity. In this order the worst a failure can do is skip the effect.
         if (pending.length) {
             window.addEventListener('scroll', onScroll, { passive: true });
             window.addEventListener('resize', onScroll);
+            pending.forEach(function (element) { element.classList.add('is-pending'); });
         }
     }
 

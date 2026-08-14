@@ -851,18 +851,15 @@ code {
 
 .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+    gap: 12px;
 }
 
 .card {
     display: block;
-    padding: 24px;
-    border: 1px solid var(--outline-variant);
-    border-radius: var(--radius);
-    background: var(--surface-container);
+    padding: 18px 18px 20px;
+    border-radius: var(--radius-sm);
     color: var(--text);
-    transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
 .card:hover {
@@ -873,16 +870,21 @@ code {
 }
 
 .card h3 {
-    margin: 0 0 9px;
-    font-size: 17px;
-    font-weight: 700;
+    margin: 0 0 7px;
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
 }
 
 .card p {
     margin: 0;
     color: var(--text-muted);
-    font-size: 14.5px;
-    line-height: 1.62;
+    font-size: 13.5px;
+    line-height: 1.55;
+}
+
+.card code {
+    font-size: 0.9em;
 }
 
 /* Catalog */
@@ -1802,5 +1804,130 @@ code {
 
     .chart-card:hover .chart-card-art img {
         transform: none;
+    }
+}
+
+/* ---------- gradients and card motion ---------- */
+
+/*
+  A gradient edge that appears on hover, drawn as a masked pseudo-element rather than a border
+  image: `border-image` cannot follow a rounded corner, and a gradient background under a padded
+  child would sit behind the text. Masking a one-pixel frame out of a gradient gives a real gradient
+  border on a rounded box, with the card's own background untouched.
+*/
+.card,
+.chart-card,
+.stat,
+.platform {
+    position: relative;
+    isolation: isolate;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--text) 3%, var(--bg)) 0%,
+            var(--bg) 60%);
+    border: 1px solid var(--outline-variant);
+    transition:
+        transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 200ms ease,
+        opacity 380ms ease;
+}
+
+.card::before,
+.chart-card::before,
+.stat::before,
+.platform::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--text) 55%, transparent),
+        color-mix(in srgb, var(--text) 8%, transparent) 45%,
+        color-mix(in srgb, var(--text) 40%, transparent));
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 260ms ease;
+}
+
+.card:hover,
+.chart-card:hover,
+.stat:hover,
+.platform:hover {
+    transform: translateY(-2px);
+    border-color: transparent;
+}
+
+.card:hover::before,
+.chart-card:hover::before,
+.stat:hover::before,
+.platform:hover::before {
+    opacity: 1;
+}
+
+/* A wash behind the hero, so the page opens with depth instead of a flat field of black. */
+.hero {
+    position: relative;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: -10% -20% 20% -20%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(60% 55% at 20% 25%,
+            color-mix(in srgb, var(--text) 9%, transparent) 0%,
+            transparent 70%);
+}
+
+/*
+  Cards inside a section that has not arrived yet start low and faded, then land one after another.
+  The delay is per position rather than per card, so a grid reads as a sequence and the eye is led
+  across it instead of being handed eight things at once.
+*/
+.reveal.is-pending .card,
+.reveal.is-pending .chart-card,
+.reveal.is-pending .stat,
+.reveal.is-pending .platform {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.cards .card:nth-child(1), .chart-grid .chart-card:nth-child(1) { transition-delay: 0ms; }
+.cards .card:nth-child(2), .chart-grid .chart-card:nth-child(2) { transition-delay: 45ms; }
+.cards .card:nth-child(3), .chart-grid .chart-card:nth-child(3) { transition-delay: 90ms; }
+.cards .card:nth-child(4), .chart-grid .chart-card:nth-child(4) { transition-delay: 135ms; }
+.cards .card:nth-child(5), .chart-grid .chart-card:nth-child(5) { transition-delay: 180ms; }
+.cards .card:nth-child(6), .chart-grid .chart-card:nth-child(6) { transition-delay: 225ms; }
+.cards .card:nth-child(7), .chart-grid .chart-card:nth-child(7) { transition-delay: 270ms; }
+.cards .card:nth-child(8), .chart-grid .chart-card:nth-child(8) { transition-delay: 315ms; }
+
+/* Hover must never wait for an entrance delay. */
+.card:hover,
+.chart-card:hover,
+.stat:hover,
+.platform:hover {
+    transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .chart-card,
+    .stat,
+    .platform,
+    .reveal.is-pending .card,
+    .reveal.is-pending .chart-card,
+    .reveal.is-pending .stat,
+    .reveal.is-pending .platform {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
 }
