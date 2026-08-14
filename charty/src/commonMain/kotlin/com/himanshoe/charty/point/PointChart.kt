@@ -16,8 +16,6 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.fastMap
-import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
@@ -27,7 +25,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generatePointChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedValues
+import com.himanshoe.charty.common.animation.rememberAnimatedData
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.config.Animation
 import com.himanshoe.charty.common.config.ChartInteractionConfig
@@ -541,17 +539,14 @@ private fun rememberAnimatedPointData(
     dataList: List<PointData>,
     animation: Animation,
     enabled: Boolean,
-): List<PointData> {
-    val animatedValues =
-        rememberAnimatedValues(
-            targetValues = dataList.fastMap { it.value },
-            animation = animation,
-            enabled = enabled,
-        )
-    return remember(dataList, animatedValues) {
-        dataList.fastMapIndexed { index, point -> point.copy(value = animatedValues[index]) }
-    }
-}
+): List<PointData> =
+    rememberAnimatedData(
+        dataList = dataList,
+        animation = animation,
+        enabled = enabled,
+        valueOf = { item -> item.value },
+        withValue = { item, animated -> item.copy(value = animated) },
+    )
 
 private fun buildPointChartModifier(
     crosshairManager: CrosshairManager<PointData>?,

@@ -7,6 +7,7 @@ import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.data.SpanData
+import com.himanshoe.charty.common.animation.rememberAnimatedData
 import com.himanshoe.charty.common.animation.rememberAnimatedValues
 import com.himanshoe.charty.common.config.Animation
 
@@ -25,17 +26,14 @@ internal fun rememberAnimatedBarValues(
     dataList: List<BarData>,
     animation: Animation,
     enabled: Boolean,
-): List<BarData> {
-    val animatedValues =
-        rememberAnimatedValues(
-            targetValues = dataList.fastMap { it.value },
-            animation = animation,
-            enabled = enabled,
-        )
-    return remember(dataList, animatedValues) {
-        dataList.fastMapIndexed { index, bar -> bar.copy(value = animatedValues[index]) }
-    }
-}
+): List<BarData> =
+    rememberAnimatedData(
+        dataList = dataList,
+        animation = animation,
+        enabled = enabled,
+        valueOf = { bar -> bar.value },
+        withValue = { bar, animated -> bar.copy(value = animated) },
+    )
 
 /**
  * Returns [dataList] with every series value of every group tweened toward its target whenever the

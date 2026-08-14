@@ -14,7 +14,6 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastMap
-import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
@@ -24,7 +23,7 @@ import com.himanshoe.charty.common.ChartScaffold
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.accessibility.generateBubbleChartDescription
-import com.himanshoe.charty.common.animation.rememberAnimatedValues
+import com.himanshoe.charty.common.animation.rememberAnimatedData
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.Animation
@@ -310,17 +309,14 @@ private fun rememberAnimatedBubbleData(
     dataList: List<BubbleData>,
     animation: Animation,
     enabled: Boolean,
-): List<BubbleData> {
-    val animatedValues =
-        rememberAnimatedValues(
-            targetValues = dataList.fastMap { it.yValue },
-            animation = animation,
-            enabled = enabled,
-        )
-    return remember(dataList, animatedValues) {
-        dataList.fastMapIndexed { index, bubble -> bubble.copy(yValue = animatedValues[index]) }
-    }
-}
+): List<BubbleData> =
+    rememberAnimatedData(
+        dataList = dataList,
+        animation = animation,
+        enabled = enabled,
+        valueOf = { item -> item.yValue },
+        withValue = { item, animated -> item.copy(yValue = animated) },
+    )
 
 @Composable
 private fun BoxScope.BubbleChartOverlay(

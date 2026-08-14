@@ -4,6 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.fastMapIndexed
 import com.himanshoe.charty.common.config.Animation
 
 /**
@@ -134,3 +136,39 @@ fun rememberAnimatedValues(
 private class PreviousValues(
     var values: List<Float>,
 )
+
+/**
+ * Returns [dataList] with each item's value tweened toward its target whenever the data changes, so a
+ * chart glides to its new shape instead of snapping to it.
+ *
+ * Five charts wrote this out for themselves — bar, point, line, bubble and the bar family's shared
+ * helper — in bodies that differed only in the type of the item and which of its fields carried the
+ * value. Taking those two as functions leaves one implementation. [valueOf] reads the field being
+ * animated and [withValue] returns a copy carrying the tweened one; everything else is identical
+ * whatever the chart.
+ *
+ * @param dataList The items to display.
+ * @param animation The animation driving the transition.
+ * @param enabled Opt-in switch mirroring each chart config's `animateValueChanges`.
+ * @param valueOf Reads the animated field out of an item.
+ * @param withValue Returns a copy of an item carrying the tweened value.
+ * @return The items to draw this frame.
+ */
+@Composable
+fun <T> rememberAnimatedData(
+    dataList: List<T>,
+    animation: Animation,
+    enabled: Boolean,
+    valueOf: (T) -> Float,
+    withValue: (T, Float) -> T,
+): List<T> {
+    val animatedValues =
+        rememberAnimatedValues(
+            targetValues = dataList.fastMap(valueOf),
+            animation = animation,
+            enabled = enabled,
+        )
+    return remember(dataList, animatedValues) {
+        dataList.fastMapIndexed { index, item -> withValue(item, animatedValues[index]) }
+    }
+}
