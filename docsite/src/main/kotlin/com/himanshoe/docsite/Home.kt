@@ -120,23 +120,40 @@ private fun hero(chartCount: Int): String =
     <p class="lede">
       A sleek, lightweight charting library for Jetpack Compose — and, uniquely, for Kotlin
       Multiplatform: one codebase renders your charts on Android, iOS, Desktop, and the Web.
-      $chartCount chart types, built with <span class="heart">❤</span> by
-      <a href="https://github.com/hi-manshu">@hi-manshu</a>.
     </p>
+
     <div class="hero-actions">
       <a class="button button--primary" href="getting-started/quick-start.html">Get started</a>
       <a class="button" href="playground/index.html">Try it in your browser</a>
-      <a class="button button--sponsor" href="https://github.com/sponsors/hi-manshu" rel="noopener">
+    </div>
+
+    <div class="hero-support">
+      <a class="chip" href="https://github.com/sponsors/hi-manshu" rel="noopener">
         <span aria-hidden="true">♥</span> Sponsor on GitHub
       </a>
-      <a class="button button--sponsor" href="https://buymeacoffee.com/himanshoe" rel="noopener">
+      <a class="chip" href="https://buymeacoffee.com/himanshoe" rel="noopener">
         <span aria-hidden="true">☕</span> Buy me a coffee
       </a>
+      <a class="chip" href="https://github.com/hi-manshu/charty" rel="noopener">
+        <span aria-hidden="true">★</span> Star on GitHub
+      </a>
     </div>
-    <div class="hero-code">${renderKotlinBlock(quickStart)}</div>
+
+    <ul class="hero-facts">
+      <li><strong>$chartCount</strong> charts</li>
+      <li><strong>5</strong> targets</li>
+      <li>minSdk <strong>24</strong></li>
+      <li>Apache 2.0</li>
+    </ul>
+
+    <p class="hero-byline">
+      Built with <span class="heart">❤</span> by <a href="https://github.com/hi-manshu">@hi-manshu</a>
+    </p>
   </div>
+
   <div class="hero-art">
-    <img src="img/banner.png" width="1280" height="640"
+    ${renderKotlinBlock(quickStart)}
+    <img class="hero-banner" src="img/banner.png" width="1280" height="640"
          alt="Charty — an elementary compose library" fetchpriority="high">
   </div>
 </section>
@@ -273,6 +290,9 @@ private const val CLOSING_SECTION =
     <a class="button" href="playground/index.html">Open the playground</a>
     <a class="button button--sponsor" href="https://github.com/sponsors/hi-manshu" rel="noopener">
       <span aria-hidden="true">♥</span> Sponsor on GitHub
+    </a>
+    <a class="button button--sponsor" href="https://buymeacoffee.com/himanshoe" rel="noopener">
+      <span aria-hidden="true">☕</span> Buy me a coffee
     </a>
   </div>
 </section>

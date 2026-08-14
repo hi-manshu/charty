@@ -114,9 +114,34 @@ private fun highlightCodeBlocks(html: String): String =
         val openTag = match.groupValues[1]
         val kotlin = openTag.contains("language-kotlin")
         val body = match.groupValues[2].trimEnd('\n')
-        """<div class="code-block"><button class="copy" type="button" aria-label="Copy code">Copy</button>""" +
-            """<pre>$openTag${numberedLines(code = body, kotlin = kotlin)}</code></pre></div>"""
+        val language =
+            if (kotlin) {
+                "Kotlin"
+            } else {
+                ""
+            }
+        codeWindow(
+            language = language,
+            inner = "<pre>$openTag${numberedLines(code = body, kotlin = kotlin)}</code></pre>",
+        )
     }
+
+/**
+ * Wraps a code block in a window frame: title bar, three lights, the language, and the copy button.
+ *
+ * The frame is doing real work rather than decoration. It marks where a snippet begins and ends on a
+ * page that is otherwise a single dark column, and it gives the copy button somewhere to live that
+ * is always visible — hovering to discover a control only works for readers who already suspect it
+ * is there.
+ */
+private fun codeWindow(
+    language: String,
+    inner: String,
+): String =
+    """<div class="code-block"><div class="code-chrome">""" +
+        """<span class="code-lights" aria-hidden="true"><i></i><i></i><i></i></span>""" +
+        """<span class="code-lang">$language</span>""" +
+        """<button class="copy" type="button" aria-label="Copy code">Copy</button></div>$inner</div>"""
 
 /**
  * A standalone Kotlin snippet, drawn exactly as one that came from a markdown fence.
@@ -126,10 +151,13 @@ private fun highlightCodeBlocks(html: String): String =
  * notices as sloppiness long before they work out what it is.
  */
 fun renderKotlinBlock(code: String): String =
-    """<div class="code-block"><button class="copy" type="button" aria-label="Copy code">Copy</button>""" +
-        """<pre><code class="language-kotlin">""" +
-        numberedLines(code = escapeText(code), kotlin = true) +
-        """</code></pre></div>"""
+    codeWindow(
+        language = "Kotlin",
+        inner =
+            """<pre><code class="language-kotlin">""" +
+                numberedLines(code = escapeText(code), kotlin = true) +
+                """</code></pre>""",
+    )
 
 /**
  * Wraps each line in its own element so the stylesheet can number them.

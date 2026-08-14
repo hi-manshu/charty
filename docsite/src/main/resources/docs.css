@@ -693,11 +693,11 @@ code {
    stacked where there is not, with the art second so it never pushes the headline below the fold. */
 .hero {
     display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 48px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+    gap: 56px;
     align-items: center;
-    padding-top: 72px;
-    padding-bottom: 72px;
+    padding-top: 68px;
+    padding-bottom: 64px;
 }
 
 .eyebrow {
@@ -728,8 +728,8 @@ code {
 .hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 32px;
+    gap: 10px;
+    margin-bottom: 26px;
 }
 
 .button {
@@ -762,12 +762,91 @@ code {
     color: var(--on-primary);
 }
 
-.hero-code {
-    margin: 0;
+/*
+  Supporting actions, as chips rather than buttons.
+
+  They belong in the hero — a reader who likes the project should not have to hunt for the way to say
+  so — but they are not what the page is asking for. Lighter weight, smaller, and set below the two
+  real calls to action, so the hierarchy still reads: try it, then, if you want, support it.
+*/
+.hero-support {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
 }
 
-.hero-code pre {
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--outline-variant);
+    background: var(--bg);
+    color: var(--text-muted);
     font-size: 13px;
+    font-weight: 500;
+    transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.chip:hover {
+    text-decoration: none;
+    border-color: var(--text);
+    color: var(--text);
+    transform: translateY(-1px);
+}
+
+/* Facts, stated small. A row of numbers answers "what is this" faster than another paragraph. */
+.hero-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+    font-size: 13.5px;
+    color: var(--text-faint);
+}
+
+.hero-facts strong {
+    color: var(--text);
+    font-weight: 650;
+    margin-right: 4px;
+}
+
+.hero-byline {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--text-faint);
+}
+
+.hero-byline a {
+    color: var(--text-muted);
+}
+
+.hero-byline a:hover {
+    color: var(--text);
+}
+
+.hero-art .code-block {
+    margin-bottom: 16px;
+}
+
+.hero-art .code-block pre {
+    font-size: 13px;
+}
+
+.hero-banner {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--outline-variant);
+}
+
+:root[data-theme="dark"] .hero-banner {
+    filter: brightness(0.92);
 }
 
 /*
@@ -1234,35 +1313,70 @@ code {
     margin-top: 56px;
 }
 
+/*
+  Compact enough to be a footer rather than a second navigation screen: the label is small, the title
+  carries the weight, and the arrow is its own element so it can move on hover — the cheapest way to
+  say "this goes somewhere" without adding another word.
+*/
 .page-nav-card {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 18px 22px;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 16px;
     border-radius: var(--radius-sm);
-    background: var(--surface-container);
     color: var(--text);
-    transition: background 150ms ease;
+}
+
+.page-nav-card--next {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.page-nav-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.page-nav-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-faint);
+    letter-spacing: 0.02em;
+}
+
+.page-nav-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    /* A long chart name should not force the pair of cards to different heights. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.page-nav-arrow {
+    flex: none;
+    color: var(--text-faint);
+    font-size: 15px;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms ease;
 }
 
 .page-nav-card:hover {
     text-decoration: none;
-    background: var(--surface-container-high);
 }
 
-.page-nav-card--next {
-    text-align: right;
+.page-nav-card:hover .page-nav-arrow {
+    color: var(--text);
 }
 
-.page-nav-label {
-    font-size: 12.5px;
-    font-weight: 650;
-    color: var(--primary);
+.page-nav-card:hover .page-nav-arrow:first-child {
+    transform: translateX(-3px);
 }
 
-.page-nav-title {
-    font-size: 16px;
-    font-weight: 650;
+.page-nav-card:hover .page-nav-arrow:last-child {
+    transform: translateX(3px);
 }
 
 /* ---------- topbar and surfaces, Material tone ---------- */
@@ -1818,7 +1932,8 @@ code {
 .card,
 .chart-card,
 .stat,
-.platform {
+.platform,
+.page-nav-card {
     position: relative;
     isolation: isolate;
     background:
@@ -1835,7 +1950,8 @@ code {
 .card::before,
 .chart-card::before,
 .stat::before,
-.platform::before {
+.platform::before,
+.page-nav-card::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -1858,7 +1974,8 @@ code {
 .card:hover,
 .chart-card:hover,
 .stat:hover,
-.platform:hover {
+.platform:hover,
+.page-nav-card:hover {
     transform: translateY(-2px);
     border-color: transparent;
 }
@@ -1866,7 +1983,8 @@ code {
 .card:hover::before,
 .chart-card:hover::before,
 .stat:hover::before,
-.platform:hover::before {
+.platform:hover::before,
+.page-nav-card:hover::before {
     opacity: 1;
 }
 
@@ -1930,4 +2048,85 @@ code {
         transform: none !important;
         transition: none !important;
     }
+}
+
+/* ---------- code window ---------- */
+
+.code-block {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--code-border);
+    background: var(--code-bg);
+}
+
+.code-chrome {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+    height: 38px;
+    background: var(--code-bg-header);
+    border-bottom: 1px solid var(--code-border);
+}
+
+/*
+  The three lights are the one place colour is allowed back in. They are not decoration borrowed for
+  its own sake: they are the universally understood mark of "this is a window with code in it", which
+  is exactly what the block is.
+*/
+.code-lights {
+    display: inline-flex;
+    gap: 7px;
+}
+
+.code-lights i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #ff5f57;
+}
+
+.code-lights i:nth-child(2) {
+    background: #febc2e;
+}
+
+.code-lights i:nth-child(3) {
+    background: #28c840;
+}
+
+.code-lang {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #9b9baa;
+    letter-spacing: 0.02em;
+}
+
+/* The copy button lives in the title bar now, so it no longer floats over the first line. */
+.code-block .copy {
+    position: static;
+    opacity: 1;
+    padding: 3px 11px;
+    font-size: 11.5px;
+    border-radius: 6px;
+    border: 1px solid var(--code-border);
+    background: transparent;
+    color: #9b9baa;
+}
+
+.code-block .copy:hover {
+    color: #f7f7f8;
+    border-color: #55555f;
+}
+
+.code-block pre {
+    border: 0;
+    border-radius: 0;
+    background: var(--code-bg);
+}
+
+.hero-code .code-block,
+.install .code-block {
+    box-shadow: var(--shadow);
 }

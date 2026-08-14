@@ -244,14 +244,16 @@ fun renderPagination(
     val previousCard =
         previous?.let { entry ->
             """<a class="page-nav-card" href="$root${entry.path.toSiteUrl()}">""" +
-                """<span class="page-nav-label">← Previous</span>""" +
-                """<span class="page-nav-title">${escapeText(entry.title)}</span></a>"""
+                """<span class="page-nav-arrow" aria-hidden="true">←</span>""" +
+                """<span class="page-nav-text"><span class="page-nav-label">Previous</span>""" +
+                """<span class="page-nav-title">${escapeText(entry.title)}</span></span></a>"""
         } ?: """<span></span>"""
     val nextCard =
         next?.let { entry ->
             """<a class="page-nav-card page-nav-card--next" href="$root${entry.path.toSiteUrl()}">""" +
-                """<span class="page-nav-label">Next →</span>""" +
-                """<span class="page-nav-title">${escapeText(entry.title)}</span></a>"""
+                """<span class="page-nav-text"><span class="page-nav-label">Next</span>""" +
+                """<span class="page-nav-title">${escapeText(entry.title)}</span></span>""" +
+                """<span class="page-nav-arrow" aria-hidden="true">→</span></a>"""
         } ?: """<span></span>"""
     return """<nav class="page-nav" aria-label="Previous and next page">$previousCard$nextCard</nav>"""
 }
