@@ -65,13 +65,37 @@
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* The code surface does not follow the theme. */
+/*
+  Code follows the theme like everything else.
+
+  It was fixed dark at first, on the reasoning that syntax palettes are designed for a dark ground.
+  That is true and beside the point: a slab of black halfway down a white page is the loudest thing
+  on it, and readers who chose a light theme chose it for the code as much as the prose. Both
+  palettes below are checked against their own background rather than borrowed from the other, since
+  a colour that reads well on near-black is usually too pale on near-white.
+*/
 :root {
+    --code-bg: #fbfbfc;
+    --code-bg-header: #f1f1f3;
+    --code-border: #e2e2e6;
+    --code-text: #16161a;
+    --code-gutter: #6f6f7a;
+    --code-chrome-text: #55555f;
+    --tok-keyword: #7326c9;
+    --tok-string: #0a6c41;
+    --tok-comment: #6b6b76;
+    --tok-number: #9a4200;
+    --tok-type: #0b539e;
+    --tok-annotation: #7d4f00;
+}
+
+:root[data-theme="dark"] {
     --code-bg: #16161a;
     --code-bg-header: #1f1f24;
     --code-border: #32323a;
     --code-text: #f7f7f8;
-    --code-gutter: #6e6e78;
+    --code-gutter: #9797a3;
+    --code-chrome-text: #a5a5b2;
     --tok-keyword: #e0b6ff;
     --tok-string: #7dfab5;
     --tok-comment: #9b9baa;
@@ -646,9 +670,9 @@ code {
     font-size: 12px;
     font-weight: 600;
     border-radius: var(--radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--code-border);
     background: var(--code-bg-header);
-    color: #cac4d0;
+    color: var(--code-chrome-text);
     cursor: pointer;
     opacity: 0;
     transition: opacity 120ms ease;
@@ -2115,7 +2139,7 @@ code {
     text-align: center;
     font-size: 12px;
     font-weight: 500;
-    color: #9b9baa;
+    color: var(--code-chrome-text);
     letter-spacing: 0.02em;
 }
 
@@ -2128,12 +2152,12 @@ code {
     border-radius: 6px;
     border: 1px solid var(--code-border);
     background: transparent;
-    color: #9b9baa;
+    color: var(--code-chrome-text);
 }
 
 .code-block .copy:hover {
-    color: #f7f7f8;
-    border-color: #55555f;
+    color: var(--code-text);
+    border-color: var(--code-gutter);
 }
 
 .code-block pre {
