@@ -224,7 +224,6 @@ fun AreaChart(
                         chartContext = chartContext,
                         textMeasurer = textMeasurer,
                         chartColor = color,
-                        drawLabel = false,
                     )
                 }
             }

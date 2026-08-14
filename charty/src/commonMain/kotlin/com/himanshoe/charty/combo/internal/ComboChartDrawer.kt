@@ -208,7 +208,6 @@ internal fun DrawScope.drawComboContent(p: ComboDrawParams) {
                 chartContext = p.chartContext,
                 textMeasurer = p.textMeasurer,
                 chartColor = p.lineColor,
-                drawLabel = p.drawCrosshairLabel,
             )
         }
     }

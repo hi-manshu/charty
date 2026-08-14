@@ -265,7 +265,6 @@ internal fun DrawScope.drawMultilineContent(p: MultilineDrawParams) {
                 dataList = p.dataList,
                 colorList = p.colorList,
                 textMeasurer = p.textMeasurer,
-                drawLabel = p.drawCrosshairLabel,
             )
         }
     }

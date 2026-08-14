@@ -428,7 +428,6 @@ fun PointChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
-                drawCrosshairLabel = false,
             )
 
             drawInteractionOverlays(
@@ -503,7 +502,6 @@ private fun DrawScope.drawPointCrosshair(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
     color: ChartyColor,
-    drawCrosshairLabel: Boolean,
 ) {
     val state = crosshairState ?: return
     crosshairConfig?.let { config ->
@@ -513,7 +511,6 @@ private fun DrawScope.drawPointCrosshair(
             chartContext = chartContext,
             textMeasurer = textMeasurer,
             chartColor = color,
-            drawLabel = drawCrosshairLabel,
         )
     }
 }

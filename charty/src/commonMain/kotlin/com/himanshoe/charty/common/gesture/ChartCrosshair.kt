@@ -53,7 +53,8 @@ class CrosshairScope<T> internal constructor(
 
 /**
  * Renders a [ChartCrosshair]'s label over the guide line. Place it as a sibling over the chart
- * canvas; it draws nothing when there is no active crosshair selection.
+ * canvas; it draws nothing when there is no active crosshair selection, or when the crosshair has
+ * been configured not to show a label.
  *
  * @param crosshair The crosshair configuration.
  * @param item The snapped data point, or `null` when the crosshair is inactive.
@@ -67,13 +68,14 @@ fun <T> ChartCrosshairHost(
     state: CrosshairState?,
     modifier: Modifier = Modifier,
 ) {
-    if (item == null || state == null) {
+    val config = crosshair.config.orThemeCrosshair()
+    if (item == null || state == null || !config.showLabel) {
         return
     }
     ChartCrosshairOverlay(
         item = item,
         state = state,
-        config = crosshair.config.orThemeCrosshair().tooltipConfig,
+        config = config.tooltipConfig,
         modifier = modifier,
     ) { data ->
         RenderCrosshairLabel(

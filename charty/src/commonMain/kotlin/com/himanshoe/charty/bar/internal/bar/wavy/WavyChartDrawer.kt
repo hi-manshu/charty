@@ -187,7 +187,6 @@ internal fun DrawScope.drawWavyOverlays(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 chartColor = color,
-                drawLabel = false,
             )
         }
     }

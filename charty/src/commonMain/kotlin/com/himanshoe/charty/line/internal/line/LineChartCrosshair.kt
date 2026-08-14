@@ -29,8 +29,6 @@ private const val DOT_OUTER_PADDING = 2f
  * @param chartContext The chart's coordinate context.
  * @param textMeasurer Required for measuring and drawing the label text.
  * @param chartColor The chart's colour — used to fill the highlight dot.
- * @param drawLabel When `false`, the value label bubble is suppressed (lines and dot are still
- *   drawn). Used when a custom composable crosshair label replaces the canvas one.
  */
 internal fun DrawScope.drawLineChartCrosshair(
     state: CrosshairState,
@@ -38,7 +36,6 @@ internal fun DrawScope.drawLineChartCrosshair(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
     chartColor: ChartyColor,
-    drawLabel: Boolean = true,
 ) {
     val dashEffect = CROSSHAIR_DASH_EFFECT
 
@@ -71,7 +68,7 @@ internal fun DrawScope.drawLineChartCrosshair(
         center = Offset(state.x, state.y),
     )
 
-    if (config.showLabel && drawLabel) {
+    if (config.showLabel) {
         val tooltipState =
             TooltipState(
                 content = state.label,

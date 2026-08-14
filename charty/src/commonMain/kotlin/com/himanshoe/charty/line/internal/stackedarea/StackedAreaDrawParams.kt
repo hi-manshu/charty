@@ -34,8 +34,6 @@ import com.himanshoe.charty.line.data.StackedAreaPoint
  *   Compose-overlay tooltip is hosted above the canvas instead.
  * @property textMeasurer Measurer used for the reference band, tooltip, and crosshair labels.
  * @property interactionConfig Supplies the annotation, brush-selection, and edge-fade overlays.
- * @property drawCrosshairLabel Whether the crosshair label is drawn on the canvas rather than as a
- *   composable overlay above it.
  * @property tooltipConfig Styling for the tooltip bubble, already resolved against the theme.
  */
 internal data class StackedAreaDrawParams(
@@ -53,6 +51,5 @@ internal data class StackedAreaDrawParams(
     val drawTooltipBubble: Boolean,
     val textMeasurer: TextMeasurer,
     val interactionConfig: ChartInteractionConfig,
-    val drawCrosshairLabel: Boolean,
     val tooltipConfig: TooltipConfig,
 )

@@ -238,7 +238,6 @@ internal fun DrawScope.drawStackedAreaContent(params: StackedAreaDrawParams) {
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 chartColor = dotColor,
-                drawLabel = params.drawCrosshairLabel,
             )
         }
     }

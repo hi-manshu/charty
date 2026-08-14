@@ -192,7 +192,6 @@ fun MultilineChart(
                         drawTooltipBubble = tooltip.isCanvas(),
                         textMeasurer = textMeasurer,
                         interactionConfig = interactionConfig,
-                        drawCrosshairLabel = false,
                     ),
                 )
             }

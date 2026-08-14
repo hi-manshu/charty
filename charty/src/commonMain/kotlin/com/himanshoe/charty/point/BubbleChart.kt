@@ -249,7 +249,6 @@ fun BubbleChart(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 color = color,
-                drawLabel = false,
             )
         }
 
@@ -367,11 +366,10 @@ private fun DrawScope.drawBubbleCrosshair(
     chartContext: ChartContext,
     textMeasurer: TextMeasurer,
     color: ChartyColor,
-    drawLabel: Boolean,
 ) {
     crosshairState?.let { state ->
         crosshairConfig?.let { cfg ->
-            drawLineChartCrosshair(state, cfg, chartContext, textMeasurer, color, drawLabel = drawLabel)
+            drawLineChartCrosshair(state, cfg, chartContext, textMeasurer, color)
         }
     }
 }

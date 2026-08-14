@@ -255,7 +255,6 @@ fun LineChart(
                 textMeasurer = textMeasurer,
                 color = color,
                 drawBubble = tooltip.isCanvas(),
-                drawCrosshairLabel = false,
                 tooltipConfig = styling.tooltipConfig,
             )
         }
@@ -312,7 +311,6 @@ private fun DrawScope.drawLineCrosshairAndTooltip(
     textMeasurer: TextMeasurer,
     color: ChartyColor,
     drawBubble: Boolean,
-    drawCrosshairLabel: Boolean,
     tooltipConfig: TooltipConfig,
 ) {
     crosshairState?.let { resolvedState ->
@@ -323,7 +321,6 @@ private fun DrawScope.drawLineCrosshairAndTooltip(
                 chartContext = chartContext,
                 textMeasurer = textMeasurer,
                 chartColor = color,
-                drawLabel = drawCrosshairLabel,
             )
         }
     }
