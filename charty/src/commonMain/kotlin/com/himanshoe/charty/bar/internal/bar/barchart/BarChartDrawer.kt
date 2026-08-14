@@ -1,11 +1,8 @@
 package com.himanshoe.charty.bar.internal.bar.barchart
 
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
@@ -14,6 +11,8 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.bar.internal.bar.BarCorners
+import com.himanshoe.charty.bar.internal.bar.drawBarShape
 import com.himanshoe.charty.bar.internal.bar.drawVerticalBarMarkers
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
@@ -202,35 +201,18 @@ private fun DrawScope.drawRoundedBar(
     isBelowAxisMode: Boolean,
     cornerRadius: Float,
 ) {
-    val path =
-        Path().apply {
+    drawBarShape(
+        brush = brush,
+        x = x,
+        y = y,
+        width = width,
+        height = height,
+        cornerRadius = cornerRadius,
+        corners =
             if (isNegative && isBelowAxisMode) {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius.Zero,
-                        bottomLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    ),
-                )
+                BarCorners.BOTTOM
             } else {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    ),
-                )
-            }
-        }
-    drawPath(path, brush)
+                BarCorners.TOP
+            },
+    )
 }

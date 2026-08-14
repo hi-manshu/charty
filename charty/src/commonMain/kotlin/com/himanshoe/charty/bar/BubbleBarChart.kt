@@ -13,6 +13,7 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.BubbleBarChartConfig
 import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarData
+import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.bubblebar.BubbleBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.bubblebar.calculateBaselineY
 import com.himanshoe.charty.bar.internal.bar.bubblebar.createAxisConfig
@@ -26,8 +27,6 @@ import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -151,15 +150,11 @@ fun BubbleBarChart(
     Box(modifier = chartModifier) {
         ChartScaffold(
             accessibility =
-                ChartAccessibility(
-                    contentDescription =
-                        interactionConfig.accessibilityDescription
-                            ?: "Bubble bar chart, ${fullDataList.size} data points.",
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels = dataList.fastMap { it.label },
-                            values = dataList.fastMap { it.value },
-                        ),
+                barAccessibility(
+                    description = interactionConfig.accessibilityDescription,
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.value },
+                    fallbackDescription = "Bubble bar chart, ${fullDataList.size} data points.",
                 ),
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),

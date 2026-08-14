@@ -1,15 +1,14 @@
 package com.himanshoe.charty.bar.internal.bar.stackedhorizontal
 
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.util.fastForEachIndexed
 import com.himanshoe.charty.bar.config.StackedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.StackedHorizontalBarSegment
+import com.himanshoe.charty.bar.internal.bar.BarCorners
+import com.himanshoe.charty.bar.internal.bar.drawBarShape
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartContext
 import com.himanshoe.charty.common.ChartOrientation
@@ -129,37 +128,22 @@ private fun DrawScope.drawStackedHorizontalSegment(
     cornerRadius: Float,
     isLastSegment: Boolean,
 ) {
-    val path =
-        Path().apply {
+    drawBarShape(
+        brush = brush,
+        x = x,
+        y = y,
+        width = width,
+        height = height,
+        cornerRadius = cornerRadius,
+        // Only the segment at the end of the stack is rounded; the ones before it butt against a
+        // neighbour, and a rounded join would show the background through the gap.
+        corners =
             if (isLastSegment && cornerRadius > 0f) {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius(cornerRadius, cornerRadius),
-                    ),
-                )
+                BarCorners.TRAILING
             } else {
-                addRoundRect(
-                    RoundRect(
-                        left = x,
-                        top = y,
-                        right = x + width,
-                        bottom = y + height,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius.Zero,
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    ),
-                )
-            }
-        }
-    drawPath(path, brush)
+                BarCorners.NONE
+            },
+    )
 }
 
 internal fun DrawScope.drawStackedHorizontalReferenceLineIfNeeded(

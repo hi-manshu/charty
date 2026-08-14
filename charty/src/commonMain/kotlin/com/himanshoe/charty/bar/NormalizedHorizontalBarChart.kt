@@ -14,6 +14,7 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarChartConfig
 import com.himanshoe.charty.bar.config.NormalizedHorizontalBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.horizontalBarMarkerPositions
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.NormalizedHorizontalBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.normalizedhorizontal.createNormalizedHorizontalAxisConfig
@@ -27,8 +28,6 @@ import com.himanshoe.charty.color.ChartyColors
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -131,18 +130,11 @@ fun NormalizedHorizontalBarChart(
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
-                ChartAccessibility(
-                    contentDescription =
-                        interactionConfig.accessibilityDescription
-                            ?: "Normalized horizontal bar chart, ${fullDataList.size} data points.",
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels =
-                                dataList.fastMap {
-                                    it.label
-                                },
-                            values = dataList.fastMap { it.values.sum() },
-                        ),
+                barAccessibility(
+                    description = interactionConfig.accessibilityDescription,
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.values.sum() },
+                    fallbackDescription = "Normalized horizontal bar chart, ${fullDataList.size} data points.",
                 ),
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),

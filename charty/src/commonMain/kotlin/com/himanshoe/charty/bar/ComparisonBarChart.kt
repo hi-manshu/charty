@@ -17,6 +17,7 @@ import com.himanshoe.charty.bar.config.NegativeValuesDrawMode
 import com.himanshoe.charty.bar.data.BarGroup
 import com.himanshoe.charty.bar.ext.getLabels
 import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
+import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.comparison.ComparisonBarDrawParams
 import com.himanshoe.charty.bar.internal.bar.comparison.calculateComparisonBaselineY
 import com.himanshoe.charty.bar.internal.bar.comparison.createComparisonAxisConfig
@@ -32,8 +33,6 @@ import com.himanshoe.charty.bar.internal.bar.seriesCrosshairHandler
 import com.himanshoe.charty.bar.internal.bar.seriesStreamingPan
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -155,18 +154,11 @@ fun ComparisonBarChart(
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
-                ChartAccessibility(
-                    contentDescription =
-                        interactionConfig.accessibilityDescription
-                            ?: "Comparison bar chart, ${fullDataList.size} data points.",
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels =
-                                dataList.fastMap {
-                                    it.label
-                                },
-                            values = dataList.fastMap { it.values.sum() },
-                        ),
+                barAccessibility(
+                    description = interactionConfig.accessibilityDescription,
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.values.sum() },
+                    fallbackDescription = "Comparison bar chart, ${fullDataList.size} data points.",
                 ),
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),

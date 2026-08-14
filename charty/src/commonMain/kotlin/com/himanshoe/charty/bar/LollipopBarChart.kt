@@ -14,6 +14,7 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.LollipopBarChartConfig
 import com.himanshoe.charty.bar.data.BarData
 import com.himanshoe.charty.bar.internal.bar.SeriesCrosshairHost
+import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.lollipop.createAxisConfig
 import com.himanshoe.charty.bar.internal.bar.lollipop.createLollipopChartModifier
 import com.himanshoe.charty.bar.internal.bar.lollipop.drawLollipopCrosshair
@@ -29,8 +30,6 @@ import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.color.ChartyColor
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -153,18 +152,11 @@ fun LollipopBarChart(
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
-                ChartAccessibility(
-                    contentDescription =
-                        interactionConfig.accessibilityDescription
-                            ?: "Lollipop chart, ${fullDataList.size} data points.",
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels =
-                                dataList.fastMap {
-                                    it.label
-                                },
-                            values = dataList.fastMap { it.value },
-                        ),
+                barAccessibility(
+                    description = interactionConfig.accessibilityDescription,
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.value },
+                    fallbackDescription = "Lollipop chart, ${fullDataList.size} data points.",
                 ),
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),

@@ -14,6 +14,7 @@ import androidx.compose.ui.util.fastMap
 import com.himanshoe.charty.bar.config.MosaicBarChartConfig
 import com.himanshoe.charty.bar.config.MosaicBarSegment
 import com.himanshoe.charty.bar.data.BarGroup
+import com.himanshoe.charty.bar.internal.bar.barAccessibility
 import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicAxisConfig
 import com.himanshoe.charty.bar.internal.bar.mosaic.createMosaicChartModifier
 import com.himanshoe.charty.bar.internal.bar.mosaic.drawMosaicBars
@@ -22,8 +23,6 @@ import com.himanshoe.charty.bar.internal.bar.verticalBarMarkerPositions
 import com.himanshoe.charty.common.ChartEmptyState
 import com.himanshoe.charty.common.ChartOrientation
 import com.himanshoe.charty.common.ChartScaffold
-import com.himanshoe.charty.common.accessibility.ChartAccessibility
-import com.himanshoe.charty.common.accessibility.buildDataPointDescriptions
 import com.himanshoe.charty.common.buildInteractionModifier
 import com.himanshoe.charty.common.config.ChartInteractionConfig
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
@@ -135,18 +134,11 @@ fun MosaicBarChart(
     Box(modifier = chartModifier.then(pan)) {
         ChartScaffold(
             accessibility =
-                ChartAccessibility(
-                    contentDescription =
-                        interactionConfig.accessibilityDescription
-                            ?: "Mosaic bar chart, ${fullDataList.size} data points.",
-                    dataPointDescriptions =
-                        buildDataPointDescriptions(
-                            labels =
-                                dataList.fastMap {
-                                    it.label
-                                },
-                            values = dataList.fastMap { it.values.sum() },
-                        ),
+                barAccessibility(
+                    description = interactionConfig.accessibilityDescription,
+                    labels = dataList.fastMap { it.label },
+                    values = dataList.fastMap { it.values.sum() },
+                    fallbackDescription = "Mosaic bar chart, ${fullDataList.size} data points.",
                 ),
             streaming = interactionConfig.streamingRender(chartState.streaming),
             modifier = Modifier.fillMaxSize(),
