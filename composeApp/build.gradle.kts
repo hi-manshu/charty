@@ -67,7 +67,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(project(":charty"))
             implementation(project(":charty3d"))
-//            implementation("com.himanshoe:charty:3.0.0-rc01")
+//            implementation("com.himanshoe:charty:3.0.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

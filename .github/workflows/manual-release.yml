@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       versionName:
-        description: 'Version to release (e.g. 3.0.0 or 3.0.0-rc02)'
+        description: 'Version to release (e.g. 3.0.1 or 3.1.0-rc01)'
         required: true
         type: string
       dryRun:

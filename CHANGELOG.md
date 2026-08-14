@@ -3,16 +3,21 @@
 Notable changes to Charty. Versions follow [semantic versioning](https://semver.org); breaking
 changes are listed first in each release and say what to do about them.
 
-## 3.0.0-rc02
+## 3.0.0
 
-Continues the 3.0 release candidate line. The breaking changes below land before 3.0.0 is stable,
-which is what a release candidate is for — a consumer on `3.0.0-rc01` will get compile errors, each
-with a one-line fix here.
+The first stable release of the 3.0 line. From here the public API is committed: nothing outside
+`@ChartyExperimental` will break before 4.0.0 without a deprecation cycle first.
+
+The `charty-3d` artifact is the deliberate exception. Every declaration in it carries
+`@ChartyExperimental`, which is a `RequiresOptIn` marker at ERROR level — the compiler makes you say
+you accept it may move under you. Projected 3D charts are new and their configuration surface is
+still being learned from use, so they ship stable-adjacent rather than stable.
 
 ### Breaking
 
-Every one of these is a **type change on a public property**, so the compiler will point at each call
-site. None changes behaviour — the defaults render exactly as before.
+Coming from `3.0.0-rc01` — a pre-release, which is what carries no compatibility promise and where
+this kind of change belongs. Every one is a **type change on a public property**, so the compiler
+will point at each call site. None changes behaviour: the defaults render exactly as before.
 
 - **Chart configs: `tooltipConfig` is now `TooltipConfig?`, defaulting to `null`.** `null` means
   "take the ambient `ChartyTheme`", which is what makes a host app's theme reach the tooltip at all.
