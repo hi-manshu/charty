@@ -13,17 +13,20 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.himanshoe.charty.common.accessibility.ChartAccessibility
 import com.himanshoe.charty.common.accessibility.ChartDataPointSemantics
+import com.himanshoe.charty.common.axis.AXIS_LABEL_MARGIN
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.DrawAxisAndLabels
 import com.himanshoe.charty.common.axis.measureAxisGutter
+import com.himanshoe.charty.common.axis.measureMaxLabelWidth
+import com.himanshoe.charty.common.axis.measureTrailingLabelOverhang
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 import com.himanshoe.charty.common.theme.ChartyThemeDefaults
 
-private const val HORIZONTAL_LEFT_PADDING_WITH_LABELS = 100f
 private const val LEFT_PADDING_WITHOUT_LABELS = 20f
 private const val RIGHT_PADDING = 20f
 private const val TOP_PADDING = 20f
@@ -74,34 +77,24 @@ fun ChartScaffold(
         }
     val textMeasurer = rememberTextMeasurer()
     val leftPadding =
-        remember(yAxisConfig, config.showLabels, config.labelTextStyle, orientation) {
-            when {
-                orientation == ChartOrientation.HORIZONTAL ->
-                    if (config.showLabels) {
-                        HORIZONTAL_LEFT_PADDING_WITH_LABELS
-                    } else {
-                        LEFT_PADDING_WITHOUT_LABELS
-                    }
-
-                else ->
-                    measureAxisGutter(
-                        axisConfig = yAxisConfig,
-                        textMeasurer = textMeasurer,
-                        labelStyle = config.labelTextStyle,
-                        showLabels = config.showLabels,
-                    )
-            }
+        remember(yAxisConfig, xLabels, config.showLabels, config.labelTextStyle, orientation) {
+            measureLeftGutter(
+                orientation = orientation,
+                xLabels = xLabels,
+                yAxisConfig = yAxisConfig,
+                config = config,
+                textMeasurer = textMeasurer,
+            )
         }
     val rightPadding =
-        remember(secondaryYAxisConfig, config.showLabels, config.labelTextStyle) {
-            secondaryYAxisConfig?.let {
-                measureAxisGutter(
-                    axisConfig = it,
-                    textMeasurer = textMeasurer,
-                    labelStyle = config.labelTextStyle,
-                    showLabels = config.showLabels,
-                )
-            } ?: RIGHT_PADDING
+        remember(secondaryYAxisConfig, yAxisConfig, config.showLabels, config.labelTextStyle, orientation) {
+            measureRightGutter(
+                orientation = orientation,
+                secondaryYAxisConfig = secondaryYAxisConfig,
+                yAxisConfig = yAxisConfig,
+                config = config,
+                textMeasurer = textMeasurer,
+            )
         }
 
     Box(modifier = modifier.then(accessibilityModifier)) {
@@ -187,3 +180,68 @@ private fun DrawScope.clipToPlot(
         clipRect(left = chartContext.left, top = 0f, right = chartContext.right, bottom = size.height) { block() }
     }
 }
+
+/**
+ * The gutter on the left of the plot.
+ *
+ * A horizontal chart carries its categories there, so it is measured against those names; every other
+ * orientation carries the value axis, so it is measured against the widest tick label.
+ */
+private fun measureLeftGutter(
+    orientation: ChartOrientation,
+    xLabels: List<String>,
+    yAxisConfig: AxisConfig,
+    config: ChartScaffoldConfig,
+    textMeasurer: TextMeasurer,
+): Float =
+    if (orientation == ChartOrientation.HORIZONTAL) {
+        if (config.showLabels) {
+            (
+                measureMaxLabelWidth(
+                    labels = xLabels,
+                    textMeasurer = textMeasurer,
+                    labelStyle = config.labelTextStyle,
+                ) + AXIS_LABEL_MARGIN * 2f
+            ).coerceAtLeast(LEFT_PADDING_WITHOUT_LABELS)
+        } else {
+            LEFT_PADDING_WITHOUT_LABELS
+        }
+    } else {
+        measureAxisGutter(
+            axisConfig = yAxisConfig,
+            textMeasurer = textMeasurer,
+            labelStyle = config.labelTextStyle,
+            showLabels = config.showLabels,
+        )
+    }
+
+/**
+ * The gutter on the right of the plot: a second value axis if there is one, otherwise room for the
+ * overhang of the last label on a horizontal chart, otherwise a plain margin.
+ */
+private fun measureRightGutter(
+    orientation: ChartOrientation,
+    secondaryYAxisConfig: AxisConfig?,
+    yAxisConfig: AxisConfig,
+    config: ChartScaffoldConfig,
+    textMeasurer: TextMeasurer,
+): Float =
+    when {
+        secondaryYAxisConfig != null ->
+            measureAxisGutter(
+                axisConfig = secondaryYAxisConfig,
+                textMeasurer = textMeasurer,
+                labelStyle = config.labelTextStyle,
+                showLabels = config.showLabels,
+            )
+
+        orientation == ChartOrientation.HORIZONTAL ->
+            measureTrailingLabelOverhang(
+                axisConfig = yAxisConfig,
+                textMeasurer = textMeasurer,
+                labelStyle = config.labelTextStyle,
+                showLabels = config.showLabels,
+            )
+
+        else -> RIGHT_PADDING
+    }

@@ -12,15 +12,13 @@ import com.himanshoe.charty.color.toBrush
 import com.himanshoe.charty.common.StreamingLayout
 import com.himanshoe.charty.common.axis.AxisConfig
 import com.himanshoe.charty.common.axis.LabelRotation
+import com.himanshoe.charty.common.axis.labelStrideFor
 import com.himanshoe.charty.common.config.ChartScaffoldConfig
 
 private const val VERTICAL_CHART_TOP_PADDING = 20f
 private const val VERTICAL_CHART_BOTTOM_PADDING_WITH_LABELS = 50f
 private const val VERTICAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS = 20f
 
-private const val HORIZONTAL_CHART_LEFT_PADDING_WITH_LABELS = 100f
-private const val HORIZONTAL_CHART_LEFT_PADDING_WITHOUT_LABELS = 20f
-private const val HORIZONTAL_CHART_RIGHT_PADDING = 20f
 private const val HORIZONTAL_CHART_TOP_PADDING = 20f
 private const val HORIZONTAL_CHART_BOTTOM_PADDING_WITH_LABELS = 50f
 private const val HORIZONTAL_CHART_BOTTOM_PADDING_WITHOUT_LABELS = 20f
@@ -248,17 +246,20 @@ private fun DrawScope.drawSecondaryVerticalAxis(
     }
 }
 
+/*
+ * The gutters arrive measured, as they do for a vertical chart.
+ *
+ * They used to be constants here — a hundred pixels for the category names whatever they said, and
+ * twenty on the right whatever the largest number was. A category longer than the allowance ran under
+ * the plot, and the final value label, which is centred on the right-hand edge, had its tail sliced
+ * off by the canvas. That is what made a seven-figure value read as a six-figure one.
+ */
 private fun calculateHorizontalChartBounds(
     size: androidx.compose.ui.geometry.Size,
     showLabels: Boolean,
+    leftPadding: Float,
+    rightPadding: Float,
 ): ChartBounds {
-    val leftPadding =
-        if (showLabels) {
-            HORIZONTAL_CHART_LEFT_PADDING_WITH_LABELS
-        } else {
-            HORIZONTAL_CHART_LEFT_PADDING_WITHOUT_LABELS
-        }
-    val rightPadding = HORIZONTAL_CHART_RIGHT_PADDING
     val topPadding = HORIZONTAL_CHART_TOP_PADDING
     val bottomPadding =
         if (showLabels) {
@@ -309,9 +310,17 @@ internal fun DrawScope.drawHorizontalChartAxes(
     textMeasurer: TextMeasurer,
     labelStyle: TextStyle,
     leftLabelRotation: LabelRotation,
+    leftPadding: Float,
+    rightPadding: Float,
     streamingLayout: StreamingLayout? = null,
 ) {
-    val bounds = calculateHorizontalChartBounds(size = size, showLabels = config.showLabels)
+    val bounds =
+        calculateHorizontalChartBounds(
+            size = size,
+            showLabels = config.showLabels,
+            leftPadding = leftPadding,
+            rightPadding = rightPadding,
+        )
     val baselineX = calculateVerticalAxisPosition(yAxisConfig = yAxisConfig, chartBounds = bounds)
     val valueRange = yAxisConfig.maxValue - yAxisConfig.minValue
     val steps = yAxisConfig.steps.coerceAtLeast(MIN_STEPS)
@@ -332,32 +341,32 @@ internal fun DrawScope.drawHorizontalChartAxes(
         )
     }
 
-    for (i in 0..steps) {
-        val value = yAxisConfig.minValue + valueRange * (i.toFloat() / steps)
-        val normalized = (value - yAxisConfig.minValue) / valueRange
-        val x = bounds.left + (normalized * bounds.width)
+    /*
+     * How many ticks to skip between labels.
+     *
+     * Every tick used to be labelled regardless of how wide the numbers were, so a seven-figure axis
+     * printed six overlapping labels into an unreadable smear — which reads as broken rendering
+     * rather than as a crowded axis. Labelling every nth tick keeps the grid as dense as it was and
+     * prints only what can be read. The grid lines themselves are untouched.
+     */
+    val labelStride =
+        labelStrideFor(
+            axisConfig = yAxisConfig,
+            steps = steps,
+            axisWidth = bounds.width,
+            textMeasurer = textMeasurer,
+            labelStyle = labelStyle,
+        )
 
-        if (config.showGrid && i > 0 && i < steps) {
-            drawLine(
-                brush = config.gridColor.toBrush(),
-                start = Offset(x, bounds.top),
-                end = Offset(x, bounds.bottom),
-                strokeWidth = config.gridThickness,
-            )
-        }
-
-        if (config.showLabels) {
-            val textLayout = textMeasurer.measure(AnnotatedString(yAxisConfig.valueFormatter(value)), labelStyle)
-            drawText(
-                textLayoutResult = textLayout,
-                topLeft =
-                    Offset(
-                        x - textLayout.size.width / CENTER_DIVISOR,
-                        bounds.bottom + LABEL_OFFSET,
-                    ),
-            )
-        }
-    }
+    drawHorizontalValueAxis(
+        yAxisConfig = yAxisConfig,
+        config = config,
+        textMeasurer = textMeasurer,
+        labelStyle = labelStyle,
+        bounds = bounds,
+        steps = steps,
+        labelStride = labelStride,
+    )
 
     if (config.showLabels && xLabels.isNotEmpty()) {
         val barHeight = bounds.height / xLabels.size
@@ -391,6 +400,53 @@ internal fun DrawScope.drawHorizontalChartAxes(
             drawYLabels()
         } else {
             clipRect(left = ZERO_VALUE, top = bounds.top, right = size.width, bottom = bounds.bottom) { drawYLabels() }
+        }
+    }
+}
+
+/**
+ * The value axis along the bottom of a horizontal chart: its grid lines and its labels.
+ *
+ * [labelStride] thins the labels without thinning the grid, so a wide-numbered axis keeps its
+ * divisions while printing only the labels that can be read side by side.
+ */
+private fun DrawScope.drawHorizontalValueAxis(
+    yAxisConfig: AxisConfig,
+    config: ChartScaffoldConfig,
+    textMeasurer: TextMeasurer,
+    labelStyle: TextStyle,
+    bounds: ChartBounds,
+    steps: Int,
+    labelStride: Int,
+) {
+    val valueRange = yAxisConfig.maxValue - yAxisConfig.minValue
+    for (i in 0..steps) {
+        val value = yAxisConfig.minValue + valueRange * (i.toFloat() / steps)
+        val normalized = (value - yAxisConfig.minValue) / valueRange
+        val x = bounds.left + (normalized * bounds.width)
+
+        if (config.showGrid && i > 0 && i < steps) {
+            drawLine(
+                brush = config.gridColor.toBrush(),
+                start = Offset(x, bounds.top),
+                end = Offset(x, bounds.bottom),
+                strokeWidth = config.gridThickness,
+            )
+        }
+
+        // The last tick is always labelled: it carries the axis maximum, which is the number a
+        // reader most often came to the chart for.
+        val labelThisTick = i % labelStride == 0 || i == steps
+        if (config.showLabels && labelThisTick) {
+            val textLayout = textMeasurer.measure(AnnotatedString(yAxisConfig.valueFormatter(value)), labelStyle)
+            drawText(
+                textLayoutResult = textLayout,
+                topLeft =
+                    Offset(
+                        x - textLayout.size.width / CENTER_DIVISOR,
+                        bounds.bottom + LABEL_OFFSET,
+                    ),
+            )
         }
     }
 }

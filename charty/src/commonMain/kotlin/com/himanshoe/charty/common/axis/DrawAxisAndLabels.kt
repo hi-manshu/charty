@@ -65,6 +65,8 @@ internal fun DrawAxisAndLabels(
                     textMeasurer = textMeasurer,
                     labelStyle = labelStyle,
                     leftLabelRotation = leftLabelRotation,
+                    leftPadding = leftPadding,
+                    rightPadding = rightPadding,
                     streamingLayout = streamingLayout,
                 )
         }
