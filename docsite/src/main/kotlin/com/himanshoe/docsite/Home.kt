@@ -152,11 +152,19 @@ private fun hero(chartCount: Int): String =
   </div>
 
   <div class="hero-art">
-    ${renderKotlinBlock(quickStart)}
-    <img class="hero-banner hero-banner--light" src="img/banner.png" width="1280" height="640"
-         alt="Charty — an elementary compose library" fetchpriority="high">
-    <img class="hero-banner hero-banner--dark" src="img/banner-dark.png" width="1280" height="640"
-         alt="" aria-hidden="true" loading="lazy">
+    <div class="compare" data-compare>
+      <div class="compare-layer compare-layer--code">${renderKotlinBlock(quickStart)}</div>
+      <div class="compare-layer compare-layer--art">
+        <img class="hero-banner hero-banner--light" src="img/banner.png" width="1280" height="640"
+             alt="Charty — an elementary compose library" fetchpriority="high">
+        <img class="hero-banner hero-banner--dark" src="img/banner-dark.png" width="1280" height="640"
+             alt="" aria-hidden="true" loading="lazy">
+      </div>
+      <div class="compare-divider" aria-hidden="true"><span class="compare-grip"></span></div>
+      <input class="compare-range" type="range" min="0" max="100" value="52" step="0.1"
+             aria-label="Drag to reveal the code or the artwork">
+    </div>
+    <p class="compare-hint">Drag to reveal the code, or the charts it draws.</p>
   </div>
 </section>
 """

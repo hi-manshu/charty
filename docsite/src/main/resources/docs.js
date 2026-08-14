@@ -150,6 +150,27 @@
         }
     }
 
+    /* ---------- reveal slider ---------- */
+
+    /*
+      Keeps the divider in step with the range input.
+
+      All the interaction — pointer, touch, arrow keys, Home and End — belongs to the input already;
+      the only job here is to copy its value into the custom property the clip paths read. Nothing
+      listens for mouse movement, so there is no drag state to get stuck in and nothing to clean up.
+    */
+    document.querySelectorAll('[data-compare]').forEach(function (box) {
+        var range = box.querySelector('.compare-range');
+        if (!range) {
+            return;
+        }
+        var apply = function () {
+            box.style.setProperty('--split', range.value + '%');
+        };
+        range.addEventListener('input', apply);
+        apply();
+    });
+
     /* ---------- search ---------- */
 
     var input = document.getElementById('search-input');

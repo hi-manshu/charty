@@ -2163,3 +2163,196 @@ code {
     color: var(--text);
     font-size: 0.92em;
 }
+
+/* ---------- reveal slider ---------- */
+
+/*
+  Two layers of the same size, each clipped to one side of a divider the reader drags: code on the
+  left, the charts on the right.
+
+  The handle is a real <input type="range"> sitting invisibly over the whole box. That is what makes
+  it work with a keyboard, with touch, and with a screen reader without any of it being written by
+  hand — and it means that if the script fails, the box still shows both halves at the starting split
+  instead of showing nothing.
+*/
+.compare {
+    --split: 50%;
+    position: relative;
+    /* The banner's own ratio. Any other value crops it, and the artwork is the point. */
+    aspect-ratio: 2 / 1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--outline-variant);
+    background: var(--bg);
+    touch-action: pan-y;
+}
+
+.compare-layer {
+    position: absolute;
+    inset: 0;
+}
+
+/* Each side is clipped rather than hidden, so both are always laid out and neither reflows on drag. */
+.compare-layer--code {
+    clip-path: inset(0 calc(100% - var(--split)) 0 0);
+}
+
+.compare-layer--art {
+    clip-path: inset(0 0 0 var(--split));
+}
+
+/*
+  The window keeps its own height rather than being stretched to fill the panel.
+
+  Stretched, six lines of Kotlin sat above a field of empty dark that read as a code block someone
+  forgot to fill. At its natural size, centred, it reads as what it is: a window resting on the
+  panel, the same size it would be anywhere else on the site.
+*/
+.compare-layer--code {
+    display: flex;
+    align-items: center;
+    padding: 0 clamp(8px, 2.5%, 22px);
+}
+
+.compare-layer--code .code-block {
+    width: 100%;
+    margin: 0;
+    box-shadow: var(--shadow);
+}
+
+.compare-layer--code pre {
+    overflow: hidden;
+}
+
+.compare-layer--art img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* contain, not cover: the box already matches the artwork's ratio, and contain guarantees that
+       stays true if either ever changes — a cropped banner is worse than a letterboxed one. */
+    object-fit: contain;
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+}
+
+.compare-divider {
+    position: absolute;
+    z-index: 4;
+    top: 0;
+    bottom: 0;
+    left: var(--split);
+    width: 2px;
+    margin-left: -1px;
+    background: rgba(255, 255, 255, 0.85);
+    pointer-events: none;
+}
+
+.compare-grip {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 38px;
+    height: 38px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* The two chevrons that say this thing moves. */
+.compare-grip::before,
+.compare-grip::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-top: 2px solid #111;
+    border-right: 2px solid #111;
+}
+
+.compare-grip::before {
+    left: 11px;
+    transform: translateY(-50%) rotate(-135deg);
+}
+
+.compare-grip::after {
+    right: 11px;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+/*
+  The range covers the whole box so the reader can grab anywhere, not just the handle. Its own thumb
+  and track are hidden because the divider above is the visible control; the input is here for the
+  behaviour, not the appearance.
+*/
+/*
+  The drag surface covers the panel, so the divider can be grabbed anywhere.
+
+  The Copy button underneath it is unreachable as a result, which is a fair trade here: this is the
+  hero's illustration, and the same snippet appears with a working Copy on the quick-start page. The
+  alternative — carving the button's rectangle out of the drag surface — makes the slider dead in a
+  patch of the panel for no clear reason.
+*/
+.compare-range {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+
+.compare-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 44px;
+    height: 100%;
+    cursor: ew-resize;
+}
+
+.compare-range::-moz-range-thumb {
+    width: 44px;
+    height: 100%;
+    border: 0;
+    cursor: ew-resize;
+}
+
+/* Focus has to be visible on a control whose own appearance is hidden. */
+.compare-range:focus-visible {
+    outline: none;
+}
+
+.compare-range:focus-visible ~ .compare-divider .compare-grip {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.compare-hint {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    color: var(--text-faint);
+    text-align: center;
+}
+
+/* The ratio stays the artwork's at every width; changing it is what letterboxed the banner. */
+
+
+
+/*
+  No Copy button on the hero's snippet. The drag surface covers it, so it cannot be pressed, and a
+  control that does nothing when clicked is worse than no control. The same snippet carries a working
+  one on the quick-start page, which is where someone who wants to copy it will be.
+*/
+.compare .copy {
+    display: none;
+}
