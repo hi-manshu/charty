@@ -171,6 +171,70 @@
         apply();
     });
 
+    /* ---------- the playground card, and its floating form ---------- */
+
+    /*
+      Lifts the card out to the bottom-right once the reader has scrolled past where it sits.
+
+      Driven by watching the slot the card leaves behind rather than the card itself: the moment the
+      card goes fixed it stops moving with the page, so observing it would immediately report it as
+      on-screen again and the two states would flip against each other forever.
+    */
+    var trySlot = document.querySelector('[data-try-it-slot]');
+
+    if (trySlot) {
+        var tryCard = trySlot.querySelector('.try-it');
+        var motionOk = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        /*
+          Moves the card between its two homes by measuring both.
+
+          The card and the button are the same element in different places, so the honest way to get
+          from one to the other is to note where it was, put it where it is going, and then let it
+          travel the difference — measure, invert, play. Animating a fixed offset instead would make
+          it appear at the bottom rather than arrive there, and the reader would lose track of the
+          thing they were just looking at.
+        */
+        var travel = function (toFloating) {
+            if (!motionOk) {
+                tryCard.classList.toggle('is-floating', toFloating);
+                return;
+            }
+            var before = tryCard.getBoundingClientRect();
+            tryCard.classList.toggle('is-floating', toFloating);
+            var after = tryCard.getBoundingClientRect();
+
+            var dx = before.left - after.left;
+            var dy = before.top - after.top;
+            var scale = after.width ? before.width / after.width : 1;
+
+            tryCard.style.transition = 'none';
+            tryCard.style.transform =
+                'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale + ', 1)';
+            // Read back, so the browser accepts the start point as a state of its own rather than
+            // collapsing both writes into the final one and skipping the journey.
+            void tryCard.offsetWidth;
+            tryCard.style.transition = 'transform 460ms cubic-bezier(0.22, 1, 0.36, 1)';
+            tryCard.style.transform = '';
+
+            window.setTimeout(function () {
+                tryCard.style.transition = '';
+            }, 480);
+        };
+
+        var floating = false;
+        var floatObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                var shouldFloat = !entry.isIntersecting;
+                if (shouldFloat !== floating) {
+                    floating = shouldFloat;
+                    travel(shouldFloat);
+                }
+            });
+        }, { rootMargin: '-72px 0px 0px 0px' });
+        floatObserver.observe(trySlot);
+    }
+
     /* ---------- search ---------- */
 
     var input = document.getElementById('search-input');

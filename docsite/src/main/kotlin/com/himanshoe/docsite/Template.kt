@@ -213,6 +213,33 @@ private fun activeSuffix(active: Boolean): String =
         ""
     }
 
+/**
+ * The invitation to open this chart in the playground.
+ *
+ * Sits at the top of the page, because a reader deciding whether a chart suits them is better served
+ * by turning its knobs than by reading the next paragraph. It is a plain link, so it is a real
+ * navigation: the browser's Back returns to this page with no history handling of our own.
+ */
+fun renderPlaygroundLink(
+    family: String?,
+    chartName: String,
+    depth: Int,
+): String {
+    if (family == null) {
+        return ""
+    }
+    val root = rootPrefix(depth)
+    // The slot keeps the card's height in the flow. When the card lifts out to become a floating
+    // button the page must not jump by its height, which is what happens if the element simply
+    // leaves the layout.
+    return """<div class="try-it-slot" data-try-it-slot>""" +
+        """<a class="try-it" href="${root}playground/?chart=$family">""" +
+        """<span class="try-it-icon" aria-hidden="true">▶</span>""" +
+        """<span class="try-it-text"><strong>Experiment with ${escapeText(chartName)}</strong>""" +
+        """<span class="try-it-sub">Open it in the playground and turn every option</span></span>""" +
+        """<span class="try-it-go" aria-hidden="true">→</span></a></div>"""
+}
+
 /** The on-page contents, omitted entirely when a page has too few headings to need one. */
 fun renderContents(headings: List<Heading>): String {
     if (headings.size < 2) {

@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
     outputDir.deleteRecursively()
     outputDir.mkdirs()
 
+    verifyPlaygroundNames()
     val pages = buildPages(docsDir = docsDir)
     val order = siteNavigation.flatMap { section -> section.entries }
     pages.forEachIndexed { index, page ->
@@ -45,6 +46,7 @@ private data class SitePage(
     val url: String,
     val section: String,
     val navTitle: String,
+    val playground: String?,
     val rendered: RenderedPage,
 )
 
@@ -64,6 +66,7 @@ private fun buildPages(docsDir: File): List<SitePage> =
                 url = entry.path.toSiteUrl(),
                 section = section.title,
                 navTitle = entry.title,
+                playground = entry.playground,
                 rendered = renderMarkdown(file.readText()),
             )
         }
@@ -84,7 +87,12 @@ private fun writePage(
             navigation = renderNavigation(sections = siteNavigation, currentUrl = page.url, depth = depth),
             contents = renderContents(page.rendered.headings),
             body =
-                page.rendered.html +
+                renderPlaygroundLink(
+                    family = page.playground,
+                    chartName = page.navTitle,
+                    depth = depth,
+                ) +
+                    page.rendered.html +
                     renderPagination(previous = previous, next = next, depth = depth),
         )
     val target = outputDir.resolve(page.url)

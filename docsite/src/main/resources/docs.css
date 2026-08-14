@@ -2380,3 +2380,192 @@ code {
 .compare .copy {
     display: none;
 }
+
+
+/* ---------- try it in the playground ---------- */
+
+/*
+  One link, two shapes. It starts as a card at the top of the page, and once the reader has scrolled
+  past it, it lifts out and becomes a floating button that follows them down. It is deliberately the
+  same element in both states rather than a card plus a duplicate button: two anchors to the same
+  place would be announced twice by a screen reader and tabbed through twice.
+*/
+.try-it-slot {
+    /* Holds the card's height so the page does not jump when the card lifts out of the flow. */
+    min-height: 64px;
+    margin: 0 0 26px;
+}
+
+.try-it {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+
+    /* Glass: a translucent pane over whatever it covers, with a hairline lit edge. The blur is what
+       makes it read as glass rather than as a flat panel with opacity. */
+    background: color-mix(in srgb, var(--surface-container) 62%, transparent);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 8%, transparent);
+
+    transition:
+        border-color 200ms ease,
+        transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 260ms ease;
+}
+
+/* The sheen: a narrow highlight that sweeps across the glass on hover, once. */
+.try-it::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        linear-gradient(105deg,
+            transparent 35%,
+            color-mix(in srgb, var(--text) 10%, transparent) 48%,
+            transparent 62%);
+    transform: translateX(-120%);
+    transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.try-it:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--text) 28%, transparent);
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--text) 14%, transparent),
+        0 8px 30px color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+.try-it:hover::after {
+    transform: translateX(120%);
+}
+
+.try-it-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    font-size: 11px;
+    color: var(--text);
+    transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.try-it:hover .try-it-icon {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.try-it-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.try-it-text strong {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.try-it-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.try-it-go {
+    margin-left: auto;
+    flex: none;
+    color: var(--text-faint);
+    font-size: 16px;
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms ease;
+}
+
+.try-it:hover .try-it-go {
+    color: var(--text);
+    transform: translateX(4px);
+}
+
+/* ---------- the floating state ---------- */
+
+/*
+  Once the card has scrolled away, the same element takes station at the bottom-right. It sheds its
+  subtitle and its arrow on the way, because a floating button has to earn its space: the icon and
+  three words say the whole thing.
+*/
+.try-it.is-floating {
+    position: fixed;
+    z-index: 40;
+    right: 24px;
+    bottom: 24px;
+    margin: 0;
+    padding: 12px 18px 12px 12px;
+    border-radius: var(--radius-pill);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--text) 14%, transparent),
+        0 10px 34px rgba(0, 0, 0, 0.28);
+}
+
+.try-it.is-floating .try-it-sub,
+.try-it.is-floating .try-it-go {
+    display: none;
+}
+
+.try-it.is-floating .try-it-text strong {
+    font-size: 14px;
+}
+
+.try-it.is-floating:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 700px) {
+    .try-it.is-floating {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .try-it.is-floating .try-it-text strong {
+        font-size: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .try-it,
+    .try-it::after,
+    .try-it-go,
+    .try-it-icon {
+        transition: none;
+    }
+
+    .try-it:hover,
+    .try-it.is-floating:hover {
+        transform: none;
+    }
+
+    .try-it:hover::after {
+        transform: translateX(-120%);
+    }
+
+    .try-it.is-floating {
+        transition: none;
+    }
+}
